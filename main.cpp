@@ -5,9 +5,14 @@
 
 #include <iostream>
 
-#include "boost/program_options.hpp"
+#include "controller/task_manager.h"
 
 int main(int argc, char* argv[])
   {
+    // instantiate task manager
+    task_manager mgr(argc, argv);
 
+    mgr.work();
+
+    return(EXIT_SUCCESS);
   }
