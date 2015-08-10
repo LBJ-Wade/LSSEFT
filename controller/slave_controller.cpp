@@ -7,10 +7,12 @@
 
 
 slave_controller::slave_controller(std::shared_ptr<boost::mpi::environment>& me,
-                                   std::shared_ptr<boost::mpi::communicator>& mw, std::shared_ptr<argument_cache>& ac)
+                                   std::shared_ptr<boost::mpi::communicator>& mw,
+                                   std::shared_ptr<argument_cache>& ac)
   : mpi_env(me),
     mpi_world(mw),
     arg_cache(ac)
   {
-    local_env = std::make_shared<local_environment>();
+    local_env   = std::make_shared<local_environment>();
+    err_handler = std::make_shared<error_handler>(arg_cache, local_env);
   }

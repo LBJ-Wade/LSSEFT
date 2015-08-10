@@ -12,6 +12,8 @@
 #include "argument_cache.h"
 #include "local_environment.h"
 
+#include "error/error_handler.h"
+
 #include "boost/mpi.hpp"
 
 
@@ -38,6 +40,9 @@ class master_controller
     //! process command-line arguments
     void process_arguments(int argc, char* argv[]);
 
+    //! execute
+    void execute();
+
 
     // INTERNAL DATA
 
@@ -59,6 +64,12 @@ class master_controller
 
     //! local environment properties (constructed locally)
     std::shared_ptr<local_environment> local_env;
+
+
+    // Functional blocks
+
+    //! error handler
+    std::shared_ptr<error_handler> err_handler;
 
   };
 

@@ -18,7 +18,8 @@ master_controller::master_controller(std::shared_ptr<boost::mpi::environment>& m
     mpi_world(mw),
     arg_cache(ac)
   {
-    local_env = std::make_shared<local_environment>();
+    local_env   = std::make_shared<local_environment>();
+    err_handler = std::make_shared<error_handler>(arg_cache, local_env);
   }
 
 
@@ -66,4 +67,19 @@ void master_controller::process_arguments(int argc, char* argv[])
 
     if(option_map.count(LSSEFT_SWITCH_VERBOSE_LONG))                                          this->arg_cache->set_verbose(true);
     if(option_map.count(LSSEFT_SWITCH_NO_COLOUR) || option_map.count(LSSEFT_SWITCH_NO_COLOR)) this->arg_cache->set_colour_output(false);
+
+    if(option_map.count(LSSEFT_SWITCH_DATABASE_LONG))
+      {
+        this->arg_cache->set_database_path(option_map[LSSEFT_SWITCH_DATABASE_LONG].as<std::string>());
+      }
+  }
+
+
+void master_controller::execute()
+  {
+    if(!this->arg_cache->get_database_set())
+      {
+        this->err_handler->error(ERROR_NO_DATABASE);
+        return;
+      }
   }

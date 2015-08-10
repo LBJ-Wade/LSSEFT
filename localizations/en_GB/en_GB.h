@@ -6,6 +6,11 @@
 #ifndef LSSEFT_EN_GB_H
 #define LSSEFT_EN_GB_H
 
+
 #include "command_line.h"
+
+#include "task_manager.h"
+#include "error_handler.h"
+
 
 #endif //LSSEFT_EN_GB_H

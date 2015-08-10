@@ -33,8 +33,15 @@ namespace utilities
             char* line = fgets(buffer, sizeof(buffer), f);
             pclose(f);
 
-            path = std::string(line);
-            boost::algorithm::trim_right(path);
+            if(line != nullptr)
+              {
+                path = std::string(line);
+                boost::algorithm::trim_right(path);
+              }
+            else
+              {
+                path = LSSEFT_DEFAULT_PYTHON_PATH;
+              }
           }
 
         return(path);

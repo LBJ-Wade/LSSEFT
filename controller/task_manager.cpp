@@ -28,10 +28,9 @@ void task_manager::work()
   {
     if(this->mpi_world->rank() == MPI::RANK_MASTER)
       {
-        std::cout << "Executing as Master" << '\n';
+        this->master_ctrl.execute();
       }
     else
       {
-        std::cout << "Executing as Slave number " << this->mpi_world->rank() << '\n';
       }
   }

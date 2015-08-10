@@ -11,10 +11,10 @@
 
 
 #include "argument_cache.h"
-
 #include "master_controller.h"
 #include "slave_controller.h"
 
+#include "error/error_handler.h"
 
 #include "boost/mpi.hpp"
 

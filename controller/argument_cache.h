@@ -45,6 +45,18 @@ class argument_cache
     void set_colour_output(bool a) { this->verbose = a; }
 
 
+    // INTERFACE -- DATABASE
+
+    //! get database path
+    std::string get_database_path() const { return(this->database.string()); }
+
+    //! set database path
+    void set_database_path(const std::string& p) { this->database = p; }
+
+    //! determine if a database has been set
+    bool get_database_set() const { return(!this->database.empty()); }
+
+
     // INTERNAL DATA
 
   private:

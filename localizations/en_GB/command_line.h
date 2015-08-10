@@ -3,8 +3,8 @@
 // Copyright (c) 2015 University of Sussex. All rights reserved.
 //
 
-#ifndef LSSEFT_COMMAND_LINE_H
-#define LSSEFT_COMMAND_LINE_H
+#ifndef LSSEFT_COMMAND_LINE_EN_GB_H
+#define LSSEFT_COMMAND_LINE_EN_GB_H
 
 
 #define LSSEFT_SWITCH_HELP            "help"
@@ -28,4 +28,4 @@
 #define LSSEFT_HELP_DATABASE          "specify database"
 
 
-#endif //LSSEFT_COMMAND_LINE_H
+#endif //LSSEFT_COMMAND_LINE_EN_GB_H
