@@ -10,13 +10,16 @@
 #include "boost/math/constants/constants.hpp"
 
 
-// set up a template class representing a unit in a natural system where c=hbar=1
-// Here, we use eV as the base unit
-// That only leaves the reduced Planck mass Mp as a dimensionful object,
-// and we express everything else in terms of it
-
 namespace eV_units
   {
+
+    // set up a template class representing a unit in a natural system where c=hbar=1
+    // Here, we use eV as the base unit
+    // That only leaves the reduced Planck mass Mp as a dimensionful object,
+    // and we express everything else in terms of it
+
+    // adapted from Bjarne Stroustrup's Going Native 2012 example
+    // https://channel9.msdn.com/Events/GoingNative/GoingNative-2012/Keynote-Bjarne-Stroustrup-Cpp11-Style
 
     template <int m>
     struct unit
