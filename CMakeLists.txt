@@ -11,15 +11,18 @@ include_directories(./
   ${MPI_CXX_INCLUDE_PATH})
 
 set(LOCALIZATION_EN_GB
+  localizations/en_GB/en_GB.h
   localizations/en_GB/command_line.h
   localizations/en_GB/error_handler.h
   localizations/en_GB/task_manager.h
-  localizations/en_GB/en_GB.h)
+  localizations/en_GB/database.h
+  localizations/en_GB/sqlite3.h
+  localizations/en_GB/transaction_manager.h)
 
 set(TOP_LEVEL_SOURCE_FILES
   main.cpp
   core.h
-  defaults.h)
+  defaults.h exceptions.h)
 
 set(CONTROLLER_SOURCE_FILES
   controller/argument_cache.cpp controller/argument_cache.h
@@ -38,7 +41,7 @@ set(MISC_SOURCE_FILES
   misc/ansi_colour_codes.h)
 
 set(MPI_SOURCE_FILES
-  MPI/mpi_operations.h)
+  MPI_detail/mpi_operations.h)
 
 set(COSMOLOGY_SOURCE_FILES
   cosmology/FRW_model.cpp cosmology/FRW_model.h
@@ -46,6 +49,16 @@ set(COSMOLOGY_SOURCE_FILES
 
 set(UNITS_SOURCE_FILES
   units/eV_units.h)
+
+set(DATABASE_SOURCE_FILES
+  database/database.cpp database/database.h
+  database/tokens.cpp database/tokens.h
+  database/transaction_manager.cpp database/transaction_manager.h)
+
+set(SQLITE3_DETAIL_SOURCE_FILES
+  sqlite3_detail/create.cpp sqlite3_detail/create.h
+  sqlite3_detail/utilities.cpp sqlite3_detail/utilities.h
+  sqlite3_detail/operations.h)
 
 set(SOURCE_FILES
   ${TOP_LEVEL_SOURCE_FILES}
@@ -56,7 +69,9 @@ set(SOURCE_FILES
   ${MISC_SOURCE_FILES}
   ${COSMOLOGY_SOURCE_FILES}
   ${UNITS_SOURCE_FILES}
-  ${LOCALIZATION_EN_GB})
+  ${DATABASE_SOURCE_FILES}
+  ${SQLITE3_DETAIL_SOURCE_FILES}
+  ${LOCALIZATION_EN_GB} exceptions.h)
 
 add_executable(lsseft
   main.cpp
@@ -67,8 +82,13 @@ add_executable(lsseft
   controller/task_manager.cpp
   error/error_handler.cpp
   utilities/python_finder.cpp
-  cosmology/FRW_model.cpp)
+  cosmology/FRW_model.cpp
+  database/database.cpp
+  database/tokens.cpp
+  database/transaction_manager.cpp
+  sqlite3_detail/utilities.cpp
+  sqlite3_detail/create.cpp)
 
-target_link_libraries(lsseft ${Boost_LIBRARIES} ${MPI_LIBRARIES})
+target_link_libraries(lsseft sqlite3 ${Boost_LIBRARIES} ${MPI_LIBRARIES})
 
 add_executable(dummy_clion_target EXCLUDE_FROM_ALL ${SOURCE_FILES})

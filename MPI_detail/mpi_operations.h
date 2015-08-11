@@ -7,7 +7,7 @@
 #define LSSEFT_MPI_OPERATIONS_H
 
 
-namespace MPI
+namespace MPI_detail
   {
 
     constexpr unsigned int RANK_MASTER = 0;

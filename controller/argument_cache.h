@@ -48,7 +48,7 @@ class argument_cache
     // INTERFACE -- DATABASE
 
     //! get database path
-    std::string get_database_path() const { return(this->database.string()); }
+    const boost::filesystem::path& get_database_path() const { return(this->database); }
 
     //! set database path
     void set_database_path(const std::string& p) { this->database = p; }

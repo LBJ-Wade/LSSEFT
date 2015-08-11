@@ -26,6 +26,23 @@ class FRW_model
     ~FRW_model() = default;
 
 
+    // INTERROGATE COSMOLOGICAL PARAMETERS
+
+  public:
+
+    //! get value of omega_m
+    double get_omega_m() const { return(this->omega_m); }
+
+    //! get value of omega_cc
+    double get_omega_cc() const { return(this->omega_cc); }
+
+    //! get value of h
+    double get_h() const { return(this->h); }
+
+    //! get value of T_CMB
+    double get_T_CMB() const { return(this->T_CMB); }
+
+
     // INTERNAL DATA
 
   private:

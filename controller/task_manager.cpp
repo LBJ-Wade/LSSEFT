@@ -5,7 +5,7 @@
 
 #include "task_manager.h"
 
-#include "MPI/mpi_operations.h"
+#include "MPI_detail/mpi_operations.h"
 
 
 //! construct a task manager object
@@ -17,7 +17,7 @@ task_manager::task_manager(int argc, char* argv[])
     master_ctrl(mpi_env, mpi_world, arg_cache),
     slave_ctrl(mpi_env, mpi_world, arg_cache)
   {
-    if(mpi_world->rank() == MPI::RANK_MASTER)
+    if(mpi_world->rank() == MPI_detail::RANK_MASTER)
       {
         master_ctrl.process_arguments(argc, argv);
       }
@@ -26,7 +26,7 @@ task_manager::task_manager(int argc, char* argv[])
 
 void task_manager::work()
   {
-    if(this->mpi_world->rank() == MPI::RANK_MASTER)
+    if(this->mpi_world->rank() == MPI_detail::RANK_MASTER)
       {
         this->master_ctrl.execute();
       }

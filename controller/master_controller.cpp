@@ -10,6 +10,8 @@
 
 #include "cosmology/FRW_model.h"
 
+#include "database/database.h"
+
 #include "boost/program_options.hpp"
 
 
@@ -85,5 +87,6 @@ void master_controller::execute()
         return;
       }
 
+    database db(this->arg_cache->get_database_path());
     FRW_model cosmology_model;
   }

@@ -11,6 +11,10 @@
 
 #include "task_manager.h"
 #include "error_handler.h"
+#include "database.h"
+#include "transaction_manager.h"
+
+#include "sqlite3.h"
 
 
 #endif //LSSEFT_EN_GB_H
