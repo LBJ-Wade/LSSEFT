@@ -40,6 +40,13 @@ set(MISC_SOURCE_FILES
 set(MPI_SOURCE_FILES
   MPI/mpi_operations.h)
 
+set(COSMOLOGY_SOURCE_FILES
+  cosmology/FRW_model.cpp cosmology/FRW_model.h
+  cosmology/Planck_defaults.h)
+
+set(UNITS_SOURCE_FILES
+  units/eV_units.h)
+
 set(SOURCE_FILES
   ${TOP_LEVEL_SOURCE_FILES}
   ${CONTROLLER_SOURCE_FILES}
@@ -47,6 +54,8 @@ set(SOURCE_FILES
   ${ERROR_SOURCE_FILES}
   ${MPI_SOURCE_FILES}
   ${MISC_SOURCE_FILES}
+  ${COSMOLOGY_SOURCE_FILES}
+  ${UNITS_SOURCE_FILES}
   ${LOCALIZATION_EN_GB})
 
 add_executable(lsseft
@@ -57,7 +66,8 @@ add_executable(lsseft
   controller/slave_controller.cpp
   controller/task_manager.cpp
   error/error_handler.cpp
-  utilities/python_finder.cpp)
+  utilities/python_finder.cpp
+  cosmology/FRW_model.cpp)
 
 target_link_libraries(lsseft ${Boost_LIBRARIES} ${MPI_LIBRARIES})
 

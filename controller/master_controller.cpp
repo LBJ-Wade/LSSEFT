@@ -8,6 +8,8 @@
 #include "core.h"
 #include "localizations/en_GB/en_GB.h"
 
+#include "cosmology/FRW_model.h"
+
 #include "boost/program_options.hpp"
 
 
@@ -82,4 +84,6 @@ void master_controller::execute()
         this->err_handler->error(ERROR_NO_DATABASE);
         return;
       }
+
+    FRW_model cosmology_model;
   }
