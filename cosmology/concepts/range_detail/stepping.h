@@ -44,13 +44,13 @@ class stepping_range: public range<Value>
   public:
 
     //! get number of elements
-    virtual size_t size() const override                    { return(this->elements.size()); }
+    virtual size_t size() override                    { return(this->elements.size()); }
 
     //! get grid of elements
-    virtual const std::vector<Value>& grid() const override { return(this->elements); }
+    virtual const std::vector<Value>& grid() override { return(this->elements); }
 
     //! overload subscript operator
-    virtual Value operator[](unsigned int d) const override;
+    virtual Value operator[](unsigned int d) override;
 
 
     // INTERNAL API
@@ -68,6 +68,12 @@ class stepping_range: public range<Value>
 
     //! populate grid for subcase of logarithmic top spacing
     void populate_log_top_grid();
+
+
+    // CLONE -- implements a 'range' concept
+
+    //! clone self (note covariant return type)
+    virtual stepping_range<Value>* clone() const override { return new stepping_range<Value>(dynamic_cast<const stepping_range<Value>&>(*this)); }
 
 
     // INTERNAL DATA
@@ -108,7 +114,7 @@ stepping_range<Value>::stepping_range(double lo, double hi, size_t st, const Val
 
 
 template <typename Value>
-Value stepping_range<Value>::operator[](unsigned int d) const
+Value stepping_range<Value>::operator[](unsigned int d)
   {
     assert(d < this->elements.size());
 

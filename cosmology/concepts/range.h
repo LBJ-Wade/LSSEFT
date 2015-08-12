@@ -8,6 +8,7 @@
 
 #include "range_detail/range.h"
 #include "range_detail/stepping.h"
+#include "range_detail/aggregation.h"
 
 
 #endif //LSSEFT_RANGE_H

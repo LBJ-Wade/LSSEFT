@@ -51,8 +51,11 @@ set(MPI_SOURCE_FILES
 set(COSMOLOGY_SOURCE_FILES
   cosmology/FRW_model.cpp cosmology/FRW_model.h
   cosmology/Planck_defaults.h
+  cosmology/concepts/range.h
   cosmology/concepts/range_detail/stepping.h
-  cosmology/concepts/range_detail/range.h cosmology/concepts/range_detail/common.h cosmology/concepts/range.cpp cosmology/concepts/range.h)
+  cosmology/concepts/range_detail/range.h
+  cosmology/concepts/range_detail/common.h
+  cosmology/concepts/range_detail/aggregation.h)
 
 set(UNITS_SOURCE_FILES
   units/eV_units.h)

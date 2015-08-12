@@ -23,18 +23,29 @@ class range
     //! destructor is default; declare virtual
     virtual ~range() = default;
 
-    // INTERRFACE
+
+    // INTERFACE
+    // note that these functions cannot be marked const if we wish to retain the option of lazy
+    // evaluation for aggregation ranges
 
   public:
 
     //! get number of elements in the range
-    virtual size_t size() const = 0;
+    virtual size_t size() = 0;
 
     //! get grid of elements
-    virtual const std::vector<Value>& grid() const = 0;
+    virtual const std::vector<Value>& grid() = 0;
 
     //! subscripting operator
-    virtual Value operator[](unsigned int element) const = 0;
+    virtual Value operator[](unsigned int element) = 0;
+
+
+    // CLONE
+
+  public:
+
+    //! clone self (note covariant return type)
+    virtual range<Value>* clone() const = 0;
 
   };
 

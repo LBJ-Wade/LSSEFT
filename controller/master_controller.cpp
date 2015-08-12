@@ -93,7 +93,9 @@ void master_controller::execute()
 
     FRW_model_token token = db.tokenize_FRW_model(cosmology_model);
 
-    stepping_range<eV_units::inverse_energy> wavenumbers(0.05, 0.3, 100, eV_units::Mpc, spacing_type::linear);
+    stepping_range<eV_units::inverse_energy> wavenumbers_lo(0.05, 0.1, 20, eV_units::Mpc, spacing_type::logarithmic_bottom);
+    stepping_range<eV_units::inverse_energy> wavenumbers_hi(0.1, 0.3, 20, eV_units::Mpc, spacing_type::linear);
+    aggregation_range<eV_units::inverse_energy> wavenumbers(wavenumbers_lo, wavenumbers_hi);
     const std::vector<eV_units::inverse_energy>& grid = wavenumbers.grid();
 
     for(std::vector<eV_units::inverse_energy>::const_iterator t = grid.begin(); t != grid.end(); ++t)
