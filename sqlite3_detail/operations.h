@@ -8,6 +8,7 @@
 
 
 #include "create.h"
+#include "FRW_model.h"
 
 
 #endif //LSSEFT_SQLITE3_OPERATIONS_H

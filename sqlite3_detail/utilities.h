@@ -15,6 +15,8 @@
 namespace sqlite3_operations
   {
 
+    // ERROR CHECKING
+
     //! error-check an exec statement
     void exec(sqlite3* db, const std::string& stmt, const std::string& err);
 
@@ -26,6 +28,12 @@ namespace sqlite3_operations
 
     // error-check a non-exec statement
     void check_stmt(sqlite3* db, int status, int check_code=SQLITE_OK);
+
+
+    // COUNTING FUNCTIONS
+
+    //! count number of rows in a specified table
+    unsigned int count(sqlite3* db, const std::string& table);
 
   }
 

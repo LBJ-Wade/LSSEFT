@@ -9,13 +9,15 @@
 
 #include <sstream>
 
+#include "sqlite3_policy.h"
+
 #include "sqlite3.h"
 
 
 namespace sqlite3_operations
   {
 
-    void create_tables(sqlite3* db);
+    void create_tables(sqlite3* db, const sqlite3_policy& policy);
 
   }   // namespace sqlite3_operations
 

@@ -89,4 +89,6 @@ void master_controller::execute()
 
     database db(this->arg_cache->get_database_path());
     FRW_model cosmology_model;
+
+    FRW_model_token token = db.tokenize_FRW_model(cosmology_model);
   }

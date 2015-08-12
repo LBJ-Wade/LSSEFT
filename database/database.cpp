@@ -14,11 +14,16 @@
 
 #include "exceptions.h"
 #include "localizations/en_GB/en_GB.h"
+#include "defaults.h"
 
 
 database::database(const boost::filesystem::path& c)
   : container(c),
-    handle(nullptr)   // try to catch handle-not-initialized errors
+    handle(nullptr),   // try to catch handle-not-initialized errors
+    policy(),
+    FRW_model_tol(LSSEFT_DEFAULT_FRW_MODEL_PARAMETER_TOLERANCE),
+    t_tol(LSSEFT_DEFAULT_TIME_CONFIGURATION_TOLERANCE),
+    k_tol(LSSEFT_DEFAULT_WAVENUMBER_CONFIGURATION_TOLERANCE)
   {
     // check whether container already exists
     if(boost::filesystem::exists(container))
@@ -51,7 +56,7 @@ database::database(const boost::filesystem::path& c)
       }
 
     // set up tables
-    sqlite3_operations::create_tables(handle);
+    sqlite3_operations::create_tables(handle, policy);
   }
 
 
@@ -71,10 +76,13 @@ FRW_model_token database::tokenize_FRW_model(const FRW_model& obj)
     // open a new transaction on the database
     std::shared_ptr<transaction_manager> transaction = this->open_transaction();
 
+    // lookup id for this model, or generate one if it does not already exist
+    unsigned int id = this->lookup_or_insert_model(transaction, obj);
+
     // commit the transaction
     transaction->commit();
 
-    return FRW_model_token(0);
+    return FRW_model_token(id);
   }
 
 
@@ -131,4 +139,14 @@ void database::release_transaction()
     check.reset();
 
     this->current_transaction.reset();
+  }
+
+
+unsigned int database::lookup_or_insert_model(std::shared_ptr<transaction_manager>& mgr, const FRW_model& obj)
+  {
+    boost::optional<unsigned int> id = sqlite3_operations::lookup_FRW_model(this->handle, mgr, obj, this->policy, this->FRW_model_tol);
+
+    if(id) return(*id);
+
+    return sqlite3_operations::insert_FRW_model(this->handle, mgr, obj, this->policy);
   }

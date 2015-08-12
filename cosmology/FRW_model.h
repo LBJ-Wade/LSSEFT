@@ -20,7 +20,7 @@ class FRW_model
     //! constructor
     //! cosmological parameters refer to their values today; if none are provided, then we use
     //! Planck values as sensible defaults
-    FRW_model(double om= Planck2013::omega_m, double occ= Planck2013::omega_cc, double h_= Planck2013::h, double tc= Planck2013::T_CMB.val);
+    FRW_model(double om= Planck2013::omega_m, double occ= Planck2013::omega_cc, double h_= Planck2013::h, eV_units::energy tc= Planck2013::T_CMB);
 
     //! destructor is default
     ~FRW_model() = default;
@@ -40,7 +40,7 @@ class FRW_model
     double get_h() const { return(this->h); }
 
     //! get value of T_CMB
-    double get_T_CMB() const { return(this->T_CMB); }
+    eV_units::energy get_T_CMB() const { return(this->T_CMB); }
 
 
     // INTERNAL DATA
@@ -57,7 +57,7 @@ class FRW_model
     double h;
 
     //! CMB temperature T_CMB, measured today
-    double T_CMB;
+    eV_units::energy T_CMB;
 
   };
 
