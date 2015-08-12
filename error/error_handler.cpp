@@ -10,7 +10,7 @@
 
 #include "misc/ansi_colour_codes.h"
 
-#include "localizations/en_GB/en_GB.h"
+#include "localizations/messages.h"
 
 
 error_handler::error_handler(std::shared_ptr<argument_cache>& ac,

@@ -81,11 +81,18 @@ namespace eV_units
       }
 
 
-    // overload arithmetic operators to allow units to be combined
+    // overload arithmetic operators to allow dimensionful to be combined, compared
+
     template <typename Unit>
     constexpr value<Unit> operator+(const value<Unit>& a, const value<Unit>& b)
       {
         return value<Unit>(a.val + b.val);
+      }
+
+    template <typename Unit>
+    constexpr bool operator<(const value<Unit>& a, const value<Unit>& b)
+      {
+        return(a.val < b.val);
       }
 
 

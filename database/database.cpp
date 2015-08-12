@@ -13,7 +13,7 @@
 #include "sqlite3_detail/operations.h"
 
 #include "exceptions.h"
-#include "localizations/en_GB/en_GB.h"
+#include "localizations/messages.h"
 #include "defaults.h"
 
 

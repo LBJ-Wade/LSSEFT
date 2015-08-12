@@ -10,6 +10,9 @@ include_directories(./
   ${Boost_INCLUDE_DIRS}
   ${MPI_CXX_INCLUDE_PATH})
 
+set(LOCALIZATION
+  localizations/messages.h)
+
 set(LOCALIZATION_EN_GB
   localizations/en_GB/en_GB.h
   localizations/en_GB/command_line.h
@@ -17,12 +20,14 @@ set(LOCALIZATION_EN_GB
   localizations/en_GB/task_manager.h
   localizations/en_GB/database.h
   localizations/en_GB/sqlite3.h
-  localizations/en_GB/transaction_manager.h)
+  localizations/en_GB/transaction_manager.h
+  localizations/en_GB/range.h)
 
 set(TOP_LEVEL_SOURCE_FILES
   main.cpp
   core.h
-  defaults.h exceptions.h)
+  defaults.h
+  exceptions.h)
 
 set(CONTROLLER_SOURCE_FILES
   controller/argument_cache.cpp controller/argument_cache.h
@@ -45,7 +50,9 @@ set(MPI_SOURCE_FILES
 
 set(COSMOLOGY_SOURCE_FILES
   cosmology/FRW_model.cpp cosmology/FRW_model.h
-  cosmology/Planck_defaults.h)
+  cosmology/Planck_defaults.h
+  cosmology/concepts/range_detail/stepping.h
+  cosmology/concepts/range_detail/range.h cosmology/concepts/range_detail/common.h cosmology/concepts/range.cpp cosmology/concepts/range.h)
 
 set(UNITS_SOURCE_FILES
   units/eV_units.h)
@@ -74,7 +81,8 @@ set(SOURCE_FILES
   ${UNITS_SOURCE_FILES}
   ${DATABASE_SOURCE_FILES}
   ${SQLITE3_DETAIL_SOURCE_FILES}
-  ${LOCALIZATION_EN_GB} exceptions.h)
+  ${LOCALIZATION}
+  ${LOCALIZATION_EN_GB} cosmology/concepts/range_detail/common.h)
 
 add_executable(lsseft
   main.cpp

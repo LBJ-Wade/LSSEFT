@@ -11,7 +11,7 @@
 #include "utilities.h"
 
 #include "exceptions.h"
-#include "localizations/en_GB/en_GB.h"
+#include "localizations/messages.h"
 
 #include "boost/optional.hpp"
 

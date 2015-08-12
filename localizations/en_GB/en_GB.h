@@ -13,6 +13,7 @@
 #include "error_handler.h"
 #include "database.h"
 #include "transaction_manager.h"
+#include "range.h"
 
 #include "sqlite3.h"
 

@@ -6,7 +6,7 @@
 #include "transaction_manager.h"
 
 #include "exceptions.h"
-#include "localizations/en_GB/en_GB.h"
+#include "localizations/messages.h"
 
 
 transaction_manager::transaction_manager(transaction_manager::open_handler& o, transaction_manager::commit_handler& c,

@@ -6,9 +6,10 @@
 #include "master_controller.h"
 
 #include "core.h"
-#include "localizations/en_GB/en_GB.h"
+#include "localizations/messages.h"
 
 #include "cosmology/FRW_model.h"
+#include "cosmology/concepts/range.h"
 
 #include "database/database.h"
 
@@ -91,4 +92,13 @@ void master_controller::execute()
     FRW_model cosmology_model;
 
     FRW_model_token token = db.tokenize_FRW_model(cosmology_model);
+
+    stepping_range<eV_units::inverse_energy> wavenumbers(0.05, 0.3, 100, eV_units::Mpc, spacing_type::linear);
+    const std::vector<eV_units::inverse_energy>& grid = wavenumbers.grid();
+
+    for(std::vector<eV_units::inverse_energy>::const_iterator t = grid.begin(); t != grid.end(); ++t)
+      {
+        double k_in_Mpc = *t / eV_units::Mpc;
+        std::cout << "k  = " << k_in_Mpc << " h/Mpc, = " << t->val << " eV" << '\n';
+      }
   }
