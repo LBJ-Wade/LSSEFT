@@ -16,15 +16,31 @@ namespace sqlite3_operations
       {
         std::ostringstream models_stmt;
         models_stmt
-        << "CREATE TABLE " << policy.FRW_model_table() << "("
-        << "id INTEGER PRIMARY KEY, "
-        << "omega_m DOUBLE, "
-        << "omega_cc DOUBLE, "
-        << "h DOUBLE, "
-        << "T_CMB DOUBLE"
-        << ")";
+          << "CREATE TABLE " << policy.FRW_model_table() << "("
+          << "id INTEGER PRIMARY KEY, "
+          << "omega_m DOUBLE, "
+          << "omega_cc DOUBLE, "
+          << "h DOUBLE, "
+          << "T_CMB DOUBLE"
+          << ")";
 
         exec(db, models_stmt.str());
+
+        std::ostringstream z_config_stmt;
+        z_config_stmt
+          << "CREATE TABLE " << policy.redshift_config_table() << "("
+          << "id INTEGER PRIMARY KEY, "
+          << "z DOUBLE);";
+
+        exec(db, z_config_stmt.str());
+
+        std::ostringstream wavenumber_config_stmt;
+        wavenumber_config_stmt
+          << "CREATE TABLE " << policy.wavenumber_config_table() << "("
+          << "id INTEGER PRIMARY KEY, "
+          << "k DOUBLE);";
+
+        exec(db, wavenumber_config_stmt.str());
       }
 
   }   // namespace sqlite3_operations

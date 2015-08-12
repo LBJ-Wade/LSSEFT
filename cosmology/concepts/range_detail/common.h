@@ -28,13 +28,13 @@ namespace range_impl
         ~DuplicateRemovalPredicate() = default;
 
 
-        // OPERATORf
+        // OPERATOR
 
       public:
 
         bool operator()(Value& a, Value& b)
           {
-            return(std::abs((a.val-b.val)/a.val)<tol);
+            return(std::abs((static_cast<double>(a)-static_cast<double>(b))/static_cast<double>(a))<tol);
           }
 
 

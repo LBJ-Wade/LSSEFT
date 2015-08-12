@@ -9,6 +9,8 @@
 
 #include "create.h"
 #include "FRW_model.h"
+#include "redshift.h"
+#include "wavenumber.h"
 
 
 #endif //LSSEFT_SQLITE3_OPERATIONS_H

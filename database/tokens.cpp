@@ -12,7 +12,31 @@ generic_token::generic_token(unsigned int i)
   }
 
 
+bool operator<(const generic_token& a, const generic_token& b)
+  {
+    return(a.id < b.id);
+  }
+
+
+bool operator==(const generic_token& a, const generic_token& b)
+  {
+    return(a.id == b.id);
+  }
+
+
 FRW_model_token::FRW_model_token(unsigned int i)
-  : generic_token(id)
+  : generic_token(i)
+  {
+  }
+
+
+redshift_token::redshift_token(unsigned int i)
+  : generic_token(i)
+  {
+  }
+
+
+wavenumber_token::wavenumber_token(unsigned int i)
+  : generic_token(i)
   {
   }

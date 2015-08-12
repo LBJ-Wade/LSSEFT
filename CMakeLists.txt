@@ -63,15 +63,19 @@ set(UNITS_SOURCE_FILES
 set(DATABASE_SOURCE_FILES
   database/database.cpp database/database.h
   database/tokens.cpp database/tokens.h
-  database/transaction_manager.cpp database/transaction_manager.h)
+  database/transaction_manager.cpp database/transaction_manager.h
+  database/wavenumber_database.cpp database/wavenumber_database.h
+  database/redshift_database.cpp database/redshift_database.h)
 
 set(SQLITE3_DETAIL_SOURCE_FILES
   sqlite3_detail/operations.h
+  sqlite3_detail/sqlite3_defaults.h
   sqlite3_detail/create.cpp sqlite3_detail/create.h
   sqlite3_detail/utilities.cpp sqlite3_detail/utilities.h
   sqlite3_detail/FRW_model.cpp sqlite3_detail/FRW_model.h
   sqlite3_detail/sqlite3_policy.cpp sqlite3_detail/sqlite3_policy.h
-  sqlite3_detail/sqlite3_defaults.h)
+  sqlite3_detail/redshift.cpp sqlite3_detail/redshift.h
+  sqlite3_detail/wavenumber.cpp sqlite3_detail/wavenumber.h)
 
 set(SOURCE_FILES
   ${TOP_LEVEL_SOURCE_FILES}
@@ -100,9 +104,13 @@ add_executable(lsseft
   database/database.cpp
   database/tokens.cpp
   database/transaction_manager.cpp
+  database/wavenumber_database.cpp
+  database/redshift_database.cpp
   sqlite3_detail/utilities.cpp
   sqlite3_detail/create.cpp
   sqlite3_detail/FRW_model.cpp
+  sqlite3_detail/redshift.cpp
+  sqlite3_detail/wavenumber.cpp
   sqlite3_detail/sqlite3_policy.cpp)
 
 target_link_libraries(lsseft sqlite3 ${Boost_LIBRARIES} ${MPI_LIBRARIES})

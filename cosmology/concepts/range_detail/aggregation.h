@@ -46,6 +46,8 @@ class aggregation_range: public range<Value>
 
     // OVERLOAD ARITHMETIC OPERATIONS TO ALLOW AGGREGATE RANGES TO BE COMBINED
 
+  public:
+
     //! assignment
     aggregation_range<Value>& operator=(const range<Value>& rhs) { this->subrange_list.clear(); this->add_subrange(rhs); return(*this); }
 

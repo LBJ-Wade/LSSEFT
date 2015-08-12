@@ -30,11 +30,11 @@ namespace sqlite3_operations
 
         std::ostringstream select_stmt;
         select_stmt
-        << "SELECT id FROM " << policy.FRW_model_table() << " WHERE "
-        << "ABS((omega_m-@om)/omega_m)<@tol "
-        << "AND ABS((omega_cc-@occ)/omega_cc)<@tol "
-        << "AND ABS((h-@h)/h)<@tol "
-        << "AND ABS((T_CMB-@Tcmb)/T_CMB)<@tol;";
+          << "SELECT id FROM " << policy.FRW_model_table() << " WHERE "
+          << "ABS((omega_m-@om)/omega_m)<@tol "
+          << "AND ABS((omega_cc-@occ)/omega_cc)<@tol "
+          << "AND ABS((h-@h)/h)<@tol "
+          << "AND ABS((T_CMB-@Tcmb)/T_CMB)<@tol;";
 
         // prepare SQL statement
         sqlite3_stmt* stmt;

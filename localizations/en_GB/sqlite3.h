@@ -7,13 +7,19 @@
 #define LSSEFT_SQLITE3_EN_GB_H
 
 
-#define ERROR_SQLITE3                       "sqlite3 error:"
+#define ERROR_SQLITE3                        "sqlite3 error:"
 
-#define ERROR_SQLITE3_MULTIPLE_COUNT_ROWS   "multiple rows returned from SQL COUNT query"
-#define ERROR_SQLITE3_NO_COUNT_ROWS         "no rows returned from SQL COUNT query"
+#define ERROR_SQLITE3_MULTIPLE_COUNT_ROWS    "multiple rows returned from SQL COUNT query"
+#define ERROR_SQLITE3_NO_COUNT_ROWS          "no rows returned from SQL COUNT query"
 
-#define ERROR_SQLITE3_MULTIPLE_FRW_MODELS   "multiple FRW models with matching parameters"
-#define ERROR_SQLITE3_INSERT_FRW_MODEL_FAIL "failed to insert FRW model record [backend code="
+#define ERROR_SQLITE3_MULTIPLE_FRW_MODELS    "multiple FRW models with matching parameters"
+#define ERROR_SQLITE3_INSERT_FRW_MODEL_FAIL  "failed to insert FRW model record [backend code="
+
+#define ERROR_SQLITE3_MULTIPLE_REDSHIFTS     "multiple redshifts with matching values"
+#define ERROR_SQLITE3_INSERT_REDSHIFT_FAIL   "failed to insert redshift record [backend code="
+
+#define ERROR_SQLITE3_MULTIPLE_WAVENUMBERS   "multiple wavenumbers with matching values"
+#define ERROR_SQLITE3_INSERT_WAVENUMBER_FAIL "failed to insert wavenumber record [backend code="
 
 
 #endif //LSSEFT_SQLITE3_EN_GB_H

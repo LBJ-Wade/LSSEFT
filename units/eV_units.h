@@ -45,6 +45,14 @@ namespace eV_units
         ~value() = default;
 
 
+        // INTERFACE
+
+      public:
+
+        //! allow implicit conversion to double
+        explicit operator double() const { return(this->val); }
+
+
         // INTERNAL DATA
         // not made private to avoid overloads of arithmetic operators etc. becoming too heavyweight
 
@@ -117,7 +125,7 @@ namespace eV_units
       }
 
 
-    // DIMENSIONLESS RATIONS
+    // DIMENSIONLESS RATIOS
 
     constexpr double operator/(const energy& a, const energy& b)
       {
@@ -127,6 +135,11 @@ namespace eV_units
     constexpr double operator/(const inverse_energy& a, const inverse_energy& b)
       {
         return a.val/b.val;
+      }
+
+    constexpr double operator*(const energy& a, const inverse_energy& b)
+      {
+        return a.val*b.val;
       }
 
 

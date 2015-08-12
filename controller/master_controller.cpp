@@ -91,16 +91,15 @@ void master_controller::execute()
     database db(this->arg_cache->get_database_path());
     FRW_model cosmology_model;
 
-    FRW_model_token token = db.tokenize_FRW_model(cosmology_model);
+    std::shared_ptr<FRW_model_token> token = db.tokenize(cosmology_model);
 
-    stepping_range<eV_units::inverse_energy> wavenumbers_lo(0.05, 0.1, 20, eV_units::Mpc, spacing_type::logarithmic_bottom);
-    stepping_range<eV_units::inverse_energy> wavenumbers_hi(0.1, 0.3, 20, eV_units::Mpc, spacing_type::linear);
-    aggregation_range<eV_units::inverse_energy> wavenumbers(wavenumbers_lo, wavenumbers_hi);
-    const std::vector<eV_units::inverse_energy>& grid = wavenumbers.grid();
+    // set up a list of wavenumber to sample, measured in h/Mpc
+    stepping_range<eV_units::energy> wavenumber_samples(0.05, 0.3, 30, 1.0/eV_units::Mpc, spacing_type::linear);
 
-    for(std::vector<eV_units::inverse_energy>::const_iterator t = grid.begin(); t != grid.end(); ++t)
-      {
-        double k_in_Mpc = *t / eV_units::Mpc;
-        std::cout << "k  = " << k_in_Mpc << " h/Mpc, = " << t->val << " eV" << '\n';
-      }
+    // set up a list of redshifts at which to sample
+    stepping_range<double> redshift_samples(0.01, 1000.0, 250, 1.0, spacing_type::logarithmic_bottom);
+
+    // exchange these sample ranges for a database
+    std::shared_ptr<redshift_database>   z_db = db.build_db(redshift_samples);
+    std::shared_ptr<wavenumber_database> k_db = db.build_db(wavenumber_samples);
   }

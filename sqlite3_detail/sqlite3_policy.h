@@ -30,7 +30,7 @@ class sqlite3_policy
     const std::string& FRW_model_table() const { return(this->FRW_model); }
 
     //! time configuration table
-    const std::string& time_config_table() const { return(this->time_config); }
+    const std::string& redshift_config_table() const { return(this->redshift_config); }
 
     //! wavenumber configuration table
     const std::string& wavenumber_config_table() const { return(this->wavenumber_config); }
@@ -45,8 +45,8 @@ class sqlite3_policy
     //! FRW model table
     std::string FRW_model;
 
-    //! time configuration table
-    std::string time_config;
+    //! redshift configuration table
+    std::string redshift_config;
 
     //! wavenumber configuration table
     std::string wavenumber_config;

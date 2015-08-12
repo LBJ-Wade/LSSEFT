@@ -8,7 +8,7 @@
 
 
 #define SQLITE3_DEFAULT_FRW_TABLE_NAME                 "models"
-#define SQLITE3_DEFAULT_TIME_CONFIGURATION_TABLE       "time_config"
+#define SQLITE3_DEFAULT_REDSHIFT_CONFIGURATION_TABLE   "z_config"
 #define SQLITE3_DEFAULT_WAVENUMBER_CONFIGURATION_TABLE "wavenumber_config"
 
 

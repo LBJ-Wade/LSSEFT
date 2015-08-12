@@ -12,8 +12,11 @@
 
 #include "tokens.h"
 #include "transaction_manager.h"
+#include "redshift_database.h"
+#include "wavenumber_database.h"
 
 #include "cosmology/FRW_model.h"
+#include "cosmology/concepts/range.h"
 
 #include "boost/filesystem/operations.hpp"
 
@@ -34,12 +37,30 @@ class database
     ~database();
 
 
+    // GENERATE WAVENUMBER AND REDSHIFT DATABASES
+
+  public:
+
+    //! generate redshift database
+    std::shared_ptr<redshift_database> build_db(range<double>& sample);
+
+    //! generate wavenumber database
+    std::shared_ptr<wavenumber_database> build_db(range<eV_units::energy>& sample);
+
+
     // TOKENS
     // tokens are the basic unit of currency used when interacting with the database
 
   public:
 
-    FRW_model_token tokenize_FRW_model(const FRW_model& obj);
+    //! tokenize an FRW model
+    std::shared_ptr<FRW_model_token> tokenize(const FRW_model& obj);
+
+    //! tokenize a redshift
+    std::shared_ptr<redshift_token> tokenize(double z);
+
+    //! tokenize a wavenumber
+    std::shared_ptr<wavenumber_token> tokenize(const eV_units::energy& k);
 
 
     // TRANSACTIONS
@@ -67,7 +88,13 @@ class database
   protected:
 
     //! lookup or insert a new FRW model
-    unsigned int lookup_or_insert_model(std::shared_ptr<transaction_manager>& mgr, const FRW_model& obj);
+    unsigned int lookup_or_insert(std::shared_ptr<transaction_manager> &mgr, const FRW_model &obj);
+
+    //! lookup or insert a redshift
+    unsigned int lookup_or_insert(std::shared_ptr<transaction_manager> &mgr, double z);
+
+    //! lookup or insert a wavenumber
+    unsigned int lookup_or_insert(std::shared_ptr<transaction_manager> &mgr, const eV_units::energy &k);
 
 
     // INTERNAL DATA
@@ -98,8 +125,8 @@ class database
     //! tolerance to use when searching for FRW model parameters
     double FRW_model_tol;
 
-    //! tolerance to use when searching for time configurations
-    double t_tol;
+    //! tolerance to use when searching for redshift configurations
+    double z_tol;
 
     //! tolerance to use when searching for wavenumber configurations
     double k_tol;

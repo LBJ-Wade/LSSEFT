@@ -23,10 +23,13 @@ namespace sqlite3_operations
   {
 
     //! lookup id for an FRW model
-    boost::optional<unsigned int> lookup_FRW_model(sqlite3* db, std::shared_ptr<transaction_manager>& mgr, const FRW_model& obj, const sqlite3_policy& policy, double tol);
+    boost::optional<unsigned int> lookup_FRW_model(sqlite3* db, std::shared_ptr<transaction_manager>& mgr,
+                                                   const FRW_model& obj, const sqlite3_policy& policy, double tol);
+
 
     //! insert an FRW model
-    unsigned int insert_FRW_model(sqlite3* db, std::shared_ptr<transaction_manager>& mgr, const FRW_model& obj, const sqlite3_policy& policy);
+    unsigned int insert_FRW_model(sqlite3* db, std::shared_ptr<transaction_manager>& mgr, const FRW_model& obj,
+                                  const sqlite3_policy& policy);
 
   }   // namespace sqlite3_operations
 

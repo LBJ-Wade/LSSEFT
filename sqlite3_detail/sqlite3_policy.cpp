@@ -10,7 +10,7 @@
 
 sqlite3_policy::sqlite3_policy()
   : FRW_model(SQLITE3_DEFAULT_FRW_TABLE_NAME),
-    time_config(SQLITE3_DEFAULT_TIME_CONFIGURATION_TABLE),
+    redshift_config(SQLITE3_DEFAULT_REDSHIFT_CONFIGURATION_TABLE),
     wavenumber_config(SQLITE3_DEFAULT_WAVENUMBER_CONFIGURATION_TABLE)
   {
   }
