@@ -100,9 +100,15 @@ void master_controller::execute()
     // set up a list of redshifts at which to sample
     stepping_range<double> redshift_samples(0.01, 1000.0, 250, 1.0, spacing_type::logarithmic_bottom);
 
-    // exchange these sample ranges for a database
+    // exchange these sample ranges for iterable databases
     std::shared_ptr<redshift_database>   z_db = db.build_db(redshift_samples);
     std::shared_ptr<wavenumber_database> k_db = db.build_db(wavenumber_samples);
+
+    // generate targets
+    // for 1-loop calculation, we need the linear transfer function at the initial redshift,
+    // plus the time-dependent 1-loop kernels through the subsequent evolution
+
+
 
     for(redshift_database::reverse_value_iterator t = z_db->value_rbegin(); t != z_db->value_rend(); ++t)
       {

@@ -14,6 +14,10 @@
 #include "generic_record_iterator.h"
 #include "generic_value_iterator.h"
 
+#include "boost/serialization/serialization.hpp"
+#include "boost/serialization/map.hpp"
+#include "boost/serialization/shared_ptr.hpp"
+
 
 class redshift_record
   {
@@ -46,6 +50,17 @@ class redshift_record
 
     //! database token
     std::shared_ptr<redshift_token> token;
+
+
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & z;
+        ar & token;
+      }
 
   };
 
@@ -151,6 +166,16 @@ class redshift_database
 
     //! database
     database_type database;
+
+
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & database;
+      }
 
   };
 

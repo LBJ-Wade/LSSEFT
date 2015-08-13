@@ -7,6 +7,11 @@
 #define LSSEFT_TOKENS_H
 
 
+#include "boost/serialization/serialization.hpp"
+#include "boost/serialization/base_object.hpp"
+#include "boost/serialization/assume_abstract.hpp"
+
+
 // forward declare functions which will be friended in class declarations
 
 class generic_token;
@@ -55,7 +60,20 @@ class generic_token
 
     unsigned int id;
 
+
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & id;
+      }
+
   };
+
+
+BOOST_SERIALIZATION_ASSUME_ABSTRACT(generic_token)
 
 
 //! token representing an FRW model
@@ -71,6 +89,19 @@ class FRW_model_token: public generic_token
 
     //! destructor is default
     virtual ~FRW_model_token() = default;
+
+
+  private:
+
+
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & boost::serialization::base_object<generic_token>(*this);
+      }
 
   };
 
@@ -89,6 +120,19 @@ class redshift_token: public generic_token
     //! destructor is default
     virtual ~redshift_token() = default;
 
+
+  private:
+
+
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & boost::serialization::base_object<generic_token>(*this);
+      }
+
   };
 
 
@@ -105,6 +149,19 @@ class wavenumber_token: public generic_token
 
     //! destructor is default
     virtual ~wavenumber_token() = default;
+
+
+  private:
+
+
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & boost::serialization::base_object<generic_token>(*this);
+      }
 
   };
 

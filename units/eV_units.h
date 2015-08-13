@@ -8,6 +8,7 @@
 
 
 #include "boost/math/constants/constants.hpp"
+#include "boost/serialization/serialization.hpp"
 
 
 namespace eV_units
@@ -60,6 +61,16 @@ namespace eV_units
 
         //! numerical value
         double val;
+
+
+        // enable boost::serialization support, and hence automated packing for transmission over MPI
+        friend class boost::serialization::access;
+
+        template <typename Archive>
+        void serialize(Archive& ar, unsigned int version)
+          {
+            ar & val;
+          }
 
       };
 
