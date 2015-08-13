@@ -11,7 +11,7 @@
 #include "cosmology/FRW_model.h"
 #include "cosmology/concepts/range.h"
 
-#include "database/database.h"
+#include "database/data_manager.h"
 
 #include "boost/program_options.hpp"
 
@@ -88,7 +88,8 @@ void master_controller::execute()
         return;
       }
 
-    database db(this->arg_cache->get_database_path());
+    // set up
+    data_manager db(this->arg_cache->get_database_path());
     FRW_model cosmology_model;
 
     std::shared_ptr<FRW_model_token> token = db.tokenize(cosmology_model);

@@ -61,7 +61,7 @@ set(UNITS_SOURCE_FILES
   units/eV_units.h)
 
 set(DATABASE_SOURCE_FILES
-  database/database.cpp database/database.h
+  database/data_manager.cpp database/data_manager.h
   database/tokens.cpp database/tokens.h
   database/transaction_manager.cpp database/transaction_manager.h
   database/wavenumber_database.cpp database/wavenumber_database.h
@@ -101,7 +101,7 @@ add_executable(lsseft
   error/error_handler.cpp
   utilities/python_finder.cpp
   cosmology/FRW_model.cpp
-  database/database.cpp
+  database/data_manager.cpp
   database/tokens.cpp
   database/transaction_manager.cpp
   database/wavenumber_database.cpp

@@ -8,7 +8,7 @@
 #include <sstream>
 #include <assert.h>
 
-#include "database.h"
+#include "data_manager.h"
 #include "sqlite3_detail/utilities.h"
 #include "sqlite3_detail/operations.h"
 
@@ -17,7 +17,7 @@
 #include "defaults.h"
 
 
-database::database(const boost::filesystem::path& c)
+data_manager::data_manager(const boost::filesystem::path& c)
   : container(c),
     handle(nullptr),   // try to catch handle-not-initialized errors
     policy(),
@@ -60,7 +60,7 @@ database::database(const boost::filesystem::path& c)
   }
 
 
-database::~database()
+data_manager::~data_manager()
   {
     assert(this->handle != nullptr);
 
@@ -76,7 +76,7 @@ database::~database()
 // TODO: consider simplifying this code via traits and templates
 
 
-std::shared_ptr<FRW_model_token> database::tokenize(const FRW_model& obj)
+std::shared_ptr<FRW_model_token> data_manager::tokenize(const FRW_model& obj)
   {
     // open a new transaction on the database
     std::shared_ptr<transaction_manager> transaction = this->open_transaction();
@@ -91,7 +91,7 @@ std::shared_ptr<FRW_model_token> database::tokenize(const FRW_model& obj)
   }
 
 
-std::shared_ptr<redshift_token> database::tokenize(double z)
+std::shared_ptr<redshift_token> data_manager::tokenize(double z)
   {
     // open a new transaction on the database
     std::shared_ptr<transaction_manager> transaction = this->open_transaction();
@@ -106,7 +106,7 @@ std::shared_ptr<redshift_token> database::tokenize(double z)
   }
 
 
-std::shared_ptr<wavenumber_token> database::tokenize(const eV_units::energy& k)
+std::shared_ptr<wavenumber_token> data_manager::tokenize(const eV_units::energy& k)
   {
     // open a new transaction on the database
     std::shared_ptr<transaction_manager> transaction = this->open_transaction();
@@ -124,7 +124,7 @@ std::shared_ptr<wavenumber_token> database::tokenize(const eV_units::energy& k)
 // TRANSACTIONS
 
 
-std::shared_ptr<transaction_manager> database::open_transaction()
+std::shared_ptr<transaction_manager> data_manager::open_transaction()
   {
     // check whether a transaction is already in progress; if so, raise an exception
     std::shared_ptr<transaction_manager> check = this->current_transaction.lock();
@@ -132,10 +132,10 @@ std::shared_ptr<transaction_manager> database::open_transaction()
     check.reset();
 
     // create a new transaction manager
-    transaction_manager::open_handler     do_open     = std::bind(&database::begin_transaction, this);
-    transaction_manager::commit_handler   do_commit   = std::bind(&database::commit_transaction, this);
-    transaction_manager::rollback_handler do_rollback = std::bind(&database::rollback_transaction, this);
-    transaction_manager::release_handler  do_release  = std::bind(&database::release_transaction, this);
+    transaction_manager::open_handler     do_open     = std::bind(&data_manager::begin_transaction, this);
+    transaction_manager::commit_handler   do_commit   = std::bind(&data_manager::commit_transaction, this);
+    transaction_manager::rollback_handler do_rollback = std::bind(&data_manager::rollback_transaction, this);
+    transaction_manager::release_handler  do_release  = std::bind(&data_manager::release_transaction, this);
 
     std::shared_ptr<transaction_manager> transaction = std::make_shared<transaction_manager>(do_open, do_commit, do_rollback, do_release);
 
@@ -146,28 +146,28 @@ std::shared_ptr<transaction_manager> database::open_transaction()
   }
 
 
-void database::begin_transaction()
+void data_manager::begin_transaction()
   {
     assert(this->handle != nullptr);
     sqlite3_operations::exec(this->handle, "BEGIN TRANSACTION");
   }
 
 
-void database::commit_transaction()
+void data_manager::commit_transaction()
   {
     assert(this->handle != nullptr);
     sqlite3_operations::exec(this->handle, "COMMIT");
   }
 
 
-void database::rollback_transaction()
+void data_manager::rollback_transaction()
   {
     assert(this->handle != nullptr);
     sqlite3_operations::exec(this->handle, "ROLLBACK");
   }
 
 
-void database::release_transaction()
+void data_manager::release_transaction()
   {
     assert(this->handle != nullptr);
 
@@ -183,7 +183,7 @@ void database::release_transaction()
 // LOOKUP AND INSERT
 
 
-unsigned int database::lookup_or_insert(std::shared_ptr<transaction_manager>& mgr, const FRW_model& obj)
+unsigned int data_manager::lookup_or_insert(std::shared_ptr<transaction_manager>& mgr, const FRW_model& obj)
   {
     boost::optional<unsigned int> id = sqlite3_operations::lookup_FRW_model(this->handle, mgr, obj, this->policy, this->FRW_model_tol);
     if(id) return(*id);
@@ -192,7 +192,7 @@ unsigned int database::lookup_or_insert(std::shared_ptr<transaction_manager>& mg
   }
 
 
-unsigned int database::lookup_or_insert(std::shared_ptr<transaction_manager>& mgr, double z)
+unsigned int data_manager::lookup_or_insert(std::shared_ptr<transaction_manager>& mgr, double z)
   {
     boost::optional<unsigned int> id = sqlite3_operations::lookup_redshift(this->handle, mgr, z, this->policy, this->z_tol);
     if(id) return(*id);
@@ -201,7 +201,7 @@ unsigned int database::lookup_or_insert(std::shared_ptr<transaction_manager>& mg
   }
 
 
-unsigned int database::lookup_or_insert(std::shared_ptr<transaction_manager>& mgr, const eV_units::energy& k)
+unsigned int data_manager::lookup_or_insert(std::shared_ptr<transaction_manager>& mgr, const eV_units::energy& k)
   {
     boost::optional<unsigned int> id = sqlite3_operations::lookup_wavenumber(this->handle, mgr, k, this->policy, this->z_tol);
     if(id) return(*id);
@@ -213,7 +213,7 @@ unsigned int database::lookup_or_insert(std::shared_ptr<transaction_manager>& mg
 // GENERATE DATABASES
 
 
-std::shared_ptr<redshift_database> database::build_db(range<double>& sample)
+std::shared_ptr<redshift_database> data_manager::build_db(range<double>& sample)
   {
     // construct an empty redshift database
     std::shared_ptr<redshift_database> z_db = std::make_shared<redshift_database>();
@@ -231,7 +231,7 @@ std::shared_ptr<redshift_database> database::build_db(range<double>& sample)
   }
 
 
-std::shared_ptr<wavenumber_database> database::build_db(range<eV_units::energy>& sample)
+std::shared_ptr<wavenumber_database> data_manager::build_db(range<eV_units::energy>& sample)
   {
     // construct an empty wavenumber database
     std::shared_ptr<wavenumber_database> k_db = std::make_shared<wavenumber_database>();

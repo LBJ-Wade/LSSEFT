@@ -3,8 +3,8 @@
 // Copyright (c) 2015 University of Sussex. All rights reserved.
 //
 
-#ifndef LSSEFT_DATABASE_H
-#define LSSEFT_DATABASE_H
+#ifndef LSSEFT_DATA_MANAGER_H
+#define LSSEFT_DATA_MANAGER_H
 
 
 #include <memory>
@@ -23,7 +23,7 @@
 #include "sqlite3.h"
 
 
-class database
+class data_manager
   {
 
     // CONSTRUCTOR, DESTRUCTOR
@@ -31,10 +31,10 @@ class database
   public:
 
     //! constructor opens SQLite3 handle, and creates tables if this is a new database
-    database(const boost::filesystem::path& c);
+    data_manager(const boost::filesystem::path& c);
 
     //! destructor closes SQLite3 handle
-    ~database();
+    ~data_manager();
 
 
     // GENERATE WAVENUMBER AND REDSHIFT DATABASES
@@ -134,4 +134,4 @@ class database
   };
 
 
-#endif //LSSEFT_DATABASE_H
+#endif //LSSEFT_DATA_MANAGER_H
