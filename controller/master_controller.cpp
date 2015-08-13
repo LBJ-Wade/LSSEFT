@@ -103,4 +103,14 @@ void master_controller::execute()
     // exchange these sample ranges for a database
     std::shared_ptr<redshift_database>   z_db = db.build_db(redshift_samples);
     std::shared_ptr<wavenumber_database> k_db = db.build_db(wavenumber_samples);
+
+    for(redshift_database::value_iterator t = z_db->value_begin(); t != z_db->value_end(); ++t)
+      {
+        std::cout << "z = " << *t << '\n';
+      }
+
+    for(wavenumber_database::value_iterator t = k_db->value_begin(); t != k_db->value_end(); ++t)
+      {
+        std::cout << "k = " << (*t) * eV_units::Mpc << " h/Mpc = " << static_cast<double>(*t) << " eV" << '\n';
+      }
   }

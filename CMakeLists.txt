@@ -65,7 +65,8 @@ set(DATABASE_SOURCE_FILES
   database/tokens.cpp database/tokens.h
   database/transaction_manager.cpp database/transaction_manager.h
   database/wavenumber_database.cpp database/wavenumber_database.h
-  database/redshift_database.cpp database/redshift_database.h)
+  database/redshift_database.cpp database/redshift_database.h
+  database/generic_record_iterator.h database/generic_value_iterator.h)
 
 set(SQLITE3_DETAIL_SOURCE_FILES
   sqlite3_detail/operations.h
