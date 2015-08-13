@@ -12,6 +12,8 @@
 #include "argument_cache.h"
 #include "local_environment.h"
 
+#include "cosmology/types.h"
+
 #include "error/error_handler.h"
 
 #include "boost/mpi.hpp"
@@ -42,6 +44,14 @@ class master_controller
 
     //! execute
     void execute();
+
+
+    // MPI IMPLEMENTATION
+
+  protected:
+
+    //! execute a transfer function work list
+    void scatter(transfer_work_list& work);
 
 
     // INTERNAL DATA

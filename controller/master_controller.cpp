@@ -110,4 +110,13 @@ void master_controller::execute()
 
     // build a work list for transfer functions
     std::unique_ptr<transfer_work_list> work_list = dmgr.build_transfer_work_list(model, k_db, z_db);
+
+    // distribute this work list among the slave processes
+    this->scatter(*work_list);
+  }
+
+
+void master_controller::scatter(transfer_work_list& work)
+  {
+
   }

@@ -275,7 +275,7 @@ std::unique_ptr<transfer_work_list> data_manager::build_transfer_work_list(std::
     // for each wavenumber in k_db, find which z-values are missing
     for(wavenumber_database::record_iterator t = k_db->record_begin(); t != k_db->record_end(); ++t)
       {
-        std::cout << "lsseft: checking missing redshift values for k = " << (*(*t) * eV_units::Mpc) << " h/Mpc = " << static_cast<double>(*(*t)) << " eV" << '\n';
+//        std::cout << "lsseft: checking missing redshift values for k = " << (*(*t) * eV_units::Mpc) << " h/Mpc = " << static_cast<double>(*(*t)) << " eV" << '\n';
 
         // get a database of missing redshifts for this k-value
         std::shared_ptr<redshift_database> missing_values = sqlite3_operations::missing_redshifts(this->handle, transaction, this->policy, model, t->get_token(), z_db, z_table);
@@ -283,7 +283,7 @@ std::unique_ptr<transfer_work_list> data_manager::build_transfer_work_list(std::
         // if any redshifts were missing, set up a record in the work list
         if(missing_values)
           {
-            std::cout << "  -- " << missing_values->size() << " redshifts" << '\n';
+//            std::cout << "  -- " << missing_values->size() << " redshifts" << '\n';
 
             std::pair< transfer_work_list::iterator, bool > emplaced_value = work_list->emplace(t->get_token()->get_id(), transfer_work_record(t->get_token(), missing_values));
             assert(emplaced_value.second);
