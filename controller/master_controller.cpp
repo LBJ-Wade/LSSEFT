@@ -104,7 +104,7 @@ void master_controller::execute()
     std::shared_ptr<redshift_database>   z_db = db.build_db(redshift_samples);
     std::shared_ptr<wavenumber_database> k_db = db.build_db(wavenumber_samples);
 
-    for(redshift_database::value_iterator t = z_db->value_begin(); t != z_db->value_end(); ++t)
+    for(redshift_database::reverse_value_iterator t = z_db->value_rbegin(); t != z_db->value_rend(); ++t)
       {
         std::cout << "z = " << *t << '\n';
       }

@@ -15,7 +15,7 @@ namespace configuration_database
   {
 
     //! record-valued iterator: when dereferenced, yields the value stored in the underlying database record
-    template <typename DatabaseType, typename ValueType, bool is_const_iterator=true>
+    template <typename Iterator, typename ConstIterator, typename ValueType, bool is_const_iterator=true>
     class generic_value_iterator : public std::iterator< std::bidirectional_iterator_tag, ValueType >
       {
 
@@ -29,7 +29,7 @@ namespace configuration_database
         typedef typename std::conditional< is_const_iterator, const ValueType*, ValueType* >::type pointer_type;
 
         //! set up type alias for the underlying iterator into DatabaseType
-        typedef typename std::conditional< is_const_iterator, typename DatabaseType::const_iterator, typename DatabaseType::iterator >::type raw_iterator_type;
+        typedef typename std::conditional< is_const_iterator, ConstIterator, Iterator >::type raw_iterator_type;
 
 
       public:
@@ -45,14 +45,14 @@ namespace configuration_database
         //! default constructor; iterator points to nothing when it is created
         generic_value_iterator() = default;
 
-        //! value constructor; iterator points to given record in the underlying DatabaseType
+        //! value constructor; iterator points to given record in the underlying database
         generic_value_iterator(raw_iterator_type i)
           : iter(i)
           {
           }
 
         //! copy constructor; allows implicit conversion from a regular iterator to a const iterator
-        generic_value_iterator(const generic_value_iterator<DatabaseType, ValueType, false>& obj)
+        generic_value_iterator(const generic_value_iterator<Iterator, ConstIterator, ValueType, false>& obj)
           : iter(obj.iter)
           {
           }
@@ -125,7 +125,7 @@ namespace configuration_database
 
         // make the const generic_value_iterator a friend of the non-const generic_value_iterator,
         // so the copy constructor can access its private member variables during implicit conversion
-        friend class generic_value_iterator<DatabaseType, ValueType, true>;
+        friend class generic_value_iterator<Iterator, ConstIterator, ValueType, true>;
 
 
 
