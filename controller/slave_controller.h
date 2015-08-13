@@ -30,6 +30,14 @@ class slave_controller
     ~slave_controller() = default;
 
 
+    // INTERFACE
+
+  public:
+
+    //! execute
+    void execute();
+
+
     // INTERNAL DATA
 
   private:

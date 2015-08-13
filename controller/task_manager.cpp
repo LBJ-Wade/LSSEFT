@@ -31,5 +31,6 @@ void task_manager::work()
       }
     else
       {
+        this->slave_ctrl.execute();
       }
   }

@@ -12,6 +12,9 @@ namespace MPI_detail
 
     constexpr unsigned int RANK_MASTER = 0;
 
+    // message tags
+    constexpr unsigned int MESSAGE_TERMINATE = 999;
+
   }   // namespace MPI
 
 

@@ -13,6 +13,8 @@
 
 #include "database/data_manager.h"
 
+#include "MPI_detail/mpi_operations.h"
+
 #include "boost/program_options.hpp"
 
 
@@ -111,10 +113,27 @@ void master_controller::execute()
 
     // distribute this work list among the slave processes
     this->scatter(*work_list);
+
+    // instruct slave processes to terminate
+    this->terminate_workers();
   }
 
 
 void master_controller::scatter(transfer_work_list& work)
   {
 
+  }
+
+
+void master_controller::terminate_workers()
+  {
+    // send terminate message to all workers
+    std::vector<boost::mpi::request> requests(this->mpi_world.size()-1);
+    for(unsigned int i = 0; i < this->mpi_world.size()-1; ++i)
+      {
+        requests[i] = this->mpi_world.isend(this->worker_rank(i), MPI_detail::MESSAGE_TERMINATE);
+      }
+
+    // wait for all messages to be received, then exit ourselves
+    boost::mpi::wait_all(requests.begin(), requests.end());
   }

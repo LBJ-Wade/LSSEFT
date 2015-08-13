@@ -44,12 +44,32 @@ class master_controller
     void execute();
 
 
-    // MPI IMPLEMENTATION
+    // RANK TO WORKER NUMBER CONVERSIONS (worker number runs from 1 .. n-1, rank runs from 1 .. n, based on master process on rank 0)
+
+  protected:
+
+    //! Get worker number
+    unsigned int worker_number() { return(static_cast<unsigned int>(this->mpi_world.rank()-1)); }
+
+    //! Return MPI rank of this process
+    unsigned int get_rank(void) const { return(static_cast<unsigned int>(this->mpi_world.rank())); }
+
+    //! Map worker number to communicator rank
+    unsigned int worker_rank(unsigned int worker_number) const { return(worker_number+1); }
+
+    //! Map communicator rank to worker number
+    unsigned int worker_number(unsigned int worker_rank) const { return(worker_rank-1); }
+
+
+    // WORKER HANDLING
 
   protected:
 
     //! execute a transfer function work list
     void scatter(transfer_work_list& work);
+
+    //! terminate worker processes
+    void terminate_workers();
 
 
     // INTERNAL DATA
