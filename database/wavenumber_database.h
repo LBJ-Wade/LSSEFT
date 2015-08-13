@@ -162,6 +162,14 @@ class wavenumber_database
     void add_record(const eV_units::energy& k, std::shared_ptr<wavenumber_token> tok);
 
 
+    // UTILITY FUNCTIONS
+
+  public:
+
+    //! get number of elements in the database
+    size_t size() const { return(this->database.size()); }
+
+
     // INTERNAL DATA
 
   private:

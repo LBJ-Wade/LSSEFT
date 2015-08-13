@@ -9,12 +9,19 @@
 #include <assert.h>
 
 #include "data_manager.h"
+
 #include "sqlite3_detail/utilities.h"
 #include "sqlite3_detail/operations.h"
+
+#include "cosmology/types.h"
+
+#include "utilities/formatter.h"
 
 #include "exceptions.h"
 #include "localizations/messages.h"
 #include "defaults.h"
+
+#include "boost/timer/timer.hpp"
 
 
 data_manager::data_manager(const boost::filesystem::path& c)
@@ -210,7 +217,7 @@ unsigned int data_manager::lookup_or_insert(std::shared_ptr<transaction_manager>
   }
 
 
-// GENERATE DATABASES
+// GENERATE REDSHIFT AND WAVENUMBER DATABASES
 
 
 std::shared_ptr<redshift_database> data_manager::build_db(range<double>& sample)
@@ -246,4 +253,51 @@ std::shared_ptr<wavenumber_database> data_manager::build_db(range<eV_units::ener
       }
 
     return(k_db);
+  }
+
+
+std::unique_ptr<transfer_work_list> data_manager::build_transfer_work_list(std::shared_ptr<FRW_model_token>& model,
+                                                                           std::shared_ptr<wavenumber_database>& k_db,
+                                                                           std::shared_ptr<redshift_database>& z_db)
+  {
+    // start timer
+    boost::timer::auto_cpu_timer timer;
+
+    // construct an empty work list
+    std::unique_ptr<transfer_work_list> work_list(new transfer_work_list);
+
+    // open a transaction on the database
+    std::shared_ptr<transaction_manager> transaction = this->open_transaction();
+
+    // set up temporary table of desired z identifiers
+    std::string z_table = sqlite3_operations::z_table(this->handle, transaction, this->policy, z_db);
+
+    // for each wavenumber in k_db, find which z-values are missing
+    for(wavenumber_database::record_iterator t = k_db->record_begin(); t != k_db->record_end(); ++t)
+      {
+        std::cout << "lsseft: checking missing redshift values for k = " << (*(*t) * eV_units::Mpc) << " h/Mpc = " << static_cast<double>(*(*t)) << " eV" << '\n';
+
+        // get a database of missing redshifts for this k-value
+        std::shared_ptr<redshift_database> missing_values = sqlite3_operations::missing_redshifts(this->handle, transaction, this->policy, model, t->get_token(), z_db, z_table);
+
+        // if any redshifts were missing, set up a record in the work list
+        if(missing_values)
+          {
+            std::cout << "  -- " << missing_values->size() << " redshifts" << '\n';
+
+            std::pair< transfer_work_list::iterator, bool > emplaced_value = work_list->emplace(t->get_token()->get_id(), transfer_work_record(t->get_token(), missing_values));
+            assert(emplaced_value.second);
+          }
+      }
+
+    // drop unneeded temporary tables
+    sqlite3_operations::drop_temp(this->handle, transaction, z_table);
+
+    // commit the transaction before allowing it to go out of scope
+    transaction->commit();
+
+    timer.stop();
+    std::cout << "lsseft: constructed transfer function work list in time " << format_time(timer.elapsed().wall) << '\n';
+
+    return(work_list);
   }

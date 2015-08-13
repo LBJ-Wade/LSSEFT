@@ -89,10 +89,10 @@ void master_controller::execute()
       }
 
     // set up
-    data_manager db(this->arg_cache->get_database_path());
+    data_manager dmgr(this->arg_cache->get_database_path());
     FRW_model cosmology_model;
 
-    std::shared_ptr<FRW_model_token> token = db.tokenize(cosmology_model);
+    std::shared_ptr<FRW_model_token> model = dmgr.tokenize(cosmology_model);
 
     // set up a list of wavenumber to sample, measured in h/Mpc
     stepping_range<eV_units::energy> wavenumber_samples(0.05, 0.3, 30, 1.0/eV_units::Mpc, spacing_type::linear);
@@ -101,22 +101,13 @@ void master_controller::execute()
     stepping_range<double> redshift_samples(0.01, 1000.0, 250, 1.0, spacing_type::logarithmic_bottom);
 
     // exchange these sample ranges for iterable databases
-    std::shared_ptr<redshift_database>   z_db = db.build_db(redshift_samples);
-    std::shared_ptr<wavenumber_database> k_db = db.build_db(wavenumber_samples);
+    std::shared_ptr<redshift_database>   z_db = dmgr.build_db(redshift_samples);
+    std::shared_ptr<wavenumber_database> k_db = dmgr.build_db(wavenumber_samples);
 
     // generate targets
     // for 1-loop calculation, we need the linear transfer function at the initial redshift,
     // plus the time-dependent 1-loop kernels through the subsequent evolution
 
-
-
-    for(redshift_database::reverse_value_iterator t = z_db->value_rbegin(); t != z_db->value_rend(); ++t)
-      {
-        std::cout << "z = " << *t << '\n';
-      }
-
-    for(wavenumber_database::value_iterator t = k_db->value_begin(); t != k_db->value_end(); ++t)
-      {
-        std::cout << "k = " << (*t) * eV_units::Mpc << " h/Mpc = " << static_cast<double>(*t) << " eV" << '\n';
-      }
+    // build a work list for transfer functions
+    std::unique_ptr<transfer_work_list> work_list = dmgr.build_transfer_work_list(model, k_db, z_db);
   }

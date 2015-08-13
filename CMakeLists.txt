@@ -21,7 +21,7 @@ set(LOCALIZATION_EN_GB
   localizations/en_GB/database.h
   localizations/en_GB/sqlite3.h
   localizations/en_GB/transaction_manager.h
-  localizations/en_GB/range.h)
+  localizations/en_GB/range.h localizations/en_GB/format.h)
 
 set(TOP_LEVEL_SOURCE_FILES
   main.cpp
@@ -37,7 +37,8 @@ set(CONTROLLER_SOURCE_FILES
   controller/local_environment.cpp controller/local_environment.h)
 
 set(UTILITY_SOURCE_FILES
-  utilities/python_finder.cpp utilities/python_finder.h)
+  utilities/python_finder.cpp utilities/python_finder.h
+  utilities/formatter.cpp utilities/formatter.h)
 
 set(ERROR_SOURCE_FILES
   error/error_handler.cpp error/error_handler.h)
@@ -51,6 +52,7 @@ set(MPI_SOURCE_FILES
 set(COSMOLOGY_SOURCE_FILES
   cosmology/FRW_model.cpp cosmology/FRW_model.h
   cosmology/Planck_defaults.h
+  cosmology/types.h
   cosmology/concepts/range.h
   cosmology/concepts/range_detail/stepping.h
   cosmology/concepts/range_detail/range.h
@@ -76,7 +78,9 @@ set(SQLITE3_DETAIL_SOURCE_FILES
   sqlite3_detail/FRW_model.cpp sqlite3_detail/FRW_model.h
   sqlite3_detail/sqlite3_policy.cpp sqlite3_detail/sqlite3_policy.h
   sqlite3_detail/redshift.cpp sqlite3_detail/redshift.h
-  sqlite3_detail/wavenumber.cpp sqlite3_detail/wavenumber.h)
+  sqlite3_detail/wavenumber.cpp sqlite3_detail/wavenumber.h
+  sqlite3_detail/temporary_tables.cpp sqlite3_detail/temporary_tables.h
+  sqlite3_detail/missing_elements.cpp sqlite3_detail/missing_elements.h)
 
 set(SOURCE_FILES
   ${TOP_LEVEL_SOURCE_FILES}
@@ -101,6 +105,7 @@ add_executable(lsseft
   controller/task_manager.cpp
   error/error_handler.cpp
   utilities/python_finder.cpp
+  utilities/formatter.cpp
   cosmology/FRW_model.cpp
   database/data_manager.cpp
   database/tokens.cpp
@@ -112,6 +117,8 @@ add_executable(lsseft
   sqlite3_detail/FRW_model.cpp
   sqlite3_detail/redshift.cpp
   sqlite3_detail/wavenumber.cpp
+  sqlite3_detail/temporary_tables.cpp
+  sqlite3_detail/missing_elements.cpp
   sqlite3_detail/sqlite3_policy.cpp)
 
 target_link_libraries(lsseft sqlite3 ${Boost_LIBRARIES} ${MPI_LIBRARIES})

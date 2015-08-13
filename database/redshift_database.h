@@ -159,6 +159,20 @@ class redshift_database
     //! The record shouldn't already exist. No checks are made to test for duplicates
     void add_record(double z, std::shared_ptr<redshift_token> tok);
 
+    //! lookup record by token
+    record_iterator lookup(redshift_token tok);
+
+    //! lookup record by token -- const version
+    const_record_iterator lookup(redshift_token tok) const;
+
+
+    // UTILITY FUNCTIONS
+
+  public:
+
+    //! get number of elements in the database
+    size_t size() const { return(this->database.size()); }
+
 
     // INTERNAL DATA
 
