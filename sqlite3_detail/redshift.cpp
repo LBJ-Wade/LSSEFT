@@ -17,7 +17,7 @@
 namespace sqlite3_operations
   {
 
-    boost::optional<unsigned int> lookup_redshift(sqlite3* db, std::shared_ptr<transaction_manager>& mgr, double z,
+    boost::optional<unsigned int> lookup_redshift(sqlite3* db, transaction_manager& mgr, double z,
                                                   const sqlite3_policy& policy, double tol)
       {
         assert(db != nullptr);
@@ -55,7 +55,7 @@ namespace sqlite3_operations
       }
 
 
-    unsigned int insert_redshift(sqlite3* db, std::shared_ptr<transaction_manager>& mgr, double z,
+    unsigned int insert_redshift(sqlite3* db, transaction_manager& mgr, double z,
                                  const sqlite3_policy& policy)
       {
         assert(db != nullptr);

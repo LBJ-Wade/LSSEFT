@@ -27,7 +27,7 @@ class redshift_record
   public:
 
     //! build a redshift record
-    redshift_record(double _z, std::shared_ptr<redshift_token> tok);
+    redshift_record(double _z, const redshift_token& tok);
 
 
     // INTERFACE
@@ -38,7 +38,7 @@ class redshift_record
     double operator*() const { return(this->z); }
 
     //! get token
-    const std::shared_ptr<redshift_token>& get_token() const { return(this->token); }
+    const redshift_token& get_token() const { return(this->token); }
 
 
     // INTERNAL DATA
@@ -49,7 +49,7 @@ class redshift_record
     double z;
 
     //! database token
-    std::shared_ptr<redshift_token> token;
+    redshift_token token;
 
 
     // enable boost::serialization support, and hence automated packing for transmission over MPI
@@ -157,7 +157,7 @@ class redshift_database
     //! add record to the database
 
     //! The record shouldn't already exist. No checks are made to test for duplicates
-    void add_record(double z, std::shared_ptr<redshift_token> tok);
+    void add_record(double z, const redshift_token& tok);
 
     //! lookup record by token
     record_iterator lookup(redshift_token tok);

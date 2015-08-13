@@ -27,9 +27,7 @@ class master_controller
   public:
 
     //! construct a master controller delegate
-    master_controller(std::shared_ptr<boost::mpi::environment>& me,
-                      std::shared_ptr<boost::mpi::communicator>& mw,
-                      std::shared_ptr<argument_cache>& ac);
+    master_controller(boost::mpi::environment& me, boost::mpi::communicator& mw, argument_cache& ac);
 
     //! destructor is default
     ~master_controller() = default;
@@ -61,25 +59,25 @@ class master_controller
     // MPI environment
 
     //! MPI environment object, inherited from parent task manager
-    std::shared_ptr<boost::mpi::environment> mpi_env;
+    boost::mpi::environment& mpi_env;
 
     //! MPI communicator, inherited from parent task manager
-    std::shared_ptr<boost::mpi::communicator> mpi_world;
+    boost::mpi::communicator& mpi_world;
 
 
     // Caches
 
     //! argument cache, inherited from parent task manager
-    std::shared_ptr<argument_cache> arg_cache;
+    argument_cache& arg_cache;
 
     //! local environment properties (constructed locally)
-    std::shared_ptr<local_environment> local_env;
+    local_environment local_env;
 
 
     // Functional blocks
 
     //! error handler
-    std::shared_ptr<error_handler> err_handler;
+    error_handler err_handler;
 
   };
 

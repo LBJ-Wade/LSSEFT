@@ -22,7 +22,7 @@ class transfer_work_record
     // CONSTRUCTOR, DESTRUCTOR
 
     //! constructor
-    transfer_work_record(const std::shared_ptr<wavenumber_token>& k, const std::shared_ptr<redshift_database>& z)
+    transfer_work_record(const wavenumber_token& k, std::shared_ptr<redshift_database>& z)
       : k_token(k),
         z_db(z)
       {
@@ -37,7 +37,7 @@ class transfer_work_record
   public:
 
     //! dereference to get k_token
-    const std::shared_ptr<wavenumber_token>& operator*() { return(this->k_token); }
+    const wavenumber_token& operator*() { return(this->k_token); }
 
     //! get redshift database
     const std::shared_ptr<redshift_database>& get_z_db() { return(this->z_db); }
@@ -48,7 +48,7 @@ class transfer_work_record
   private:
 
     //! wavenumber token
-    std::shared_ptr<wavenumber_token> k_token;
+    wavenumber_token k_token;
 
     //! redshift database
     std::shared_ptr<redshift_database> z_db;

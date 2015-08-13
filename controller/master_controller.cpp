@@ -16,15 +16,13 @@
 #include "boost/program_options.hpp"
 
 
-master_controller::master_controller(std::shared_ptr<boost::mpi::environment>& me,
-                                     std::shared_ptr<boost::mpi::communicator>& mw,
-                                     std::shared_ptr<argument_cache>& ac)
+master_controller::master_controller(boost::mpi::environment& me, boost::mpi::communicator& mw, argument_cache& ac)
   : mpi_env(me),
     mpi_world(mw),
-    arg_cache(ac)
+    arg_cache(ac),
+    local_env(),
+    err_handler(arg_cache, local_env)
   {
-    local_env   = std::make_shared<local_environment>();
-    err_handler = std::make_shared<error_handler>(arg_cache, local_env);
   }
 
 
@@ -70,29 +68,29 @@ void master_controller::process_arguments(int argc, char* argv[])
         std::cout << output_options << '\n';
       }
 
-    if(option_map.count(LSSEFT_SWITCH_VERBOSE_LONG))                                          this->arg_cache->set_verbose(true);
-    if(option_map.count(LSSEFT_SWITCH_NO_COLOUR) || option_map.count(LSSEFT_SWITCH_NO_COLOR)) this->arg_cache->set_colour_output(false);
+    if(option_map.count(LSSEFT_SWITCH_VERBOSE_LONG))                                          this->arg_cache.set_verbose(true);
+    if(option_map.count(LSSEFT_SWITCH_NO_COLOUR) || option_map.count(LSSEFT_SWITCH_NO_COLOR)) this->arg_cache.set_colour_output(false);
 
     if(option_map.count(LSSEFT_SWITCH_DATABASE_LONG))
       {
-        this->arg_cache->set_database_path(option_map[LSSEFT_SWITCH_DATABASE_LONG].as<std::string>());
+        this->arg_cache.set_database_path(option_map[LSSEFT_SWITCH_DATABASE_LONG].as<std::string>());
       }
   }
 
 
 void master_controller::execute()
   {
-    if(!this->arg_cache->get_database_set())
+    if(!this->arg_cache.get_database_set())
       {
-        this->err_handler->error(ERROR_NO_DATABASE);
+        this->err_handler.error(ERROR_NO_DATABASE);
         return;
       }
 
     // set up
-    data_manager dmgr(this->arg_cache->get_database_path());
+    data_manager dmgr(this->arg_cache.get_database_path());
     FRW_model cosmology_model;
 
-    std::shared_ptr<FRW_model_token> model = dmgr.tokenize(cosmology_model);
+    std::unique_ptr<FRW_model_token> model = dmgr.tokenize(cosmology_model);
 
     // set up a list of wavenumber to sample, measured in h/Mpc
     stepping_range<eV_units::energy> wavenumber_samples(0.05, 0.3, 30, 1.0/eV_units::Mpc, spacing_type::linear);
@@ -101,15 +99,15 @@ void master_controller::execute()
     stepping_range<double> redshift_samples(0.01, 1000.0, 250, 1.0, spacing_type::logarithmic_bottom);
 
     // exchange these sample ranges for iterable databases
-    std::shared_ptr<redshift_database>   z_db = dmgr.build_db(redshift_samples);
-    std::shared_ptr<wavenumber_database> k_db = dmgr.build_db(wavenumber_samples);
+    std::unique_ptr<redshift_database>   z_db = dmgr.build_db(redshift_samples);
+    std::unique_ptr<wavenumber_database> k_db = dmgr.build_db(wavenumber_samples);
 
     // generate targets
     // for 1-loop calculation, we need the linear transfer function at the initial redshift,
     // plus the time-dependent 1-loop kernels through the subsequent evolution
 
     // build a work list for transfer functions
-    std::unique_ptr<transfer_work_list> work_list = dmgr.build_transfer_work_list(model, k_db, z_db);
+    std::unique_ptr<transfer_work_list> work_list = dmgr.build_transfer_work_list(*model, *k_db, *z_db);
 
     // distribute this work list among the slave processes
     this->scatter(*work_list);

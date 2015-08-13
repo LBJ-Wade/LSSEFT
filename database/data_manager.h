@@ -43,10 +43,10 @@ class data_manager
   public:
 
     //! generate redshift database from a set of samples
-    std::shared_ptr<redshift_database> build_db(range<double>& sample);
+    std::unique_ptr<redshift_database> build_db(range<double>& sample);
 
     //! generate wavenumber database from a set of samples
-    std::shared_ptr<wavenumber_database> build_db(range<eV_units::energy>& sample);
+    std::unique_ptr<wavenumber_database> build_db(range<eV_units::energy>& sample);
 
 
     // WAVENUMBER SERVICES
@@ -56,9 +56,8 @@ class data_manager
     //! build a work list representing z-values which are missing from the SQLite backing store
     //! for each k-value in a wavenumber database
     //! generates a new transation on the database; will fail if a transaction is in progress
-    std::unique_ptr<transfer_work_list> build_transfer_work_list(std::shared_ptr<FRW_model_token>& model,
-                                                                          std::shared_ptr<wavenumber_database>& k_db,
-                                                                          std::shared_ptr<redshift_database>& z_db);
+    std::unique_ptr<transfer_work_list> build_transfer_work_list(FRW_model_token& model, wavenumber_database& k_db,
+                                                                 redshift_database& z_db);
 
     // TOKENS
     // tokens are the basic unit of currency used when interacting with the database
@@ -67,15 +66,15 @@ class data_manager
 
     //! tokenize an FRW model
     //! generates a new transation on the database; will fail if a transaction is in progress
-    std::shared_ptr<FRW_model_token> tokenize(const FRW_model& obj);
+    std::unique_ptr<FRW_model_token> tokenize(const FRW_model& obj);
 
     //! tokenize a redshift
     //! generates a new transation on the database; will fail if a transaction is in progress
-    std::shared_ptr<redshift_token> tokenize(double z);
+    std::unique_ptr<redshift_token> tokenize(double z);
 
     //! tokenize a wavenumber
     //! generates a new transation on the database; will fail if a transaction is in progress
-    std::shared_ptr<wavenumber_token> tokenize(const eV_units::energy& k);
+    std::unique_ptr<wavenumber_token> tokenize(const eV_units::energy& k);
 
 
     // TRANSACTIONS
@@ -83,6 +82,8 @@ class data_manager
   protected:
 
     //! open a transaction; throws an exception if a transaction is already held open
+    //! note we have to use a std::shared_ptr<> here, rather than a std::unique_ptr<>,
+    //! because we hold a std::weak_ptr<> internally to keep track of whether a transaction is open
     std::shared_ptr<transaction_manager> open_transaction();
 
     //! begin a new transaction on the database
@@ -103,13 +104,13 @@ class data_manager
   protected:
 
     //! lookup or insert a new FRW model
-    unsigned int lookup_or_insert(std::shared_ptr<transaction_manager> &mgr, const FRW_model &obj);
+    unsigned int lookup_or_insert(transaction_manager& mgr, const FRW_model &obj);
 
     //! lookup or insert a redshift
-    unsigned int lookup_or_insert(std::shared_ptr<transaction_manager> &mgr, double z);
+    unsigned int lookup_or_insert(transaction_manager& mgr, double z);
 
     //! lookup or insert a wavenumber
-    unsigned int lookup_or_insert(std::shared_ptr<transaction_manager> &mgr, const eV_units::energy &k);
+    unsigned int lookup_or_insert(transaction_manager& mgr, const eV_units::energy &k);
 
 
     // INTERNAL DATA

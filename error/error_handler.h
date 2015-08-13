@@ -21,8 +21,7 @@ class error_handler
   public:
 
     //! constructor
-    error_handler(std::shared_ptr<argument_cache>& ac,
-                  std::shared_ptr<local_environment>& le);
+    error_handler(argument_cache& ac, local_environment& le);
 
     //! destructor is default
     ~error_handler() = default;
@@ -47,10 +46,10 @@ class error_handler
   private:
 
     //! argument cache inherited from parent controller
-    std::shared_ptr<argument_cache> arg_cache;
+    argument_cache& arg_cache;
 
     //! local environment object
-    std::shared_ptr<local_environment> local_env;
+    local_environment& local_env;
 
   };
 

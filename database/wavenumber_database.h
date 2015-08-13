@@ -29,7 +29,7 @@ class wavenumber_record
   public:
 
     //! build a wavenumber record
-    wavenumber_record(const eV_units::energy& _k, std::shared_ptr<wavenumber_token> tok);
+    wavenumber_record(const eV_units::energy& _k, const wavenumber_token& tok);
 
 
     // INTERFACE
@@ -40,7 +40,7 @@ class wavenumber_record
     eV_units::energy operator*() const { return(this->k); }
 
     //! get token
-    const std::shared_ptr<wavenumber_token>& get_token() const { return(this->token); }
+    const wavenumber_token& get_token() const { return(this->token); }
 
 
     // INTERNAL DATA
@@ -51,7 +51,7 @@ class wavenumber_record
     eV_units::energy k;
 
     //! database token
-    std::shared_ptr<wavenumber_token> token;
+    wavenumber_token token;
 
 
     // enable boost::serialization support, and hence automated packing for transmission over MPI
@@ -159,7 +159,7 @@ class wavenumber_database
     //! add record to the database
 
     //! The record shouldn't already exist. No checks are made to test for duplicates
-    void add_record(const eV_units::energy& k, std::shared_ptr<wavenumber_token> tok);
+    void add_record(const eV_units::energy& k, const wavenumber_token& tok);
 
 
     // UTILITY FUNCTIONS

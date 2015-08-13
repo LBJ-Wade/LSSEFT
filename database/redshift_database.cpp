@@ -9,16 +9,16 @@
 #include "redshift_database.h"
 
 
-redshift_record::redshift_record(double _z, std::shared_ptr<redshift_token> tok)
+redshift_record::redshift_record(double _z, const redshift_token& tok)
   : z(_z),
     token(tok)
   {
   }
 
 
-void redshift_database::add_record(double z, std::shared_ptr<redshift_token> tok)
+void redshift_database::add_record(double z, const redshift_token& tok)
   {
-    std::pair<database_type::iterator, bool> emplaced_value = this->database.emplace(tok->get_id(), redshift_record(z, tok));
+    std::pair<database_type::iterator, bool> emplaced_value = this->database.emplace(tok.get_id(), redshift_record(z, tok));
     assert(emplaced_value.second);
   }
 
