@@ -15,6 +15,7 @@
 #include "transaction_manager.h"
 #include "range.h"
 #include "format.h"
+#include "master_controller.h"
 
 // note this sqlite3.h is the messages file in the same subdirectory, not the main sqlite3.h include
 #include "sqlite3.h"

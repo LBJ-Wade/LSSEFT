@@ -12,6 +12,8 @@
 #include "database/tokens.h"
 #include "database/redshift_database.h"
 
+#include "units/eV_units.h"
+
 
 //! work record for a transfer function calculation
 class transfer_work_record
@@ -22,8 +24,9 @@ class transfer_work_record
     // CONSTRUCTOR, DESTRUCTOR
 
     //! constructor
-    transfer_work_record(const wavenumber_token& k, std::shared_ptr<redshift_database>& z)
-      : k_token(k),
+    transfer_work_record(const eV_units::energy _k, const wavenumber_token& kt, std::shared_ptr<redshift_database>& z)
+      : k(_k),
+        k_token(kt),
         z_db(z)
       {
       }
@@ -36,16 +39,22 @@ class transfer_work_record
 
   public:
 
-    //! dereference to get k_token
-    const wavenumber_token& operator*() { return(this->k_token); }
+    //! dereference to get wavenumber
+    const eV_units::energy& operator*() const { return(this->k); }
+
+    //! get token
+    const wavenumber_token& get_token() const { return(this->k_token); }
 
     //! get redshift database
-    const std::shared_ptr<redshift_database>& get_z_db() { return(this->z_db); }
+    const std::shared_ptr<redshift_database>& get_z_db() const { return(this->z_db); }
 
 
     // INTERNAL DATA
 
   private:
+
+    //! wavenumber
+    eV_units::energy k;
 
     //! wavenumber token
     wavenumber_token k_token;
@@ -56,7 +65,7 @@ class transfer_work_record
   };
 
 //! list of work for transfer function calculation
-typedef std::map< unsigned int, transfer_work_record> transfer_work_list;
+typedef std::list<transfer_work_record> transfer_work_list;
 
 
 #endif //LSSEFT_TYPES_H

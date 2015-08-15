@@ -3,10 +3,11 @@
 // Copyright (c) 2015 University of Sussex. All rights reserved.
 //
 
-#include "master_controller.h"
 
 #include "core.h"
-#include "localizations/messages.h"
+
+#include "master_controller.h"
+#include "scheduler.h"
 
 #include "cosmology/FRW_model.h"
 #include "cosmology/concepts/range.h"
@@ -16,6 +17,8 @@
 #include "MPI_detail/mpi_operations.h"
 
 #include "boost/program_options.hpp"
+
+#include "localizations/messages.h"
 
 
 master_controller::master_controller(boost::mpi::environment& me, boost::mpi::communicator& mw, argument_cache& ac)
@@ -33,14 +36,14 @@ void master_controller::process_arguments(int argc, char* argv[])
     // set up BOOST::program_options descriptors for command-line arguments
     boost::program_options::options_description generic("Generic");
     generic.add_options()
-      (LSSEFT_SWITCH_HELP,      LSSEFT_HELP_HELP)
-      (LSSEFT_SWITCH_VERSION,   LSSEFT_HELP_VERSION)
+      (LSSEFT_SWITCH_HELP, LSSEFT_HELP_HELP)
+      (LSSEFT_SWITCH_VERSION, LSSEFT_HELP_VERSION)
       (LSSEFT_SWITCH_NO_COLOUR, LSSEFT_HELP_NO_COLOUR);
 
     boost::program_options::options_description configuration("Configuration options");
     configuration.add_options()
-      (LSSEFT_SWITCH_VERBOSE,                                                   LSSEFT_HELP_VERBOSE)
-      (LSSEFT_SWITCH_DATABASE,  boost::program_options::value< std::string >(), LSSEFT_HELP_DATABASE);
+      (LSSEFT_SWITCH_VERBOSE, LSSEFT_HELP_VERBOSE)
+      (LSSEFT_SWITCH_DATABASE, boost::program_options::value<std::string>(), LSSEFT_HELP_DATABASE);
 
     boost::program_options::options_description hidden("Hidden options");
     hidden.add_options()
@@ -70,8 +73,9 @@ void master_controller::process_arguments(int argc, char* argv[])
         std::cout << output_options << '\n';
       }
 
-    if(option_map.count(LSSEFT_SWITCH_VERBOSE_LONG))                                          this->arg_cache.set_verbose(true);
-    if(option_map.count(LSSEFT_SWITCH_NO_COLOUR) || option_map.count(LSSEFT_SWITCH_NO_COLOR)) this->arg_cache.set_colour_output(false);
+    if(option_map.count(LSSEFT_SWITCH_VERBOSE_LONG)) this->arg_cache.set_verbose(true);
+    if(option_map.count(LSSEFT_SWITCH_NO_COLOUR) || option_map.count(LSSEFT_SWITCH_NO_COLOR))
+      this->arg_cache.set_colour_output(false);
 
     if(option_map.count(LSSEFT_SWITCH_DATABASE_LONG))
       {
@@ -95,13 +99,13 @@ void master_controller::execute()
     std::unique_ptr<FRW_model_token> model = dmgr.tokenize(cosmology_model);
 
     // set up a list of wavenumber to sample, measured in h/Mpc
-    stepping_range<eV_units::energy> wavenumber_samples(0.05, 0.3, 30, 1.0/eV_units::Mpc, spacing_type::linear);
+    stepping_range<eV_units::energy> wavenumber_samples(0.05, 0.3, 30, 1.0 / eV_units::Mpc, spacing_type::linear);
 
     // set up a list of redshifts at which to sample
     stepping_range<double> redshift_samples(0.01, 1000.0, 250, 1.0, spacing_type::logarithmic_bottom);
 
     // exchange these sample ranges for iterable databases
-    std::unique_ptr<redshift_database>   z_db = dmgr.build_db(redshift_samples);
+    std::unique_ptr<redshift_database> z_db = dmgr.build_db(redshift_samples);
     std::unique_ptr<wavenumber_database> k_db = dmgr.build_db(wavenumber_samples);
 
     // generate targets
@@ -112,28 +116,142 @@ void master_controller::execute()
     std::unique_ptr<transfer_work_list> work_list = dmgr.build_transfer_work_list(*model, *k_db, *z_db);
 
     // distribute this work list among the slave processes
-    this->scatter(*work_list);
+    this->scatter(cosmology_model, *model, *work_list);
 
     // instruct slave processes to terminate
     this->terminate_workers();
   }
 
 
-void master_controller::scatter(transfer_work_list& work)
+void master_controller::scatter(const FRW_model& model, const FRW_model_token& token, transfer_work_list& work)
   {
+    if(this->mpi_world.size() == 1) throw runtime_exception(exception_type::runtime_error, ERROR_TOO_FEW_WORKS);
 
+    // instruct slave processes to await transfer function tasks
+    std::unique_ptr<scheduler> sch = this->set_up_workers(MPI_detail::MESSAGE_NEW_TRANSFER_TASK);
+
+    bool sent_closedown = false;
+    transfer_work_list::iterator next_work_item = work.begin();
+
+    while(!sch->all_inactive())
+      {
+        // check whether all work is exhausted
+        if(next_work_item == work.end() && !sent_closedown)
+          {
+            sent_closedown = true;
+            this->close_down_workers();
+          }
+
+        // check whether any workers are waiting for assignments
+        if(next_work_item != work.end() && sch->is_assignable())
+          {
+            std::vector<unsigned int> unassigned_list = sch->make_assignment();
+            std::vector<boost::mpi::request> requests;
+
+            for(std::vector<unsigned int>::const_iterator t = unassigned_list.begin();
+                next_work_item != work.end() && t != unassigned_list.end(); ++t)
+              {
+                // assign next work item to this worker
+                MPI_detail::new_transfer_integration payload(model, *(*next_work_item), next_work_item->get_token(),
+                                                             next_work_item->get_z_db());
+                requests.push_back(this->mpi_world.isend(this->worker_rank(*t), MPI_detail::MESSAGE_NEW_TRANSFER_INTEGRATION, payload));
+
+                sch->mark_assigned(*t);
+                ++next_work_item;
+              }
+
+            // wait for all messages to be received
+            boost::mpi::wait_all(requests.begin(), requests.end());
+          }
+
+        // check whether any messages are waiting in the queue
+        boost::optional<boost::mpi::status> stat = this->mpi_world.iprobe();
+
+        while(stat) // consume messages until no more are available
+          {
+            switch(stat->tag())
+              {
+                case MPI_detail::MESSAGE_TRANSFER_INTEGRATION_READY:
+                  {
+                    this->mpi_world.recv(stat->source(), MPI_detail::MESSAGE_TRANSFER_INTEGRATION_READY);
+                    sch->mark_unassigned(this->worker_number(stat->source()));
+                    break;
+                  }
+
+                case MPI_detail::MESSAGE_END_OF_WORK_ACK:
+                  {
+                    this->mpi_world.recv(stat->source(), MPI_detail::MESSAGE_END_OF_WORK_ACK);
+                    sch->mark_inactive(this->worker_number(stat->source()));
+                    break;
+                  }
+
+                default:
+                  assert(false);
+              }
+
+            stat = this->mpi_world.iprobe();
+          }
+      }
   }
 
 
 void master_controller::terminate_workers()
   {
     // send terminate message to all workers
-    std::vector<boost::mpi::request> requests(this->mpi_world.size()-1);
-    for(unsigned int i = 0; i < this->mpi_world.size()-1; ++i)
+    std::vector<boost::mpi::request> requests(this->mpi_world.size() - 1);
+    for(unsigned int i = 0; i < this->mpi_world.size() - 1; ++i)
       {
         requests[i] = this->mpi_world.isend(this->worker_rank(i), MPI_detail::MESSAGE_TERMINATE);
       }
 
     // wait for all messages to be received, then exit ourselves
+    boost::mpi::wait_all(requests.begin(), requests.end());
+  }
+
+
+std::unique_ptr<scheduler> master_controller::set_up_workers(unsigned int tag)
+  {
+    // send specified message to all workers
+    std::vector<boost::mpi::request> requests(this->mpi_world.size() - 1);
+    for(unsigned int i = 0; i < this->mpi_world.size() - 1; ++i)
+      {
+        requests[i] = this->mpi_world.isend(this->worker_rank(i), tag);
+      }
+
+    // wait for all messages to be received
+    boost::mpi::wait_all(requests.begin(), requests.end());
+
+    // create scheduler object
+    std::unique_ptr<scheduler> sch(new scheduler(this->mpi_world.size() - 1));
+
+    // wait for messages from workers reporting that they are correctly set up
+    while(!sch->is_ready())
+      {
+        boost::mpi::status stat = this->mpi_world.probe();
+
+        switch(stat.tag())
+          {
+            case MPI_detail::MESSAGE_WORKER_READY:
+              {
+                this->mpi_world.recv(stat.source(), MPI_detail::MESSAGE_WORKER_READY);
+                sch->initialize_worker(this->worker_number(stat.source()));
+              }
+          }
+      }
+
+    return (sch);
+  }
+
+
+void master_controller::close_down_workers()
+  {
+    // send end-of-work message to all workers
+    std::vector<boost::mpi::request> requests(this->mpi_world.size() - 1);
+    for(unsigned int i = 0; i < this->mpi_world.size() - 1; ++i)
+      {
+        requests[i] = this->mpi_world.isend(this->worker_rank(i), MPI_detail::MESSAGE_END_OF_WORK);
+      }
+
+    // wait for all messages to be received
     boost::mpi::wait_all(requests.begin(), requests.end());
   }

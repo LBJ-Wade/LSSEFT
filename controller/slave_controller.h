@@ -1,5 +1,6 @@
 //
 // Created by David Seery on 10/08/2015.
+// Copyright (c) 2015 University of Sussex. All rights reserved.
 //
 
 #ifndef LSSEFT_SLAVE_CONTROLLER_H
@@ -10,6 +11,8 @@
 
 #include "argument_cache.h"
 #include "local_environment.h"
+
+#include "MPI_detail/mpi_operations.h"
 
 #include "error/error_handler.h"
 
@@ -30,12 +33,45 @@ class slave_controller
     ~slave_controller() = default;
 
 
+    // RANK TO WORKER NUMBER CONVERSIONS (worker number runs from 1 .. n-1, rank runs from 1 .. n, based on master process on rank 0)
+
+  protected:
+
+    //! Get worker number
+    unsigned int worker_number() { return(static_cast<unsigned int>(this->mpi_world.rank()-1)); }
+
+    //! Return MPI rank of this process
+    unsigned int get_rank(void) const { return(static_cast<unsigned int>(this->mpi_world.rank())); }
+
+    //! Map worker number to communicator rank
+    unsigned int worker_rank(unsigned int worker_number) const { return(worker_number+1); }
+
+    //! Map communicator rank to worker number
+    unsigned int worker_number(unsigned int worker_rank) const { return(worker_rank-1); }
+
+
     // INTERFACE
 
   public:
 
     //! execute
     void execute();
+
+
+    // TASK HANDLING
+
+  protected:
+
+    //! process transfer function task
+    void process_transfer_task();
+
+
+    // TRANSFER FUNCTION TASKS
+
+  protected:
+
+    //! integrate a given transfer function task
+    void transfer_integration(MPI_detail::new_transfer_integration& payload);
 
 
     // INTERNAL DATA

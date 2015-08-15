@@ -4,7 +4,7 @@ project(LSSEFT)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 find_package(MPI REQUIRED)
-find_package(Boost REQUIRED COMPONENTS system filesystem timer date_time mpi program_options)
+find_package(Boost REQUIRED COMPONENTS system filesystem timer date_time mpi program_options serialization)
 
 include_directories(./
   ${Boost_INCLUDE_DIRS}
@@ -21,7 +21,9 @@ set(LOCALIZATION_EN_GB
   localizations/en_GB/database.h
   localizations/en_GB/sqlite3.h
   localizations/en_GB/transaction_manager.h
-  localizations/en_GB/range.h localizations/en_GB/format.h)
+  localizations/en_GB/range.h
+  localizations/en_GB/format.h
+  localizations/en_GB/master_controller.h)
 
 set(TOP_LEVEL_SOURCE_FILES
   main.cpp
@@ -34,7 +36,8 @@ set(CONTROLLER_SOURCE_FILES
   controller/task_manager.cpp controller/task_manager.h
   controller/master_controller.cpp controller/master_controller.h
   controller/slave_controller.cpp controller/slave_controller.h
-  controller/local_environment.cpp controller/local_environment.h)
+  controller/local_environment.cpp controller/local_environment.h
+  controller/scheduler.cpp controller/scheduler.h)
 
 set(UTILITY_SOURCE_FILES
   utilities/python_finder.cpp utilities/python_finder.h
@@ -103,6 +106,7 @@ add_executable(lsseft
   controller/master_controller.cpp
   controller/slave_controller.cpp
   controller/task_manager.cpp
+  controller/scheduler.cpp
   error/error_handler.cpp
   utilities/python_finder.cpp
   utilities/formatter.cpp

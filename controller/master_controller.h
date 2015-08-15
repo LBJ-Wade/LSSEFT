@@ -11,8 +11,12 @@
 
 #include "argument_cache.h"
 #include "local_environment.h"
+#include "scheduler.h"
+
+#include "database/tokens.h"
 
 #include "cosmology/types.h"
+#include "cosmology/FRW_model.h"
 
 #include "error/error_handler.h"
 
@@ -66,10 +70,16 @@ class master_controller
   protected:
 
     //! execute a transfer function work list
-    void scatter(transfer_work_list& work);
+    void scatter(const FRW_model& model, const FRW_model_token& token, transfer_work_list& work);
 
     //! terminate worker processes
     void terminate_workers();
+
+    //! instruct workers to await new tasks
+    std::unique_ptr<scheduler> set_up_workers(unsigned int tag);
+
+    //! instruct workers that the current batch of tasks is finished
+    void close_down_workers();
 
 
     // INTERNAL DATA

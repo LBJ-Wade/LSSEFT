@@ -58,11 +58,72 @@ class redshift_record
     template <typename Archive>
     void serialize(Archive& ar, unsigned int version)
       {
-        ar & z;
-        ar & token;
       }
 
   };
+
+
+namespace boost
+  {
+
+    // redshift_record has no default constructor, so have to specialize
+    // load/store methods for Boost:serialization
+
+    namespace serialization
+      {
+
+        template <typename Archive>
+        inline void save_construct_data(Archive& ar, const redshift_record* t, const unsigned int file_version)
+          {
+            ar << *(*t);                    // store value of z
+            ar << t->get_token().get_id();  // store token identifier
+          }
+
+
+        template <typename Archive>
+        inline void load_construct_data(Archive& ar, redshift_record* t, const unsigned int file_version)
+          {
+            double z;
+            unsigned int id;
+
+            ar >> z;      // unpack z
+            ar >> id;     // unpack token identifier
+
+            // invoke in-place constructor
+            ::new(t) redshift_record(z, redshift_token(id));
+          }
+
+
+        // for use within a std::map (eg in redshift_database), we also need a specialization for std::pair< unsigned int, redshift_record >
+
+        template <typename Archive>
+        inline void save_construct_data(Archive& ar, const std::pair< const unsigned int, redshift_record >* t, const unsigned int file_version)
+          {
+            double z = *(t->second);
+            unsigned int id = t->second.get_token().get_id();
+
+            ar << boost::serialization::make_nvp("first", t->first);
+            ar << boost::serialization::make_nvp("second", z);
+            ar << boost::serialization::make_nvp("third", id);
+          }
+
+
+        template <typename Archive>
+        inline void load_construct_data(Archive& ar, std::pair< const unsigned int, redshift_record >* t, const unsigned int file_version)
+          {
+            unsigned int tag;
+            double z;
+            unsigned int id;
+            ar >> boost::serialization::make_nvp("first", tag);
+            ar >> boost::serialization::make_nvp("second", z);
+            ar >> boost::serialization::make_nvp("third", id);
+
+            ::new(t) std::pair< unsigned int, redshift_record >(tag, redshift_record(z, id));
+          }
+
+      }   // namespace serialization
+
+  }   // namespace boost
 
 
 class redshift_database

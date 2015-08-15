@@ -284,8 +284,7 @@ std::unique_ptr<transfer_work_list> data_manager::build_transfer_work_list(FRW_m
           {
 //            std::cout << "  -- " << missing_values->size() << " redshifts" << '\n';
 
-            std::pair< transfer_work_list::iterator, bool > emplaced_value = work_list->emplace(t->get_token().get_id(), transfer_work_record(t->get_token(), missing_values));
-            assert(emplaced_value.second);
+            work_list->emplace_back(*(*t), t->get_token(), missing_values);
           }
       }
 
