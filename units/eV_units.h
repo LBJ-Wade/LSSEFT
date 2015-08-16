@@ -51,7 +51,7 @@ namespace eV_units
       public:
 
         //! allow implicit conversion to double
-        explicit operator double() const { return(this->val); }
+        explicit constexpr operator double() const { return(this->val); }
 
 
         // INTERNAL DATA

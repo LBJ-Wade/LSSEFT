@@ -60,7 +60,8 @@ set(COSMOLOGY_SOURCE_FILES
   cosmology/concepts/range_detail/stepping.h
   cosmology/concepts/range_detail/range.h
   cosmology/concepts/range_detail/common.h
-  cosmology/concepts/range_detail/aggregation.h)
+  cosmology/concepts/range_detail/aggregation.h
+  cosmology/transfer_integrator.cpp cosmology/transfer_integrator.h)
 
 set(UNITS_SOURCE_FILES
   units/eV_units.h)
@@ -111,6 +112,7 @@ add_executable(lsseft
   utilities/python_finder.cpp
   utilities/formatter.cpp
   cosmology/FRW_model.cpp
+  cosmology/transfer_integrator.cpp
   database/data_manager.cpp
   database/tokens.cpp
   database/transaction_manager.cpp

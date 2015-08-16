@@ -5,6 +5,8 @@
 
 #include "slave_controller.h"
 
+#include "cosmology/transfer_integrator.h"
+
 
 slave_controller::slave_controller(boost::mpi::environment& me, boost::mpi::communicator& mw, argument_cache& ac)
   : mpi_env(me),
@@ -92,6 +94,9 @@ void slave_controller::transfer_integration(MPI_detail::new_transfer_integration
     std::shared_ptr<redshift_database> z_db = payload.get_z_db();
 
     std::cout << "Worker " << this->worker_number() << " beginning transfer task: id = " << tok.get_id() << " for k = " << k * eV_units::Mpc << " h/Mpc = " << static_cast<double>(k) << " eV" << '\n';
+
+    transfer_integrator integrator;
+    transfer_function sample = integrator.integrate(model, k, tok, z_db);
 
     // inform master process that we have completed work on this integration
     boost::mpi::request ack = this->mpi_world.isend(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_TRANSFER_INTEGRATION_READY);
