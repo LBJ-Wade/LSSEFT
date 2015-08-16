@@ -16,6 +16,9 @@
 
 #include "defaults.h"
 
+#include "boost/timer/timer.hpp"
+#include "boost/serialization/serialization.hpp"
+
 
 class transfer_function
   {
@@ -25,10 +28,24 @@ class transfer_function
   public:
 
     //! constructor
-    transfer_function(const FRW_model& m, const eV_units::energy& _k, const wavenumber_token& t, std::shared_ptr<redshift_database>& z);
+    transfer_function(const FRW_model& m, const eV_units::energy& _k, const wavenumber_token& t, std::shared_ptr<redshift_database> z);
 
     //! destructor is default
     ~transfer_function() = default;
+
+
+    // INTERFACE
+
+  public:
+
+    //! store components of the transfer functions
+    void push_back(double delta_m, double delta_r, double theta_m, double theta_r, double Phi);
+
+    //! store integration time
+    void set_integration_time(boost::timer::nanosecond_type t);
+
+    //! get integration time
+    boost::timer::nanosecond_type get_integration_time() const { return(this->integration_time); }
 
 
     // INTERNAL DATA
@@ -70,6 +87,31 @@ class transfer_function
 
     //! Phi transfer function
     std::shared_ptr< std::vector<double> > Phi;
+
+
+    // METADATA
+
+    //! time taken to perform integration
+    boost::timer::nanosecond_type integration_time;
+
+
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & model;
+        ar & k;
+        ar & token;
+        ar & z_db;
+        ar & delta_m;
+        ar & theta_m;
+        ar & delta_r;
+        ar & theta_r;
+        ar & Phi;
+        ar & integration_time;
+      }
 
   };
 

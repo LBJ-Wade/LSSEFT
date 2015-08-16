@@ -16,9 +16,11 @@
 
 #include "MPI_detail/mpi_operations.h"
 
-#include "boost/program_options.hpp"
+#include "utilities/formatter.h"
 
 #include "localizations/messages.h"
+
+#include "boost/program_options.hpp"
 
 
 master_controller::master_controller(boost::mpi::environment& me, boost::mpi::communicator& mw, argument_cache& ac)
@@ -173,7 +175,9 @@ void master_controller::scatter(const FRW_model& model, const FRW_model_token& t
               {
                 case MPI_detail::MESSAGE_TRANSFER_INTEGRATION_READY:
                   {
-                    this->mpi_world.recv(stat->source(), MPI_detail::MESSAGE_TRANSFER_INTEGRATION_READY);
+                    MPI_detail::transfer_integration_ready payload;
+                    this->mpi_world.recv(stat->source(), MPI_detail::MESSAGE_TRANSFER_INTEGRATION_READY, payload);
+                    std::cout << "worker " << this->worker_number(stat->source()) << " finished integration in time " << format_time(payload.get_data().get_integration_time()) << '\n';
                     sch->mark_unassigned(this->worker_number(stat->source()));
                     break;
                   }

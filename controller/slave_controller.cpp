@@ -99,5 +99,6 @@ void slave_controller::transfer_integration(MPI_detail::new_transfer_integration
     transfer_function sample = integrator.integrate(model, k, tok, z_db);
 
     // inform master process that we have completed work on this integration
-    boost::mpi::request ack = this->mpi_world.isend(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_TRANSFER_INTEGRATION_READY);
+    MPI_detail::transfer_integration_ready return_payload(sample);
+    boost::mpi::request ack = this->mpi_world.isend(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_TRANSFER_INTEGRATION_READY, return_payload);
   }

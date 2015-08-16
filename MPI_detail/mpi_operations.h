@@ -7,7 +7,10 @@
 #define LSSEFT_MPI_OPERATIONS_H
 
 
+#include <memory>
+
 #include "cosmology/FRW_model.h"
+#include "cosmology/transfer_integrator.h"
 #include "units/eV_units.h"
 #include "database/redshift_database.h"
 
@@ -34,6 +37,7 @@ namespace MPI_detail
 
 
     // TRANSFER INTEGRATION PAYLOADS
+
 
     class new_transfer_integration
       {
@@ -109,6 +113,54 @@ namespace MPI_detail
             ar & k;
             ar & token;
             ar & z_db;
+          }
+
+      };
+
+
+    class transfer_integration_ready
+      {
+
+        // CONSTRUCTOR, DESTRUCTOR
+
+      public:
+
+        //! empty constructor: used to receive a payload
+        //! transfer_function, eV_units::energy and wavenumber_token have no default constructors
+        transfer_integration_ready()
+          : data(FRW_model(), eV_units::energy(0), wavenumber_token(0), std::shared_ptr<redshift_database>())
+          {
+          }
+
+        //! value constructor: used to construct and send a payload
+        transfer_integration_ready(const transfer_function& f)
+          : data(f)
+          {
+          }
+
+
+        // INTERFACE
+
+      public:
+
+        const transfer_function& get_data() const { return(this->data); }
+
+
+        // INTERNAL DATA
+
+      private:
+
+        //! transfer function container
+        transfer_function data;
+
+
+        // enable boost::serialization support, and hence automated packing for transmission over MPI
+        friend class boost::serialization::access;
+
+        template <typename Archive>
+        void serialize(Archive& ar, unsigned int version)
+          {
+            ar & data;
           }
 
       };

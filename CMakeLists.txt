@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.2)
 project(LSSEFT)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Ofast")
 
 find_package(MPI REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system filesystem timer date_time mpi program_options serialization)

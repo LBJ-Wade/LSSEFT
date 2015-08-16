@@ -9,6 +9,8 @@
 
 #include "transfer_integrator.h"
 
+#include "utilities/formatter.h"
+
 #include "boost/numeric/odeint.hpp"
 
 
@@ -104,6 +106,20 @@ class transfer_observer
     void operator()(const state_vector& x, double z);
 
 
+    // TIMING FUNCTIONS
+
+  public:
+
+    //! start integration timer
+    void start_timer();
+
+    //! stop integration timer
+    void stop_timer();
+
+    //! read integration timer
+    boost::timer::nanosecond_type read_timer();
+
+
     // INTERNAL DATA
 
   private:
@@ -111,7 +127,16 @@ class transfer_observer
     //! reference to transfer_function container
     transfer_function& container;
 
+    //! keep track of first invocation -- we don't want to store anything at the initial time
+    bool first_call;
+
+    //! integration timer
+    boost::timer::cpu_timer timer;
+
   };
+
+
+// TRANSFER_FUNCTOR METHODS
 
 
 transfer_functor::transfer_functor(const FRW_model& m, const eV_units::energy& _k)
@@ -124,69 +149,6 @@ transfer_functor::transfer_functor(const FRW_model& m, const eV_units::energy& _
 
     H0 = static_cast<double>(H0);
     rho_cc = 3.0 * H0*H0 * Mp*Mp * model.get_omega_cc();
-  }
-
-
-transfer_observer::transfer_observer(transfer_function& c)
-  : container(c)
-  {
-  }
-
-
-transfer_function::transfer_function(const FRW_model& m, const eV_units::energy& _k, const wavenumber_token& t, std::shared_ptr<redshift_database>& z)
-  : model(m),
-    k(_k),
-    token(t),
-    z_db(z)
-  {
-  }
-
-
-transfer_integrator::transfer_integrator(double a, double r)
-  : abs_err(a),
-    rel_err(r)
-  {
-  }
-
-
-transfer_function transfer_integrator::integrate(const FRW_model& model, const eV_units::energy& k,
-                                                 const wavenumber_token& tok, std::shared_ptr<redshift_database>& z_db)
-  {
-    // set up an empty transfer_function container
-    transfer_function ctr(model, k, tok, z_db);
-
-    // set up a functor for the ODE system
-    transfer_functor rhs(model, k);
-
-    // set up an observer
-    transfer_observer obs(ctr);
-
-    // set up a state vector
-    state_vector x(STATE_SIZE);
-
-    // find initial time for integation; typically guessed by asking that the k-mode
-    // is sufficiently superhorizon
-    double init_z = rhs.find_init_z();
-
-    // set up initial conditions
-    rhs.ics(x, init_z);
-
-//    std::cout << "Attempting to start integration at redshift z = " << init_z << '\n';
-
-    // set up vector of sample times
-//    std::vector<double> z_sample{ init_z };
-//    std::copy(z_db->value_rbegin(), z_db->value_rend(), std::back_inserter(z_sample));
-
-//    std::cerr << "z_sample has " << z_sample.size() << " elements" << std::endl;
-//    for(std::vector<double>::const_iterator t = z_sample.begin(); t != z_sample.end(); ++t)
-//      {
-//        std::cerr << "  z = " << *t << std::endl;
-//      }
-
-//    auto stepper = boost::numeric::odeint::make_dense_output< boost::numeric::odeint::runge_kutta_dopri5<state_vector> >(this->abs_err, this->rel_err);
-//    size_t steps = boost::numeric::odeint::integrate_times(stepper, rhs, x, z_sample.begin(), z_sample.end(), -1E-3, obs);
-
-    return(ctr);
   }
 
 
@@ -258,8 +220,8 @@ void transfer_functor::ics(state_vector& x, double z)
     double rho = rho_m + rho_r + this->rho_cc;
     double H   = std::sqrt(rho/(3.0*Mp*Mp));
 
-    double aH = H/(1.0+z);
-    double k_over_aH = static_cast<double>(this->k)/aH;
+    double aH = H / (1.0 + z);
+    double k_over_aH = static_cast<double>(this->k) / aH;
 
     // initial conditions for background objects
     x[RHO_M] = rho_m;
@@ -271,12 +233,6 @@ void transfer_functor::ics(state_vector& x, double z)
     x[THETA_M] = -k_over_aH*k_over_aH/2.0;
     x[THETA_R] = -k_over_aH*k_over_aH/2.0;
     x[PHI]     = 1.0;
-  }
-
-
-void transfer_observer::operator()(const state_vector& x, double z)
-  {
-
   }
 
 
@@ -294,4 +250,142 @@ double transfer_functor::find_init_z()
     if(z_init < z_eq) z_init = z_eq * superhorizon_factor;
 
     return(z_init);
+  }
+
+
+// TRANSFER_OBSERVER METHODS
+
+
+transfer_observer::transfer_observer(transfer_function& c)
+  : container(c),
+    first_call(true)
+  {
+    // stop timer
+    this->timer.stop();
+  }
+
+
+void transfer_observer::start_timer()
+  {
+    this->timer.start();
+  }
+
+
+void transfer_observer::stop_timer()
+  {
+    this->timer.stop();
+  }
+
+
+boost::timer::nanosecond_type transfer_observer::read_timer()
+  {
+    return(this->timer.elapsed().wall);
+  }
+
+
+void transfer_observer::operator()(const state_vector& x, double z)
+  {
+    if(this->first_call)
+      {
+        this->first_call = false;
+      }
+    else
+      {
+        this->container.push_back(x[DELTA_M], x[DELTA_R], x[THETA_M], x[THETA_R], x[PHI]);
+      }
+  }
+
+
+
+// TRANSFER_FUNCTION METHODS
+
+
+transfer_function::transfer_function(const FRW_model& m, const eV_units::energy& _k, const wavenumber_token& t, std::shared_ptr<redshift_database> z)
+  : model(m),
+    k(_k),
+    token(t),
+    z_db(z)
+  {
+    // if we were passed a non-null redshift database, set up containers
+    // (perhaps should disallow construction with a null database?)
+    if(z_db)
+      {
+        delta_m.reset(new std::vector<double>);
+        delta_r.reset(new std::vector<double>);
+        theta_m.reset(new std::vector<double>);
+        theta_r.reset(new std::vector<double>);
+        Phi.reset(new std::vector<double>);
+
+        delta_m->reserve(z_db->size());
+        delta_r->reserve(z_db->size());
+        theta_m->reserve(z_db->size());
+        theta_r->reserve(z_db->size());
+        Phi->reserve(z_db->size());
+      }
+  }
+
+
+void transfer_function::set_integration_time(boost::timer::nanosecond_type t)
+  {
+    this->integration_time = t;
+  }
+
+
+void transfer_function::push_back(double dm, double dr, double tm, double tr, double P)
+  {
+    this->delta_m->push_back(dm);
+    this->delta_r->push_back(dr);
+    this->theta_m->push_back(tm);
+    this->theta_r->push_back(tr);
+    this->Phi->push_back(P);
+  }
+
+
+// TRANSFER_INTEGRATOR METHODS
+
+
+transfer_integrator::transfer_integrator(double a, double r)
+  : abs_err(a),
+    rel_err(r)
+  {
+  }
+
+
+transfer_function transfer_integrator::integrate(const FRW_model& model, const eV_units::energy& k,
+                                                 const wavenumber_token& tok, std::shared_ptr<redshift_database>& z_db)
+  {
+    // set up an empty transfer_function container
+    transfer_function ctr(model, k, tok, z_db);
+
+    // set up a functor for the ODE system
+    transfer_functor rhs(model, k);
+
+    // set up an observer
+    transfer_observer obs(ctr);
+
+    // set up a state vector
+    state_vector x(STATE_SIZE);
+
+    // find initial time for integation; typically guessed by asking that the k-mode
+    // is sufficiently superhorizon
+    double init_z = rhs.find_init_z();
+
+    // set up initial conditions
+    rhs.ics(x, init_z);
+
+    std::cout << "Attempting to start integration at redshift z = " << init_z << '\n';
+
+    // set up vector of sample times
+    std::vector<double> z_sample{ init_z };
+    std::copy(z_db->value_rbegin(), z_db->value_rend(), std::back_inserter(z_sample));
+
+    auto stepper = boost::numeric::odeint::make_dense_output< boost::numeric::odeint::runge_kutta_dopri5<state_vector> >(this->abs_err, this->rel_err);
+
+    obs.start_timer();
+    size_t steps = boost::numeric::odeint::integrate_times(stepper, rhs, x, z_sample.begin(), z_sample.end(), -1E-3, obs);
+    obs.stop_timer();
+
+    ctr.set_integration_time(obs.read_timer());
+
+    return(ctr);
   }
