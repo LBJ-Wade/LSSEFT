@@ -33,7 +33,7 @@ void oneloop::push_back(double g, double A, double B, double D, double E, double
     this->F->push_back(F);
     this->G->push_back(G);
 
-    double total = (-18.0*D - 28.0*E + 7.0*F + 2.0*G)/g;
+    double total = (18.0*D + 28.0*E - 7.0*F - 2.0*G)/g;
     this->total->push_back(total);
   }
 
