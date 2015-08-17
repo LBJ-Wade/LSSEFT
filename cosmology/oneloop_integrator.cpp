@@ -182,7 +182,7 @@ oneloop_functor::oneloop_functor(const FRW_model& m)
     constexpr double Mp = static_cast<double>(eV_units::PlanckMass);
     eV_units::energy H0_value = model.get_h() * 100.0 * eV_units::Kilometre / eV_units::Second / eV_units::Mpc;
 
-    H0 = static_cast<double>(H0);
+    H0 = static_cast<double>(H0_value);
     rho_cc = 3.0 * H0*H0 * Mp*Mp * model.get_omega_cc();
   }
 
