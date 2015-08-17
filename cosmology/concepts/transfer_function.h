@@ -210,42 +210,42 @@ class transfer_function
   public:
 
     //! type alias for non-const iterator
-    typedef transfer_function_impl::generic_token_iterator<redshift_database::record_iterator, redshift_database::const_record_iterator,
+    typedef transfer_function_impl::generic_token_iterator<redshift_database::reverse_record_iterator, redshift_database::const_reverse_record_iterator,
                                                            std::vector<double>::iterator, std::vector<double>::const_iterator, false> token_iterator;
 
     //! type alias for const iterator
-    typedef transfer_function_impl::generic_token_iterator<redshift_database::record_iterator, redshift_database::const_record_iterator,
+    typedef transfer_function_impl::generic_token_iterator<redshift_database::reverse_record_iterator, redshift_database::const_reverse_record_iterator,
                                                            std::vector<double>::iterator, std::vector<double>::const_iterator,true> const_token_iterator;
 
 
     token_iterator token_begin()
       {
-        return(token_iterator(this->z_db->record_begin(), this->delta_m->begin(), this->theta_m->begin(), this->delta_r->begin(), this->theta_r->begin(), this->Phi->begin()));
+        return(token_iterator(this->z_db->record_rbegin(), this->delta_m->begin(), this->theta_m->begin(), this->delta_r->begin(), this->theta_r->begin(), this->Phi->begin()));
       }
 
     token_iterator token_end()
       {
-        return(token_iterator(this->z_db->record_end(), this->delta_m->end(), this->theta_m->end(), this->delta_r->end(), this->theta_r->end(), this->Phi->end()));
+        return(token_iterator(this->z_db->record_rend(), this->delta_m->end(), this->theta_m->end(), this->delta_r->end(), this->theta_r->end(), this->Phi->end()));
       }
 
     const_token_iterator token_begin() const
       {
-        return(const_token_iterator(this->z_db->record_cbegin(), this->delta_m->cbegin(), this->theta_m->cbegin(), this->delta_r->cbegin(), this->theta_r->cbegin(), this->Phi->cbegin()));
+        return(const_token_iterator(this->z_db->record_crbegin(), this->delta_m->cbegin(), this->theta_m->cbegin(), this->delta_r->cbegin(), this->theta_r->cbegin(), this->Phi->cbegin()));
       }
 
     const_token_iterator token_end() const
       {
-        return(const_token_iterator(this->z_db->record_cend(), this->delta_m->cend(), this->theta_m->cend(), this->delta_r->cend(), this->theta_r->cend(), this->Phi->cend()));
+        return(const_token_iterator(this->z_db->record_crend(), this->delta_m->cend(), this->theta_m->cend(), this->delta_r->cend(), this->theta_r->cend(), this->Phi->cend()));
       }
 
     const_token_iterator token_cbegin() const
       {
-        return (const_token_iterator(this->z_db->record_cbegin(), this->delta_m->cbegin(), this->theta_m->cbegin(), this->delta_r->cbegin(), this->theta_r->cbegin(), this->Phi->cbegin()));
+        return (const_token_iterator(this->z_db->record_crbegin(), this->delta_m->cbegin(), this->theta_m->cbegin(), this->delta_r->cbegin(), this->theta_r->cbegin(), this->Phi->cbegin()));
       }
 
     const_token_iterator token_cend() const
       {
-        return(const_token_iterator(this->z_db->record_cend(), this->delta_m->cend(), this->theta_m->cend(), this->delta_r->cend(), this->theta_r->cend(), this->Phi->cend()));
+        return(const_token_iterator(this->z_db->record_crend(), this->delta_m->cend(), this->theta_m->cend(), this->delta_r->cend(), this->theta_r->cend(), this->Phi->cend()));
       }
 
 

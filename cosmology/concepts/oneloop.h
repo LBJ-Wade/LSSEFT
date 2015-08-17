@@ -237,41 +237,41 @@ class oneloop
   public:
 
     //! type alias for non-const iterator
-    typedef oneloop_impl::generic_token_iterator<redshift_database::record_iterator, redshift_database::const_record_iterator,
+    typedef oneloop_impl::generic_token_iterator<redshift_database::reverse_record_iterator, redshift_database::const_reverse_record_iterator,
                                                  std::vector<double>::iterator, std::vector<double>::const_iterator, false> token_iterator;
 
     //! type alias for const iterator
-    typedef oneloop_impl::generic_token_iterator<redshift_database::record_iterator, redshift_database::const_record_iterator,
+    typedef oneloop_impl::generic_token_iterator<redshift_database::reverse_record_iterator, redshift_database::const_reverse_record_iterator,
                                                  std::vector<double>::iterator, std::vector<double>::const_iterator, true> const_token_iterator;
 
     token_iterator token_begin()
       {
-        return(token_iterator(this->z_db->record_begin(), this->g->begin(), this->A->begin(), this->B->begin(), this->D->begin(), this->E->begin(), this->F->begin(), this->G->begin(), this->total->begin()));
+        return(token_iterator(this->z_db->record_rbegin(), this->g->begin(), this->A->begin(), this->B->begin(), this->D->begin(), this->E->begin(), this->F->begin(), this->G->begin(), this->total->begin()));
       }
 
     token_iterator token_end()
       {
-        return(token_iterator(this->z_db->record_end(), this->g->end(), this->A->end(), this->B->end(), this->D->end(), this->E->end(), this->F->end(), this->G->end(), this->total->end()));
+        return(token_iterator(this->z_db->record_rend(), this->g->end(), this->A->end(), this->B->end(), this->D->end(), this->E->end(), this->F->end(), this->G->end(), this->total->end()));
       }
 
     const_token_iterator token_begin() const
       {
-        return(const_token_iterator(this->z_db->record_cbegin(), this->g->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->total->cbegin()));
+        return(const_token_iterator(this->z_db->record_crbegin(), this->g->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->total->cbegin()));
       }
 
     const_token_iterator token_end() const
       {
-        return(const_token_iterator(this->z_db->record_cend(), this->g->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->total->cend()));
+        return(const_token_iterator(this->z_db->record_crend(), this->g->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->total->cend()));
       }
 
     const_token_iterator token_cbegin() const
       {
-        return(const_token_iterator(this->z_db->record_cbegin(), this->g->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->total->cbegin()));
+        return(const_token_iterator(this->z_db->record_crbegin(), this->g->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->total->cbegin()));
       }
 
     const_token_iterator token_cend() const
       {
-        return(const_token_iterator(this->z_db->record_cend(), this->g->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->total->cend()));
+        return(const_token_iterator(this->z_db->record_crend(), this->g->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->total->cend()));
       }
 
 
