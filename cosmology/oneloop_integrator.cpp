@@ -200,12 +200,12 @@ void oneloop_functor::operator()(const state_vector& x, state_vector& dxdz, doub
     double Omega_m   = x[RHO_M]/rho;
     double Omega_r   = x[RHO_R]/rho;
 
-    // evolve background
-    dxdz[RHO_M] = 3.0*x[RHO_M] / (1.0+z);
-    dxdz[RHO_R] = 4.0*x[RHO_R] / (1.0+z);
-
     double one_plus_z = 1.0+z;
     double one_plus_z_sq = (1.0+z)*(1.0+z);
+
+    // evolve background
+    dxdz[RHO_M] = 3.0*x[RHO_M] / one_plus_z;
+    dxdz[RHO_R] = 4.0*x[RHO_R] / one_plus_z;
 
     // evolve linear growth factor
     dxdz[ELEMENT_g]    = x[ELEMENT_dgdz];
@@ -222,27 +222,27 @@ void oneloop_functor::operator()(const state_vector& x, state_vector& dxdz, doub
 
     // evolve one-loop kernels -- second derivatives
     dxdz[ELEMENT_dAdz] = (3.0 * Omega_m / 2.0) * x[ELEMENT_g] * x[ELEMENT_g] / one_plus_z_sq
-                         + (1.0 - epsilon) / one_plus_z * x[ELEMENT_dAdz]
+                         + (1.0 - epsilon) * x[ELEMENT_dAdz] / one_plus_z
                          + (3.0 * Omega_m / 2.0) * x[ELEMENT_A] / one_plus_z_sq;
 
     dxdz[ELEMENT_dBdz] = x[ELEMENT_dgdz] * x[ELEMENT_dgdz]
-                         + (1.0 - epsilon) / one_plus_z * x[ELEMENT_dBdz]
+                         + (1.0 - epsilon) * x[ELEMENT_dBdz] / one_plus_z
                          + (3.0 * Omega_m / 2.0) * x[ELEMENT_B] / one_plus_z_sq;
 
     dxdz[ELEMENT_dDdz] = x[ELEMENT_dgdz] * x[ELEMENT_dAdz]
-                         + (1.0 - epsilon) / one_plus_z * x[ELEMENT_dDdz]
+                         + (1.0 - epsilon) * x[ELEMENT_dDdz] / one_plus_z
                          + (3.0 * Omega_m / 2.0) * x[ELEMENT_D] / one_plus_z_sq;
 
     dxdz[ELEMENT_dEdz] = x[ELEMENT_dgdz] * x[ELEMENT_dBdz]
-                         + (1.0 - epsilon) / one_plus_z * x[ELEMENT_dEdz]
+                         + (1.0 - epsilon) * x[ELEMENT_dEdz] / one_plus_z
                          + (3.0 * Omega_m / 2.0) * x[ELEMENT_E] / one_plus_z_sq;
 
     dxdz[ELEMENT_dFdz] = (3.0 * Omega_m / 2.0) * x[ELEMENT_g] * x[ELEMENT_A] / one_plus_z_sq
-                         + (1.0 - epsilon) / one_plus_z * x[ELEMENT_dFdz]
+                         + (1.0 - epsilon) * x[ELEMENT_dFdz] / one_plus_z
                          + (3.0 * Omega_m / 2.0) * x[ELEMENT_F] / one_plus_z_sq;
 
     dxdz[ELEMENT_dGdz] = (3.0 * Omega_m / 2.0) * x[ELEMENT_g] * x[ELEMENT_B] / one_plus_z_sq
-                         + (1.0 - epsilon) / one_plus_z * x[ELEMENT_dGdz]
+                         + (1.0 - epsilon) * x[ELEMENT_dGdz] / one_plus_z
                          + (3.0 * Omega_m / 2.0) * x[ELEMENT_G] / one_plus_z_sq;
   }
 
