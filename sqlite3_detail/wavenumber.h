@@ -23,14 +23,13 @@ namespace sqlite3_operations
   {
 
     //! lookup id for a wavenumber
-    boost::optional<unsigned int> lookup_wavenumber(sqlite3* db, std::shared_ptr<transaction_manager>& mgr,
+    boost::optional<unsigned int> lookup_wavenumber(sqlite3* db, transaction_manager& mgr,
                                                     const eV_units::energy& k, const sqlite3_policy& policy,
                                                     double tol);
 
     //! insert a wavenumber
-    unsigned int insert_wavenumber(sqlite3* db, std::shared_ptr<transaction_manager>& mgr,
-                                   const eV_units::energy& k,
-                                   const sqlite3_policy& policy);
+    unsigned int insert_wavenumber(sqlite3* db, transaction_manager& mgr,
+                                   const eV_units::energy& k, const sqlite3_policy& policy);
 
   }   // namespace sqlite3_operations
 

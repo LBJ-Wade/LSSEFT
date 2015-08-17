@@ -8,15 +8,19 @@
 
 
 #include <memory>
-#include <sqlite3_detail/sqlite3_policy.h>
 
 #include "tokens.h"
 #include "transaction_manager.h"
 #include "redshift_database.h"
 #include "wavenumber_database.h"
 
+#include "cosmology/types.h"
 #include "cosmology/FRW_model.h"
+#include "cosmology/concepts/transfer_function.h"
+#include "cosmology/concepts/oneloop.h"
 #include "cosmology/concepts/range.h"
+
+#include "sqlite3_detail/sqlite3_policy.h"
 
 #include "boost/filesystem/operations.hpp"
 
@@ -41,12 +45,27 @@ class data_manager
 
   public:
 
-    //! generate redshift database
-    std::shared_ptr<redshift_database> build_db(range<double>& sample);
+    //! generate redshift database from a set of samples
+    std::unique_ptr<redshift_database> build_db(range<double>& sample);
 
-    //! generate wavenumber database
-    std::shared_ptr<wavenumber_database> build_db(range<eV_units::energy>& sample);
+    //! generate wavenumber database from a set of samples
+    std::unique_ptr<wavenumber_database> build_db(range<eV_units::energy>& sample);
 
+
+    // WAVENUMBER SERVICES
+
+  public:
+
+    //! build a work list representing z-values which are missing from the SQLite backing store
+    //! for each k-value in a wavenumber database
+    //! generates a new transaction on the database; will fail if a transaction is in progress
+    std::unique_ptr<transfer_work_list> build_transfer_work_list(FRW_model_token& model, wavenumber_database& k_db,
+                                                                 redshift_database& z_db);
+
+    //! build a work list representing z-values which are missing from the SQLite backing store
+    //! for each z-value needed
+    //! generates a new transaction on the database; will fail if a transaction is in progress
+    std::shared_ptr<redshift_database> build_oneloop_work_list(FRW_model_token& model, redshift_database& z_db);
 
     // TOKENS
     // tokens are the basic unit of currency used when interacting with the database
@@ -54,13 +73,27 @@ class data_manager
   public:
 
     //! tokenize an FRW model
-    std::shared_ptr<FRW_model_token> tokenize(const FRW_model& obj);
+    //! generates a new transation on the database; will fail if a transaction is in progress
+    std::unique_ptr<FRW_model_token> tokenize(const FRW_model& obj);
 
     //! tokenize a redshift
-    std::shared_ptr<redshift_token> tokenize(double z);
+    //! generates a new transation on the database; will fail if a transaction is in progress
+    std::unique_ptr<redshift_token> tokenize(double z);
 
     //! tokenize a wavenumber
-    std::shared_ptr<wavenumber_token> tokenize(const eV_units::energy& k);
+    //! generates a new transation on the database; will fail if a transaction is in progress
+    std::unique_ptr<wavenumber_token> tokenize(const eV_units::energy& k);
+
+
+    // DATA HANDLING
+
+  public:
+
+    //! store a transfer function sample
+    void store(const FRW_model_token& model_token, const transfer_function& sample);
+
+    //! store a one-loop kernel sample
+    void store(const FRW_model_token& model_token, const oneloop& sample);
 
 
     // TRANSACTIONS
@@ -68,6 +101,8 @@ class data_manager
   protected:
 
     //! open a transaction; throws an exception if a transaction is already held open
+    //! note we have to use a std::shared_ptr<> here, rather than a std::unique_ptr<>,
+    //! because we hold a std::weak_ptr<> internally to keep track of whether a transaction is open
     std::shared_ptr<transaction_manager> open_transaction();
 
     //! begin a new transaction on the database
@@ -88,13 +123,13 @@ class data_manager
   protected:
 
     //! lookup or insert a new FRW model
-    unsigned int lookup_or_insert(std::shared_ptr<transaction_manager> &mgr, const FRW_model &obj);
+    unsigned int lookup_or_insert(transaction_manager& mgr, const FRW_model &obj);
 
     //! lookup or insert a redshift
-    unsigned int lookup_or_insert(std::shared_ptr<transaction_manager> &mgr, double z);
+    unsigned int lookup_or_insert(transaction_manager& mgr, double z);
 
     //! lookup or insert a wavenumber
-    unsigned int lookup_or_insert(std::shared_ptr<transaction_manager> &mgr, const eV_units::energy &k);
+    unsigned int lookup_or_insert(transaction_manager& mgr, const eV_units::energy &k);
 
 
     // INTERNAL DATA

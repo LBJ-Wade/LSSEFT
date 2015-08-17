@@ -17,7 +17,7 @@
 namespace sqlite3_operations
   {
 
-    boost::optional<unsigned int> lookup_FRW_model(sqlite3* db, std::shared_ptr<transaction_manager>& mgr, const FRW_model& obj, const sqlite3_policy& policy, double tol)
+    boost::optional<unsigned int> lookup_FRW_model(sqlite3* db, transaction_manager& mgr, const FRW_model& obj, const sqlite3_policy& policy, double tol)
       {
         assert(db != nullptr);
 
@@ -67,7 +67,7 @@ namespace sqlite3_operations
       }
 
 
-    unsigned int insert_FRW_model(sqlite3* db, std::shared_ptr<transaction_manager>& mgr, const FRW_model& obj, const sqlite3_policy& policy)
+    unsigned int insert_FRW_model(sqlite3* db, transaction_manager& mgr, const FRW_model& obj, const sqlite3_policy& policy)
       {
         assert(db != nullptr);
 

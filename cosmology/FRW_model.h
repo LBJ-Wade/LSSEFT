@@ -9,6 +9,8 @@
 
 #include "Planck_defaults.h"
 
+#include "boost/serialization/serialization.hpp"
+
 
 class FRW_model
   {
@@ -58,6 +60,19 @@ class FRW_model
 
     //! CMB temperature T_CMB, measured today
     eV_units::energy T_CMB;
+
+
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & omega_m;
+        ar & omega_cc;
+        ar & h;
+        ar & T_CMB;
+      }
 
   };
 

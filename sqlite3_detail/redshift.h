@@ -21,11 +21,11 @@ namespace sqlite3_operations
   {
 
     //! lookup id for a redshift
-    boost::optional<unsigned int> lookup_redshift(sqlite3* db, std::shared_ptr<transaction_manager>& mgr, double z,
+    boost::optional<unsigned int> lookup_redshift(sqlite3* db, transaction_manager& mgr, double z,
                                                   const sqlite3_policy& policy, double tol);
 
     //! insert a redshift
-    unsigned int insert_redshift(sqlite3* db, std::shared_ptr<transaction_manager>& mgr, double z,
+    unsigned int insert_redshift(sqlite3* db, transaction_manager& mgr, double z,
                                  const sqlite3_policy& policy);
 
   }   // namespace sqlite3_operations

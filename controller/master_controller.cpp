@@ -3,28 +3,34 @@
 // Copyright (c) 2015 University of Sussex. All rights reserved.
 //
 
-#include "master_controller.h"
 
 #include "core.h"
-#include "localizations/messages.h"
+
+#include "master_controller.h"
+#include "scheduler.h"
 
 #include "cosmology/FRW_model.h"
+#include "cosmology/oneloop_integrator.h"
 #include "cosmology/concepts/range.h"
 
 #include "database/data_manager.h"
 
+#include "MPI_detail/mpi_operations.h"
+
+#include "utilities/formatter.h"
+
+#include "localizations/messages.h"
+
 #include "boost/program_options.hpp"
 
 
-master_controller::master_controller(std::shared_ptr<boost::mpi::environment>& me,
-                                     std::shared_ptr<boost::mpi::communicator>& mw,
-                                     std::shared_ptr<argument_cache>& ac)
+master_controller::master_controller(boost::mpi::environment& me, boost::mpi::communicator& mw, argument_cache& ac)
   : mpi_env(me),
     mpi_world(mw),
-    arg_cache(ac)
+    arg_cache(ac),
+    local_env(),
+    err_handler(arg_cache, local_env)
   {
-    local_env   = std::make_shared<local_environment>();
-    err_handler = std::make_shared<error_handler>(arg_cache, local_env);
   }
 
 
@@ -33,14 +39,14 @@ void master_controller::process_arguments(int argc, char* argv[])
     // set up BOOST::program_options descriptors for command-line arguments
     boost::program_options::options_description generic("Generic");
     generic.add_options()
-      (LSSEFT_SWITCH_HELP,      LSSEFT_HELP_HELP)
-      (LSSEFT_SWITCH_VERSION,   LSSEFT_HELP_VERSION)
+      (LSSEFT_SWITCH_HELP, LSSEFT_HELP_HELP)
+      (LSSEFT_SWITCH_VERSION, LSSEFT_HELP_VERSION)
       (LSSEFT_SWITCH_NO_COLOUR, LSSEFT_HELP_NO_COLOUR);
 
     boost::program_options::options_description configuration("Configuration options");
     configuration.add_options()
-      (LSSEFT_SWITCH_VERBOSE,                                                   LSSEFT_HELP_VERBOSE)
-      (LSSEFT_SWITCH_DATABASE,  boost::program_options::value< std::string >(), LSSEFT_HELP_DATABASE);
+      (LSSEFT_SWITCH_VERBOSE, LSSEFT_HELP_VERBOSE)
+      (LSSEFT_SWITCH_DATABASE, boost::program_options::value<std::string>(), LSSEFT_HELP_DATABASE);
 
     boost::program_options::options_description hidden("Hidden options");
     hidden.add_options()
@@ -70,47 +76,207 @@ void master_controller::process_arguments(int argc, char* argv[])
         std::cout << output_options << '\n';
       }
 
-    if(option_map.count(LSSEFT_SWITCH_VERBOSE_LONG))                                          this->arg_cache->set_verbose(true);
-    if(option_map.count(LSSEFT_SWITCH_NO_COLOUR) || option_map.count(LSSEFT_SWITCH_NO_COLOR)) this->arg_cache->set_colour_output(false);
+    if(option_map.count(LSSEFT_SWITCH_VERBOSE_LONG)) this->arg_cache.set_verbose(true);
+    if(option_map.count(LSSEFT_SWITCH_NO_COLOUR) || option_map.count(LSSEFT_SWITCH_NO_COLOR))
+      this->arg_cache.set_colour_output(false);
 
     if(option_map.count(LSSEFT_SWITCH_DATABASE_LONG))
       {
-        this->arg_cache->set_database_path(option_map[LSSEFT_SWITCH_DATABASE_LONG].as<std::string>());
+        this->arg_cache.set_database_path(option_map[LSSEFT_SWITCH_DATABASE_LONG].as<std::string>());
       }
   }
 
 
 void master_controller::execute()
   {
-    if(!this->arg_cache->get_database_set())
+    if(!this->arg_cache.get_database_set())
       {
-        this->err_handler->error(ERROR_NO_DATABASE);
+        this->err_handler.error(ERROR_NO_DATABASE);
         return;
       }
 
     // set up
-    data_manager db(this->arg_cache->get_database_path());
+    data_manager dmgr(this->arg_cache.get_database_path());
     FRW_model cosmology_model;
 
-    std::shared_ptr<FRW_model_token> token = db.tokenize(cosmology_model);
+    std::unique_ptr<FRW_model_token> model = dmgr.tokenize(cosmology_model);
 
     // set up a list of wavenumber to sample, measured in h/Mpc
-    stepping_range<eV_units::energy> wavenumber_samples(0.05, 0.3, 30, 1.0/eV_units::Mpc, spacing_type::linear);
+    stepping_range<eV_units::energy> wavenumber_samples(0.05, 0.3, 30, 1.0 / eV_units::Mpc, spacing_type::linear);
 
-    // set up a list of redshifts at which to sample
-    stepping_range<double> redshift_samples(0.01, 1000.0, 250, 1.0, spacing_type::logarithmic_bottom);
+    // set up a list of redshifts at which to sample to transfer function
+    stepping_range<double> hi_redshift_samples(1000.0, 1500.0, 5.0, 1.0, spacing_type::linear);
 
-    // exchange these sample ranges for a database
-    std::shared_ptr<redshift_database>   z_db = db.build_db(redshift_samples);
-    std::shared_ptr<wavenumber_database> k_db = db.build_db(wavenumber_samples);
+    // set up a list of redshifts at which to sample the late-time growth functions
+    stepping_range<double> lo_redshift_samples(0.01, 1000.0, 250, 1.0, spacing_type::logarithmic_bottom);
 
-    for(redshift_database::reverse_value_iterator t = z_db->value_rbegin(); t != z_db->value_rend(); ++t)
+    // exchange these sample ranges for iterable databases
+    std::unique_ptr<redshift_database> hi_z_db = dmgr.build_db(hi_redshift_samples);
+    std::unique_ptr<redshift_database> lo_z_db = dmgr.build_db(lo_redshift_samples);
+    std::unique_ptr<wavenumber_database> k_db = dmgr.build_db(wavenumber_samples);
+
+    // generate targets
+    // for 1-loop calculation, we need the linear transfer function at the initial redshift,
+    // plus the time-dependent 1-loop kernels through the subsequent evolution
+
+    // build a work list for transfer functions
+    std::unique_ptr<transfer_work_list> transfer_work_list = dmgr.build_transfer_work_list(*model, *k_db, *hi_z_db);
+
+    // distribute this work list among the slave processes
+    this->scatter(cosmology_model, *model, *transfer_work_list, dmgr);
+
+    // build a work list for late-time growth functions
+    std::shared_ptr<redshift_database> oneloop_work_list = dmgr.build_oneloop_work_list(*model, *lo_z_db);
+
+    // compute one-loop functions, if needed; can be done on master process since there is only one integration
+    if(oneloop_work_list) this->integrate_oneloop(cosmology_model, *model, oneloop_work_list, dmgr);
+
+    // instruct slave processes to terminate
+    this->terminate_workers();
+  }
+
+
+void master_controller::scatter(const FRW_model& model, const FRW_model_token& token, transfer_work_list& work,
+                                data_manager& dmgr)
+  {
+    if(this->mpi_world.size() == 1) throw runtime_exception(exception_type::runtime_error, ERROR_TOO_FEW_WORKERS);
+
+    // instruct slave processes to await transfer function tasks
+    std::unique_ptr<scheduler> sch = this->set_up_workers(MPI_detail::MESSAGE_NEW_TRANSFER_TASK);
+
+    bool sent_closedown = false;
+    transfer_work_list::iterator next_work_item = work.begin();
+
+    while(!sch->all_inactive())
       {
-        std::cout << "z = " << *t << '\n';
+        // check whether all work is exhausted
+        if(next_work_item == work.end() && !sent_closedown)
+          {
+            sent_closedown = true;
+            this->close_down_workers();
+          }
+
+        // check whether any workers are waiting for assignments
+        if(next_work_item != work.end() && sch->is_assignable())
+          {
+            std::vector<unsigned int> unassigned_list = sch->make_assignment();
+            std::vector<boost::mpi::request> requests;
+
+            for(std::vector<unsigned int>::const_iterator t = unassigned_list.begin();
+                next_work_item != work.end() && t != unassigned_list.end(); ++t)
+              {
+                // assign next work item to this worker
+                MPI_detail::new_transfer_integration payload(model, *(*next_work_item), next_work_item->get_token(),
+                                                             next_work_item->get_z_db());
+                requests.push_back(this->mpi_world.isend(this->worker_rank(*t), MPI_detail::MESSAGE_NEW_TRANSFER_INTEGRATION, payload));
+
+                sch->mark_assigned(*t);
+                ++next_work_item;
+              }
+
+            // wait for all messages to be received
+            boost::mpi::wait_all(requests.begin(), requests.end());
+          }
+
+        // check whether any messages are waiting in the queue
+        boost::optional<boost::mpi::status> stat = this->mpi_world.iprobe();
+
+        while(stat) // consume messages until no more are available
+          {
+            switch(stat->tag())
+              {
+                case MPI_detail::MESSAGE_TRANSFER_INTEGRATION_READY:
+                  {
+                    MPI_detail::transfer_integration_ready payload;
+                    this->mpi_world.recv(stat->source(), MPI_detail::MESSAGE_TRANSFER_INTEGRATION_READY, payload);
+                    sch->mark_unassigned(this->worker_number(stat->source()));
+                    dmgr.store(token, payload.get_data());
+                    break;
+                  }
+
+                case MPI_detail::MESSAGE_END_OF_WORK_ACK:
+                  {
+                    this->mpi_world.recv(stat->source(), MPI_detail::MESSAGE_END_OF_WORK_ACK);
+                    sch->mark_inactive(this->worker_number(stat->source()));
+                    break;
+                  }
+
+                default:
+                  assert(false);
+              }
+
+            stat = this->mpi_world.iprobe();
+          }
+      }
+  }
+
+
+void master_controller::terminate_workers()
+  {
+    // send terminate message to all workers
+    std::vector<boost::mpi::request> requests(this->mpi_world.size() - 1);
+    for(unsigned int i = 0; i < this->mpi_world.size() - 1; ++i)
+      {
+        requests[i] = this->mpi_world.isend(this->worker_rank(i), MPI_detail::MESSAGE_TERMINATE);
       }
 
-    for(wavenumber_database::value_iterator t = k_db->value_begin(); t != k_db->value_end(); ++t)
+    // wait for all messages to be received, then exit ourselves
+    boost::mpi::wait_all(requests.begin(), requests.end());
+  }
+
+
+std::unique_ptr<scheduler> master_controller::set_up_workers(unsigned int tag)
+  {
+    // send specified message to all workers
+    std::vector<boost::mpi::request> requests(this->mpi_world.size() - 1);
+    for(unsigned int i = 0; i < this->mpi_world.size() - 1; ++i)
       {
-        std::cout << "k = " << (*t) * eV_units::Mpc << " h/Mpc = " << static_cast<double>(*t) << " eV" << '\n';
+        requests[i] = this->mpi_world.isend(this->worker_rank(i), tag);
       }
+
+    // wait for all messages to be received
+    boost::mpi::wait_all(requests.begin(), requests.end());
+
+    // create scheduler object
+    std::unique_ptr<scheduler> sch(new scheduler(this->mpi_world.size() - 1));
+
+    // wait for messages from workers reporting that they are correctly set up
+    while(!sch->is_ready())
+      {
+        boost::mpi::status stat = this->mpi_world.probe();
+
+        switch(stat.tag())
+          {
+            case MPI_detail::MESSAGE_WORKER_READY:
+              {
+                this->mpi_world.recv(stat.source(), MPI_detail::MESSAGE_WORKER_READY);
+                sch->initialize_worker(this->worker_number(stat.source()));
+              }
+          }
+      }
+
+    return (sch);
+  }
+
+
+void master_controller::close_down_workers()
+  {
+    // send end-of-work message to all workers
+    std::vector<boost::mpi::request> requests(this->mpi_world.size() - 1);
+    for(unsigned int i = 0; i < this->mpi_world.size() - 1; ++i)
+      {
+        requests[i] = this->mpi_world.isend(this->worker_rank(i), MPI_detail::MESSAGE_END_OF_WORK);
+      }
+
+    // wait for all messages to be received
+    boost::mpi::wait_all(requests.begin(), requests.end());
+  }
+
+
+void master_controller::integrate_oneloop(const FRW_model& model, const FRW_model_token& token, std::shared_ptr<redshift_database>& z_db,
+                                          data_manager& dmgr)
+  {
+    oneloop_integrator integrator;
+    oneloop sample = integrator.integrate(model, z_db);
+    dmgr.store(token, sample);
   }

@@ -106,8 +106,11 @@ class aggregation_range: public range<Value>
     //! grid of values
     std::vector<Value> elements;
 
-    //! list of subranges; use std::shared_ptr<> to manage lifetime of instances
-    typename std::list< std::shared_ptr< range<Value> > > subrange_list;
+    //! set up type alias for subrange list; use std::unique_ptr<> to manage lifetime of instances
+    typedef std::list< std::unique_ptr< range<Value> > > subrange_list_type;
+
+    //! list of subranges
+    subrange_list_type subrange_list;
 
   };
 
@@ -176,7 +179,7 @@ void aggregation_range<Value>::populate_grid()
     this->elements.clear();
 
     // splice subranges together
-    for(typename std::list< std::shared_ptr< range<Value> > >::const_iterator t = this->subrange_list.begin(); t != this->subrange_list.end(); ++t)
+    for(typename subrange_list_type::const_iterator t = this->subrange_list.begin(); t != this->subrange_list.end(); ++t)
       {
         std::vector<Value> temp = (*t)->grid();
         this->elements.reserve(this->elements.size() + temp.size());

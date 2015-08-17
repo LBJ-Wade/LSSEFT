@@ -9,15 +9,14 @@
 
 
 //! construct a task manager object
-//! first, all shared_ptr<> objects must be declared followed by the controller delegates
 task_manager::task_manager(int argc, char* argv[])
-  : mpi_env(std::make_shared<boost::mpi::environment>(argc, argv)),
-    mpi_world(std::make_shared<boost::mpi::communicator>()),
-    arg_cache(std::make_shared<argument_cache>()),
+  : mpi_env(argc, argv),
+    mpi_world(),
+    arg_cache(),
     master_ctrl(mpi_env, mpi_world, arg_cache),
     slave_ctrl(mpi_env, mpi_world, arg_cache)
   {
-    if(mpi_world->rank() == MPI_detail::RANK_MASTER)
+    if(mpi_world.rank() == MPI_detail::RANK_MASTER)
       {
         master_ctrl.process_arguments(argc, argv);
       }
@@ -26,11 +25,12 @@ task_manager::task_manager(int argc, char* argv[])
 
 void task_manager::work()
   {
-    if(this->mpi_world->rank() == MPI_detail::RANK_MASTER)
+    if(this->mpi_world.rank() == MPI_detail::RANK_MASTER)
       {
         this->master_ctrl.execute();
       }
     else
       {
+        this->slave_ctrl.execute();
       }
   }

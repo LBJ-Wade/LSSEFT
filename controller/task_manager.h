@@ -46,20 +46,20 @@ class task_manager
     // MPI environment
 
     //! shared BOOST MPI environment
-    std::shared_ptr<boost::mpi::environment> mpi_env;
+    boost::mpi::environment mpi_env;
 
     //! shared BOOST MPI communicator
-    std::shared_ptr<boost::mpi::communicator> mpi_world;
+    boost::mpi::communicator mpi_world;
 
 
     // Caches
 
     //! argument cache
-    std::shared_ptr<argument_cache> arg_cache;
+    argument_cache arg_cache;
 
 
     // Controller delegates
-    // note these must be declared after all shared_ptr<> objects on which they depend for construction;
+    // note these must be declared after all objects on which they depend for construction;
     // this guarantees that these objects will have been constructed by the same
     // the delegates are constructed
 

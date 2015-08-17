@@ -9,12 +9,15 @@
 #include <assert.h>
 
 #include "data_manager.h"
+
 #include "sqlite3_detail/utilities.h"
 #include "sqlite3_detail/operations.h"
 
-#include "exceptions.h"
-#include "localizations/messages.h"
+#include "utilities/formatter.h"
+
 #include "defaults.h"
+
+#include "boost/timer/timer.hpp"
 
 
 data_manager::data_manager(const boost::filesystem::path& c)
@@ -76,48 +79,48 @@ data_manager::~data_manager()
 // TODO: consider simplifying this code via traits and templates
 
 
-std::shared_ptr<FRW_model_token> data_manager::tokenize(const FRW_model& obj)
+std::unique_ptr<FRW_model_token> data_manager::tokenize(const FRW_model& obj)
   {
     // open a new transaction on the database
     std::shared_ptr<transaction_manager> transaction = this->open_transaction();
 
     // lookup id for this model, or generate one if it does not already exist
-    unsigned int id = this->lookup_or_insert(transaction, obj);
+    unsigned int id = this->lookup_or_insert(*transaction, obj);
 
     // commit the transaction
     transaction->commit();
 
-    return std::make_shared<FRW_model_token>(id);
+    return std::unique_ptr<FRW_model_token>(new FRW_model_token(id));
   }
 
 
-std::shared_ptr<redshift_token> data_manager::tokenize(double z)
+std::unique_ptr<redshift_token> data_manager::tokenize(double z)
   {
     // open a new transaction on the database
     std::shared_ptr<transaction_manager> transaction = this->open_transaction();
 
     // lookup id for this redshift, or generate one if it does not already exist
-    unsigned int id = this->lookup_or_insert(transaction, z);
+    unsigned int id = this->lookup_or_insert(*transaction, z);
 
     // commit the transaction
     transaction->commit();
 
-    return std::make_shared<redshift_token>(id);
+    return std::unique_ptr<redshift_token>(new redshift_token(id));
   }
 
 
-std::shared_ptr<wavenumber_token> data_manager::tokenize(const eV_units::energy& k)
+std::unique_ptr<wavenumber_token> data_manager::tokenize(const eV_units::energy& k)
   {
     // open a new transaction on the database
     std::shared_ptr<transaction_manager> transaction = this->open_transaction();
 
     // lookup id for this wavenumber, or generate one if it does not already exist
-    unsigned int id = this->lookup_or_insert(transaction, k);
+    unsigned int id = this->lookup_or_insert(*transaction, k);
 
     // commit the transaction
     transaction->commit();
 
-    return std::make_shared<wavenumber_token>(id);
+    return std::unique_ptr<wavenumber_token>(new wavenumber_token(id));
   }
 
 
@@ -183,7 +186,7 @@ void data_manager::release_transaction()
 // LOOKUP AND INSERT
 
 
-unsigned int data_manager::lookup_or_insert(std::shared_ptr<transaction_manager>& mgr, const FRW_model& obj)
+unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const FRW_model& obj)
   {
     boost::optional<unsigned int> id = sqlite3_operations::lookup_FRW_model(this->handle, mgr, obj, this->policy, this->FRW_model_tol);
     if(id) return(*id);
@@ -192,7 +195,7 @@ unsigned int data_manager::lookup_or_insert(std::shared_ptr<transaction_manager>
   }
 
 
-unsigned int data_manager::lookup_or_insert(std::shared_ptr<transaction_manager>& mgr, double z)
+unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, double z)
   {
     boost::optional<unsigned int> id = sqlite3_operations::lookup_redshift(this->handle, mgr, z, this->policy, this->z_tol);
     if(id) return(*id);
@@ -201,7 +204,7 @@ unsigned int data_manager::lookup_or_insert(std::shared_ptr<transaction_manager>
   }
 
 
-unsigned int data_manager::lookup_or_insert(std::shared_ptr<transaction_manager>& mgr, const eV_units::energy& k)
+unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const eV_units::energy& k)
   {
     boost::optional<unsigned int> id = sqlite3_operations::lookup_wavenumber(this->handle, mgr, k, this->policy, this->z_tol);
     if(id) return(*id);
@@ -210,40 +213,132 @@ unsigned int data_manager::lookup_or_insert(std::shared_ptr<transaction_manager>
   }
 
 
-// GENERATE DATABASES
+// GENERATE REDSHIFT AND WAVENUMBER DATABASES
 
 
-std::shared_ptr<redshift_database> data_manager::build_db(range<double>& sample)
+std::unique_ptr<redshift_database> data_manager::build_db(range<double>& sample)
   {
     // construct an empty redshift database
-    std::shared_ptr<redshift_database> z_db = std::make_shared<redshift_database>();
+    std::unique_ptr<redshift_database> z_db(new redshift_database);
 
     // grab the grid of redshift samples
     const std::vector<double>& z_samples = sample.grid();
 
     for(std::vector<double>::const_iterator t = z_samples.begin(); t != z_samples.end(); ++t)
       {
-        std::shared_ptr<redshift_token> tok = this->tokenize(*t);
-        z_db->add_record(*t, tok);
+        std::unique_ptr<redshift_token> tok = this->tokenize(*t);
+        z_db->add_record(*t, *tok);
       }
 
     return(z_db);
   }
 
 
-std::shared_ptr<wavenumber_database> data_manager::build_db(range<eV_units::energy>& sample)
+std::unique_ptr<wavenumber_database> data_manager::build_db(range<eV_units::energy>& sample)
   {
     // construct an empty wavenumber database
-    std::shared_ptr<wavenumber_database> k_db = std::make_shared<wavenumber_database>();
+    std::unique_ptr<wavenumber_database> k_db(new wavenumber_database);
 
     // grab the grid of wavenumber samples
     const std::vector<eV_units::energy>& k_samples = sample.grid();
 
     for(std::vector<eV_units::energy>::const_iterator t = k_samples.begin(); t != k_samples.end(); ++t)
       {
-        std::shared_ptr<wavenumber_token> tok = this->tokenize(*t);
-        k_db->add_record(*t, tok);
+        std::unique_ptr<wavenumber_token> tok = this->tokenize(*t);
+        k_db->add_record(*t, *tok);
       }
 
     return(k_db);
+  }
+
+
+std::unique_ptr<transfer_work_list> data_manager::build_transfer_work_list(FRW_model_token& model, wavenumber_database& k_db,
+                                                                           redshift_database& z_db)
+  {
+    // start timer
+    boost::timer::cpu_timer timer;
+
+    // construct an empty work list
+    std::unique_ptr<transfer_work_list> work_list(new transfer_work_list);
+
+    // open a transaction on the database
+    std::shared_ptr<transaction_manager> transaction = this->open_transaction();
+
+    // set up temporary table of desired z identifiers
+    std::string z_table = sqlite3_operations::z_table(this->handle, *transaction, this->policy, z_db);
+
+    // for each wavenumber in k_db, find which z-values are missing
+    for(wavenumber_database::record_iterator t = k_db.record_begin(); t != k_db.record_end(); ++t)
+      {
+//        std::cout << "lsseft: checking missing redshift values for k = " << (*(*t) * eV_units::Mpc) << " h/Mpc = " << static_cast<double>(*(*t)) << " eV" << '\n';
+
+        // get a database of missing redshifts for this k-value
+        std::shared_ptr<redshift_database> missing_values = sqlite3_operations::missing_redshifts(this->handle, *transaction, this->policy, model, t->get_token(), z_db, z_table);
+
+        // if any redshifts were missing, set up a record in the work list
+        if(missing_values)
+          {
+//            std::cout << "  -- " << missing_values->size() << " redshifts" << '\n';
+
+            work_list->emplace_back(*(*t), t->get_token(), missing_values);
+          }
+      }
+
+    // drop unneeded temporary tables
+    sqlite3_operations::drop_temp(this->handle, *transaction, z_table);
+
+    // commit the transaction before allowing it to go out of scope
+    transaction->commit();
+
+    timer.stop();
+    std::cout << "lsseft: constructed transfer function work list in time " << format_time(timer.elapsed().wall) << '\n';
+
+    return(work_list);
+  }
+
+
+void data_manager::store(const FRW_model_token& model_token, const transfer_function& sample)
+  {
+    // open a transaction on the database
+    std::shared_ptr<transaction_manager> transaction = this->open_transaction();
+
+    sqlite3_operations::store(this->handle, *transaction, this->policy, model_token, sample);
+
+    // commit the transaction before allowing it to go out of scope
+    transaction->commit();
+  }
+
+
+std::shared_ptr<redshift_database> data_manager::build_oneloop_work_list(FRW_model_token& model, redshift_database& z_db)
+  {
+    // start timer
+    boost::timer::cpu_timer timer;
+
+    // open a transaction on the database
+    std::shared_ptr<transaction_manager> transaction = this->open_transaction();
+
+    // set up temporary table of desired z identifier
+    std::string z_table = sqlite3_operations::z_table(this->handle, *transaction, this->policy, z_db);
+
+    std::shared_ptr<redshift_database> work_list = sqlite3_operations::missing_redshifts(this->handle, *transaction, this->policy, model, z_db, z_table);
+
+    // close transaction
+    transaction->commit();
+
+    timer.stop();
+    std::cout << "lsseft: constructed one-loop work list in time " << format_time(timer.elapsed().wall) << '\n';
+
+    return(work_list);
+  }
+
+
+void data_manager::store(const FRW_model_token& model_token, const oneloop& sample)
+  {
+    // open a transaction on the database
+    std::shared_ptr<transaction_manager> transaction = this->open_transaction();
+
+    sqlite3_operations::store(this->handle, *transaction, this->policy, model_token, sample);
+
+    // commit the transaction
+    transaction->commit();
   }

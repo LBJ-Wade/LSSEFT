@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.2)
 project(LSSEFT)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Ofast")
 
 find_package(MPI REQUIRED)
-find_package(Boost REQUIRED COMPONENTS system filesystem timer date_time mpi program_options)
+find_package(Boost REQUIRED COMPONENTS system filesystem timer date_time mpi program_options serialization)
 
 include_directories(./
   ${Boost_INCLUDE_DIRS}
@@ -21,7 +21,9 @@ set(LOCALIZATION_EN_GB
   localizations/en_GB/database.h
   localizations/en_GB/sqlite3.h
   localizations/en_GB/transaction_manager.h
-  localizations/en_GB/range.h)
+  localizations/en_GB/range.h
+  localizations/en_GB/format.h
+  localizations/en_GB/master_controller.h)
 
 set(TOP_LEVEL_SOURCE_FILES
   main.cpp
@@ -34,10 +36,12 @@ set(CONTROLLER_SOURCE_FILES
   controller/task_manager.cpp controller/task_manager.h
   controller/master_controller.cpp controller/master_controller.h
   controller/slave_controller.cpp controller/slave_controller.h
-  controller/local_environment.cpp controller/local_environment.h)
+  controller/local_environment.cpp controller/local_environment.h
+  controller/scheduler.cpp controller/scheduler.h)
 
 set(UTILITY_SOURCE_FILES
-  utilities/python_finder.cpp utilities/python_finder.h)
+  utilities/python_finder.cpp utilities/python_finder.h
+  utilities/formatter.cpp utilities/formatter.h)
 
 set(ERROR_SOURCE_FILES
   error/error_handler.cpp error/error_handler.h)
@@ -51,11 +55,16 @@ set(MPI_SOURCE_FILES
 set(COSMOLOGY_SOURCE_FILES
   cosmology/FRW_model.cpp cosmology/FRW_model.h
   cosmology/Planck_defaults.h
+  cosmology/types.h
   cosmology/concepts/range.h
   cosmology/concepts/range_detail/stepping.h
   cosmology/concepts/range_detail/range.h
   cosmology/concepts/range_detail/common.h
-  cosmology/concepts/range_detail/aggregation.h)
+  cosmology/concepts/range_detail/aggregation.h
+  cosmology/transfer_integrator.cpp cosmology/transfer_integrator.h
+  cosmology/concepts/oneloop.cpp cosmology/concepts/oneloop.h
+  cosmology/concepts/transfer_function.cpp cosmology/concepts/transfer_function.h
+  cosmology/oneloop_integrator.cpp cosmology/oneloop_integrator.h cosmology/constants.h)
 
 set(UNITS_SOURCE_FILES
   units/eV_units.h)
@@ -76,7 +85,10 @@ set(SQLITE3_DETAIL_SOURCE_FILES
   sqlite3_detail/FRW_model.cpp sqlite3_detail/FRW_model.h
   sqlite3_detail/sqlite3_policy.cpp sqlite3_detail/sqlite3_policy.h
   sqlite3_detail/redshift.cpp sqlite3_detail/redshift.h
-  sqlite3_detail/wavenumber.cpp sqlite3_detail/wavenumber.h)
+  sqlite3_detail/wavenumber.cpp sqlite3_detail/wavenumber.h
+  sqlite3_detail/temporary_tables.cpp sqlite3_detail/temporary_tables.h
+  sqlite3_detail/missing_elements.cpp sqlite3_detail/missing_elements.h
+  sqlite3_detail/store.cpp sqlite3_detail/store.h)
 
 set(SOURCE_FILES
   ${TOP_LEVEL_SOURCE_FILES}
@@ -90,7 +102,7 @@ set(SOURCE_FILES
   ${DATABASE_SOURCE_FILES}
   ${SQLITE3_DETAIL_SOURCE_FILES}
   ${LOCALIZATION}
-  ${LOCALIZATION_EN_GB} cosmology/concepts/range_detail/common.h)
+  ${LOCALIZATION_EN_GB})
 
 add_executable(lsseft
   main.cpp
@@ -99,9 +111,15 @@ add_executable(lsseft
   controller/master_controller.cpp
   controller/slave_controller.cpp
   controller/task_manager.cpp
+  controller/scheduler.cpp
   error/error_handler.cpp
   utilities/python_finder.cpp
+  utilities/formatter.cpp
   cosmology/FRW_model.cpp
+  cosmology/concepts/transfer_function.cpp
+  cosmology/concepts/oneloop.cpp
+  cosmology/transfer_integrator.cpp
+  cosmology/oneloop_integrator.cpp
   database/data_manager.cpp
   database/tokens.cpp
   database/transaction_manager.cpp
@@ -112,6 +130,9 @@ add_executable(lsseft
   sqlite3_detail/FRW_model.cpp
   sqlite3_detail/redshift.cpp
   sqlite3_detail/wavenumber.cpp
+  sqlite3_detail/temporary_tables.cpp
+  sqlite3_detail/missing_elements.cpp
+  sqlite3_detail/store.cpp
   sqlite3_detail/sqlite3_policy.cpp)
 
 target_link_libraries(lsseft sqlite3 ${Boost_LIBRARIES} ${MPI_LIBRARIES})
