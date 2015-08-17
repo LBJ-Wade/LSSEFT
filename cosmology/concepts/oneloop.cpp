@@ -11,21 +11,21 @@ oneloop::oneloop(std::shared_ptr<redshift_database> z)
   {
     if(z_db)
       {
-        g.reset(new std::vector<double>);
+        g_linear.reset(new std::vector<double>);
         A.reset(new std::vector<double>);
         B.reset(new std::vector<double>);
         D.reset(new std::vector<double>);
         E.reset(new std::vector<double>);
         F.reset(new std::vector<double>);
         G.reset(new std::vector<double>);
-        total.reset(new std::vector<double>);
+        g_oneloop.reset(new std::vector<double>);
       }
   }
 
 
 void oneloop::push_back(double g, double A, double B, double D, double E, double F, double G)
   {
-    this->g->push_back(g);
+    this->g_linear->push_back(g);
     this->A->push_back(A);
     this->B->push_back(B);
     this->D->push_back(D);
@@ -33,8 +33,8 @@ void oneloop::push_back(double g, double A, double B, double D, double E, double
     this->F->push_back(F);
     this->G->push_back(G);
 
-    double total = (18.0*D + 28.0*E - 7.0*F - 2.0*G)/g;
-    this->total->push_back(total);
+    double g1 = (18.0*D + 28.0*E - 7.0*F - 2.0*G)/g;
+    this->g_oneloop->push_back(g1);
   }
 
 

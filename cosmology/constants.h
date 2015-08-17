@@ -13,8 +13,5 @@ constexpr double g_star = 3.36264390596;
 // radiation constant = pi^2/30
 constexpr double radiation_constant = 0.32898681337;
 
-// approximate redshift of matter-radiation equality
-constexpr double z_eq = 3600.0;
-
 
 #endif //LSSEFT_COSMOLOGY_CONSTANTS_H

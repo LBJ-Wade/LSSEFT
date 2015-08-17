@@ -67,7 +67,7 @@ namespace oneloop_impl
             E_iter(E),
             F_iter(F),
             G_iter(G),
-            total_iter(t)
+            oneloop_iter(t)
           {
           }
 
@@ -81,7 +81,7 @@ namespace oneloop_impl
             E_iter(obj.E_iter),
             F_iter(obj.F_iter),
             G_iter(obj.G_iter),
-            total_iter(obj.total_iter)
+            oneloop_iter(obj.oneloop_iter)
           {
           }
 
@@ -120,7 +120,7 @@ namespace oneloop_impl
             rec.E = *this->E_iter;
             rec.F = *this->F_iter;
             rec.G = *this->G_iter;
-            rec.oneloop = *this->total_iter;
+            rec.oneloop = *this->oneloop_iter;
 
             return oneloop_value(this->record_iter->get_token(), rec);
           }
@@ -140,7 +140,7 @@ namespace oneloop_impl
             --this->E_iter;
             --this->F_iter;
             --this->G_iter;
-            --this->total_iter;
+            --this->oneloop_iter;
             --this->record_iter;
             return(*this);
           }
@@ -163,7 +163,7 @@ namespace oneloop_impl
             ++this->E_iter;
             ++this->F_iter;
             ++this->G_iter;
-            ++this->total_iter;
+            ++this->oneloop_iter;
             ++this->record_iter;
             return(*this);
           }
@@ -210,7 +210,7 @@ namespace oneloop_impl
         value_iterator G_iter;
 
         //! iterator into total one-loop growth factor sample
-        value_iterator total_iter;
+        value_iterator oneloop_iter;
 
       };
 
@@ -246,32 +246,32 @@ class oneloop
 
     token_iterator token_begin()
       {
-        return(token_iterator(this->z_db->record_rbegin(), this->g->begin(), this->A->begin(), this->B->begin(), this->D->begin(), this->E->begin(), this->F->begin(), this->G->begin(), this->total->begin()));
+        return(token_iterator(this->z_db->record_rbegin(), this->g_linear->begin(), this->A->begin(), this->B->begin(), this->D->begin(), this->E->begin(), this->F->begin(), this->G->begin(), this->g_oneloop->begin()));
       }
 
     token_iterator token_end()
       {
-        return(token_iterator(this->z_db->record_rend(), this->g->end(), this->A->end(), this->B->end(), this->D->end(), this->E->end(), this->F->end(), this->G->end(), this->total->end()));
+        return(token_iterator(this->z_db->record_rend(), this->g_linear->end(), this->A->end(), this->B->end(), this->D->end(), this->E->end(), this->F->end(), this->G->end(), this->g_oneloop->end()));
       }
 
     const_token_iterator token_begin() const
       {
-        return(const_token_iterator(this->z_db->record_crbegin(), this->g->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->total->cbegin()));
+        return(const_token_iterator(this->z_db->record_crbegin(), this->g_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->g_oneloop->cbegin()));
       }
 
     const_token_iterator token_end() const
       {
-        return(const_token_iterator(this->z_db->record_crend(), this->g->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->total->cend()));
+        return(const_token_iterator(this->z_db->record_crend(), this->g_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->g_oneloop->cend()));
       }
 
     const_token_iterator token_cbegin() const
       {
-        return(const_token_iterator(this->z_db->record_crbegin(), this->g->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->total->cbegin()));
+        return(const_token_iterator(this->z_db->record_crbegin(), this->g_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->g_oneloop->cbegin()));
       }
 
     const_token_iterator token_cend() const
       {
-        return(const_token_iterator(this->z_db->record_crend(), this->g->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->total->cend()));
+        return(const_token_iterator(this->z_db->record_crend(), this->g_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->g_oneloop->cend()));
       }
 
 
@@ -314,7 +314,7 @@ class oneloop
     // expensive duplication
 
     //! linear growth factor
-    std::shared_ptr< std::vector<double> > g;
+    std::shared_ptr< std::vector<double> > g_linear;
 
     //! A kernel
     std::shared_ptr< std::vector<double> > A;
@@ -335,7 +335,7 @@ class oneloop
     std::shared_ptr< std::vector<double> > G;
 
     //! total one-loop kernel
-    std::shared_ptr< std::vector<double> > total;
+    std::shared_ptr< std::vector<double> > g_oneloop;
 
 
     // METADATA
