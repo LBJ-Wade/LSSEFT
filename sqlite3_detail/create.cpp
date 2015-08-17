@@ -49,7 +49,7 @@ namespace sqlite3_operations
           << "kid INTEGER, "
           << "zid INTEGER, "
           << "delta_m DOUBLE, "
-          << "delta_r_DOUBLE, "
+          << "delta_r DOUBLE, "
           << "theta_m DOUBLE, "
           << "theta_r DOUBLE, "
           << "Phi DOUBLE, "
