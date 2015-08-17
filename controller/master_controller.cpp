@@ -139,7 +139,7 @@ void master_controller::execute()
 void master_controller::scatter(const FRW_model& model, const FRW_model_token& token, transfer_work_list& work,
                                 data_manager& dmgr)
   {
-    if(this->mpi_world.size() == 1) throw runtime_exception(exception_type::runtime_error, ERROR_TOO_FEW_WORKS);
+    if(this->mpi_world.size() == 1) throw runtime_exception(exception_type::runtime_error, ERROR_TOO_FEW_WORKERS);
 
     // instruct slave processes to await transfer function tasks
     std::unique_ptr<scheduler> sch = this->set_up_workers(MPI_detail::MESSAGE_NEW_TRANSFER_TASK);

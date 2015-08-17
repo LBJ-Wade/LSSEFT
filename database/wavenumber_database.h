@@ -72,8 +72,12 @@ class wavenumber_database
 
   private:
 
-    //! alias for data structure
-    typedef std::map< unsigned int, wavenumber_record > database_type;
+    //! alias for data structure;
+    //! records are stored in ascending wavenumber order
+    typedef std::map< double, wavenumber_record > database_type;
+
+    //! alias for lookup-by-key index
+    typedef std::map< unsigned int, database_type::iterator > key_index_type;
 
 
     // RECORD-VALUED ITERATORS
@@ -161,6 +165,17 @@ class wavenumber_database
     //! The record shouldn't already exist. No checks are made to test for duplicates
     void add_record(const eV_units::energy& k, const wavenumber_token& tok);
 
+    //! lookup record by token
+    record_iterator lookup(wavenumber_token tok);
+
+    //! lookup record by token -- const version
+    const_record_iterator lookup(wavenumber_token tok) const;
+
+  protected:
+
+    //! rebuild key index
+    void rebuild_key_index();
+
 
     // UTILITY FUNCTIONS
 
@@ -177,6 +192,9 @@ class wavenumber_database
     //! database
     database_type database;
 
+    //! lookup-by-key index
+    key_index_type key_index;
+
 
     // enable boost::serialization support, and hence automated packing for transmission over MPI
     friend class boost::serialization::access;
@@ -185,6 +203,7 @@ class wavenumber_database
     void serialize(Archive& ar, unsigned int version)
       {
         ar & database;
+        this->rebuild_key_index();
       }
 
   };

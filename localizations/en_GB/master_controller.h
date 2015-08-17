@@ -7,7 +7,7 @@
 #define LSSEFT_MASTER_CONTROLLER_EN_GB_H
 
 
-#define ERROR_TOO_FEW_WORKS "too few worker processes available"
+#define ERROR_TOO_FEW_WORKERS "too few worker processes available"
 
 
 #endif //LSSEFT_MASTER_CONTROLLER_EN_GB_H

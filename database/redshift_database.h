@@ -97,28 +97,25 @@ namespace boost
         // for use within a std::map (eg in redshift_database), we also need a specialization for std::pair< unsigned int, redshift_record >
 
         template <typename Archive>
-        inline void save_construct_data(Archive& ar, const std::pair< const unsigned int, redshift_record >* t, const unsigned int file_version)
+        inline void save_construct_data(Archive& ar, const std::pair< const double, redshift_record >* t, const unsigned int file_version)
           {
             double z = *(t->second);
             unsigned int id = t->second.get_token().get_id();
 
-            ar << boost::serialization::make_nvp("first", t->first);
-            ar << boost::serialization::make_nvp("second", z);
-            ar << boost::serialization::make_nvp("third", id);
+            ar << boost::serialization::make_nvp("first", z);
+            ar << boost::serialization::make_nvp("second", id);
           }
 
 
         template <typename Archive>
-        inline void load_construct_data(Archive& ar, std::pair< const unsigned int, redshift_record >* t, const unsigned int file_version)
+        inline void load_construct_data(Archive& ar, std::pair< const double, redshift_record >* t, const unsigned int file_version)
           {
-            unsigned int tag;
             double z;
             unsigned int id;
-            ar >> boost::serialization::make_nvp("first", tag);
-            ar >> boost::serialization::make_nvp("second", z);
-            ar >> boost::serialization::make_nvp("third", id);
+            ar >> boost::serialization::make_nvp("first", z);
+            ar >> boost::serialization::make_nvp("second", id);
 
-            ::new(t) std::pair< unsigned int, redshift_record >(tag, redshift_record(z, id));
+            ::new(t) std::pair< const double, redshift_record >(z, redshift_record(z, id));
           }
 
       }   // namespace serialization
@@ -131,8 +128,12 @@ class redshift_database
 
   private:
 
-    //! alias for data structure
-    typedef std::map< unsigned int, redshift_record > database_type;
+    //! alias for data structure;
+    //! records are stored in ascending redshift order
+    typedef std::map< double, redshift_record > database_type;
+
+    //! alias for lookup-by-key index
+    typedef std::map< unsigned int, database_type::iterator > key_index_type;
 
 
     // RECORD-VALUED ITERATORS
@@ -226,6 +227,11 @@ class redshift_database
     //! lookup record by token -- const version
     const_record_iterator lookup(redshift_token tok) const;
 
+  protected:
+
+    //! rebuild key index
+    void rebuild_key_index();
+
 
     // UTILITY FUNCTIONS
 
@@ -242,6 +248,9 @@ class redshift_database
     //! database
     database_type database;
 
+    //! index for lookup-by-key
+    key_index_type key_index;
+
 
     // enable boost::serialization support, and hence automated packing for transmission over MPI
     friend class boost::serialization::access;
@@ -250,6 +259,7 @@ class redshift_database
     void serialize(Archive& ar, unsigned int version)
       {
         ar & database;
+        this->rebuild_key_index();
       }
 
   };
