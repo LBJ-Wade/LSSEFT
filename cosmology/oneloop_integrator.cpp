@@ -150,10 +150,10 @@ oneloop oneloop_integrator::integrate(const FRW_model& model, std::shared_ptr<re
     // set up a state vector
     state_vector x(STATE_SIZE);
 
-    // get initial time
-    redshift_database::value_iterator start = z_db->value_begin();
+    // get initial time -- note use of reverse iterator to get last z!
+    redshift_database::reverse_value_iterator max_z = z_db->value_rbegin();
 
-    double init_z = *start;
+    double init_z = *max_z;
     rhs.ics(x, init_z);
 
     // set up vector of sample times (needed until the Boost version of odeint catchs up to the github version, which includes my patch)
