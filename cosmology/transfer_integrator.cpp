@@ -64,8 +64,9 @@ class transfer_functor
     //! reference to FRW model
     const FRW_model& model;
 
-    //! reference to wavenumber object
-    const eV_units::energy& k;
+    //! wavenumber object representing k-mode for which we are integrating;
+    //! this is the comoving k measured in units of 1/Mpc, not h/Mpc
+    const eV_units::energy k_com;
 
     //! cache rho_cc in eV
     double rho_cc;
@@ -133,13 +134,13 @@ class transfer_observer
 
 transfer_functor::transfer_functor(const FRW_model& m, const eV_units::energy& _k)
   : model(m),
-    k(_k)
+    k_com(m.get_h()*_k)
   {
     // cache value of H0 and rho_cc
     constexpr double Mp = static_cast<double>(eV_units::PlanckMass);
     eV_units::energy H0_value = model.get_h() * 100.0 * eV_units::Kilometre / eV_units::Second / eV_units::Mpc;
 
-    H0 = static_cast<double>(H0);
+    H0 = static_cast<double>(H0_value);
     rho_cc = 3.0 * H0*H0 * Mp*Mp * model.get_omega_cc();
   }
 
@@ -157,14 +158,16 @@ void transfer_functor::operator()(const state_vector& x, state_vector& dxdz, dou
     double Omega_m   = x[RHO_M]/rho;
     double Omega_r   = x[RHO_R]/rho;
 
+    double one_plus_z = 1.0 + z;
+
     // k measured in eV here
-    double aH                = H/(1.0+z);
-    double k_over_aH         = static_cast<double>(this->k) / aH;
+    double aH                = H / one_plus_z;
+    double k_over_aH         = static_cast<double>(this->k_com) / aH;
     double k_over_aH_squared = k_over_aH * k_over_aH;
 
     // evolve background
-    dxdz[RHO_M] = 3.0*x[RHO_M] / (1.0+z);
-    dxdz[RHO_R] = 4.0*x[RHO_R] / (1.0+z);
+    dxdz[RHO_M] = 3.0 * x[RHO_M] / one_plus_z;
+    dxdz[RHO_R] = 4.0 * x[RHO_R] / one_plus_z;
 
     // TRANSFER FUNCTIONS
     // note: Phi and delta are individually dimensionless, so the Phi and delta
@@ -176,17 +179,22 @@ void transfer_functor::operator()(const state_vector& x, state_vector& dxdz, dou
     // Then, the conventional 'growth factor' is f = -theta/delta.
 
     // evolve Phi transfer function
-    dxdz[PHI] = (1.0/3.0)*k_over_aH_squared*x[PHI]/(1.0+z)
-                - (1.0/2.0)*(Omega_m*x[DELTA_M] + Omega_r*x[DELTA_R]) / (1.0+z)
-                + (Omega_m + Omega_r)*x[PHI]/(1.0+z);
+    dxdz[PHI] = (1.0 / 3.0) * k_over_aH_squared * x[PHI] / one_plus_z
+                - (1.0 / 2.0) * (Omega_m * x[DELTA_M] + Omega_r * x[DELTA_R]) / one_plus_z
+                + (Omega_m + Omega_r) * x[PHI] / one_plus_z;
 
     // evolve velocity transfer functions
-    dxdz[THETA_M] = ((2.0-epsilon)*x[THETA_M] + k_over_aH_squared*x[PHI]) / (1.0+z);
-    dxdz[THETA_R] = ((1.0-epsilon)*x[THETA_R] + k_over_aH_squared*x[PHI] - (1.0/4.0)*k_over_aH_squared*x[DELTA_R]) / (1.0+z);
+    dxdz[THETA_M] = (2.0 - epsilon) * x[THETA_M] / one_plus_z
+                     + k_over_aH_squared * x[PHI] / one_plus_z;
+    dxdz[THETA_R] = (1.0 - epsilon) * x[THETA_R] / one_plus_z
+                     + k_over_aH_squared * x[PHI] / one_plus_z
+                     - (1.0 / 4.0) * k_over_aH_squared * x[DELTA_R] / one_plus_z;
 
     // evolve density transfer functions
-    dxdz[DELTA_M] = x[THETA_M]/(1.0+z) - 3.0*dxdz[PHI];
-    dxdz[DELTA_R] = (4.0/3.0)*x[THETA_R]/(1.0+z) - 4.0*dxdz[PHI];
+    dxdz[DELTA_M] = x[THETA_M] / one_plus_z
+                    - 3.0 * dxdz[PHI];
+    dxdz[DELTA_R] = (4.0 / 3.0) * x[THETA_R] / one_plus_z
+                    - 4.0 * dxdz[PHI];
   }
 
 
@@ -213,7 +221,9 @@ void transfer_functor::ics(state_vector& x, double z)
     double H   = std::sqrt(rho/(3.0*Mp*Mp));
 
     double aH = H / (1.0 + z);
-    double k_over_aH = static_cast<double>(this->k) / aH;
+    double k_over_aH = static_cast<double>(this->k_com) / aH;
+
+    std::cout << "Omega_m = " << rho_m/rho << ", Omega_r = " << rho_r/rho << ", Omega_CC = " << this->rho_cc/rho << ", k/aH = " << k_over_aH << '\n';
 
     // initial conditions for background objects
     x[RHO_M] = rho_m;
@@ -235,7 +245,7 @@ double transfer_functor::find_init_z()
     constexpr double superhorizon_factor = 22026.4657948;
 
     double Mp_over_T_CMB = eV_units::PlanckMass / this->model.get_T_CMB();
-    double k_over_T_CMB  = this->k / this->model.get_T_CMB();
+    double k_over_T_CMB  = this->k_com / this->model.get_T_CMB();
 
     double z_init = std::pow((3.0/(g_star*radiation_constant)) * Mp_over_T_CMB * k_over_T_CMB * superhorizon_factor, 1.0/3.0) - 1.0;
 
