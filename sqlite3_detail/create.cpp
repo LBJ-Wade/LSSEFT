@@ -46,8 +46,8 @@ namespace sqlite3_operations
         transfer_stmt
           << "CREATE TABLE " << policy.transfer_table() << "("
           << "mid INTEGER, "
-          << "zid INTEGER, "
           << "kid INTEGER, "
+          << "zid INTEGER, "
           << "delta_m DOUBLE, "
           << "delta_r_DOUBLE, "
           << "theta_m DOUBLE, "

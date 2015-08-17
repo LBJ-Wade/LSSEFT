@@ -61,6 +61,7 @@ set(COSMOLOGY_SOURCE_FILES
   cosmology/concepts/range_detail/range.h
   cosmology/concepts/range_detail/common.h
   cosmology/concepts/range_detail/aggregation.h
+  cosmology/concepts/transfer_function.h
   cosmology/transfer_integrator.cpp cosmology/transfer_integrator.h)
 
 set(UNITS_SOURCE_FILES
@@ -84,7 +85,8 @@ set(SQLITE3_DETAIL_SOURCE_FILES
   sqlite3_detail/redshift.cpp sqlite3_detail/redshift.h
   sqlite3_detail/wavenumber.cpp sqlite3_detail/wavenumber.h
   sqlite3_detail/temporary_tables.cpp sqlite3_detail/temporary_tables.h
-  sqlite3_detail/missing_elements.cpp sqlite3_detail/missing_elements.h)
+  sqlite3_detail/missing_elements.cpp sqlite3_detail/missing_elements.h
+  sqlite3_detail/store.cpp sqlite3_detail/store.h)
 
 set(SOURCE_FILES
   ${TOP_LEVEL_SOURCE_FILES}
@@ -98,7 +100,7 @@ set(SOURCE_FILES
   ${DATABASE_SOURCE_FILES}
   ${SQLITE3_DETAIL_SOURCE_FILES}
   ${LOCALIZATION}
-  ${LOCALIZATION_EN_GB} cosmology/concepts/range_detail/common.h)
+  ${LOCALIZATION_EN_GB})
 
 add_executable(lsseft
   main.cpp
@@ -125,6 +127,7 @@ add_executable(lsseft
   sqlite3_detail/wavenumber.cpp
   sqlite3_detail/temporary_tables.cpp
   sqlite3_detail/missing_elements.cpp
+  sqlite3_detail/store.cpp
   sqlite3_detail/sqlite3_policy.cpp)
 
 target_link_libraries(lsseft sqlite3 ${Boost_LIBRARIES} ${MPI_LIBRARIES})

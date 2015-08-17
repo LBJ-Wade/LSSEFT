@@ -13,6 +13,7 @@
 #include "local_environment.h"
 #include "scheduler.h"
 
+#include "database/data_manager.h"
 #include "database/tokens.h"
 
 #include "cosmology/types.h"
@@ -70,7 +71,8 @@ class master_controller
   protected:
 
     //! execute a transfer function work list
-    void scatter(const FRW_model& model, const FRW_model_token& token, transfer_work_list& work);
+    void scatter(const FRW_model& model, const FRW_model_token& token, transfer_work_list& work,
+                 data_manager& dmgr);
 
     //! terminate worker processes
     void terminate_workers();

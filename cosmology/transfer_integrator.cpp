@@ -292,6 +292,7 @@ void transfer_observer::operator()(const state_vector& x, double z)
     else
       {
         this->container.push_back(x[DELTA_M], x[DELTA_R], x[THETA_M], x[THETA_R], x[PHI]);
+//        std::cout << "z = " << z << ", delta_m = " << x[DELTA_M] << ", delta_r = " << x[DELTA_R] << ", theta_m = " << x[THETA_M] << ", theta_r = " << x[THETA_R] << ", Phi = " << x[PHI] << '\n';
       }
   }
 
@@ -300,9 +301,8 @@ void transfer_observer::operator()(const state_vector& x, double z)
 // TRANSFER_FUNCTION METHODS
 
 
-transfer_function::transfer_function(const FRW_model& m, const eV_units::energy& _k, const wavenumber_token& t, std::shared_ptr<redshift_database> z)
-  : model(m),
-    k(_k),
+transfer_function::transfer_function(const eV_units::energy& _k, const wavenumber_token& t, std::shared_ptr<redshift_database> z)
+  : k(_k),
     token(t),
     z_db(z)
   {
@@ -325,9 +325,10 @@ transfer_function::transfer_function(const FRW_model& m, const eV_units::energy&
   }
 
 
-void transfer_function::set_integration_time(boost::timer::nanosecond_type t)
+void transfer_function::set_integration_metadata(boost::timer::nanosecond_type t, size_t s)
   {
     this->integration_time = t;
+    this->steps = s;
   }
 
 
@@ -355,7 +356,7 @@ transfer_function transfer_integrator::integrate(const FRW_model& model, const e
                                                  const wavenumber_token& tok, std::shared_ptr<redshift_database>& z_db)
   {
     // set up an empty transfer_function container
-    transfer_function ctr(model, k, tok, z_db);
+    transfer_function ctr(k, tok, z_db);
 
     // set up a functor for the ODE system
     transfer_functor rhs(model, k);
@@ -373,8 +374,6 @@ transfer_function transfer_integrator::integrate(const FRW_model& model, const e
     // set up initial conditions
     rhs.ics(x, init_z);
 
-    std::cout << "Attempting to start integration at redshift z = " << init_z << '\n';
-
     // set up vector of sample times
     std::vector<double> z_sample{ init_z };
     std::copy(z_db->value_rbegin(), z_db->value_rend(), std::back_inserter(z_sample));
@@ -385,7 +384,7 @@ transfer_function transfer_integrator::integrate(const FRW_model& model, const e
     size_t steps = boost::numeric::odeint::integrate_times(stepper, rhs, x, z_sample.begin(), z_sample.end(), -1E-3, obs);
     obs.stop_timer();
 
-    ctr.set_integration_time(obs.read_timer());
+    ctr.set_integration_metadata(obs.read_timer(), steps);
 
     return(ctr);
   }

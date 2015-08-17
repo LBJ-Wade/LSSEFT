@@ -8,7 +8,6 @@
 
 
 #include <memory>
-#include <sqlite3_detail/sqlite3_policy.h>
 
 #include "tokens.h"
 #include "transaction_manager.h"
@@ -17,7 +16,10 @@
 
 #include "cosmology/types.h"
 #include "cosmology/FRW_model.h"
+#include "cosmology/concepts/transfer_function.h"
 #include "cosmology/concepts/range.h"
+
+#include "sqlite3_detail/sqlite3_policy.h"
 
 #include "boost/filesystem/operations.hpp"
 
@@ -75,6 +77,13 @@ class data_manager
     //! tokenize a wavenumber
     //! generates a new transation on the database; will fail if a transaction is in progress
     std::unique_ptr<wavenumber_token> tokenize(const eV_units::energy& k);
+
+
+    // DATA HANDLING
+
+  public:
+
+    void store(const FRW_model_token& model_token, const transfer_function& sample);
 
 
     // TRANSACTIONS

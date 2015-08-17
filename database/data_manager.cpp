@@ -13,12 +13,8 @@
 #include "sqlite3_detail/utilities.h"
 #include "sqlite3_detail/operations.h"
 
-#include "cosmology/types.h"
-
 #include "utilities/formatter.h"
 
-#include "exceptions.h"
-#include "localizations/messages.h"
 #include "defaults.h"
 
 #include "boost/timer/timer.hpp"
@@ -298,4 +294,16 @@ std::unique_ptr<transfer_work_list> data_manager::build_transfer_work_list(FRW_m
     std::cout << "lsseft: constructed transfer function work list in time " << format_time(timer.elapsed().wall) << '\n';
 
     return(work_list);
+  }
+
+
+void data_manager::store(const FRW_model_token& model_token, const transfer_function& sample)
+  {
+    // open a transaction on the database
+    std::shared_ptr<transaction_manager> transaction = this->open_transaction();
+
+    sqlite3_operations::store(this->handle, *transaction, this->policy, model_token, sample);
+
+    // commit the transaction before allowing it to go out of scope
+    transaction->commit();
   }

@@ -24,5 +24,7 @@
 #define ERROR_SQLITE3_TEMPORARY_REDSHIFT     "failed to insert redshift record in temporary table [backend code="
 #define ERROR_SQLITE3_TEMPORARY_WAVENUMBER   "failed to insert wavenumber record in temporary table [backend code="
 
+#define ERROR_SQLITE3_INSERT_TRANSFER_FAIL   "failed to insert transfer function record [backend code="
+
 
 #endif //LSSEFT_SQLITE3_EN_GB_H

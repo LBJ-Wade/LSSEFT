@@ -128,7 +128,7 @@ namespace MPI_detail
         //! empty constructor: used to receive a payload
         //! transfer_function, eV_units::energy and wavenumber_token have no default constructors
         transfer_integration_ready()
-          : data(FRW_model(), eV_units::energy(0), wavenumber_token(0), std::shared_ptr<redshift_database>())
+          : data(eV_units::energy(0), wavenumber_token(0), std::shared_ptr<redshift_database>())
           {
           }
 

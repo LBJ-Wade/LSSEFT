@@ -118,14 +118,15 @@ void master_controller::execute()
     std::unique_ptr<transfer_work_list> work_list = dmgr.build_transfer_work_list(*model, *k_db, *z_db);
 
     // distribute this work list among the slave processes
-    this->scatter(cosmology_model, *model, *work_list);
+    this->scatter(cosmology_model, *model, *work_list, dmgr);
 
     // instruct slave processes to terminate
     this->terminate_workers();
   }
 
 
-void master_controller::scatter(const FRW_model& model, const FRW_model_token& token, transfer_work_list& work)
+void master_controller::scatter(const FRW_model& model, const FRW_model_token& token, transfer_work_list& work,
+                                data_manager& dmgr)
   {
     if(this->mpi_world.size() == 1) throw runtime_exception(exception_type::runtime_error, ERROR_TOO_FEW_WORKS);
 
@@ -177,8 +178,8 @@ void master_controller::scatter(const FRW_model& model, const FRW_model_token& t
                   {
                     MPI_detail::transfer_integration_ready payload;
                     this->mpi_world.recv(stat->source(), MPI_detail::MESSAGE_TRANSFER_INTEGRATION_READY, payload);
-                    std::cout << "worker " << this->worker_number(stat->source()) << " finished integration in time " << format_time(payload.get_data().get_integration_time()) << '\n';
                     sch->mark_unassigned(this->worker_number(stat->source()));
+                    dmgr.store(token, payload.get_data());
                     break;
                   }
 

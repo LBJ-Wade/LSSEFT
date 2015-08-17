@@ -57,6 +57,11 @@ namespace configuration_database
           {
           }
 
+
+        // OVERLOAD COMPARISON OPERATORS
+
+      public:
+
         //! equality comparison
         bool operator==(const generic_record_iterator& obj) const
           {
@@ -68,6 +73,11 @@ namespace configuration_database
           {
             return(this->iter != obj.iter);
           }
+
+
+        // DEREFERENCING
+
+      public:
 
         //! dereference iterator to get record which it points to
         reference_type operator*()
@@ -92,6 +102,11 @@ namespace configuration_database
           {
             return(&this->iter->second);
           }
+
+
+        // INCREMENT, DECREMENT
+
+      public:
 
         //! prefix decrement
         generic_record_iterator& operator--()
