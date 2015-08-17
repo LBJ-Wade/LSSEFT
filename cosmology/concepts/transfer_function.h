@@ -7,6 +7,9 @@
 #define LSSEFT_TRANSFER_FUNCTION_H
 
 
+#include <memory>
+#include <vector>
+
 #include "database/tokens.h"
 #include "database/redshift_database.h"
 #include "units/eV_units.h"
@@ -174,10 +177,10 @@ namespace transfer_function_impl
         //! iterator into theta_m sample
         value_iterator theta_m_iter;
 
-        //! iterator into delta_r_sample
+        //! iterator into delta_r sample
         value_iterator delta_r_iter;
 
-        //! iterator into theta_r_sample
+        //! iterator into theta_r sample
         value_iterator theta_r_iter;
 
         //! iterator into Phi sample
@@ -185,7 +188,7 @@ namespace transfer_function_impl
 
       };
 
-  }
+  }   // namespace transfer_function_impl;
 
 
 class transfer_function
@@ -217,22 +220,22 @@ class transfer_function
 
     token_iterator token_begin()
       {
-        return (token_iterator(this->z_db->record_begin(), this->delta_m->begin(), this->theta_m->begin(), this->delta_r->begin(), this->theta_r->begin(), this->Phi->begin()));
+        return(token_iterator(this->z_db->record_begin(), this->delta_m->begin(), this->theta_m->begin(), this->delta_r->begin(), this->theta_r->begin(), this->Phi->begin()));
       }
 
     token_iterator token_end()
       {
-        return (token_iterator(this->z_db->record_end(), this->delta_m->end(), this->theta_m->end(), this->delta_r->end(), this->theta_r->end(), this->Phi->end()));
+        return(token_iterator(this->z_db->record_end(), this->delta_m->end(), this->theta_m->end(), this->delta_r->end(), this->theta_r->end(), this->Phi->end()));
       }
 
     const_token_iterator token_begin() const
       {
-        return (const_token_iterator(this->z_db->record_cbegin(), this->delta_m->cbegin(), this->theta_m->cbegin(), this->delta_r->cbegin(), this->theta_r->cbegin(), this->Phi->cbegin()));
+        return(const_token_iterator(this->z_db->record_cbegin(), this->delta_m->cbegin(), this->theta_m->cbegin(), this->delta_r->cbegin(), this->theta_r->cbegin(), this->Phi->cbegin()));
       }
 
     const_token_iterator token_end() const
       {
-        return (const_token_iterator(this->z_db->record_cend(), this->delta_m->cend(), this->theta_m->cend(), this->delta_r->cend(), this->theta_r->cend(), this->Phi->cend()));
+        return(const_token_iterator(this->z_db->record_cend(), this->delta_m->cend(), this->theta_m->cend(), this->delta_r->cend(), this->theta_r->cend(), this->Phi->cend()));
       }
 
     const_token_iterator token_cbegin() const
@@ -242,7 +245,7 @@ class transfer_function
 
     const_token_iterator token_cend() const
       {
-        return (const_token_iterator(this->z_db->record_cend(), this->delta_m->cend(), this->theta_m->cend(), this->delta_r->cend(), this->theta_r->cend(), this->Phi->cend()));
+        return(const_token_iterator(this->z_db->record_cend(), this->delta_m->cend(), this->theta_m->cend(), this->delta_r->cend(), this->theta_r->cend(), this->Phi->cend()));
       }
 
 
@@ -255,6 +258,7 @@ class transfer_function
 
     //! get wavenumber token
     const wavenumber_token& get_wavenumber_token() const { return(this->token); }
+
 
     // METADATA
 

@@ -256,7 +256,7 @@ std::unique_ptr<transfer_work_list> data_manager::build_transfer_work_list(FRW_m
                                                                            redshift_database& z_db)
   {
     // start timer
-    boost::timer::auto_cpu_timer timer;
+    boost::timer::cpu_timer timer;
 
     // construct an empty work list
     std::unique_ptr<transfer_work_list> work_list(new transfer_work_list);
@@ -305,5 +305,40 @@ void data_manager::store(const FRW_model_token& model_token, const transfer_func
     sqlite3_operations::store(this->handle, *transaction, this->policy, model_token, sample);
 
     // commit the transaction before allowing it to go out of scope
+    transaction->commit();
+  }
+
+
+std::shared_ptr<redshift_database> data_manager::build_oneloop_work_list(FRW_model_token& model, redshift_database& z_db)
+  {
+    // start timer
+    boost::timer::cpu_timer timer;
+
+    // open a transaction on the database
+    std::shared_ptr<transaction_manager> transaction = this->open_transaction();
+
+    // set up temporary table of desired z identifier
+    std::string z_table = sqlite3_operations::z_table(this->handle, *transaction, this->policy, z_db);
+
+    std::shared_ptr<redshift_database> work_list = sqlite3_operations::missing_redshifts(this->handle, *transaction, this->policy, model, z_db, z_table);
+
+    // close transaction
+    transaction->commit();
+
+    timer.stop();
+    std::cout << "lsseft: constructed one-loop work list in time " << format_time(timer.elapsed().wall) << '\n';
+
+    return(work_list);
+  }
+
+
+void data_manager::store(const FRW_model_token& model_token, const oneloop& sample)
+  {
+    // open a transaction on the database
+    std::shared_ptr<transaction_manager> transaction = this->open_transaction();
+
+    sqlite3_operations::store(this->handle, *transaction, this->policy, model_token, sample);
+
+    // commit the transaction
     transaction->commit();
   }

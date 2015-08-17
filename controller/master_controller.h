@@ -84,6 +84,14 @@ class master_controller
     void close_down_workers();
 
 
+    // COMPUTE ONE-LOOP KERNELS
+
+  protected:
+
+    //! compute kernels at given redshifts
+    void integrate_oneloop(const FRW_model& model, const FRW_model_token& token, std::shared_ptr<redshift_database>& z_db, data_manager& dmgr);
+
+
     // INTERNAL DATA
 
   private:

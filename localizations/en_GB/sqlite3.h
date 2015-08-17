@@ -25,6 +25,7 @@
 #define ERROR_SQLITE3_TEMPORARY_WAVENUMBER   "failed to insert wavenumber record in temporary table [backend code="
 
 #define ERROR_SQLITE3_INSERT_TRANSFER_FAIL   "failed to insert transfer function record [backend code="
+#define ERROR_SQLITE3_INSERT_ONELOOP_FAIL    "failed to insert growth-factor and one-loop kernel function record [backend code="
 
 
 #endif //LSSEFT_SQLITE3_EN_GB_H

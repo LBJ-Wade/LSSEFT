@@ -5,9 +5,9 @@
 
 
 #include <utility>
-#include <vector>
 
 #include "transfer_integrator.h"
+#include "constants.h"
 
 #include "utilities/formatter.h"
 
@@ -25,16 +25,6 @@ constexpr unsigned int THETA_R = 5;
 constexpr unsigned int PHI     = 6;
 
 constexpr unsigned int STATE_SIZE = 7;
-
-
-// g_star = 2 + (7.0/8.0) * 6 * std::pow(4.0/11.0, 4.0/3.0)
-constexpr double g_star = 3.36264390596;
-
-// radiation constant = pi^2/30
-constexpr double radiation_constant = 0.32898681337;
-
-// approximate redshift of matter-radiation equality
-constexpr double z_eq = 3600.0;
 
 
 class transfer_functor
@@ -261,7 +251,7 @@ transfer_observer::transfer_observer(transfer_function& c)
     first_call(true)
   {
     // stop timer
-    this->timer.stop();
+    timer.stop();
   }
 
 
@@ -294,51 +284,6 @@ void transfer_observer::operator()(const state_vector& x, double z)
         this->container.push_back(x[DELTA_M], x[DELTA_R], x[THETA_M], x[THETA_R], x[PHI]);
 //        std::cout << "z = " << z << ", delta_m = " << x[DELTA_M] << ", delta_r = " << x[DELTA_R] << ", theta_m = " << x[THETA_M] << ", theta_r = " << x[THETA_R] << ", Phi = " << x[PHI] << '\n';
       }
-  }
-
-
-
-// TRANSFER_FUNCTION METHODS
-
-
-transfer_function::transfer_function(const eV_units::energy& _k, const wavenumber_token& t, std::shared_ptr<redshift_database> z)
-  : k(_k),
-    token(t),
-    z_db(z)
-  {
-    // if we were passed a non-null redshift database, set up containers
-    // (perhaps should disallow construction with a null database?)
-    if(z_db)
-      {
-        delta_m.reset(new std::vector<double>);
-        delta_r.reset(new std::vector<double>);
-        theta_m.reset(new std::vector<double>);
-        theta_r.reset(new std::vector<double>);
-        Phi.reset(new std::vector<double>);
-
-        delta_m->reserve(z_db->size());
-        delta_r->reserve(z_db->size());
-        theta_m->reserve(z_db->size());
-        theta_r->reserve(z_db->size());
-        Phi->reserve(z_db->size());
-      }
-  }
-
-
-void transfer_function::set_integration_metadata(boost::timer::nanosecond_type t, size_t s)
-  {
-    this->integration_time = t;
-    this->steps = s;
-  }
-
-
-void transfer_function::push_back(double dm, double dr, double tm, double tr, double P)
-  {
-    this->delta_m->push_back(dm);
-    this->delta_r->push_back(dr);
-    this->theta_m->push_back(tm);
-    this->theta_r->push_back(tr);
-    this->Phi->push_back(P);
   }
 
 

@@ -10,6 +10,7 @@
 #include "scheduler.h"
 
 #include "cosmology/FRW_model.h"
+#include "cosmology/oneloop_integrator.h"
 #include "cosmology/concepts/range.h"
 
 #include "database/data_manager.h"
@@ -103,11 +104,15 @@ void master_controller::execute()
     // set up a list of wavenumber to sample, measured in h/Mpc
     stepping_range<eV_units::energy> wavenumber_samples(0.05, 0.3, 30, 1.0 / eV_units::Mpc, spacing_type::linear);
 
-    // set up a list of redshifts at which to sample
-    stepping_range<double> redshift_samples(0.01, 1000.0, 250, 1.0, spacing_type::logarithmic_bottom);
+    // set up a list of redshifts at which to sample to transfer function
+    stepping_range<double> hi_redshift_samples(1000.0, 1500.0, 5.0, 1.0, spacing_type::linear);
+
+    // set up a list of redshifts at which to sample the late-time growth functions
+    stepping_range<double> lo_redshift_samples(0.01, 1000.0, 250, 1.0, spacing_type::logarithmic_bottom);
 
     // exchange these sample ranges for iterable databases
-    std::unique_ptr<redshift_database> z_db = dmgr.build_db(redshift_samples);
+    std::unique_ptr<redshift_database> hi_z_db = dmgr.build_db(hi_redshift_samples);
+    std::unique_ptr<redshift_database> lo_z_db = dmgr.build_db(lo_redshift_samples);
     std::unique_ptr<wavenumber_database> k_db = dmgr.build_db(wavenumber_samples);
 
     // generate targets
@@ -115,10 +120,16 @@ void master_controller::execute()
     // plus the time-dependent 1-loop kernels through the subsequent evolution
 
     // build a work list for transfer functions
-    std::unique_ptr<transfer_work_list> work_list = dmgr.build_transfer_work_list(*model, *k_db, *z_db);
+    std::unique_ptr<transfer_work_list> transfer_work_list = dmgr.build_transfer_work_list(*model, *k_db, *hi_z_db);
 
     // distribute this work list among the slave processes
-    this->scatter(cosmology_model, *model, *work_list, dmgr);
+    this->scatter(cosmology_model, *model, *transfer_work_list, dmgr);
+
+    // build a work list for late-time growth functions
+    std::shared_ptr<redshift_database> oneloop_work_list = dmgr.build_oneloop_work_list(*model, *lo_z_db);
+
+    // compute one-loop functions, if needed; can be done on master process since there is only one integration
+    if(oneloop_work_list) this->integrate_oneloop(cosmology_model, *model, oneloop_work_list, dmgr);
 
     // instruct slave processes to terminate
     this->terminate_workers();
@@ -259,4 +270,13 @@ void master_controller::close_down_workers()
 
     // wait for all messages to be received
     boost::mpi::wait_all(requests.begin(), requests.end());
+  }
+
+
+void master_controller::integrate_oneloop(const FRW_model& model, const FRW_model_token& token, std::shared_ptr<redshift_database>& z_db,
+                                          data_manager& dmgr)
+  {
+    oneloop_integrator integrator;
+    oneloop sample = integrator.integrate(model, z_db);
+    dmgr.store(token, sample);
   }

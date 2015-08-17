@@ -17,6 +17,7 @@
 #include "cosmology/types.h"
 #include "cosmology/FRW_model.h"
 #include "cosmology/concepts/transfer_function.h"
+#include "cosmology/concepts/oneloop.h"
 #include "cosmology/concepts/range.h"
 
 #include "sqlite3_detail/sqlite3_policy.h"
@@ -57,9 +58,14 @@ class data_manager
 
     //! build a work list representing z-values which are missing from the SQLite backing store
     //! for each k-value in a wavenumber database
-    //! generates a new transation on the database; will fail if a transaction is in progress
+    //! generates a new transaction on the database; will fail if a transaction is in progress
     std::unique_ptr<transfer_work_list> build_transfer_work_list(FRW_model_token& model, wavenumber_database& k_db,
                                                                  redshift_database& z_db);
+
+    //! build a work list representing z-values which are missing from the SQLite backing store
+    //! for each z-value needed
+    //! generates a new transaction on the database; will fail if a transaction is in progress
+    std::shared_ptr<redshift_database> build_oneloop_work_list(FRW_model_token& model, redshift_database& z_db);
 
     // TOKENS
     // tokens are the basic unit of currency used when interacting with the database
@@ -83,7 +89,11 @@ class data_manager
 
   public:
 
+    //! store a transfer function sample
     void store(const FRW_model_token& model_token, const transfer_function& sample);
+
+    //! store a one-loop kernel sample
+    void store(const FRW_model_token& model_token, const oneloop& sample);
 
 
     // TRANSACTIONS

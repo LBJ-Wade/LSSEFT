@@ -29,7 +29,7 @@ class transfer_integrator
 
   public:
 
-    //! constructor is default
+    //! constructor
     transfer_integrator(double a=LSSEFT_DEFAULT_ABS_ERR, double r=LSSEFT_DEFAULT_REL_ERR);
 
     //! destructor is default
@@ -49,7 +49,7 @@ class transfer_integrator
 
   private:
 
-    // ERRORS
+    // TOLERANCES
 
     //! required absolute error
     double abs_err;

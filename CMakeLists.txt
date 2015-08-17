@@ -61,8 +61,10 @@ set(COSMOLOGY_SOURCE_FILES
   cosmology/concepts/range_detail/range.h
   cosmology/concepts/range_detail/common.h
   cosmology/concepts/range_detail/aggregation.h
-  cosmology/concepts/transfer_function.h
-  cosmology/transfer_integrator.cpp cosmology/transfer_integrator.h)
+  cosmology/transfer_integrator.cpp cosmology/transfer_integrator.h
+  cosmology/concepts/oneloop.cpp cosmology/concepts/oneloop.h
+  cosmology/concepts/transfer_function.cpp cosmology/concepts/transfer_function.h
+  cosmology/oneloop_integrator.cpp cosmology/oneloop_integrator.h cosmology/constants.h)
 
 set(UNITS_SOURCE_FILES
   units/eV_units.h)
@@ -114,7 +116,10 @@ add_executable(lsseft
   utilities/python_finder.cpp
   utilities/formatter.cpp
   cosmology/FRW_model.cpp
+  cosmology/concepts/transfer_function.cpp
+  cosmology/concepts/oneloop.cpp
   cosmology/transfer_integrator.cpp
+  cosmology/oneloop_integrator.cpp
   database/data_manager.cpp
   database/tokens.cpp
   database/transaction_manager.cpp
