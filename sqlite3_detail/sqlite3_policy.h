@@ -35,6 +35,15 @@ class sqlite3_policy
     //! wavenumber configuration table
     const std::string& wavenumber_config_table() const { return(this->wavenumber_config); }
 
+    //! transfer function table
+    const std::string& transfer_table() const { return(this->transfer); }
+
+    //! 1-loop kernels table
+    const std::string& oneloop_table() const { return(this->oneloop); }
+
+    //! temporary table
+    const std::string& temp_table() const { return(this->temp); }
+
 
     // INTERNAL DATA
 
@@ -50,6 +59,15 @@ class sqlite3_policy
 
     //! wavenumber configuration table
     std::string wavenumber_config;
+
+    //! transfer function table
+    std::string transfer;
+
+    //! 1-loop kernels table
+    std::string oneloop;
+
+    //! temporary table name
+    std::string temp;
 
   };
 

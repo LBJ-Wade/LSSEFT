@@ -12,6 +12,7 @@
 
 #include "boost/filesystem/operations.hpp"
 
+#include "boost/serialization/serialization.hpp"
 #include "boost/serialization/string.hpp"
 #include "boost/serialization/list.hpp"
 

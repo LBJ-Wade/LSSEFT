@@ -11,6 +11,9 @@
 #include "FRW_model.h"
 #include "redshift.h"
 #include "wavenumber.h"
+#include "temporary_tables.h"
+#include "missing_elements.h"
+#include "store.h"
 
 
 #endif //LSSEFT_SQLITE3_OPERATIONS_H

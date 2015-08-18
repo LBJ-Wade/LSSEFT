@@ -17,7 +17,7 @@
 namespace sqlite3_operations
   {
 
-    boost::optional<unsigned int> lookup_wavenumber(sqlite3* db, std::shared_ptr<transaction_manager>& mgr,
+    boost::optional<unsigned int> lookup_wavenumber(sqlite3* db, transaction_manager& mgr,
                                                     const eV_units::energy& k, const sqlite3_policy& policy,
                                                     double tol)
       {
@@ -58,7 +58,7 @@ namespace sqlite3_operations
       }
 
 
-    unsigned int insert_wavenumber(sqlite3* db, std::shared_ptr<transaction_manager>& mgr,
+    unsigned int insert_wavenumber(sqlite3* db, transaction_manager& mgr,
                                    const eV_units::energy& k, const sqlite3_policy& policy)
       {
         assert(db != nullptr);

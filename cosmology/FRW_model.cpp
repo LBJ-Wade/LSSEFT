@@ -14,9 +14,9 @@ FRW_model::FRW_model(double om, double occ, double h_, eV_units::energy tc)
     h(h_),
     T_CMB(tc)
   {
-    std::cout << "New FRW cosmology with Omega_m=" << omega_m
-      << ", Omega_CC=" << omega_cc
-      << ", h=" << h
-      << ", T_CMB=" << static_cast<double>(T_CMB)
-      << '\n';
+//    std::cout << "New FRW cosmology with Omega_m=" << omega_m
+//      << ", Omega_CC=" << omega_cc
+//      << ", h=" << h
+//      << ", T_CMB=" << static_cast<double>(T_CMB)
+//      << '\n';
   }

@@ -30,7 +30,7 @@ namespace sqlite3_operations
         if(status != SQLITE_OK)
           {
             std::ostringstream msg;
-            msg << err << errmsg << ") [status=" << status << "]";
+            msg << err << errmsg << ") [status=" << status << ", SQL=\"" << stmt << "\"]";
             throw runtime_exception(exception_type::sqlite3_error, msg.str());
           }
       }
@@ -47,7 +47,7 @@ namespace sqlite3_operations
         if(status != SQLITE_OK)
           {
             std::ostringstream msg;
-            msg << ERROR_SQLITE3 << " " << errmsg << " [status=" << status << "]";
+            msg << ERROR_SQLITE3 << " " << errmsg << " [status=" << status << ", SQL=\"" << stmt << "\"]";
             throw runtime_exception(exception_type::sqlite3_error, msg.str());
           }
       }
