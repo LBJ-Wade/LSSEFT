@@ -223,8 +223,6 @@ void transfer_functor::ics(state_vector& x, double z)
     double aH = H / (1.0 + z);
     double k_over_aH = static_cast<double>(this->k_com) / aH;
 
-    std::cout << "Omega_m = " << rho_m/rho << ", Omega_r = " << rho_r/rho << ", Omega_CC = " << this->rho_cc/rho << ", k/aH = " << k_over_aH << '\n';
-
     // initial conditions for background objects
     x[RHO_M] = rho_m;
     x[RHO_R] = rho_r;
