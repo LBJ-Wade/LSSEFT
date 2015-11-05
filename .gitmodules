@@ -1,0 +1,3 @@
+[submodule "thirdparty/splinter"]
+	path = thirdparty/splinter
+	url = https://ds283@github.com/bgrimstad/splinter.git
