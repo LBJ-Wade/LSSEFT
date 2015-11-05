@@ -12,6 +12,7 @@
 #include "cosmology/FRW_model.h"
 #include "cosmology/oneloop_integrator.h"
 #include "cosmology/concepts/range.h"
+#include "cosmology/concepts/tree_power_spectrum.h"
 
 #include "database/data_manager.h"
 
@@ -46,7 +47,8 @@ void master_controller::process_arguments(int argc, char* argv[])
     boost::program_options::options_description configuration("Configuration options");
     configuration.add_options()
       (LSSEFT_SWITCH_VERBOSE, LSSEFT_HELP_VERBOSE)
-      (LSSEFT_SWITCH_DATABASE, boost::program_options::value<std::string>(), LSSEFT_HELP_DATABASE);
+      (LSSEFT_SWITCH_DATABASE, boost::program_options::value<std::string>(), LSSEFT_HELP_DATABASE)
+      (LSSEFT_SWITCH_POWERSPEC, boost::program_options::value<std::string>(), LSSEFT_HELP_POWERSPEC);
 
     boost::program_options::options_description hidden("Hidden options");
     hidden.add_options()
@@ -84,6 +86,11 @@ void master_controller::process_arguments(int argc, char* argv[])
       {
         this->arg_cache.set_database_path(option_map[LSSEFT_SWITCH_DATABASE_LONG].as<std::string>());
       }
+
+    if(option_map.count(LSSEFT_SWITCH_POWERSPEC_LONG))
+      {
+        this->arg_cache.set_powerspectrum_path(option_map[LSSEFT_SWITCH_POWERSPEC_LONG].as<std::string>());
+      }
   }
 
 
@@ -115,7 +122,8 @@ void master_controller::execute()
     std::unique_ptr<redshift_database> lo_z_db = dmgr.build_db(lo_redshift_samples);
     std::unique_ptr<wavenumber_database> k_db = dmgr.build_db(wavenumber_samples);
 
-    // generate targets
+    // GENERATE TARGETS
+
     // for 1-loop calculation, we need the linear transfer function at the initial redshift,
     // plus the time-dependent 1-loop kernels through the subsequent evolution
 
@@ -130,6 +138,11 @@ void master_controller::execute()
 
     // compute one-loop functions, if needed; can be done on master process since there is only one integration
     if(oneloop_work_list) this->integrate_oneloop(cosmology_model, *model, oneloop_work_list, dmgr);
+
+    if(this->arg_cache.get_powerspectrum_set())
+      {
+        tree_power_spectrum Pk(this->arg_cache.get_powerspectrum_path());
+      }
 
     // instruct slave processes to terminate
     this->terminate_workers();

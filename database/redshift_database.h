@@ -34,7 +34,7 @@ class redshift_record
 
   public:
 
-    //! deference to get z-value (not we return a copy, not a reference)
+    //! deference to get z-value (note we return a copy, not a reference)
     double operator*() const { return(this->z); }
 
     //! get token

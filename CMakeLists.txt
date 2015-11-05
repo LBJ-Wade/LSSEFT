@@ -13,6 +13,8 @@ include_directories(./
 set(LOCALIZATION
   localizations/messages.h)
 
+link_directories("/Users/ds283/Documents/Code/Cuba/Cuba-4.2")
+
 set(LOCALIZATION_EN_GB
   localizations/en_GB/en_GB.h
   localizations/en_GB/command_line.h
@@ -23,7 +25,8 @@ set(LOCALIZATION_EN_GB
   localizations/en_GB/transaction_manager.h
   localizations/en_GB/range.h
   localizations/en_GB/format.h
-  localizations/en_GB/master_controller.h)
+  localizations/en_GB/master_controller.h
+  localizations/en_GB/tree_power_spectrum.h)
 
 set(TOP_LEVEL_SOURCE_FILES
   main.cpp
@@ -64,7 +67,9 @@ set(COSMOLOGY_SOURCE_FILES
   cosmology/transfer_integrator.cpp cosmology/transfer_integrator.h
   cosmology/concepts/oneloop.cpp cosmology/concepts/oneloop.h
   cosmology/concepts/transfer_function.cpp cosmology/concepts/transfer_function.h
-  cosmology/oneloop_integrator.cpp cosmology/oneloop_integrator.h cosmology/constants.h)
+  cosmology/oneloop_integrator.cpp cosmology/oneloop_integrator.h
+  cosmology/constants.h
+  cosmology/concepts/tree_power_spectrum.cpp cosmology/concepts/tree_power_spectrum.h)
 
 set(UNITS_SOURCE_FILES
   units/eV_units.h)
@@ -75,7 +80,8 @@ set(DATABASE_SOURCE_FILES
   database/transaction_manager.cpp database/transaction_manager.h
   database/wavenumber_database.cpp database/wavenumber_database.h
   database/redshift_database.cpp database/redshift_database.h
-  database/generic_record_iterator.h database/generic_value_iterator.h)
+  database/generic_record_iterator.h database/generic_value_iterator.h
+  database/powerspectrum_database.cpp database/powerspectrum_database.h)
 
 set(SQLITE3_DETAIL_SOURCE_FILES
   sqlite3_detail/operations.h
@@ -118,6 +124,7 @@ add_executable(lsseft
   cosmology/FRW_model.cpp
   cosmology/concepts/transfer_function.cpp
   cosmology/concepts/oneloop.cpp
+  cosmology/concepts/tree_power_spectrum.cpp
   cosmology/transfer_integrator.cpp
   cosmology/oneloop_integrator.cpp
   database/data_manager.cpp
@@ -125,6 +132,7 @@ add_executable(lsseft
   database/transaction_manager.cpp
   database/wavenumber_database.cpp
   database/redshift_database.cpp
+  database/powerspectrum_database.cpp
   sqlite3_detail/utilities.cpp
   sqlite3_detail/create.cpp
   sqlite3_detail/FRW_model.cpp
@@ -135,6 +143,6 @@ add_executable(lsseft
   sqlite3_detail/store.cpp
   sqlite3_detail/sqlite3_policy.cpp)
 
-target_link_libraries(lsseft sqlite3 ${Boost_LIBRARIES} ${MPI_LIBRARIES})
+target_link_libraries(lsseft sqlite3 cuba ${Boost_LIBRARIES} ${MPI_LIBRARIES})
 
 add_executable(dummy_clion_target EXCLUDE_FROM_ALL ${SOURCE_FILES})

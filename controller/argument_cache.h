@@ -57,6 +57,15 @@ class argument_cache
     //! determine if a database has been set
     bool get_database_set() const { return(!this->database.empty()); }
 
+    //! get input power spectrum path
+    const boost::filesystem::path& get_powerspectrum_path() const { return(this->tree_Pk); }
+
+    //! set input power spectrum path
+    void set_powerspectrum_path(const std::string& p) { this->tree_Pk = p; }
+
+    //! determine if an input power spectrum has been set
+    bool get_powerspectrum_set() const { return(!this->tree_Pk.empty()); }
+
 
     // INTERNAL DATA
 
@@ -68,8 +77,11 @@ class argument_cache
     //! generate colourized output?
     bool colour_output;
 
-    //! database path
+    //! output database path
     boost::filesystem::path database;
+
+    //! input path containing tree-level power spectrum
+    boost::filesystem::path tree_Pk;
 
     // enable boost::serialization support, and hence automated packing for transmission over MPI
     friend class boost::serialization::access;
@@ -80,6 +92,7 @@ class argument_cache
         ar & verbose;
         ar & colour_output;
         ar & database;
+        ar & tree_Pk;
       }
 
   };

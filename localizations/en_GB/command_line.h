@@ -25,7 +25,11 @@
 
 #define LSSEFT_SWITCH_DATABASE        "database,d"
 #define LSSEFT_SWITCH_DATABASE_LONG   "database"
-#define LSSEFT_HELP_DATABASE          "specify database"
+#define LSSEFT_HELP_DATABASE          "specify output database location"
+
+#define LSSEFT_SWITCH_POWERSPEC       "powerspectrum,p"
+#define LSSEFT_SWITCH_POWERSPEC_LONG  "powerspectrum"
+#define LSSEFT_HELP_POWERSPEC         "specify tree-level power spectrum input file"
 
 
 #endif //LSSEFT_COMMAND_LINE_EN_GB_H
