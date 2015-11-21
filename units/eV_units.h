@@ -114,6 +114,12 @@ namespace eV_units
         return(a.val < b.val);
       }
 
+    template <typename Unit>
+    constexpr bool operator>(const value<Unit>& a, const value<Unit>& b)
+      {
+        return(a.val > b.val);
+      }
+
 
     // DIMENSIONFUL MULTIPLICATION
 
