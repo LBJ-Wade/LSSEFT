@@ -9,6 +9,7 @@
 #include "database/powerspectrum_database.h"
 
 #include "boost/filesystem/operations.hpp"
+#include "boost/serialization/serialization.hpp"
 
 
 class tree_power_spectrum
@@ -30,7 +31,18 @@ class tree_power_spectrum
   private:
 
     //! power spectrum
-    powerspectrum_database db;
+    powerspectrum_database database;
+
+
+    // enable boost::serialization support and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+
+
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & database;
+      }
 
   };
 

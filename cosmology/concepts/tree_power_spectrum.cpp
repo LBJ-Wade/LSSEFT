@@ -45,7 +45,7 @@ tree_power_spectrum::tree_power_spectrum(const boost::filesystem::path& p)
 
         eV_units::energy k_in_eV = k / eV_units::Mpc;
         eV_units::inverse_energy3 Pk_in_inv_eV3 = Pk * eV_units::Mpc3;
-        db.add_record(k_in_eV, Pk_in_inv_eV3);
+        database.add_record(k_in_eV, Pk_in_inv_eV3);
       }
 
     in.close();

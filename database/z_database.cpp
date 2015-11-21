@@ -6,26 +6,19 @@
 
 #include <assert.h>
 
-#include "redshift_database.h"
+#include "z_database.h"
 
 
-redshift_record::redshift_record(double _z, const redshift_token& tok)
-  : z(_z),
-    token(tok)
+void z_database::add_record(double z, const z_token& tok)
   {
-  }
-
-
-void redshift_database::add_record(double z, const redshift_token& tok)
-  {
-    std::pair<database_type::iterator, bool> emplaced_value = this->database.emplace(z, redshift_record(z, tok));
+    std::pair<database_type::iterator, bool> emplaced_value = this->database.emplace(z, z_record(z, tok));
     assert(emplaced_value.second);
 
     this->key_index.emplace(tok.get_id(), emplaced_value.first);
   }
 
 
-redshift_database::record_iterator redshift_database::lookup(redshift_token tok)
+z_database::record_iterator z_database::lookup(z_token tok)
   {
     key_index_type::iterator t = this->key_index.find(tok.get_id());          // find has logarithmic complexity
     database_type::iterator dt = t->second;
@@ -34,7 +27,7 @@ redshift_database::record_iterator redshift_database::lookup(redshift_token tok)
   }
 
 
-redshift_database::const_record_iterator redshift_database::lookup(redshift_token tok) const
+z_database::const_record_iterator z_database::lookup(z_token tok) const
   {
     key_index_type::const_iterator t = this->key_index.find(tok.get_id());    // find has logarithmic complexity
     database_type::const_iterator dt = t->second;
@@ -43,7 +36,7 @@ redshift_database::const_record_iterator redshift_database::lookup(redshift_toke
   }
 
 
-void redshift_database::rebuild_key_index()
+void z_database::rebuild_key_index()
   {
     this->key_index.clear();
 

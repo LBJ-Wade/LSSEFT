@@ -31,7 +31,7 @@ namespace sqlite3_operations
         check_stmt(db, sqlite3_prepare_v2(db, insert_stmt.str().c_str(), insert_stmt.str().length()+1, &stmt, nullptr));
 
         // get wavenumber token
-        const wavenumber_token& k_token = sample.get_wavenumber_token();
+        const k_token& k_token = sample.get_wavenumber_token();
 
         // loop through sample, writing its values into the database
         for(transfer_function::const_token_iterator t = sample.token_begin(); t != sample.token_end(); ++t)
@@ -68,7 +68,7 @@ namespace sqlite3_operations
         // construct SQL insert statement
         std::ostringstream insert_stmt;
         insert_stmt
-          << "INSERT INTO " << policy.oneloop_table() << " VALUES (@mid, @zid, @g_linear, @A, @B, @D, @E, @F, @G, @oneloop);";
+          << "INSERT INTO " << policy.oneloop_table() << " VALUES (@mid, @zid, @g_linear, @A, @B, @D, @E, @F, @G);";
 
         // prepare statement
         sqlite3_stmt* stmt;
@@ -89,7 +89,6 @@ namespace sqlite3_operations
             check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@E"), val.second.E));
             check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@F"), val.second.F));
             check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@G"), val.second.G));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@oneloop"), val.second.oneloop));
 
             // perform insertion
             check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_ONELOOP_FAIL, SQLITE_DONE);

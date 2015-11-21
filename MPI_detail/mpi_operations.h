@@ -12,7 +12,7 @@
 #include "cosmology/FRW_model.h"
 #include "cosmology/transfer_integrator.h"
 #include "units/eV_units.h"
-#include "database/redshift_database.h"
+#include "database/z_database.h"
 
 #include "boost/serialization/serialization.hpp"
 #include "boost/serialization/shared_ptr.hpp"
@@ -56,7 +56,7 @@ namespace MPI_detail
           }
 
         //! value constructor: used to construct and send a payload
-        new_transfer_integration(const FRW_model& m, const eV_units::energy& _k, const wavenumber_token& t, std::shared_ptr<redshift_database> z)
+        new_transfer_integration(const FRW_model& m, const eV_units::energy& _k, const k_token& t, const std::shared_ptr<z_database>& z)
           : model(m),
             k(_k),
             token(t),
@@ -79,10 +79,10 @@ namespace MPI_detail
         const eV_units::energy& get_k() const { return(this->k); }
 
         //! get wavenumber token
-        const wavenumber_token& get_token() const { return(this->token); }
+        const k_token& get_token() const { return(this->token); }
 
         //! get redshift database
-        std::shared_ptr<redshift_database> get_z_db() const { return(this->z_db); }
+        std::shared_ptr<z_database> get_z_db() const { return(this->z_db); }
 
 
         // INTERNAL DATA
@@ -96,11 +96,11 @@ namespace MPI_detail
         eV_units::energy k;
 
         //! wavenumber token
-        wavenumber_token token;
+        k_token token;
 
         //! redshifts to sample; use shared_ptr to avoid costly copies in case
         //! z_db is large
-        std::shared_ptr<redshift_database> z_db;
+        std::shared_ptr<z_database> z_db;
 
 
         // enable boost::serialization support, and hence automated packing for transmission over MPI
@@ -126,9 +126,9 @@ namespace MPI_detail
       public:
 
         //! empty constructor: used to receive a payload
-        //! transfer_function, eV_units::energy and wavenumber_token have no default constructors
+        //! transfer_function, eV_units::energy and k_token have no default constructors
         transfer_integration_ready()
-          : data(eV_units::energy(0), wavenumber_token(0), std::shared_ptr<redshift_database>())
+          : data(eV_units::energy(0), k_token(0), std::shared_ptr<z_database>())
           {
           }
 

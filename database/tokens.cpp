@@ -30,13 +30,25 @@ FRW_model_token::FRW_model_token(unsigned int i)
   }
 
 
-redshift_token::redshift_token(unsigned int i)
+z_token::z_token(unsigned int i)
   : generic_token(i)
   {
   }
 
 
-wavenumber_token::wavenumber_token(unsigned int i)
+k_token::k_token(unsigned int i)
+  : generic_token(i)
+  {
+  }
+
+
+IR_token::IR_token(unsigned int i)
+  : generic_token(i)
+  {
+  }
+
+
+UV_token::UV_token(unsigned int i)
   : generic_token(i)
   {
   }

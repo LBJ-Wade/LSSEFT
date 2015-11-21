@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "database/tokens.h"
-#include "database/redshift_database.h"
+#include "database/z_database.h"
 #include "units/eV_units.h"
 
 #include "boost/timer/timer.hpp"
@@ -28,7 +28,7 @@ struct transfer_record
   };
 
 
-typedef std::pair< const redshift_token&, transfer_record > transfer_value;
+typedef std::pair< const z_token&, transfer_record > transfer_value;
 
 
 namespace transfer_function_impl
@@ -199,7 +199,7 @@ class transfer_function
   public:
 
     //! constructor
-    transfer_function(const eV_units::energy& _k, const wavenumber_token& t, std::shared_ptr<redshift_database> z);
+    transfer_function(const eV_units::energy& _k, const k_token& t, std::shared_ptr<z_database> z);
 
     //! destructor is default
     ~transfer_function() = default;
@@ -210,11 +210,11 @@ class transfer_function
   public:
 
     //! type alias for non-const iterator
-    typedef transfer_function_impl::generic_token_iterator<redshift_database::reverse_record_iterator, redshift_database::const_reverse_record_iterator,
+    typedef transfer_function_impl::generic_token_iterator<z_database::reverse_record_iterator, z_database::const_reverse_record_iterator,
                                                            std::vector<double>::iterator, std::vector<double>::const_iterator, false> token_iterator;
 
     //! type alias for const iterator
-    typedef transfer_function_impl::generic_token_iterator<redshift_database::reverse_record_iterator, redshift_database::const_reverse_record_iterator,
+    typedef transfer_function_impl::generic_token_iterator<z_database::reverse_record_iterator, z_database::const_reverse_record_iterator,
                                                            std::vector<double>::iterator, std::vector<double>::const_iterator,true> const_token_iterator;
 
 
@@ -257,7 +257,7 @@ class transfer_function
     void push_back(double delta_m, double delta_r, double theta_m, double theta_r, double Phi);
 
     //! get wavenumber token
-    const wavenumber_token& get_wavenumber_token() const { return(this->token); }
+    const k_token& get_wavenumber_token() const { return(this->token); }
 
 
     // METADATA
@@ -284,11 +284,11 @@ class transfer_function
     eV_units::energy k;
 
     //! wavenumber token
-    wavenumber_token token;
+    k_token token;
 
     //! redshift database; managed using a std::shared_ptr<>
     //! to avoid unnecessary duplication expense
-    std::shared_ptr<redshift_database> z_db;
+    std::shared_ptr<z_database> z_db;
 
 
     // TRANSFER FUNCTIONS

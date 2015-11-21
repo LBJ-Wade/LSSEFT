@@ -136,7 +136,7 @@ oneloop_integrator::oneloop_integrator(double a, double r)
   }
 
 
-std::unique_ptr<oneloop> oneloop_integrator::integrate(const FRW_model& model, redshift_database& z_db)
+std::unique_ptr<oneloop> oneloop_integrator::integrate(const FRW_model& model, z_database& z_db)
   {
     // set up empty oneloop container
     std::unique_ptr<oneloop> ctr = std::make_unique<oneloop>(z_db);
@@ -151,7 +151,7 @@ std::unique_ptr<oneloop> oneloop_integrator::integrate(const FRW_model& model, r
     state_vector x(STATE_SIZE);
 
     // get initial time -- note use of reverse iterator to get last z!
-    redshift_database::reverse_value_iterator max_z = z_db.value_rbegin();
+    z_database::reverse_value_iterator max_z = z_db.value_rbegin();
 
     double init_z = *max_z;
     rhs.ics(x, init_z);

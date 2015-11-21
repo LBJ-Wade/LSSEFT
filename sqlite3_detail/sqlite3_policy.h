@@ -35,11 +35,20 @@ class sqlite3_policy
     //! wavenumber configuration table
     const std::string& wavenumber_config_table() const { return(this->wavenumber_config); }
 
+    //! IR configuration table
+    const std::string& IR_config_table() const { return(this->IR_config); }
+
+    //! UV configuration table
+    const std::string& UV_config_table() const { return(this->UV_config); }
+
     //! transfer function table
     const std::string& transfer_table() const { return(this->transfer); }
 
-    //! 1-loop kernels table
+    //! 1-loop growth factors table
     const std::string& oneloop_table() const { return(this->oneloop); }
+
+    //! 1-loop momentum integrals table
+    const std::string& loop_momentum_table() const { return(this->loop_momentum); }
 
     //! temporary table
     const std::string& temp_table() const { return(this->temp); }
@@ -60,11 +69,20 @@ class sqlite3_policy
     //! wavenumber configuration table
     std::string wavenumber_config;
 
+    //! IR cutoff configuration table
+    std::string IR_config;
+
+    //! UV cutoff configuration table
+    std::string UV_config;
+
     //! transfer function table
     std::string transfer;
 
-    //! 1-loop kernels table
+    //! 1-loop growth factors table
     std::string oneloop;
+
+    //! 1-loop momentum integrals table
+    std::string loop_momentum;
 
     //! temporary table name
     std::string temp;

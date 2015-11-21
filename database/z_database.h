@@ -13,124 +13,21 @@
 #include "tokens.h"
 #include "generic_record_iterator.h"
 #include "generic_value_iterator.h"
+#include "z_record.h"
 
 #include "boost/serialization/serialization.hpp"
 #include "boost/serialization/map.hpp"
-#include "boost/serialization/shared_ptr.hpp"
+#include "boost/serialization/split_member.hpp"
 
 
-class redshift_record
-  {
-
-    // CONSTRUCTOR, DESTRUCTOR
-
-  public:
-
-    //! build a redshift record
-    redshift_record(double _z, const redshift_token& tok);
-
-
-    // INTERFACE
-
-  public:
-
-    //! deference to get z-value (note we return a copy, not a reference)
-    double operator*() const { return(this->z); }
-
-    //! get token
-    const redshift_token& get_token() const { return(this->token); }
-
-
-    // INTERNAL DATA
-
-  private:
-
-    //! value of redshift
-    double z;
-
-    //! database token
-    redshift_token token;
-
-
-    // enable boost::serialization support, and hence automated packing for transmission over MPI
-    friend class boost::serialization::access;
-
-    template <typename Archive>
-    void serialize(Archive& ar, unsigned int version)
-      {
-      }
-
-  };
-
-
-namespace boost
-  {
-
-    // redshift_record has no default constructor, so have to specialize
-    // load/store methods for Boost:serialization
-
-    namespace serialization
-      {
-
-        template <typename Archive>
-        inline void save_construct_data(Archive& ar, const redshift_record* t, const unsigned int file_version)
-          {
-            ar << *(*t);                    // store value of z
-            ar << t->get_token().get_id();  // store token identifier
-          }
-
-
-        template <typename Archive>
-        inline void load_construct_data(Archive& ar, redshift_record* t, const unsigned int file_version)
-          {
-            double z;
-            unsigned int id;
-
-            ar >> z;      // unpack z
-            ar >> id;     // unpack token identifier
-
-            // invoke in-place constructor
-            ::new(t) redshift_record(z, redshift_token(id));
-          }
-
-
-        // for use within a std::map (eg in redshift_database), we also need a specialization for std::pair< unsigned int, redshift_record >
-
-        template <typename Archive>
-        inline void save_construct_data(Archive& ar, const std::pair< const double, redshift_record >* t, const unsigned int file_version)
-          {
-            double z = *(t->second);
-            unsigned int id = t->second.get_token().get_id();
-
-            ar << boost::serialization::make_nvp("first", z);
-            ar << boost::serialization::make_nvp("second", id);
-          }
-
-
-        template <typename Archive>
-        inline void load_construct_data(Archive& ar, std::pair< const double, redshift_record >* t, const unsigned int file_version)
-          {
-            double z;
-            unsigned int id;
-            ar >> boost::serialization::make_nvp("first", z);
-            ar >> boost::serialization::make_nvp("second", id);
-
-            ::new(t) std::pair< const double, redshift_record >(z, redshift_record(z, id));
-          }
-
-      }   // namespace serialization
-
-  }   // namespace boost
-
-
-class redshift_database
+class z_database
   {
 
   private:
 
     //! alias for data structure;
     //! records are stored in ascending redshift order
-    typedef std::map< double, redshift_record > database_type;
+    typedef std::map< double, z_record> database_type;
 
     //! alias for lookup-by-key index
     typedef std::map< unsigned int, database_type::iterator > key_index_type;
@@ -141,11 +38,11 @@ class redshift_database
   public:
 
     // specialize generic_record_iterator<> to obtain const and non-const iterators into the database
-    typedef configuration_database::generic_record_iterator< database_type::iterator, database_type::const_iterator, redshift_record, false > record_iterator;
-    typedef configuration_database::generic_record_iterator< database_type::iterator, database_type::const_iterator, redshift_record, true >  const_record_iterator;
+    typedef configuration_database::generic_record_iterator< database_type::iterator, database_type::const_iterator, z_record, false > record_iterator;
+    typedef configuration_database::generic_record_iterator< database_type::iterator, database_type::const_iterator, z_record, true >  const_record_iterator;
 
-    typedef configuration_database::generic_record_iterator< database_type::reverse_iterator, database_type::const_reverse_iterator, redshift_record, false > reverse_record_iterator;
-    typedef configuration_database::generic_record_iterator< database_type::reverse_iterator, database_type::const_reverse_iterator, redshift_record, true >  const_reverse_record_iterator;
+    typedef configuration_database::generic_record_iterator< database_type::reverse_iterator, database_type::const_reverse_iterator, z_record, false > reverse_record_iterator;
+    typedef configuration_database::generic_record_iterator< database_type::reverse_iterator, database_type::const_reverse_iterator, z_record, true >  const_reverse_record_iterator;
 
 
     // CONFIGURATION-VALUED ITERATORS
@@ -164,10 +61,10 @@ class redshift_database
   public:
 
     //! constructor
-    redshift_database() = default;
+    z_database() = default;
 
     //! destructor
-    ~redshift_database() = default;
+    ~z_database() = default;
 
 
     // MANUFACTURE RECORD-VALUED ITERATORS
@@ -219,13 +116,13 @@ class redshift_database
     //! add record to the database
 
     //! The record shouldn't already exist. No checks are made to test for duplicates
-    void add_record(double z, const redshift_token& tok);
+    void add_record(double z, const z_token& tok);
 
     //! lookup record by token
-    record_iterator lookup(redshift_token tok);
+    record_iterator lookup(z_token tok);
 
     //! lookup record by token -- const version
-    const_record_iterator lookup(redshift_token tok) const;
+    const_record_iterator lookup(z_token tok) const;
 
   protected:
 
@@ -256,11 +153,19 @@ class redshift_database
     friend class boost::serialization::access;
 
     template <typename Archive>
-    void serialize(Archive& ar, unsigned int version)
+    void save(Archive& ar, unsigned int version) const
+      {
+        ar & database;
+      }
+
+    template <typename Archive>
+    void load(Archive& ar, unsigned int version)
       {
         ar & database;
         this->rebuild_key_index();
       }
+
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
 
   };
 

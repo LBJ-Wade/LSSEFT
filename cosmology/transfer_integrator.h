@@ -14,7 +14,7 @@
 
 #include "units/eV_units.h"
 #include "database/tokens.h"
-#include "database/redshift_database.h"
+#include "database/z_database.h"
 
 #include "defaults.h"
 
@@ -41,8 +41,8 @@ class transfer_integrator
   public:
 
     //! integrate transfer function for a given k-mode and set of redshift samples
-    transfer_function integrate(const FRW_model& model, const eV_units::energy& k, const wavenumber_token& tok,
-                                std::shared_ptr<redshift_database>& z_db);
+    transfer_function integrate(const FRW_model& model, const eV_units::energy& k, const k_token& tok,
+                                std::shared_ptr<z_database>& z_db);
 
 
     // INTERNAL DATA

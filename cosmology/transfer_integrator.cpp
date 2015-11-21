@@ -308,7 +308,7 @@ transfer_integrator::transfer_integrator(double a, double r)
 
 
 transfer_function transfer_integrator::integrate(const FRW_model& model, const eV_units::energy& k,
-                                                 const wavenumber_token& tok, std::shared_ptr<redshift_database>& z_db)
+                                                 const k_token& tok, std::shared_ptr<z_database>& z_db)
   {
     // set up an empty transfer_function container
     transfer_function ctr(k, tok, z_db);
@@ -326,7 +326,7 @@ transfer_function transfer_integrator::integrate(const FRW_model& model, const e
     // is sufficiently superhorizon
 
     // first, get earliest time required
-    redshift_database::reverse_value_iterator max_z = z_db->value_rbegin();
+    z_database::reverse_value_iterator max_z = z_db->value_rbegin();
     double largest_z = *max_z;
     double init_z    = rhs.find_init_z();
 

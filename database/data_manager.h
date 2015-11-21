@@ -11,14 +11,17 @@
 
 #include "tokens.h"
 #include "transaction_manager.h"
-#include "redshift_database.h"
-#include "wavenumber_database.h"
+#include "z_database.h"
+#include "k_database.h"
+#include "IR_database.h"
+#include "UV_database.h"
 
 #include "cosmology/types.h"
 #include "cosmology/FRW_model.h"
 #include "cosmology/concepts/transfer_function.h"
 #include "cosmology/concepts/oneloop.h"
 #include "cosmology/concepts/range.h"
+#include "cosmology/concepts/tree_power_spectrum.h"
 
 #include "sqlite3_detail/sqlite3_policy.h"
 
@@ -46,26 +49,45 @@ class data_manager
   public:
 
     //! generate redshift database from a set of samples
-    std::unique_ptr<redshift_database> build_db(range<double>& sample);
+    std::unique_ptr<z_database> build_redshift_db(range<double>& sample);
 
     //! generate wavenumber database from a set of samples
-    std::unique_ptr<wavenumber_database> build_db(range<eV_units::energy>& sample);
+    std::unique_ptr<k_database> build_k_db(range<eV_units::energy>& sample);
+
+    //! generate IR cutoff database from a set of samples
+    std::unique_ptr<IR_database> build_IR_db(range<eV_units::energy>& sample);
+
+    //! generate UV cutoff database from a set of samples
+    std::unique_ptr<UV_database> build_UV_db(range<eV_units::energy>& sample);
+
+  protected:
+
+    template <typename Token>
+    std::unique_ptr< wavenumber_database<Token> > build_wavenumber_db(range<eV_units::energy>& sample);
 
 
-    // WAVENUMBER SERVICES
+    // SERVICES
 
   public:
 
     //! build a work list representing z-values which are missing from the SQLite backing store
-    //! for each k-value in a wavenumber database
+    //! for each k-value in a wavenumber database representing transfer functions.
     //! generates a new transaction on the database; will fail if a transaction is in progress
-    std::unique_ptr<transfer_work_list> build_transfer_work_list(FRW_model_token& model, wavenumber_database& k_db,
-                                                                 redshift_database& z_db);
+    std::unique_ptr<transfer_work_list> build_transfer_work_list(FRW_model_token& model, k_database& k_db,
+                                                                 z_database& z_db);
 
     //! build a work list representing z-values which are missing from the SQLite backing store
-    //! for each z-value needed
+    //! for each z-value needed for the one-loop growth factors.
     //! generates a new transaction on the database; will fail if a transaction is in progress
-    std::unique_ptr<redshift_database> build_oneloop_work_list(FRW_model_token& model, redshift_database& z_db);
+    std::unique_ptr<z_database> build_oneloop_work_list(FRW_model_token& model, z_database& z_db);
+
+    //! build a work list representing k-values which are missing from the SQLite backing store
+    //! for each k-value in a wavenumber database representing the momentum loop integral.
+    //! generates a new transaction on the database; will fail if a transaction is in progress
+    std::unique_ptr<loop_momentum_work_list> build_loop_momentum_work_list(FRW_model_token& model, k_database& k_db,
+                                                                           IR_database& IR_db, UV_database& UV_db,
+                                                                           std::shared_ptr<tree_power_spectrum>& Pk);
+
 
     // TOKENS
     // tokens are the basic unit of currency used when interacting with the database
@@ -78,11 +100,12 @@ class data_manager
 
     //! tokenize a redshift
     //! generates a new transation on the database; will fail if a transaction is in progress
-    std::unique_ptr<redshift_token> tokenize(double z);
+    std::unique_ptr<z_token> tokenize(double z);
 
-    //! tokenize a wavenumber
+    //! tokenize a wavenumber of the type specified in the template
     //! generates a new transation on the database; will fail if a transaction is in progress
-    std::unique_ptr<wavenumber_token> tokenize(const eV_units::energy& k);
+    template <typename Token>
+    std::unique_ptr<Token> tokenize(const eV_units::energy& k);
 
 
     // DATA HANDLING
@@ -129,6 +152,7 @@ class data_manager
     unsigned int lookup_or_insert(transaction_manager& mgr, double z);
 
     //! lookup or insert a wavenumber
+    template <typename Token>
     unsigned int lookup_or_insert(transaction_manager& mgr, const eV_units::energy &k);
 
 

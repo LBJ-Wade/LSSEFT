@@ -90,10 +90,14 @@ set(DATABASE_SOURCE_FILES
   database/data_manager.cpp database/data_manager.h
   database/tokens.cpp database/tokens.h
   database/transaction_manager.cpp database/transaction_manager.h
-  database/wavenumber_database.cpp database/wavenumber_database.h
-  database/redshift_database.cpp database/redshift_database.h
+  database/wavenumber_database.h
+  database/z_database.cpp database/z_database.h
   database/generic_record_iterator.h database/generic_value_iterator.h
-  database/powerspectrum_database.cpp database/powerspectrum_database.h)
+  database/powerspectrum_database.cpp database/powerspectrum_database.h
+  database/z_record.cpp database/z_record.h
+  database/wavenumber_record.h
+  database/powerspectrum_record.cpp database/powerspectrum_record.h
+  database/k_database.h database/IR_database.h database/UV_database.h)
 
 set(SQLITE3_DETAIL_SOURCE_FILES
   sqlite3_detail/operations.h
@@ -103,7 +107,7 @@ set(SQLITE3_DETAIL_SOURCE_FILES
   sqlite3_detail/FRW_model.cpp sqlite3_detail/FRW_model.h
   sqlite3_detail/sqlite3_policy.cpp sqlite3_detail/sqlite3_policy.h
   sqlite3_detail/redshift.cpp sqlite3_detail/redshift.h
-  sqlite3_detail/wavenumber.cpp sqlite3_detail/wavenumber.h
+  sqlite3_detail/wavenumber.h
   sqlite3_detail/temporary_tables.cpp sqlite3_detail/temporary_tables.h
   sqlite3_detail/missing_elements.cpp sqlite3_detail/missing_elements.h
   sqlite3_detail/store.cpp sqlite3_detail/store.h)
@@ -142,14 +146,14 @@ add_executable(lsseft
   database/data_manager.cpp
   database/tokens.cpp
   database/transaction_manager.cpp
-  database/wavenumber_database.cpp
-  database/redshift_database.cpp
+  database/z_database.cpp
   database/powerspectrum_database.cpp
+  database/z_record.cpp
+  database/powerspectrum_record.cpp
   sqlite3_detail/utilities.cpp
   sqlite3_detail/create.cpp
   sqlite3_detail/FRW_model.cpp
   sqlite3_detail/redshift.cpp
-  sqlite3_detail/wavenumber.cpp
   sqlite3_detail/temporary_tables.cpp
   sqlite3_detail/missing_elements.cpp
   sqlite3_detail/store.cpp

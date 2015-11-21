@@ -6,7 +6,7 @@
 #include "oneloop.h"
 
 
-oneloop::oneloop(redshift_database& z)
+oneloop::oneloop(z_database& z)
   : z_db(z)
   {
     g_linear.reset(new std::vector<double>);
@@ -16,7 +16,6 @@ oneloop::oneloop(redshift_database& z)
     E.reset(new std::vector<double>);
     F.reset(new std::vector<double>);
     G.reset(new std::vector<double>);
-    g_oneloop.reset(new std::vector<double>);
   }
 
 
@@ -29,9 +28,6 @@ void oneloop::push_back(double g, double A, double B, double D, double E, double
     this->E->push_back(E);
     this->F->push_back(F);
     this->G->push_back(G);
-
-    double g1 = (18.0*D + 28.0*E - 7.0*F - 2.0*G)/g;
-    this->g_oneloop->push_back(g1);
   }
 
 

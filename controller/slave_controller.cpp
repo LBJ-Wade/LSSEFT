@@ -90,8 +90,8 @@ void slave_controller::transfer_integration(MPI_detail::new_transfer_integration
   {
     FRW_model model = payload.get_model();
     eV_units::energy k = payload.get_k();
-    wavenumber_token tok = payload.get_token();
-    std::shared_ptr<redshift_database> z_db = payload.get_z_db();
+    k_token tok = payload.get_token();
+    std::shared_ptr<z_database> z_db = payload.get_z_db();
 
     std::cout << "Worker " << this->worker_number() << " beginning transfer task: id = " << tok.get_id() << " for k = " << k * eV_units::Mpc << " h/Mpc = " << static_cast<double>(k) << " eV" << '\n';
 
