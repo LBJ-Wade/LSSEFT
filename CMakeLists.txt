@@ -65,7 +65,9 @@ set(MISC_SOURCE_FILES
   misc/ansi_colour_codes.h)
 
 set(MPI_SOURCE_FILES
-  MPI_detail/mpi_operations.h)
+  MPI_detail/mpi_operations.h
+  MPI_detail/mpi_traits.h
+  MPI_detail/mpi_payloads.cpp MPI_detail/mpi_payloads.h)
 
 set(COSMOLOGY_SOURCE_FILES
   cosmology/FRW_model.cpp cosmology/FRW_model.h
@@ -76,12 +78,13 @@ set(COSMOLOGY_SOURCE_FILES
   cosmology/concepts/range_detail/range.h
   cosmology/concepts/range_detail/common.h
   cosmology/concepts/range_detail/aggregation.h
-  cosmology/transfer_integrator.cpp cosmology/transfer_integrator.h
-  cosmology/concepts/oneloop.cpp cosmology/concepts/oneloop.h
+  cosmology/concepts/oneloop_growth.cpp cosmology/concepts/oneloop_growth.h
   cosmology/concepts/transfer_function.cpp cosmology/concepts/transfer_function.h
+  cosmology/concepts/tree_power_spectrum.cpp cosmology/concepts/tree_power_spectrum.h
+  cosmology/concepts/loop_integral.cpp cosmology/concepts/loop_integral.h
+  cosmology/transfer_integrator.cpp cosmology/transfer_integrator.h
   cosmology/oneloop_integrator.cpp cosmology/oneloop_integrator.h
-  cosmology/constants.h
-  cosmology/concepts/tree_power_spectrum.cpp cosmology/concepts/tree_power_spectrum.h)
+  cosmology/constants.h)
 
 set(UNITS_SOURCE_FILES
   units/eV_units.h)
@@ -139,7 +142,8 @@ add_executable(lsseft
   utilities/formatter.cpp
   cosmology/FRW_model.cpp
   cosmology/concepts/transfer_function.cpp
-  cosmology/concepts/oneloop.cpp
+  cosmology/concepts/oneloop_growth.cpp
+  cosmology/concepts/loop_integral.cpp
   cosmology/concepts/tree_power_spectrum.cpp
   cosmology/transfer_integrator.cpp
   cosmology/oneloop_integrator.cpp
@@ -150,6 +154,7 @@ add_executable(lsseft
   database/powerspectrum_database.cpp
   database/z_record.cpp
   database/powerspectrum_record.cpp
+  MPI_detail/mpi_payloads.cpp
   sqlite3_detail/utilities.cpp
   sqlite3_detail/create.cpp
   sqlite3_detail/FRW_model.cpp

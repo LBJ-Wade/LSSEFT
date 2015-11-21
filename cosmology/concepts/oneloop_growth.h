@@ -16,7 +16,7 @@
 #include "boost/timer/timer.hpp"
 
 
-struct oneloop_record
+struct oneloop_growth_record
   {
     double g;
     double A;
@@ -28,10 +28,10 @@ struct oneloop_record
   };
 
 
-typedef std::pair< const z_token&, oneloop_record > oneloop_value;
+typedef std::pair< const z_token&, oneloop_growth_record> oneloop_value;
 
 
-namespace oneloop_impl
+namespace oneloop_growth_impl
   {
 
     template <typename RecordIterator, typename ConstRecordIterator, typename ValueIterator, typename ConstValueIterator, bool is_const_iterator=true>
@@ -109,7 +109,7 @@ namespace oneloop_impl
         //! dereference iterator to get value
         oneloop_value operator*() const
           {
-            oneloop_record rec;
+            oneloop_growth_record rec;
             rec.g = *this->g_iter;
             rec.A = *this->A_iter;
             rec.B = *this->B_iter;
@@ -206,10 +206,10 @@ namespace oneloop_impl
       };
 
 
-  }   // namespace oneloop_impl
+  }   // namespace oneloop_growth_impl
 
 
-class oneloop
+class oneloop_growth
   {
 
     // CONSTRUCTOR, DESTRUCTOR
@@ -217,10 +217,10 @@ class oneloop
   public:
 
     //! constructor
-    oneloop(z_database& z);
+    oneloop_growth(z_database& z);
 
     //! destructor is default
-    ~oneloop() = default;
+    ~oneloop_growth() = default;
 
 
     // ITERATORS
@@ -228,12 +228,12 @@ class oneloop
   public:
 
     //! type alias for non-const iterator
-    typedef oneloop_impl::generic_token_iterator<z_database::reverse_record_iterator, z_database::const_reverse_record_iterator,
-                                                 std::vector<double>::iterator, std::vector<double>::const_iterator, false> token_iterator;
+    typedef oneloop_growth_impl::generic_token_iterator<z_database::reverse_record_iterator, z_database::const_reverse_record_iterator,
+                                                        std::vector<double>::iterator, std::vector<double>::const_iterator, false> token_iterator;
 
     //! type alias for const iterator
-    typedef oneloop_impl::generic_token_iterator<z_database::reverse_record_iterator, z_database::const_reverse_record_iterator,
-                                                 std::vector<double>::iterator, std::vector<double>::const_iterator, true> const_token_iterator;
+    typedef oneloop_growth_impl::generic_token_iterator<z_database::reverse_record_iterator, z_database::const_reverse_record_iterator,
+                                                        std::vector<double>::iterator, std::vector<double>::const_iterator, true> const_token_iterator;
 
     token_iterator token_begin()
       {

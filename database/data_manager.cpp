@@ -361,7 +361,7 @@ std::unique_ptr<z_database> data_manager::build_oneloop_work_list(FRW_model_toke
   }
 
 
-void data_manager::store(const FRW_model_token& model_token, const oneloop& sample)
+void data_manager::store(const FRW_model_token& model_token, const oneloop_growth& sample)
   {
     // open a transaction on the database
     std::shared_ptr<transaction_manager> transaction = this->open_transaction();
@@ -416,4 +416,10 @@ std::unique_ptr<loop_momentum_work_list> data_manager::build_loop_momentum_work_
     std::cout << "lsseft: constructed loop momentum work list in time " << format_time(timer.elapsed().wall) << '\n';
 
     return(work_list);
+  }
+
+
+void data_manager::store(const FRW_model_token& model_token, const loop_integral& sample)
+  {
+
   }

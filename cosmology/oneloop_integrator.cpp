@@ -84,7 +84,7 @@ class oneloop_observer
   public:
 
     //! constructor
-    oneloop_observer(oneloop& c);
+    oneloop_observer(oneloop_growth& c);
 
     //! destructor is default
     ~oneloop_observer() = default;
@@ -116,8 +116,8 @@ class oneloop_observer
 
   private:
 
-    //! reference to oneloop container
-    oneloop& container;
+    //! reference to oneloop_growth container
+    oneloop_growth& container;
 
     //! integration timer
     boost::timer::cpu_timer timer;
@@ -136,10 +136,10 @@ oneloop_integrator::oneloop_integrator(double a, double r)
   }
 
 
-std::unique_ptr<oneloop> oneloop_integrator::integrate(const FRW_model& model, z_database& z_db)
+std::unique_ptr<oneloop_growth> oneloop_integrator::integrate(const FRW_model& model, z_database& z_db)
   {
-    // set up empty oneloop container
-    std::unique_ptr<oneloop> ctr = std::make_unique<oneloop>(z_db);
+    // set up empty oneloop_growth container
+    std::unique_ptr<oneloop_growth> ctr = std::make_unique<oneloop_growth>(z_db);
 
     // set up a functor for the ODE system
     oneloop_functor rhs(model);
@@ -287,7 +287,7 @@ void oneloop_functor::ics(state_vector& x, double z)
 // ONELOOP_OBSERVER METHODS
 
 
-oneloop_observer::oneloop_observer(oneloop& c)
+oneloop_observer::oneloop_observer(oneloop_growth& c)
   : container(c)
   {
     // stop timer

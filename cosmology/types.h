@@ -106,8 +106,20 @@ class loop_momentum_work_record
     //! deference to get wavenumber
     const eV_units::energy& operator*() const { return(this->k); }
 
-    //! get token
-    const k_token& kt_get_token() const { return(this->k_tok); }
+    //! get wavenumber token
+    const k_token& get_k_token() const { return(this->k_tok); }
+
+    //! get UV cutoff
+    const eV_units::energy& get_UV_cutoff() const { return(this->UV_cutoff); }
+
+    //! get UV cutoff token
+    const UV_token& get_UV_token() const { return(this->UV_tok); }
+
+    //! get IR cutoff
+    const eV_units::energy& get_IR_cutoff() const { return(this->IR_cutoff); }
+
+    //! get IR cutoff token
+    const IR_token& get_IR_token() const { return(this->IR_tok); }
 
     //! get tree-level power spectrum
     const std::shared_ptr<tree_power_spectrum>& get_Pk_db() const { return(this->Pk); }

@@ -19,11 +19,21 @@ class tree_power_spectrum
 
   public:
 
-    //! constructor
+    //! constructor -- read in from a file in CAMB format
     tree_power_spectrum(const boost::filesystem::path& p);
+
+    //! constructor -- from directly-supplied database
+    tree_power_spectrum(const powerspectrum_database& db);
 
     //! destructor is default
     ~tree_power_spectrum() = default;
+
+
+    // INTERFACE
+
+  public:
+
+    const powerspectrum_database& get_db() const { return(this->database); }
 
 
     // INTERNAL DATA
@@ -41,10 +51,36 @@ class tree_power_spectrum
     template <typename Archive>
     void serialize(Archive& ar, unsigned int version)
       {
-        ar & database;
       }
 
   };
+
+
+namespace boost
+  {
+
+    namespace serialization
+      {
+
+        template <typename Archive>
+        inline void save_construct_data(Archive& ar, const tree_power_spectrum* t, const unsigned int file_version)
+          {
+            ar << t->get_db();
+          }
+
+
+        template <typename Archive>
+        inline void load_construct_data(Archive& ar, tree_power_spectrum* t, const unsigned int file_version)
+          {
+            powerspectrum_database db;
+            ar >> db;
+
+            ::new(t) tree_power_spectrum(db);
+          }
+
+      }   // namespace serialization
+
+  }   // namespace boost
 
 
 #endif //LSSEFT_TREE_POWER_SPECTRUM_H

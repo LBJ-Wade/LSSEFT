@@ -257,7 +257,7 @@ class transfer_function
     void push_back(double delta_m, double delta_r, double theta_m, double theta_r, double Phi);
 
     //! get wavenumber token
-    const k_token& get_wavenumber_token() const { return(this->token); }
+    const k_token& get_k_token() const { return(this->token); }
 
 
     // METADATA

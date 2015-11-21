@@ -50,3 +50,9 @@ tree_power_spectrum::tree_power_spectrum(const boost::filesystem::path& p)
 
     in.close();
   }
+
+
+tree_power_spectrum::tree_power_spectrum(const powerspectrum_database& db)
+  : database(db)
+  {
+  }

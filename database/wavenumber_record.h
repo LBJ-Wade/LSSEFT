@@ -58,8 +58,6 @@ class wavenumber_record
     template <typename Archive>
     void serialize(Archive& ar, unsigned int version)
       {
-        ar & k;
-        ar & token;
       }
 
   };
@@ -71,6 +69,70 @@ wavenumber_record<Token>::wavenumber_record(const eV_units::energy& _k, const To
     token(tok)
   {
   }
+
+
+namespace boost
+  {
+
+    // wavenumber_record has no default constructor, and therefore we have to specialize
+    // load/store methods for Boost::serialization
+
+    namespace serialization
+      {
+
+        template <typename Archive, typename Token>
+        inline void save_construct_data(Archive& ar, const wavenumber_record<Token>* t, const unsigned int file_version)
+          {
+            ar << *(*t);                    // store wavenumber value
+            ar << t->get_token().get_id();  // store token identifier
+          }
+
+
+        template <typename Archive, typename Token>
+        inline void load_construct_data(Archive& ar, wavenumber_record<Token>* t, const unsigned int file_version)
+          {
+            double k;
+            unsigned int id;
+
+            ar >> k;    // unpack wavenumber value
+            ar >> id;   // unpack token identifier
+
+            eV_units::energy k_in_eV(k);
+
+            // invoke in-place constructor
+
+            ::new(t) wavenumber_record<Token>(k_in_eV, Token(id));
+          }
+
+
+        // for use within a std::map we also need a specialization for std::pair< eV_units::energy, wavenumber_record >
+
+        template <typename Archive, typename Token>
+        inline void save_construct_data(Archive& ar, const std::pair< eV_units::energy, wavenumber_record<Token> >* t, const unsigned int file_version)
+          {
+            const eV_units::energy& k = *(t->second);
+            unsigned int id = t->second.get_token().get_id();
+
+            ar << boost::serialization::make_nvp("first", k);
+            ar << boost::serialization::make_nvp("second", id);
+          }
+
+
+        template <typename Archive, typename Token>
+        inline void load_construct_data(Archive& ar, std::pair< eV_units::energy, wavenumber_record<Token> >* t, const unsigned int file_version)
+          {
+            eV_units::energy k(0);
+            unsigned int id;
+
+            ar >> boost::serialization::make_nvp("first", k);
+            ar >> boost::serialization::make_nvp("second", id);
+
+            ::new(t) std::pair< eV_units::energy, wavenumber_record<Token> >(k, wavenumber_record<Token>(k, id));
+          }
+
+      }   // namespace serialization
+
+  }   // namespace boost
 
 
 #endif //LSSEFT_WAVENUMBER_RECORD_H

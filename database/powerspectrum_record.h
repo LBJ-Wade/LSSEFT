@@ -70,7 +70,62 @@ class Pk_record
 namespace boost
   {
 
-  };
+    // Pk_record has no default constructor, and therefore we have to specialize
+    // load/store methods for Boost::serialization
+
+    namespace serialization
+      {
+
+        template <typename Archive>
+        inline void save_construct_data(Archive& ar, const Pk_record* t, const unsigned int file_version)
+          {
+            const eV_units::energy& k = t->get_wavenumber();
+            const eV_units::inverse_energy3& value = t->get_Pk();
+
+            ar << k;
+            ar << value;
+          }
+
+
+        template <typename Archive>
+        inline void load_construct_data(Archive& ar, Pk_record* t, const unsigned int file_version)
+          {
+            eV_units::energy k(0);
+            eV_units::inverse_energy3 value(0);
+
+            ar >> k;
+            ar >> value;
+          }
+
+
+        // for use within a std::map we also need a specialization for std::pair< eV_units::energy, Pk_record >
+
+        template <typename Archive>
+        inline void save_construct_data(Archive& ar, const std::pair< const eV_units::energy, Pk_record >* t, unsigned int file_version)
+          {
+            const eV_units::energy& k = t->second.get_wavenumber();
+            const eV_units::inverse_energy3& value = t->second.get_Pk();
+
+            ar << boost::serialization::make_nvp("first", k);
+            ar << boost::serialization::make_nvp("second", value);
+          }
+
+
+        template <typename Archive>
+        inline void load_construct_data(Archive& ar, std::pair< const eV_units::energy, Pk_record >* t, unsigned int file_version)
+          {
+            eV_units::energy k(0);
+            eV_units::inverse_energy3 value(0);
+
+            ar >> boost::serialization::make_nvp("first", k);
+            ar >> boost::serialization::make_nvp("second", value);
+
+            ::new(t) std::pair< eV_units::energy, Pk_record >(k, Pk_record(k, value));
+          }
+
+      }   // namespace serialization
+
+  }   // namespace boost
 
 
 #endif //LSSEFT_POWERSPECTRUM_RECORD_H

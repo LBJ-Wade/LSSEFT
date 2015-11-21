@@ -19,9 +19,10 @@
 #include "cosmology/types.h"
 #include "cosmology/FRW_model.h"
 #include "cosmology/concepts/transfer_function.h"
-#include "cosmology/concepts/oneloop.h"
+#include "cosmology/concepts/oneloop_growth.h"
 #include "cosmology/concepts/range.h"
 #include "cosmology/concepts/tree_power_spectrum.h"
+#include "cosmology/concepts/loop_integral.h"
 
 #include "sqlite3_detail/sqlite3_policy.h"
 
@@ -115,8 +116,11 @@ class data_manager
     //! store a transfer function sample
     void store(const FRW_model_token& model_token, const transfer_function& sample);
 
-    //! store a one-loop kernel sample
-    void store(const FRW_model_token& model_token, const oneloop& sample);
+    //! store a one-loop growth function sample
+    void store(const FRW_model_token& model_token, const oneloop_growth& sample);
+
+    //! store a one-loop momentum integral
+    void store(const FRW_model_token& model_token, const loop_integral& sample);
 
 
     // TRANSACTIONS

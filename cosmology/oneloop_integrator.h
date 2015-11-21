@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "FRW_model.h"
-#include "concepts/oneloop.h"
+#include "concepts/oneloop_growth.h"
 
 #include "database/tokens.h"
 #include "database/z_database.h"
@@ -39,7 +39,7 @@ class oneloop_integrator
   public:
 
     //! integrate one-loop kernels for a given set of redshift samples
-    std::unique_ptr<oneloop> integrate(const FRW_model& model, z_database& z_db);
+    std::unique_ptr<oneloop_growth> integrate(const FRW_model& model, z_database& z_db);
 
 
     // INTERNAL DATA

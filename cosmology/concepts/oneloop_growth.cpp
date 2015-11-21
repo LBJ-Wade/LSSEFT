@@ -3,10 +3,10 @@
 // Copyright (c) 2015 University of Sussex. All rights reserved.
 //
 
-#include "oneloop.h"
+#include "oneloop_growth.h"
 
 
-oneloop::oneloop(z_database& z)
+oneloop_growth::oneloop_growth(z_database& z)
   : z_db(z)
   {
     g_linear.reset(new std::vector<double>);
@@ -19,7 +19,7 @@ oneloop::oneloop(z_database& z)
   }
 
 
-void oneloop::push_back(double g, double A, double B, double D, double E, double F, double G)
+void oneloop_growth::push_back(double g, double A, double B, double D, double E, double F, double G)
   {
     this->g_linear->push_back(g);
     this->A->push_back(A);
@@ -31,7 +31,7 @@ void oneloop::push_back(double g, double A, double B, double D, double E, double
   }
 
 
-void oneloop::set_integration_metadata(boost::timer::nanosecond_type t, size_t s)
+void oneloop_growth::set_integration_metadata(boost::timer::nanosecond_type t, size_t s)
   {
     this->integration_time = t;
     this->steps = s;

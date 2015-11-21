@@ -70,9 +70,13 @@ class master_controller
 
   protected:
 
-    //! execute a transfer function work list
-    void scatter(const FRW_model& model, const FRW_model_token& token, transfer_work_list& work,
-                 data_manager& dmgr);
+    //! execute a job specified by a work list
+    template <typename WorkItem>
+    void scatter(const FRW_model& model, const FRW_model_token& token, std::list<WorkItem>& work, data_manager& dmgr);
+
+    //! store a payload returned by a worker
+    template <typename WorkItem>
+    void store_payload(const FRW_model_token& token, unsigned int source, data_manager& dmgr);
 
     //! terminate worker processes
     void terminate_workers();

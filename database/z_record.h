@@ -64,7 +64,7 @@ class z_record
 namespace boost
   {
 
-    // z_record has no default constructor, so have to specialize
+    // z_record has no default constructor, and therefore we have to specialize
     // load/store methods for Boost:serialization
 
     namespace serialization
@@ -110,6 +110,7 @@ namespace boost
           {
             double z;
             unsigned int id;
+
             ar >> boost::serialization::make_nvp("first", z);
             ar >> boost::serialization::make_nvp("second", id);
 

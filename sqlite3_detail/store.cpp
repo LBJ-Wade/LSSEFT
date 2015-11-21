@@ -31,7 +31,7 @@ namespace sqlite3_operations
         check_stmt(db, sqlite3_prepare_v2(db, insert_stmt.str().c_str(), insert_stmt.str().length()+1, &stmt, nullptr));
 
         // get wavenumber token
-        const k_token& k_token = sample.get_wavenumber_token();
+        const k_token& k_token = sample.get_k_token();
 
         // loop through sample, writing its values into the database
         for(transfer_function::const_token_iterator t = sample.token_begin(); t != sample.token_end(); ++t)
@@ -61,7 +61,7 @@ namespace sqlite3_operations
       }
 
 
-    void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model, const oneloop& sample)
+    void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model, const oneloop_growth& sample)
       {
         assert(db != nullptr);
 
@@ -75,7 +75,7 @@ namespace sqlite3_operations
         check_stmt(db, sqlite3_prepare_v2(db, insert_stmt.str().c_str(), insert_stmt.str().length()+1, &stmt, nullptr));
 
         // loop through sample, writing its values into the database
-        for(oneloop::const_token_iterator t = sample.token_begin(); t != sample.token_end(); ++t)
+        for(oneloop_growth::const_token_iterator t = sample.token_begin(); t != sample.token_end(); ++t)
           {
             oneloop_value val = *t;
 

@@ -4,6 +4,7 @@
 //
 
 
+#include <MPI_detail/mpi_traits.h>
 #include "core.h"
 
 #include "master_controller.h"
@@ -16,7 +17,8 @@
 
 #include "database/data_manager.h"
 
-#include "MPI_detail/mpi_operations.h"
+#include "MPI_detail/mpi_traits.h"
+#include "MPI_detail/mpi_payloads.h"
 
 #include "utilities/formatter.h"
 
@@ -159,7 +161,7 @@ void master_controller::execute()
         std::unique_ptr<loop_momentum_work_list> loop_momentum_work = dmgr.build_loop_momentum_work_list(*model, *k_db, *IR_db, *UV_db, Pk);
 
         // distribute this work list among the worker processes
-//        this->scatter(cosmology_model, *model, *loop_momentum_work, dmgr);
+        this->scatter(cosmology_model, *model, *loop_momentum_work, dmgr);
       }
 
     // instruct slave processes to terminate
@@ -167,16 +169,16 @@ void master_controller::execute()
   }
 
 
-void master_controller::scatter(const FRW_model& model, const FRW_model_token& token, transfer_work_list& work,
-                                data_manager& dmgr)
+template <typename WorkItem>
+void master_controller::scatter(const FRW_model& model, const FRW_model_token& token, std::list<WorkItem>& work, data_manager& dmgr)
   {
     if(this->mpi_world.size() == 1) throw runtime_exception(exception_type::runtime_error, ERROR_TOO_FEW_WORKERS);
 
     // instruct slave processes to await transfer function tasks
-    std::unique_ptr<scheduler> sch = this->set_up_workers(MPI_detail::MESSAGE_NEW_TRANSFER_TASK);
+    std::unique_ptr<scheduler> sch = this->set_up_workers(MPI_detail::work_item_traits<WorkItem>::new_task_message());
 
     bool sent_closedown = false;
-    transfer_work_list::iterator next_work_item = work.begin();
+    typename std::list<WorkItem>::const_iterator next_work_item = work.begin();
 
     while(!sch->all_inactive())
       {
@@ -197,9 +199,7 @@ void master_controller::scatter(const FRW_model& model, const FRW_model_token& t
                 next_work_item != work.end() && t != unassigned_list.end(); ++t)
               {
                 // assign next work item to this worker
-                MPI_detail::new_transfer_integration payload(model, *(*next_work_item), next_work_item->get_token(),
-                                                             next_work_item->get_z_db());
-                requests.push_back(this->mpi_world.isend(this->worker_rank(*t), MPI_detail::MESSAGE_NEW_TRANSFER_INTEGRATION, payload));
+                requests.push_back(this->mpi_world.isend(this->worker_rank(*t), MPI_detail::work_item_traits<WorkItem>::new_item_message(), MPI_detail::build_payload(model, next_work_item)));
 
                 sch->mark_assigned(*t);
                 ++next_work_item;
@@ -216,12 +216,10 @@ void master_controller::scatter(const FRW_model& model, const FRW_model_token& t
           {
             switch(stat->tag())
               {
-                case MPI_detail::MESSAGE_TRANSFER_INTEGRATION_READY:
+                case MPI_detail::MESSAGE_WORK_PRODUCT_READY:
                   {
-                    MPI_detail::transfer_integration_ready payload;
-                    this->mpi_world.recv(stat->source(), MPI_detail::MESSAGE_TRANSFER_INTEGRATION_READY, payload);
+                    this->store_payload<WorkItem>(token, stat->source(), dmgr);
                     sch->mark_unassigned(this->worker_number(stat->source()));
-                    dmgr.store(token, payload.get_data());
                     break;
                   }
 
@@ -239,6 +237,16 @@ void master_controller::scatter(const FRW_model& model, const FRW_model_token& t
             stat = this->mpi_world.iprobe();
           }
       }
+  }
+
+
+template <typename WorkItem>
+void master_controller::store_payload(const FRW_model_token& token, unsigned int source, data_manager& dmgr)
+  {
+    typename MPI_detail::work_item_traits<WorkItem>::incoming_payload_type payload;
+
+    this->mpi_world.recv(source, MPI_detail::MESSAGE_WORK_PRODUCT_READY, payload);
+    dmgr.store(token, payload.get_data());
   }
 
 
@@ -308,6 +316,6 @@ void master_controller::integrate_oneloop(const FRW_model& model, const FRW_mode
                                           data_manager& dmgr)
   {
     oneloop_integrator integrator;
-    std::unique_ptr<oneloop> sample = integrator.integrate(model, z_db);
+    std::unique_ptr<oneloop_growth> sample = integrator.integrate(model, z_db);
     dmgr.store(token, *sample);
   }
