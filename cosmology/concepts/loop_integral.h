@@ -25,7 +25,7 @@ class loop_integral
     loop_integral(const eV_units::energy& _k, const k_token& kt,
                   const eV_units::energy& UV, const UV_token& UVt,
                   const eV_units::energy& IR, const IR_token& IRt,
-                  double v);
+                  double _A, double _B, double _D, double _E, double _F, double _G);
 
     //! destructor is default
     ~loop_integral() = default;
@@ -44,8 +44,23 @@ class loop_integral
     //! get IR cutoff token
     const IR_token& get_IR_token() const { return(this->IR_tok); }
 
-    //! dereference to get value
-    double operator*() const { return(this->value); }
+    //! get A-value
+    double get_A() const { return(this->A); }
+
+    //! get B-value
+    double get_B() const { return(this->B); }
+
+    //! get D-value
+    double get_D() const { return(this->D); }
+
+    //! get E-value
+    double get_E() const { return(this->E); }
+
+    //! get F-value
+    double get_F() const { return(this->F); }
+
+    //! get G-value
+    double get_G() const { return(this->G); }
 
 
     // METADATA
@@ -89,8 +104,23 @@ class loop_integral
 
     // VALUE
 
-    //! value
-    double value;
+    //! A-type integral P_13
+    double A;
+
+    //! B-type integral P_13
+    double B;
+
+    //! D-type integral P_13
+    double D;
+
+    //! E-type integral P_13
+    double E;
+
+    //! F-type integral P_13
+    double F;
+
+    //! G-type integral P_13
+    double G;
 
 
     // METADATA
@@ -114,7 +144,12 @@ class loop_integral
         ar & UV_tok;
         ar & IR_cutoff;
         ar & IR_tok;
-        ar & value;
+        ar & A;
+        ar & B;
+        ar & D;
+        ar & E;
+        ar & F;
+        ar & G;
         ar & integration_time;
         ar & steps;
       }

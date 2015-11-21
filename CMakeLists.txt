@@ -79,11 +79,12 @@ set(COSMOLOGY_SOURCE_FILES
   cosmology/concepts/range_detail/common.h
   cosmology/concepts/range_detail/aggregation.h
   cosmology/concepts/oneloop_growth.cpp cosmology/concepts/oneloop_growth.h
+  cosmology/oneloop_momentum_integrator.cpp cosmology/oneloop_momentum_integrator.h
   cosmology/concepts/transfer_function.cpp cosmology/concepts/transfer_function.h
   cosmology/concepts/tree_power_spectrum.cpp cosmology/concepts/tree_power_spectrum.h
   cosmology/concepts/loop_integral.cpp cosmology/concepts/loop_integral.h
   cosmology/transfer_integrator.cpp cosmology/transfer_integrator.h
-  cosmology/oneloop_integrator.cpp cosmology/oneloop_integrator.h
+  cosmology/oneloop_growth_integrator.cpp cosmology/oneloop_growth_integrator.h
   cosmology/constants.h)
 
 set(UNITS_SOURCE_FILES
@@ -146,7 +147,8 @@ add_executable(lsseft
   cosmology/concepts/loop_integral.cpp
   cosmology/concepts/tree_power_spectrum.cpp
   cosmology/transfer_integrator.cpp
-  cosmology/oneloop_integrator.cpp
+  cosmology/oneloop_growth_integrator.cpp
+  cosmology/oneloop_momentum_integrator.cpp
   database/data_manager.cpp
   database/tokens.cpp
   database/transaction_manager.cpp

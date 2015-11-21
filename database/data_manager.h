@@ -25,6 +25,7 @@
 #include "cosmology/concepts/loop_integral.h"
 
 #include "sqlite3_detail/sqlite3_policy.h"
+#include "sqlite3_detail/operations.h"
 
 #include "boost/filesystem/operations.hpp"
 
@@ -113,14 +114,9 @@ class data_manager
 
   public:
 
-    //! store a transfer function sample
-    void store(const FRW_model_token& model_token, const transfer_function& sample);
-
-    //! store a one-loop growth function sample
-    void store(const FRW_model_token& model_token, const oneloop_growth& sample);
-
-    //! store a one-loop momentum integral
-    void store(const FRW_model_token& model_token, const loop_integral& sample);
+    //! store a sample
+    template <typename SampleType>
+    void store(const FRW_model_token& model_token, const SampleType& sample);
 
 
     // TRANSACTIONS
@@ -195,6 +191,19 @@ class data_manager
     double k_tol;
 
   };
+
+
+template <typename SampleType>
+void data_manager::store(const FRW_model_token& model_token, const SampleType& sample)
+  {
+    // open a transaction on the database
+    std::shared_ptr<transaction_manager> transaction = this->open_transaction();
+
+    sqlite3_operations::store(this->handle, *transaction, this->policy, model_token, sample);
+
+    // commit the transaction
+    transaction->commit();
+  }
 
 
 #endif //LSSEFT_DATA_MANAGER_H

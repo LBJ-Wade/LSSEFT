@@ -11,7 +11,7 @@
 #include "scheduler.h"
 
 #include "cosmology/FRW_model.h"
-#include "cosmology/oneloop_integrator.h"
+#include "cosmology/oneloop_growth_integrator.h"
 #include "cosmology/concepts/range.h"
 #include "cosmology/concepts/tree_power_spectrum.h"
 
@@ -315,7 +315,7 @@ void master_controller::close_down_workers()
 void master_controller::integrate_oneloop(const FRW_model& model, const FRW_model_token& token, z_database& z_db,
                                           data_manager& dmgr)
   {
-    oneloop_integrator integrator;
+    oneloop_growth_integrator integrator;
     std::unique_ptr<oneloop_growth> sample = integrator.integrate(model, z_db);
     dmgr.store(token, *sample);
   }

@@ -305,7 +305,7 @@ namespace MPI_detail
         //! empty constructor: used to receive a payload;
         //! note eV_units::energy, k_token, IR_token and UV_token have no default constructor
         loop_momentum_integration_ready()
-          : data(eV_units::energy(0), k_token(0), eV_units::energy(0), UV_token(0), eV_units::energy(0), IR_token(0), 0.0)
+          : data(eV_units::energy(0), k_token(0), eV_units::energy(0), UV_token(0), eV_units::energy(0), IR_token(0), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
           {
           }
 

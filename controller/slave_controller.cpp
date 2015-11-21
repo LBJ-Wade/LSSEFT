@@ -10,6 +10,7 @@
 #include "slave_controller.h"
 
 #include "cosmology/transfer_integrator.h"
+#include "cosmology/oneloop_momentum_integrator.h"
 #include "cosmology/types.h"
 
 
@@ -133,4 +134,11 @@ void slave_controller::process_item(MPI_detail::new_loop_momentum_integration& p
     std::shared_ptr<tree_power_spectrum> Pk = payload.get_tree_power_spectrum();
 
     std::cout << "Worker " << this->worker_number() << " processing loop integral item: id = " << k_tok.get_id() << " for k = " << k * eV_units::Mpc << " h/Mpc, IR cutoff = " << IR_cutoff * eV_units::Mpc << " h/Mpc, UV cutoff = " << UV_cutoff * eV_units::Mpc << " h/Mpc" << '\n';
+
+    oneloop_momentum_integrator integrator;
+    loop_integral sample = integrator.integrate(model, k, k_tok, UV_cutoff, UV_tok, IR_cutoff, IR_tok, Pk);
+
+    // inform master process that we have completed work on this integration
+    MPI_detail::loop_momentum_integration_ready return_payload(sample);
+    boost::mpi::request ack = this->mpi_world.isend(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_WORK_PRODUCT_READY, return_payload);
   }

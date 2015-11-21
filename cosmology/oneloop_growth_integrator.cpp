@@ -5,7 +5,7 @@
 
 #include <utility>
 
-#include "oneloop_integrator.h"
+#include "oneloop_growth_integrator.h"
 #include "constants.h"
 
 #include "units/eV_units.h"
@@ -128,7 +128,7 @@ class oneloop_observer
 // ONELOOP_INTEGRATOR METHODS
 
 
-oneloop_integrator::oneloop_integrator(double a, double r)
+oneloop_growth_integrator::oneloop_growth_integrator(double a, double r)
   : abs_err(a),
     rel_err(r)
   {
@@ -136,7 +136,7 @@ oneloop_integrator::oneloop_integrator(double a, double r)
   }
 
 
-std::unique_ptr<oneloop_growth> oneloop_integrator::integrate(const FRW_model& model, z_database& z_db)
+std::unique_ptr<oneloop_growth> oneloop_growth_integrator::integrate(const FRW_model& model, z_database& z_db)
   {
     // set up empty oneloop_growth container
     std::unique_ptr<oneloop_growth> ctr = std::make_unique<oneloop_growth>(z_db);

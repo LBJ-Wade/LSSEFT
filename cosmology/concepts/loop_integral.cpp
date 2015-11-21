@@ -7,14 +7,20 @@
 
 
 loop_integral::loop_integral(const eV_units::energy& _k, const k_token& kt, const eV_units::energy& UV,
-                             const UV_token& UVt, const eV_units::energy& IR, const IR_token& IRt, double v)
+                             const UV_token& UVt, const eV_units::energy& IR, const IR_token& IRt,
+                             double _A, double _B, double _D, double _E, double _F, double _G)
   : k(_k),
     k_tok(kt),
     UV_cutoff(UV),
     UV_tok(UVt),
     IR_cutoff(IR),
     IR_tok(IRt),
-    value(v)
+    A(_A),
+    B(_B),
+    D(_D),
+    E(_E),
+    F(_F),
+    G(_G)
   {
   }
 

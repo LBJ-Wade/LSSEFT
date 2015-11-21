@@ -323,18 +323,6 @@ std::unique_ptr<transfer_work_list> data_manager::build_transfer_work_list(FRW_m
   }
 
 
-void data_manager::store(const FRW_model_token& model_token, const transfer_function& sample)
-  {
-    // open a transaction on the database
-    std::shared_ptr<transaction_manager> transaction = this->open_transaction();
-
-    sqlite3_operations::store(this->handle, *transaction, this->policy, model_token, sample);
-
-    // commit the transaction before allowing it to go out of scope
-    transaction->commit();
-  }
-
-
 std::unique_ptr<z_database> data_manager::build_oneloop_work_list(FRW_model_token& model, z_database& z_db)
   {
     // start timer
@@ -358,18 +346,6 @@ std::unique_ptr<z_database> data_manager::build_oneloop_work_list(FRW_model_toke
     std::cout << "lsseft: constructed one-loop work list in time " << format_time(timer.elapsed().wall) << '\n';
 
     return(work_list);
-  }
-
-
-void data_manager::store(const FRW_model_token& model_token, const oneloop_growth& sample)
-  {
-    // open a transaction on the database
-    std::shared_ptr<transaction_manager> transaction = this->open_transaction();
-
-    sqlite3_operations::store(this->handle, *transaction, this->policy, model_token, sample);
-
-    // commit the transaction
-    transaction->commit();
   }
 
 
@@ -416,10 +392,4 @@ std::unique_ptr<loop_momentum_work_list> data_manager::build_loop_momentum_work_
     std::cout << "lsseft: constructed loop momentum work list in time " << format_time(timer.elapsed().wall) << '\n';
 
     return(work_list);
-  }
-
-
-void data_manager::store(const FRW_model_token& model_token, const loop_integral& sample)
-  {
-
   }
