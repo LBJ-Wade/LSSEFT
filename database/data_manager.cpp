@@ -90,7 +90,7 @@ std::unique_ptr<FRW_model_token> data_manager::tokenize(const FRW_model& obj)
     // commit the transaction
     transaction->commit();
 
-    return std::unique_ptr<FRW_model_token>(new FRW_model_token(id));
+    return std::make_unique<FRW_model_token>(id);
   }
 
 
@@ -105,7 +105,7 @@ std::unique_ptr<redshift_token> data_manager::tokenize(double z)
     // commit the transaction
     transaction->commit();
 
-    return std::unique_ptr<redshift_token>(new redshift_token(id));
+    return std::make_unique<redshift_token>(id);
   }
 
 
@@ -120,7 +120,7 @@ std::unique_ptr<wavenumber_token> data_manager::tokenize(const eV_units::energy&
     // commit the transaction
     transaction->commit();
 
-    return std::unique_ptr<wavenumber_token>(new wavenumber_token(id));
+    return std::make_unique<wavenumber_token>(id);
   }
 
 
@@ -237,7 +237,7 @@ std::unique_ptr<redshift_database> data_manager::build_db(range<double>& sample)
 std::unique_ptr<wavenumber_database> data_manager::build_db(range<eV_units::energy>& sample)
   {
     // construct an empty wavenumber database
-    std::unique_ptr<wavenumber_database> k_db(new wavenumber_database);
+    std::unique_ptr<wavenumber_database> k_db = std::make_unique<wavenumber_database>();
 
     // grab the grid of wavenumber samples
     const std::vector<eV_units::energy>& k_samples = sample.grid();
@@ -259,7 +259,7 @@ std::unique_ptr<transfer_work_list> data_manager::build_transfer_work_list(FRW_m
     boost::timer::cpu_timer timer;
 
     // construct an empty work list
-    std::unique_ptr<transfer_work_list> work_list(new transfer_work_list);
+    std::unique_ptr<transfer_work_list> work_list = std::make_unique<transfer_work_list>();
 
     // open a transaction on the database
     std::shared_ptr<transaction_manager> transaction = this->open_transaction();
@@ -309,7 +309,7 @@ void data_manager::store(const FRW_model_token& model_token, const transfer_func
   }
 
 
-std::shared_ptr<redshift_database> data_manager::build_oneloop_work_list(FRW_model_token& model, redshift_database& z_db)
+std::unique_ptr<redshift_database> data_manager::build_oneloop_work_list(FRW_model_token& model, redshift_database& z_db)
   {
     // start timer
     boost::timer::cpu_timer timer;
@@ -320,7 +320,7 @@ std::shared_ptr<redshift_database> data_manager::build_oneloop_work_list(FRW_mod
     // set up temporary table of desired z identifier
     std::string z_table = sqlite3_operations::z_table(this->handle, *transaction, this->policy, z_db);
 
-    std::shared_ptr<redshift_database> work_list = sqlite3_operations::missing_redshifts(this->handle, *transaction, this->policy, model, z_db, z_table);
+    std::unique_ptr<redshift_database> work_list = sqlite3_operations::missing_redshifts(this->handle, *transaction, this->policy, model, z_db, z_table);
 
     // close transaction
     transaction->commit();

@@ -136,29 +136,29 @@ oneloop_integrator::oneloop_integrator(double a, double r)
   }
 
 
-oneloop oneloop_integrator::integrate(const FRW_model& model, std::shared_ptr<redshift_database>& z_db)
+std::unique_ptr<oneloop> oneloop_integrator::integrate(const FRW_model& model, redshift_database& z_db)
   {
     // set up empty oneloop container
-    oneloop ctr(z_db);
+    std::unique_ptr<oneloop> ctr = std::make_unique<oneloop>(z_db);
 
     // set up a functor for the ODE system
     oneloop_functor rhs(model);
 
     // set up an observer
-    oneloop_observer obs(ctr);
+    oneloop_observer obs(*ctr);
 
     // set up a state vector
     state_vector x(STATE_SIZE);
 
     // get initial time -- note use of reverse iterator to get last z!
-    redshift_database::reverse_value_iterator max_z = z_db->value_rbegin();
+    redshift_database::reverse_value_iterator max_z = z_db.value_rbegin();
 
     double init_z = *max_z;
     rhs.ics(x, init_z);
 
     // set up vector of sample times (needed until the Boost version of odeint catchs up to the github version, which includes my patch)
     std::vector<double> z_sample;
-    std::copy(z_db->value_rbegin(), z_db->value_rend(), std::back_inserter(z_sample));
+    std::copy(z_db.value_rbegin(), z_db.value_rend(), std::back_inserter(z_sample));
 
     auto stepper = boost::numeric::odeint::make_dense_output< boost::numeric::odeint::runge_kutta_dopri5<state_vector> >(this->abs_err, this->rel_err);
 
@@ -166,7 +166,7 @@ oneloop oneloop_integrator::integrate(const FRW_model& model, std::shared_ptr<re
     size_t steps = boost::numeric::odeint::integrate_times(stepper, rhs, x, z_sample.begin(), z_sample.end(), -1E-3, obs);
     obs.stop_timer();
 
-    ctr.set_integration_metadata(obs.read_timer(), steps);
+    ctr->set_integration_metadata(obs.read_timer(), steps);
 
     return(ctr);
   }

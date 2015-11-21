@@ -133,11 +133,12 @@ void master_controller::execute()
     // distribute this work list among the slave processes
     this->scatter(cosmology_model, *model, *transfer_work_list, dmgr);
 
-    // build a work list for late-time growth functions
-    std::shared_ptr<redshift_database> oneloop_work_list = dmgr.build_oneloop_work_list(*model, *lo_z_db);
+    // build a work list for late-time growth functions;
+    // we inherit ownership of its lifetime using std::unique_ptr<>
+    std::unique_ptr<redshift_database> oneloop_work_list = dmgr.build_oneloop_work_list(*model, *lo_z_db);
 
     // compute one-loop functions, if needed; can be done on master process since there is only one integration
-    if(oneloop_work_list) this->integrate_oneloop(cosmology_model, *model, oneloop_work_list, dmgr);
+    if(oneloop_work_list) this->integrate_oneloop(cosmology_model, *model, *oneloop_work_list, dmgr);
 
     if(this->arg_cache.get_powerspectrum_set())
       {
@@ -286,10 +287,10 @@ void master_controller::close_down_workers()
   }
 
 
-void master_controller::integrate_oneloop(const FRW_model& model, const FRW_model_token& token, std::shared_ptr<redshift_database>& z_db,
+void master_controller::integrate_oneloop(const FRW_model& model, const FRW_model_token& token, redshift_database& z_db,
                                           data_manager& dmgr)
   {
     oneloop_integrator integrator;
-    oneloop sample = integrator.integrate(model, z_db);
-    dmgr.store(token, sample);
+    std::unique_ptr<oneloop> sample = integrator.integrate(model, z_db);
+    dmgr.store(token, *sample);
   }

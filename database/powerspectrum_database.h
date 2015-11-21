@@ -27,7 +27,7 @@ class Pk_record
   public:
 
     //! constructor
-    Pk_record(const eV_units::energy& in_k, double in_Pk)
+    Pk_record(const eV_units::energy& in_k, const eV_units::inverse_energy3& in_Pk)
       : k(in_k),
         Pk(in_Pk)
       {
@@ -42,21 +42,24 @@ class Pk_record
   public:
 
     //! dereference to get Pk-value (note we return a copy, not a reference)
-    double operator*() const { return(this->Pk); }
+    const eV_units::inverse_energy3& operator*() const { return(this->Pk); }
 
     //! get wavenumber
     const eV_units::energy& get_wavenumber() const { return(this->k); }
 
     //! get Pk-value
-    double get_Pk() const { return(this->Pk); }
+    const eV_units::inverse_energy3& get_Pk() const { return(this->Pk); }
 
 
     // INTERNAL DATA
 
   private:
 
+    //! k-value in units of eV
     eV_units::energy k;
-    double Pk;
+
+    //! P(k) for this k-value in units of (Mpc/h)^3
+    eV_units::inverse_energy3 Pk;
 
   };
 
@@ -70,6 +73,8 @@ class powerspectrum_database
     // so a power spectrum is a map k -> P(k)
     // where k is measured in eV
     typedef std::map< eV_units::energy, Pk_record > database_type;
+
+    typedef eV_units::inverse_energy3 Pk_units;
 
 
     // RECORD-VALUED ITERATORS
@@ -88,19 +93,19 @@ class powerspectrum_database
 
   public:
 
-    typedef configuration_database::generic_value_iterator< database_type::iterator, database_type::const_iterator, double, false > value_iterator;
-    typedef configuration_database::generic_value_iterator< database_type::iterator, database_type::const_iterator, double, true >  const_value_iterator;
+    typedef configuration_database::generic_value_iterator< database_type::iterator, database_type::const_iterator, Pk_units, false > value_iterator;
+    typedef configuration_database::generic_value_iterator< database_type::iterator, database_type::const_iterator, Pk_units, true >  const_value_iterator;
 
-    typedef configuration_database::generic_value_iterator< database_type::reverse_iterator, database_type::const_reverse_iterator, double, false > reverse_value_iterator;
-    typedef configuration_database::generic_value_iterator< database_type::reverse_iterator, database_type::const_reverse_iterator, double, true >  const_reverse_value_iterator;
+    typedef configuration_database::generic_value_iterator< database_type::reverse_iterator, database_type::const_reverse_iterator, Pk_units, false > reverse_value_iterator;
+    typedef configuration_database::generic_value_iterator< database_type::reverse_iterator, database_type::const_reverse_iterator, Pk_units, true >  const_reverse_value_iterator;
 
 
     // CONSTRUCTOR, DESTRUCTOR
 
   public:
 
-    //! constructor is default
-    powerspectrum_database() = default;
+    //! constructor
+    powerspectrum_database();
 
     //! destructor is default
     ~powerspectrum_database() = default;
@@ -155,7 +160,7 @@ class powerspectrum_database
     //! add record to the database
 
     //! the record shouldn't already exist, but no check is made to enforce this
-    void add_record(const eV_units::energy& k, double Pk);
+    void add_record(const eV_units::energy& k, const eV_units::inverse_energy3& Pk);
 
 
     // UTILITY FUNCTIONS
@@ -172,6 +177,12 @@ class powerspectrum_database
 
     //! database cache
     database_type database;
+
+    //! smallest k-mode in the database
+    eV_units::energy k_min;
+
+    //! largest k-mode in the database
+    eV_units::energy k_max;
 
   };
 

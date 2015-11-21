@@ -76,13 +76,17 @@ namespace eV_units
 
     using eV_unit          = unit<1>;
     using eV2_unit         = unit<2>;
+    using eV3_unit         = unit<3>;
     using inverse_eV_unit  = unit<-1>;
     using inverse_eV2_unit = unit<-2>;
+    using inverse_eV3_unit = unit<-3>;
 
     using energy           = value<eV_unit>;
     using energy2          = value<eV2_unit>;
+    using energy3          = value<eV3_unit>;
     using inverse_energy   = value<inverse_eV_unit>;
     using inverse_energy2  = value<inverse_eV2_unit>;
+    using inverse_energy3  = value<inverse_eV3_unit>;
 
     // set up some default units
     // note only long double allowed on a user-defined literal operator
@@ -128,9 +132,24 @@ namespace eV_units
         return energy2(a.val * b.val);
       }
 
+    constexpr energy3 operator*(const energy& a, const energy2& b)
+      {
+        return energy3(a.val * b.val);
+      }
+
     constexpr inverse_energy2 operator*(const inverse_energy& a, const inverse_energy& b)
       {
         return inverse_energy2(a.val * b.val);
+      }
+
+    constexpr inverse_energy3 operator*(const inverse_energy& a, const inverse_energy2& b)
+      {
+        return inverse_energy3(a.val * b.val);
+      }
+
+    constexpr inverse_energy3 operator*(const inverse_energy2& a, const inverse_energy& b)
+      {
+        return inverse_energy3(a.val * b.val);
       }
 
 
@@ -172,6 +191,11 @@ namespace eV_units
         return energy2(a * b.val);
       }
 
+    constexpr energy3 operator*(double a, const energy3& b)
+      {
+        return energy3(a * b.val);
+      }
+
     constexpr inverse_energy operator*(double a, const inverse_energy& b)
       {
         return inverse_energy(a * b.val);
@@ -180,6 +204,11 @@ namespace eV_units
     constexpr inverse_energy2 operator*(double a, const inverse_energy2& b)
       {
         return inverse_energy2(a * b.val);
+      }
+
+    constexpr inverse_energy3 operator*(double a, const inverse_energy3& b)
+      {
+        return inverse_energy3(a * b.val);
       }
 
 
@@ -195,6 +224,11 @@ namespace eV_units
         return energy2(a.val / b);
       }
 
+    constexpr energy3 operator/(const energy3& a, double b)
+      {
+        return energy3(a.val / b);
+      }
+
     constexpr inverse_energy operator/(const inverse_energy& a, double b)
       {
         return inverse_energy(a.val / b);
@@ -203,6 +237,11 @@ namespace eV_units
     constexpr inverse_energy2 operator/(const inverse_energy2& a, double b)
       {
         return inverse_energy2(a.val / b);
+      }
+
+    constexpr inverse_energy3 operator/(const inverse_energy3& a, double b)
+      {
+        return inverse_energy3(a.val / b);
       }
 
 
@@ -235,17 +274,19 @@ namespace eV_units
 
     // numerical constant here is sqrt(1/8pi); note we have to write the literal explicitly
     // in C++11 (and probably C++14) because there is no constexpr square root function
-    constexpr inverse_energy sqrt_NewtonG = 0.1994711402007163 / PlanckMass;
+    constexpr inverse_energy  sqrt_NewtonG = 0.1994711402007163 / PlanckMass;
 
-    constexpr inverse_energy Metre    = sqrt_NewtonG / 1.616199E-35;
-    constexpr energy         Kilogram = 1.0 / (2.17651E-8 * sqrt_NewtonG);
-    constexpr inverse_energy Second   = sqrt_NewtonG / 5.39106E-44;
-    constexpr energy         Kelvin   = 1.0 / (1.416833E32 * sqrt_NewtonG);
+    constexpr inverse_energy  Metre    = sqrt_NewtonG / 1.616199E-35;
+    constexpr energy          Kilogram = 1.0 / (2.17651E-8 * sqrt_NewtonG);
+    constexpr inverse_energy  Second   = sqrt_NewtonG / 5.39106E-44;
+    constexpr energy          Kelvin   = 1.0 / (1.416833E32 * sqrt_NewtonG);
 
-    constexpr inverse_energy Kilometre = 1000 * Metre;
-    constexpr inverse_energy Mpc       = 3.08567758E22 * Metre;
+    constexpr inverse_energy  Kilometre = 1000 * Metre;
+    constexpr inverse_energy  Mpc       = 3.08567758E22 * Metre;
 
-    constexpr double c = 299792458 * Metre / Second;
+    constexpr inverse_energy3 Mpc3     = Mpc*Mpc*Mpc;
+
+    constexpr double          c        = 299792458 * Metre / Second;
 
   }
 

@@ -6,20 +6,17 @@
 #include "oneloop.h"
 
 
-oneloop::oneloop(std::shared_ptr<redshift_database> z)
+oneloop::oneloop(redshift_database& z)
   : z_db(z)
   {
-    if(z_db)
-      {
-        g_linear.reset(new std::vector<double>);
-        A.reset(new std::vector<double>);
-        B.reset(new std::vector<double>);
-        D.reset(new std::vector<double>);
-        E.reset(new std::vector<double>);
-        F.reset(new std::vector<double>);
-        G.reset(new std::vector<double>);
-        g_oneloop.reset(new std::vector<double>);
-      }
+    g_linear.reset(new std::vector<double>);
+    A.reset(new std::vector<double>);
+    B.reset(new std::vector<double>);
+    D.reset(new std::vector<double>);
+    E.reset(new std::vector<double>);
+    F.reset(new std::vector<double>);
+    G.reset(new std::vector<double>);
+    g_oneloop.reset(new std::vector<double>);
   }
 
 

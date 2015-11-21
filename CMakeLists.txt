@@ -1,12 +1,23 @@
 cmake_minimum_required(VERSION 3.2)
 project(LSSEFT)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Ofast")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Ofast")
+
+SET ( SPLINTER_LIBRARY "splinter-static-2-0" )
 
 find_package(MPI REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system filesystem timer date_time mpi program_options serialization)
 
+# pull in bundled SPLINTER sources; on most platforms will need to switch default build to 64-bit
+set ( ARCH "x86-64" )
+ADD_SUBDIRECTORY ( "thirdparty/splinter" "splinter-build" )
+
+# use version of Eigen3 bundled with SPLINTER
+SET ( EIGEN3_INCLUDE_DIR  "thirdparty/splinter/thirdparty/Eigen" )
+
 include_directories(./
+  thirdparty/splinter/include
+  ${EIGEN3_INCLUDE_DIR}
   ${Boost_INCLUDE_DIRS}
   ${MPI_CXX_INCLUDE_PATH})
 
@@ -14,6 +25,7 @@ set(LOCALIZATION
   localizations/messages.h)
 
 link_directories("/Users/ds283/Documents/Code/Cuba/Cuba-4.2")
+link_directories("/Users/david/Documents/Code/Cuba/Cuba-4.2")
 
 set(LOCALIZATION_EN_GB
   localizations/en_GB/en_GB.h
@@ -143,6 +155,6 @@ add_executable(lsseft
   sqlite3_detail/store.cpp
   sqlite3_detail/sqlite3_policy.cpp)
 
-target_link_libraries(lsseft sqlite3 cuba ${Boost_LIBRARIES} ${MPI_LIBRARIES})
+target_link_libraries(lsseft sqlite3 cuba ${Boost_LIBRARIES} ${MPI_LIBRARIES} ${SPLINTER_LIBRARY})
 
 add_executable(dummy_clion_target EXCLUDE_FROM_ALL ${SOURCE_FILES})

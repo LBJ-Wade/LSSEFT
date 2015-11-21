@@ -226,7 +226,7 @@ class oneloop
   public:
 
     //! constructor
-    oneloop(std::shared_ptr<redshift_database> z);
+    oneloop(redshift_database& z);
 
     //! destructor is default
     ~oneloop() = default;
@@ -246,32 +246,32 @@ class oneloop
 
     token_iterator token_begin()
       {
-        return(token_iterator(this->z_db->record_rbegin(), this->g_linear->begin(), this->A->begin(), this->B->begin(), this->D->begin(), this->E->begin(), this->F->begin(), this->G->begin(), this->g_oneloop->begin()));
+        return(token_iterator(this->z_db.record_rbegin(), this->g_linear->begin(), this->A->begin(), this->B->begin(), this->D->begin(), this->E->begin(), this->F->begin(), this->G->begin(), this->g_oneloop->begin()));
       }
 
     token_iterator token_end()
       {
-        return(token_iterator(this->z_db->record_rend(), this->g_linear->end(), this->A->end(), this->B->end(), this->D->end(), this->E->end(), this->F->end(), this->G->end(), this->g_oneloop->end()));
+        return(token_iterator(this->z_db.record_rend(), this->g_linear->end(), this->A->end(), this->B->end(), this->D->end(), this->E->end(), this->F->end(), this->G->end(), this->g_oneloop->end()));
       }
 
     const_token_iterator token_begin() const
       {
-        return(const_token_iterator(this->z_db->record_crbegin(), this->g_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->g_oneloop->cbegin()));
+        return(const_token_iterator(this->z_db.record_crbegin(), this->g_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->g_oneloop->cbegin()));
       }
 
     const_token_iterator token_end() const
       {
-        return(const_token_iterator(this->z_db->record_crend(), this->g_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->g_oneloop->cend()));
+        return(const_token_iterator(this->z_db.record_crend(), this->g_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->g_oneloop->cend()));
       }
 
     const_token_iterator token_cbegin() const
       {
-        return(const_token_iterator(this->z_db->record_crbegin(), this->g_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->g_oneloop->cbegin()));
+        return(const_token_iterator(this->z_db.record_crbegin(), this->g_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->g_oneloop->cbegin()));
       }
 
     const_token_iterator token_cend() const
       {
-        return(const_token_iterator(this->z_db->record_crend(), this->g_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->g_oneloop->cend()));
+        return(const_token_iterator(this->z_db.record_crend(), this->g_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->g_oneloop->cend()));
       }
 
 
@@ -303,39 +303,37 @@ class oneloop
 
     // CONFIGURATION DATA
 
-    //! redshift database; managed using a std::shared_ptr<>
-    //! to avoid unnecessary duplication expense
-    std::shared_ptr<redshift_database> z_db;
+    //! reference to redshift database
+    redshift_database& z_db;
 
 
     // ONE-LOOP FUNCITONS
 
-    // these are managed using std::shared_ptr<>s to avoid
-    // expensive duplication
+    // these are managed using std::unique_ptr<>s to control their lifetime
 
     //! linear growth factor
-    std::shared_ptr< std::vector<double> > g_linear;
+    std::unique_ptr< std::vector<double> > g_linear;
 
     //! A kernel
-    std::shared_ptr< std::vector<double> > A;
+    std::unique_ptr< std::vector<double> > A;
 
     //! B kernel
-    std::shared_ptr< std::vector<double> > B;
+    std::unique_ptr< std::vector<double> > B;
 
     //! D kernel
-    std::shared_ptr< std::vector<double> > D;
+    std::unique_ptr< std::vector<double> > D;
 
     //! E kernel
-    std::shared_ptr< std::vector<double> > E;
+    std::unique_ptr< std::vector<double> > E;
 
     //! F kernel
-    std::shared_ptr< std::vector<double> > F;
+    std::unique_ptr< std::vector<double> > F;
 
     //! G kernel
-    std::shared_ptr< std::vector<double> > G;
+    std::unique_ptr< std::vector<double> > G;
 
     //! total one-loop kernel
-    std::shared_ptr< std::vector<double> > g_oneloop;
+    std::unique_ptr< std::vector<double> > g_oneloop;
 
 
     // METADATA

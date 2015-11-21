@@ -65,7 +65,7 @@ class data_manager
     //! build a work list representing z-values which are missing from the SQLite backing store
     //! for each z-value needed
     //! generates a new transaction on the database; will fail if a transaction is in progress
-    std::shared_ptr<redshift_database> build_oneloop_work_list(FRW_model_token& model, redshift_database& z_db);
+    std::unique_ptr<redshift_database> build_oneloop_work_list(FRW_model_token& model, redshift_database& z_db);
 
     // TOKENS
     // tokens are the basic unit of currency used when interacting with the database

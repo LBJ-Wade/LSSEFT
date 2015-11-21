@@ -39,7 +39,7 @@ class oneloop_integrator
   public:
 
     //! integrate one-loop kernels for a given set of redshift samples
-    oneloop integrate(const FRW_model& model, std::shared_ptr<redshift_database>& z_db);
+    std::unique_ptr<oneloop> integrate(const FRW_model& model, redshift_database& z_db);
 
 
     // INTERNAL DATA

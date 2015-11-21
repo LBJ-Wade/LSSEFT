@@ -13,6 +13,9 @@
 
 #include "tree_power_spectrum.h"
 
+#include "datatable.h"
+#include "bsplineapproximant.h"
+
 
 tree_power_spectrum::tree_power_spectrum(const boost::filesystem::path& p)
   {
@@ -41,7 +44,8 @@ tree_power_spectrum::tree_power_spectrum(const boost::filesystem::path& p)
         line_stream >> k >> Pk;
 
         eV_units::energy k_in_eV = k / eV_units::Mpc;
-        db.add_record(k_in_eV, Pk);
+        eV_units::inverse_energy3 Pk_in_inv_eV3 = Pk * eV_units::Mpc3;
+        db.add_record(k_in_eV, Pk_in_inv_eV3);
       }
 
     in.close();

@@ -23,7 +23,7 @@ namespace sqlite3_operations
 
     //! we use a shared pointer to avoid costly duplication of the database as it gets
     //! moved around
-    std::shared_ptr<redshift_database> missing_redshifts(sqlite3* db, transaction_manager& mgr,
+    std::unique_ptr<redshift_database> missing_redshifts(sqlite3* db, transaction_manager& mgr,
                                                          const sqlite3_policy& policy, const FRW_model_token& model,
                                                          const wavenumber_token& k, const redshift_database& z_db,
                                                          const std::string& z_table);
@@ -33,7 +33,7 @@ namespace sqlite3_operations
 
     //! we use a shared pointer to avoid costly duplication of the database as it gets
     //! moved around
-    std::shared_ptr<redshift_database> missing_redshifts(sqlite3* db, transaction_manager& mgr,
+    std::unique_ptr<redshift_database> missing_redshifts(sqlite3* db, transaction_manager& mgr,
                                                          const sqlite3_policy& policy, const FRW_model_token& model,
                                                          const redshift_database& z_db, const std::string& z_table);
 

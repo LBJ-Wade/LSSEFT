@@ -102,7 +102,7 @@ namespace sqlite3_operations
 
 
     //! find missing redshifts for a transfer function sample
-    std::shared_ptr<redshift_database> missing_redshifts(sqlite3* db, transaction_manager& mgr,
+    std::unique_ptr<redshift_database> missing_redshifts(sqlite3* db, transaction_manager& mgr,
                                                          const sqlite3_policy& policy, const FRW_model_token& model,
                                                          const wavenumber_token& k, const redshift_database& z_db,
                                                          const std::string& z_table)
@@ -110,7 +110,7 @@ namespace sqlite3_operations
         assert(db != nullptr);
 
         // set up null pointer; will be attached to an empty database later if needed
-        std::shared_ptr<redshift_database> missing_db;
+        std::unique_ptr<redshift_database> missing_db;
 
         // get list of missing z-values for this k-mode of the transfer function
         std::list<unsigned int> missing_list = missing_redshifts_for_table(db, model, k, policy.transfer_table(), z_table);
@@ -135,14 +135,14 @@ namespace sqlite3_operations
 
 
     //! find missing redshifts for a one-loop growth function sample
-    std::shared_ptr<redshift_database> missing_redshifts(sqlite3* db, transaction_manager& mgr,
+    std::unique_ptr<redshift_database> missing_redshifts(sqlite3* db, transaction_manager& mgr,
                                                          const sqlite3_policy& policy, const FRW_model_token& model,
                                                          const redshift_database& z_db, const std::string& z_table)
       {
         assert(db != nullptr);
 
         // set up null pointer; will be attached to an empty database later if needed
-        std::shared_ptr<redshift_database> missing_db;
+        std::unique_ptr<redshift_database> missing_db;
 
         // get list of missing z-values
         std::list<unsigned int> missing_list = missing_redshifts_for_table(db, model, policy.oneloop_table(), z_table);
