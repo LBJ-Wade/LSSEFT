@@ -6,10 +6,15 @@
 #ifndef LSSEFT_TREE_POWER_SPECTRUM_H
 #define LSSEFT_TREE_POWER_SPECTRUM_H
 
+#include <memory>
+
 #include "database/powerspectrum_database.h"
 
 #include "boost/filesystem/operations.hpp"
 #include "boost/serialization/serialization.hpp"
+
+#include "datatable.h"
+#include "bsplineapproximant.h"
 
 
 class tree_power_spectrum
@@ -33,7 +38,22 @@ class tree_power_spectrum
 
   public:
 
+    //! get power spectrum database
     const powerspectrum_database& get_db() const { return(this->database); }
+
+    //! evaluate spline
+    eV_units::inverse_energy3 operator()(const eV_units::energy& k) const;
+
+
+    // INTERNAL API
+
+  private:
+
+    //! ingest CAMB-format powerspectrum file
+    void ingest_CAMB(const boost::filesystem::path& p);
+
+    //! recalculate spline approximant
+    void recalculate_spline();
 
 
     // INTERNAL DATA
@@ -42,6 +62,11 @@ class tree_power_spectrum
 
     //! power spectrum
     powerspectrum_database database;
+
+    //! splines representing power spectrum
+    std::unique_ptr<SPLINTER::DataTable> table;
+
+    std::unique_ptr<SPLINTER::BSplineApproximant> spline;
 
 
     // enable boost::serialization support and hence automated packing for transmission over MPI

@@ -26,7 +26,7 @@ class oneloop_momentum_integrator
   public:
 
     //! constructor
-    oneloop_momentum_integrator() = default;
+    oneloop_momentum_integrator(double a=LSSEFT_DEFAULT_INTEGRAL_ABS_ERR, double r=LSSEFT_DEFAULT_INTEGRAL_REL_ERR);
 
     //! destructor is default
     ~oneloop_momentum_integrator() = default;
@@ -41,6 +41,27 @@ class oneloop_momentum_integrator
                             const eV_units::energy& UV_cutoff, const UV_token& UV_tok,
                             const eV_units::energy& IR_cutoff, const IR_token& IR_tok,
                             std::shared_ptr<tree_power_spectrum>& Pk);
+
+
+    // INTERNAL API
+
+  private:
+
+    //! perform A integral
+    eV_units::inverse_energy3 A_integral(const FRW_model& model, const eV_units::energy& k,
+                                         const eV_units::energy& UV_cutoff, const eV_units::energy& IR_cutoff,
+                                         std::shared_ptr<tree_power_spectrum>& Pk);
+
+
+    // INTERNAL DATA
+
+  private:
+
+    //! absolute tolerance
+    double abs_err;
+
+    //! relative tolerance
+    double rel_err;
 
   };
 

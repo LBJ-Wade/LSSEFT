@@ -8,7 +8,8 @@
 
 loop_integral::loop_integral(const eV_units::energy& _k, const k_token& kt, const eV_units::energy& UV,
                              const UV_token& UVt, const eV_units::energy& IR, const IR_token& IRt,
-                             double _A, double _B, double _D, double _E, double _F, double _G)
+                             const eV_units::inverse_energy3& _A, const eV_units::inverse_energy3& _B,
+                             double _D, double _E, double _F, double _G)
   : k(_k),
     k_tok(kt),
     UV_cutoff(UV),

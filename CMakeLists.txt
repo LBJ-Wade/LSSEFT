@@ -15,17 +15,21 @@ ADD_SUBDIRECTORY ( "thirdparty/splinter" "splinter-build" )
 # use version of Eigen3 bundled with SPLINTER
 SET ( EIGEN3_INCLUDE_DIR  "thirdparty/splinter/thirdparty/Eigen" )
 
+# Cuba libraries and include files
+SET ( CUBA_INCLUDE_DIR "/Users/ds283/Documents/Code/Cuba/Cuba-4.2" "/Users/david/Documents/Code/Cuba/Cuba-4.2" )
+SET ( CUBA_LIBRARY_DIR "/Users/ds283/Documents/Code/Cuba/Cuba-4.2" "/Users/david/Documents/Code/Cuba/Cuba-4.2" )
+
 include_directories(./
   thirdparty/splinter/include
   ${EIGEN3_INCLUDE_DIR}
   ${Boost_INCLUDE_DIRS}
-  ${MPI_CXX_INCLUDE_PATH})
+  ${MPI_CXX_INCLUDE_PATH}
+  ${CUBA_INCLUDE_DIR})
 
 set(LOCALIZATION
   localizations/messages.h)
 
-link_directories("/Users/ds283/Documents/Code/Cuba/Cuba-4.2")
-link_directories("/Users/david/Documents/Code/Cuba/Cuba-4.2")
+link_directories(${CUBA_LIBRARY_DIR})
 
 set(LOCALIZATION_EN_GB
   localizations/en_GB/en_GB.h

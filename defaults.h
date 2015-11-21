@@ -15,8 +15,13 @@
 #define LSSEFT_DEFAULT_WAVENUMBER_CONFIGURATION_TOLERANCE (1E-10)
 
 // default absolute and relative errors during integration
-#define LSSEFT_DEFAULT_ABS_ERR (1E-6)
-#define LSSEFT_DEFAULT_REL_ERR (1E-6)
+#define LSSEFT_DEFAULT_ODE_ABS_ERR      (1E-12)
+#define LSSEFT_DEFAULT_ODE_REL_ERR      (1E-6)
+
+#define LSSEFT_DEFAULT_INTEGRAL_ABS_ERR (1E-12)
+#define LSSEFT_DEFAULT_INTEGRAL_REL_ERR (1E-3)
+
+#define LSSEFT_DEFAULT_CUHRE_KEY        (11)
 
 
 #endif //LSSEFT_DEFAULTS_H

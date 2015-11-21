@@ -25,7 +25,8 @@ class loop_integral
     loop_integral(const eV_units::energy& _k, const k_token& kt,
                   const eV_units::energy& UV, const UV_token& UVt,
                   const eV_units::energy& IR, const IR_token& IRt,
-                  double _A, double _B, double _D, double _E, double _F, double _G);
+                  const eV_units::inverse_energy3& _A, const eV_units::inverse_energy3& _B,
+                  double _D, double _E, double _F, double _G);
 
     //! destructor is default
     ~loop_integral() = default;
@@ -45,10 +46,10 @@ class loop_integral
     const IR_token& get_IR_token() const { return(this->IR_tok); }
 
     //! get A-value
-    double get_A() const { return(this->A); }
+    const eV_units::inverse_energy3& get_A() const { return(this->A); }
 
     //! get B-value
-    double get_B() const { return(this->B); }
+    const eV_units::inverse_energy3& get_B() const { return(this->B); }
 
     //! get D-value
     double get_D() const { return(this->D); }
@@ -105,10 +106,10 @@ class loop_integral
     // VALUE
 
     //! A-type integral P_13
-    double A;
+    eV_units::inverse_energy3 A;
 
     //! B-type integral P_13
-    double B;
+    eV_units::inverse_energy3 B;
 
     //! D-type integral P_13
     double D;

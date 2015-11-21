@@ -301,8 +301,8 @@ void transfer_observer::operator()(const state_vector& x, double z)
 
 
 transfer_integrator::transfer_integrator(double a, double r)
-  : abs_err(a),
-    rel_err(r)
+  : abs_err(std::fabs(a)),
+    rel_err(std::fabs(r))
   {
   }
 

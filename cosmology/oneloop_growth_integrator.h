@@ -28,7 +28,7 @@ class oneloop_growth_integrator
   public:
 
     //! constructor
-    oneloop_growth_integrator(double a=LSSEFT_DEFAULT_ABS_ERR, double r=LSSEFT_DEFAULT_REL_ERR);
+    oneloop_growth_integrator(double a= LSSEFT_DEFAULT_ODE_ABS_ERR, double r= LSSEFT_DEFAULT_ODE_REL_ERR);
 
     //! destructor is default
     ~oneloop_growth_integrator() = default;

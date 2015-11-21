@@ -80,6 +80,7 @@ namespace eV_units
     using inverse_eV_unit  = unit<-1>;
     using inverse_eV2_unit = unit<-2>;
     using inverse_eV3_unit = unit<-3>;
+    using inverse_eV4_unit = unit<-4>;
 
     using energy           = value<eV_unit>;
     using energy2          = value<eV2_unit>;
@@ -87,6 +88,7 @@ namespace eV_units
     using inverse_energy   = value<inverse_eV_unit>;
     using inverse_energy2  = value<inverse_eV2_unit>;
     using inverse_energy3  = value<inverse_eV3_unit>;
+    using inverse_energy4  = value<inverse_eV4_unit>;
 
     // set up some default units
     // note only long double allowed on a user-defined literal operator
@@ -150,6 +152,36 @@ namespace eV_units
     constexpr inverse_energy3 operator*(const inverse_energy2& a, const inverse_energy& b)
       {
         return inverse_energy3(a.val * b.val);
+      }
+
+    constexpr inverse_energy2 operator*(const energy& a, const inverse_energy3& b)
+      {
+        return inverse_energy2(a.val * b.val);
+      }
+
+    constexpr inverse_energy2 operator*(const inverse_energy3& a, const energy& b)
+      {
+        return inverse_energy2(a.val * b.val);
+      }
+
+    constexpr inverse_energy operator*(const energy2& a, const inverse_energy3& b)
+      {
+        return inverse_energy(a.val * b.val);
+      }
+
+    constexpr inverse_energy operator*(const inverse_energy3& a, const energy2& b)
+      {
+        return inverse_energy(a.val * b.val);
+      }
+
+    constexpr inverse_energy4 operator*(const inverse_energy& a, const inverse_energy3& b)
+      {
+        return inverse_energy4(a.val * b.val);
+      }
+
+    constexpr inverse_energy4 operator*(const inverse_energy3& a, const inverse_energy& b)
+      {
+        return inverse_energy4(a.val * b.val);
       }
 
 

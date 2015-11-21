@@ -1,5 +1,6 @@
 //
 // Created by David Seery on 21/11/2015.
+// Copyright (c) 2015 University of Sussex. All rights reserved.
 //
 
 #ifndef LSSEFT_POWERSPECTRUM_RECORD_H

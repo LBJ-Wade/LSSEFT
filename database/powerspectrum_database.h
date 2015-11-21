@@ -127,6 +127,12 @@ class powerspectrum_database
     //! get number of elements in the database
     size_t size() const { return(this->database.size()); }
 
+    //! get largest stored k-value
+    const eV_units::energy& get_k_min() const { return(this->k_min); }
+
+    //! get smallest stored k-value
+    const eV_units::energy& get_k_max() const { return(this->k_max); }
+
 
     // INTERNAL DATA
 
