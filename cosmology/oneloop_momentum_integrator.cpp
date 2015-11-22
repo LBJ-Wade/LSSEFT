@@ -46,11 +46,9 @@ namespace oneloop_momentum_impl
             UV_cutoff(UV),
             IR_cutoff(IR),
             Pk(_Pk),
-            jacobian(2.0*M_PI_2*(UV_cutoff*Mpc_units::Mpc - IR_cutoff*Mpc_units::Mpc)),    // Jacobian in angular directions in 2pi * pi = 2pi^2
-            q_min(IR_cutoff*Mpc_units::Mpc),                                               // note guaranteed to be constructed after IR_cutoff, UV_cutoff
-            q_max(UV_cutoff*Mpc_units::Mpc),
-            q_range(q_max - q_min),
-            k_value(k*Mpc_units::Mpc)
+            jacobian(2.0*M_PI_2*(UV_cutoff-IR_cutoff)),    // Jacobian in angular directions in 2pi * pi = 2pi^2
+            q_range(UV_cutoff - IR_cutoff),
+            k_sq(k*k)
           {
           }
 
@@ -60,12 +58,9 @@ namespace oneloop_momentum_impl
         const Mpc_units::energy& IR_cutoff;
         const std::shared_ptr<tree_power_spectrum>& Pk;
 
-        double jacobian;
-        double q_min;
-        double q_max;
-        double q_range;
-
-        double k_value;
+        Mpc_units::energy  jacobian;
+        Mpc_units::energy  q_range;
+        Mpc_units::energy2 k_sq;
       };
 
 
@@ -73,26 +68,25 @@ namespace oneloop_momentum_impl
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
 
-        double q     = data->q_min + x[0] * data->q_range;
-        double theta = 2.0 * M_PI * x[1];
-        double phi   = M_PI * x[2];
+        Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
+        double theta        = 2.0 * M_PI * x[1];
+        double phi          = M_PI * x[2];
 
-        double k_dot_q   = data->k_value*q*std::cos(theta);
-        double k_minus_q = std::sqrt(data->k_value*data->k_value + q*q - 2.0*k_dot_q);
+        Mpc_units::energy2 k_dot_q       = std::cos(theta) * data->k * q;
+        Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
 
-        Mpc_units::energy q_in_Mpc(q);
-        Mpc_units::energy k_minus_q_in_eV(k_minus_q);
+        Mpc_units::energy  k_minus_q(std::sqrt(k_minus_q_sq * Mpc_units::Mpc2));
 
         // integral is P(q) P(k-q) alpha(q,k-q)^2
-        Mpc_units::inverse_energy3 Pq         = (*(data->Pk))(q_in_Mpc);
-        Mpc_units::inverse_energy3 Pk_minus_q = k_minus_q > data->q_min ? (*(data->Pk))(k_minus_q_in_eV) : Mpc_units::inverse_energy3(0);
+        Mpc_units::inverse_energy3 Pq         = (*(data->Pk))(q);
+        Mpc_units::inverse_energy3 Pk_minus_q = k_minus_q > data->IR_cutoff ? (*(data->Pk))(k_minus_q) : Mpc_units::inverse_energy3(0);
 
-        Mpc_units::inverse_energy  qqPq    = std::sin(theta) * q_in_Mpc * q_in_Mpc * Pq;
-        Mpc_units::inverse_energy4 PP_prod = qqPq * Pk_minus_q;
+        Mpc_units::inverse_energy  qqPq       = std::sin(theta) * q*q * Pq;
+        Mpc_units::inverse_energy4 PP_prod    = qqPq * Pk_minus_q;
 
-        double alpha = (k_minus_q*k_minus_q*k_dot_q + q*q*data->k_value*data->k_value - q*q*k_dot_q) / (2.0 * q*q * k_minus_q*k_minus_q);
+        double alpha1 = (k_minus_q_sq*k_dot_q + q*q*data->k_sq - q*q*k_dot_q) / (2.0 * q*q * k_minus_q_sq);
 
-        f[0] = data->jacobian * 2.0 * (PP_prod/Mpc_units::Mpc4) * alpha*alpha;
+        f[0] = (2.0 * data->jacobian * PP_prod * alpha1*alpha1) / Mpc_units::Mpc3;
 
         return(0);  // return value irrelevant unless = -999, which means stop integration
       }
@@ -102,29 +96,29 @@ namespace oneloop_momentum_impl
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
 
-        double q     = data->q_min + x[0] * data->q_range;
-        double theta = 2.0 * M_PI * x[1];
-        double phi   = M_PI * x[2];
+        Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
+        double theta        = 2.0 * M_PI * x[1];
+        double phi          = M_PI * x[2];
 
-        double k_dot_q   = data->k_value*q*std::cos(theta);
-        double k_minus_q = std::sqrt(data->k_value*data->k_value + q*q - 2.0*k_dot_q);
+        Mpc_units::energy2 k_dot_q       = std::cos(theta) * data->k * q;
+        Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
 
-        Mpc_units::energy q_in_Mpc(q);
-        Mpc_units::energy k_minus_q_in_eV(k_minus_q);
+        Mpc_units::energy  k_minus_q(std::sqrt(k_minus_q_sq * Mpc_units::Mpc2));
 
         // integral is P(q) P(k-q) alpha(q,k-q) gamma(q,k-q)
-        Mpc_units::inverse_energy3 Pq         = (*(data->Pk))(q_in_Mpc);
-        Mpc_units::inverse_energy3 Pk_minus_q = k_minus_q > data->q_min ? (*(data->Pk))(k_minus_q_in_eV) : Mpc_units::inverse_energy3(0);
+        Mpc_units::inverse_energy3 Pq         = (*(data->Pk))(q);
+        Mpc_units::inverse_energy3 Pk_minus_q = k_minus_q > data->IR_cutoff ? (*(data->Pk))(k_minus_q) : Mpc_units::inverse_energy3(0);
 
-        Mpc_units::inverse_energy  qqPq    = std::sin(theta) * q_in_Mpc * q_in_Mpc * Pq;
-        Mpc_units::inverse_energy4 PP_prod = qqPq * Pk_minus_q;
+        // integral is P(q) P(k-q) alpha(q,k-q) gamma(q,k-q)
+        Mpc_units::inverse_energy  qqPq       = std::sin(theta) * q*q * Pq;
+        Mpc_units::inverse_energy4 PP_prod    = qqPq * Pk_minus_q;
 
-        double alpha = (k_minus_q*k_minus_q*k_dot_q + q*q*data->k_value*data->k_value - q*q*k_dot_q) / (2.0 * q*q * k_minus_q*k_minus_q);
-        double gamma = (k_minus_q*k_minus_q*k_dot_q - q*q*k_dot_q + data->k_value*data->k_value*k_dot_q) / (2.0 * q*q * k_minus_q*k_minus_q);
+        double alpha1 = (k_minus_q_sq*k_dot_q + q*q*data->k_sq - q*q*k_dot_q) / (2.0 * q*q * k_minus_q_sq);
+        double gamma1 = (k_minus_q_sq*k_dot_q - q*q*k_dot_q + data->k_sq*k_dot_q) / (2.0 * q*q * k_minus_q_sq);
 
-        f[0] = data->jacobian * 4.0 * (PP_prod/Mpc_units::Mpc4) * alpha*gamma;
+        f[0] = (4.0 * data->jacobian * PP_prod * alpha1*gamma1) / Mpc_units::Mpc3;
 
-        return(0);
+        return(0);  // return value irrelevant unless = -999, which means stop integration
       }
 
 
@@ -132,28 +126,28 @@ namespace oneloop_momentum_impl
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
 
-        double q     = data->q_min + x[0] * data->q_range;
-        double theta = 2.0 * M_PI * x[1];
-        double phi   = M_PI * x[2];
+        Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
+        double theta        = 2.0 * M_PI * x[1];
+        double phi          = M_PI * x[2];
 
-        double k_dot_q   = data->k_value*q*std::cos(theta);
-        double k_minus_q = std::sqrt(data->k_value*data->k_value + q*q - 2.0*k_dot_q);
+        Mpc_units::energy2 k_dot_q       = std::cos(theta) * data->k * q;
+        Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
 
-        Mpc_units::energy q_in_Mpc(q);
-        Mpc_units::energy k_minus_q_in_eV(k_minus_q);
+        Mpc_units::energy  k_minus_q(std::sqrt(k_minus_q_sq * Mpc_units::Mpc2));
+
+        // integral is P(q) P(k-q) alpha(q,k-q) gamma(q,k-q)
+        Mpc_units::inverse_energy3 Pq         = (*(data->Pk))(q);
+        Mpc_units::inverse_energy3 Pk_minus_q = k_minus_q > data->IR_cutoff ? (*(data->Pk))(k_minus_q) : Mpc_units::inverse_energy3(0);
 
         // integral is P(q) P(k-q) gamma(q,k-q)^2
-        Mpc_units::inverse_energy3 Pq         = (*(data->Pk))(q_in_Mpc);
-        Mpc_units::inverse_energy3 Pk_minus_q = k_minus_q > data->q_min ? (*(data->Pk))(k_minus_q_in_eV) : Mpc_units::inverse_energy3(0);
+        Mpc_units::inverse_energy  qqPq       = std::sin(theta) * q*q * Pq;
+        Mpc_units::inverse_energy4 PP_prod    = qqPq * Pk_minus_q;
 
-        Mpc_units::inverse_energy  qqPq    = std::sin(theta) * q_in_Mpc * q_in_Mpc * Pq;
-        Mpc_units::inverse_energy4 PP_prod = qqPq * Pk_minus_q;
+        double gamma1 = (k_minus_q_sq*k_dot_q - q*q*k_dot_q + data->k_sq*k_dot_q) / (2.0 * q*q * k_minus_q_sq);
 
-        double gamma = (k_minus_q*k_minus_q*k_dot_q - q*q*k_dot_q + data->k_value*data->k_value*k_dot_q) / (2.0 * q*q * k_minus_q*k_minus_q);
+        f[0] = (2.0 * data->jacobian * PP_prod * gamma1*gamma1) / Mpc_units::Mpc3;
 
-        f[0] = data->jacobian * 2.0 * (PP_prod/Mpc_units::Mpc4) * gamma*gamma;
-
-        return(0);
+        return(0);  // return value irrelevant unless = -999, which means stop integration
       }
 
 
@@ -161,24 +155,25 @@ namespace oneloop_momentum_impl
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
 
-        double q     = data->q_min + x[0] * data->q_range;
-        double theta = 2.0 * M_PI * x[1];
-        double phi   = M_PI * x[2];
+        Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
+        double theta        = 2.0 * M_PI * x[1];
+        double phi          = M_PI * x[2];
 
-        double k_dot_q   = data->k_value*q*std::cos(theta);
-        double k_minus_q = std::sqrt(data->k_value*data->k_value + q*q - 2.0*k_dot_q);
+        Mpc_units::energy2 k_dot_q       = std::cos(theta) * data->k * q;
+        Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
 
-        Mpc_units::energy q_in_Mpc(q);
-        Mpc_units::inverse_energy3 Pq  = (*(data->Pk))(q_in_Mpc);
-        Mpc_units::inverse_energy qqPq = std::sin(theta) * q_in_Mpc * q_in_Mpc * Pq;
+        Mpc_units::energy  k_minus_q(std::sqrt(k_minus_q_sq * Mpc_units::Mpc2));
+
+        Mpc_units::inverse_energy3 Pq   = (*(data->Pk))(q);
+        Mpc_units::inverse_energy  qqPq = std::sin(theta) * q*q * Pq;
 
         // integral is P(q) gamma(k-r,r) alpha(k,-r)
-        double gamma1 = (k_minus_q*k_minus_q*k_dot_q - q*q*k_dot_q + data->k_value*data->k_value*k_dot_q) / (2.0 * q*q * k_minus_q*k_minus_q);
-        double alpha2 = (2.0*data->k_value*data->k_value*q*q - k_dot_q*(data->k_value*data->k_value + q*q)) / (2.0 * q*q * data->k_value*data->k_value);
+        double gamma1 = (k_minus_q_sq*k_dot_q - q*q*k_dot_q + data->k_sq*k_dot_q) / (2.0 * q*q * k_minus_q_sq);
+        double alpha2 = (2.0*data->k_sq*q*q - k_dot_q*(data->k_sq + q*q)) / (2.0 * q*q * data->k_sq);
 
-        f[0] = data->jacobian * 3.0 * (qqPq/Mpc_units::Mpc) * gamma1*alpha2;
+        f[0] = 4.0 * data->jacobian * qqPq * gamma1*alpha2;
 
-        return(0);
+        return(0);  // return value irrelevant unless = -999, which means stop integration
       }
 
 
@@ -186,24 +181,25 @@ namespace oneloop_momentum_impl
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
 
-        double q     = data->q_min + x[0] * data->q_range;
-        double theta = 2.0 * M_PI * x[1];
-        double phi   = M_PI * x[2];
+        Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
+        double theta        = 2.0 * M_PI * x[1];
+        double phi          = M_PI * x[2];
 
-        double k_dot_q   = data->k_value*q*std::cos(theta);
-        double k_minus_q = std::sqrt(data->k_value*data->k_value + q*q - 2.0*k_dot_q);
+        Mpc_units::energy2 k_dot_q       = std::cos(theta) * data->k * q;
+        Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
 
-        Mpc_units::energy q_in_Mpc(q);
-        Mpc_units::inverse_energy3 Pq  = (*(data->Pk))(q_in_Mpc);
-        Mpc_units::inverse_energy qqPq = std::sin(theta) * q_in_Mpc * q_in_Mpc * Pq;
+        Mpc_units::energy  k_minus_q(std::sqrt(k_minus_q_sq * Mpc_units::Mpc2));
+
+        Mpc_units::inverse_energy3 Pq   = (*(data->Pk))(q);
+        Mpc_units::inverse_energy  qqPq = std::sin(theta) * q*q * Pq;
 
         // integral is P(q) gamma(k-r,r) gamma(k,-r)
-        double gamma1 = (k_minus_q*k_minus_q*k_dot_q - q*q*k_dot_q + data->k_value*data->k_value*k_dot_q) / (2.0 * q*q * k_minus_q*k_minus_q);
-        double gamma2 = (2.0*data->k_value*data->k_value - k_dot_q*(2.0*data->k_value*data->k_value + 2.0*q*q - 2.0*k_dot_q)) / (2.0 * q*q * data->k_value*data->k_value);
+        double gamma1 = (k_minus_q_sq*k_dot_q - q*q*k_dot_q + data->k_sq*k_dot_q) / (2.0 * q*q * k_minus_q_sq);
+        double gamma2 = (2.0*data->k_sq*q*q - k_dot_q*(2.0*data->k_sq + 2.0*q*q - 2.0*k_dot_q)) / (2.0 * q*q * data->k_sq);
 
-        f[0] = data->jacobian * 3.0 * (qqPq/Mpc_units::Mpc) * gamma1*gamma2;
+        f[0] = 4.0 * data->jacobian * qqPq * gamma1*gamma2;
 
-        return(0);
+        return(0);  // return value irrelevant unless = -999, which means stop integration
       }
 
 
@@ -211,24 +207,25 @@ namespace oneloop_momentum_impl
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
 
-        double q     = data->q_min + x[0] * data->q_range;
-        double theta = 2.0 * M_PI * x[1];
-        double phi   = M_PI * x[2];
+        Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
+        double theta        = 2.0 * M_PI * x[1];
+        double phi          = M_PI * x[2];
 
-        double k_dot_q   = data->k_value*q*std::cos(theta);
-        double k_minus_q = std::sqrt(data->k_value*data->k_value + q*q - 2.0*k_dot_q);
+        Mpc_units::energy2 k_dot_q       = std::cos(theta) * data->k * q;
+        Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
 
-        Mpc_units::energy q_in_Mpc(q);
-        Mpc_units::inverse_energy3 Pq  = (*(data->Pk))(q_in_Mpc);
-        Mpc_units::inverse_energy qqPq = std::sin(theta) * q_in_Mpc * q_in_Mpc * Pq;
+        Mpc_units::energy  k_minus_q(std::sqrt(k_minus_q_sq * Mpc_units::Mpc2));
+
+        Mpc_units::inverse_energy3 Pq   = (*(data->Pk))(q);
+        Mpc_units::inverse_energy  qqPq = std::sin(theta) * q*q * Pq;
 
         // integral is P(q) alpha(k-r,r) alpha(k,-r)
-        double alpha1 = (k_minus_q*k_minus_q*k_dot_q + q*q*data->k_value*data->k_value - q*q*k_dot_q) / (2.0 * q*q * k_minus_q*k_minus_q);
-        double alpha2 = (2.0*data->k_value*data->k_value*q*q - k_dot_q*(data->k_value*data->k_value + q*q)) / (2.0 * q*q * data->k_value*data->k_value);
+        double alpha1 = (k_minus_q_sq*k_dot_q + q*q*data->k_sq - q*q*k_dot_q) / (2.0 * q*q * k_minus_q_sq);
+        double alpha2 = (2.0*data->k_sq*q*q - k_dot_q*(data->k_sq + q*q)) / (2.0 * q*q * data->k_sq);
 
-        f[0] = data->jacobian * 3.0 * (qqPq/Mpc_units::Mpc) * alpha1*alpha2;
+        f[0] = 4.0 * data->jacobian * qqPq * alpha1*alpha2;
 
-        return(0);
+        return(0);  // return value irrelevant unless = -999, which means stop integration
       }
 
 
@@ -236,24 +233,25 @@ namespace oneloop_momentum_impl
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
 
-        double q     = data->q_min + x[0] * data->q_range;
-        double theta = 2.0 * M_PI * x[1];
-        double phi   = M_PI * x[2];
+        Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
+        double theta        = 2.0 * M_PI * x[1];
+        double phi          = M_PI * x[2];
 
-        double k_dot_q   = data->k_value*q*std::cos(theta);
-        double k_minus_q = std::sqrt(data->k_value*data->k_value + q*q - 2.0*k_dot_q);
+        Mpc_units::energy2 k_dot_q       = std::cos(theta) * data->k * q;
+        Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
 
-        Mpc_units::energy q_in_Mpc(q);
-        Mpc_units::inverse_energy3 Pq  = (*(data->Pk))(q_in_Mpc);
-        Mpc_units::inverse_energy qqPq = std::sin(theta) * q_in_Mpc * q_in_Mpc * Pq;
+        Mpc_units::energy  k_minus_q(std::sqrt(k_minus_q_sq * Mpc_units::Mpc2));
+
+        Mpc_units::inverse_energy3 Pq   = (*(data->Pk))(q);
+        Mpc_units::inverse_energy  qqPq = std::sin(theta) * q*q * Pq;
 
         // integral is P(q) alpha(k-r,r) gamma(k,-r)
-        double alpha1 = (k_minus_q*k_minus_q*k_dot_q + q*q*data->k_value*data->k_value - q*q*k_dot_q) / (2.0 * q*q * k_minus_q*k_minus_q);
-        double gamma2 = (2.0*data->k_value*data->k_value - k_dot_q*(2.0*data->k_value*data->k_value + 2.0*q*q - 2.0*k_dot_q)) / (2.0 * q*q * data->k_value*data->k_value);
+        double alpha1 = (k_minus_q_sq*k_dot_q + q*q*data->k_sq - q*q*k_dot_q) / (2.0 * q*q * k_minus_q_sq);
+        double gamma2 = (2.0*data->k_sq*q*q - k_dot_q*(2.0*data->k_sq + 2.0*q*q - 2.0*k_dot_q)) / (2.0 * q*q * data->k_sq);
 
-        f[0] = data->jacobian * 3.0 * (qqPq/Mpc_units::Mpc) * alpha1*gamma2;
+        f[0] = 4.0 * data->jacobian * qqPq * alpha1*gamma2;
 
-        return(0);
+        return(0);  // return value irrelevant unless = -999, which means stop integration
       }
 
   }

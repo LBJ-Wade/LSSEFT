@@ -111,6 +111,12 @@ namespace Mpc_units
       }
 
     template <typename Unit>
+    constexpr value<Unit> operator-(const value<Unit>& a, const value<Unit>& b)
+      {
+        return value<Unit>(a.val - b.val);
+      }
+
+    template <typename Unit>
     constexpr bool operator<(const value<Unit>& a, const value<Unit>& b)
       {
         return(a.val < b.val);
@@ -200,6 +206,16 @@ namespace Mpc_units
         return inverse_energy4(a.val * b.val);
       }
 
+    constexpr inverse_energy3 operator*(const energy& a, const inverse_energy4& b)
+      {
+        return inverse_energy3(a.val * b.val);
+      }
+
+    constexpr inverse_energy3 operator*(const inverse_energy4& a, const energy& b)
+      {
+        return inverse_energy3(a.val * b.val);
+      }
+
 
     // DIMENSIONFUL DIVISION
 
@@ -211,12 +227,8 @@ namespace Mpc_units
 
     // DIMENSIONLESS RATIOS
 
-    constexpr double operator/(const energy& a, const energy& b)
-      {
-        return a.val/b.val;
-      }
-
-    constexpr double operator/(const inverse_energy& a, const inverse_energy& b)
+    template <typename Unit>
+    constexpr double operator/(const value<Unit>& a, const value<Unit>& b)
       {
         return a.val/b.val;
       }
@@ -226,14 +238,14 @@ namespace Mpc_units
         return a.val*b.val;
       }
 
-    constexpr double operator*(const energy3& a, const inverse_energy3& b)
+    constexpr double operator*(const energy2& a, const inverse_energy2& b)
       {
         return a.val*b.val;
       }
 
-    constexpr double operator/(const inverse_energy3& a, const inverse_energy3& b)
+    constexpr double operator*(const energy3& a, const inverse_energy3& b)
       {
-        return a.val/b.val;
+        return a.val*b.val;
       }
 
     constexpr double operator*(const energy4& a, const inverse_energy4& b)
@@ -241,85 +253,28 @@ namespace Mpc_units
         return a.val*b.val;
       }
 
-    constexpr double operator/(const inverse_energy4& a, const inverse_energy4& b)
-      {
-        return a.val/b.val;
-      }
-
 
     // DIMENSIONLESS MULTIPLICATION
 
-    constexpr energy operator*(double a, const energy& b)
+    template <typename Unit>
+    constexpr value<Unit> operator*(double a, const value<Unit>& b)
       {
-        return energy(a * b.val);
+        return value<Unit>(a * b.val);
       }
 
-    constexpr energy2 operator*(double a, const energy2& b)
+    template <typename Unit>
+    constexpr value<Unit> operator*(const value<Unit>& a, double b)
       {
-        return energy2(a * b.val);
-      }
-
-    constexpr energy3 operator*(double a, const energy3& b)
-      {
-        return energy3(a * b.val);
-      }
-
-    constexpr energy4 operator*(double a, const energy4& b)
-      {
-        return energy4(a * b.val);
-      }
-
-    constexpr inverse_energy operator*(double a, const inverse_energy& b)
-      {
-        return inverse_energy(a * b.val);
-      }
-
-    constexpr inverse_energy2 operator*(double a, const inverse_energy2& b)
-      {
-        return inverse_energy2(a * b.val);
-      }
-
-    constexpr inverse_energy3 operator*(double a, const inverse_energy3& b)
-      {
-        return inverse_energy3(a * b.val);
-      }
-
-    constexpr inverse_energy4 operator*(double a, const inverse_energy4& b)
-      {
-        return inverse_energy4(a * b.val);
+        return value<Unit>(a.val * b);
       }
 
 
     // DIMENSIONLESS DIVISION
 
-    constexpr energy operator/(const energy& a, double b)
+    template <typename Unit>
+    constexpr value<Unit> operator/(const value<Unit>& a, double b)
       {
-        return energy(a.val / b);
-      }
-
-    constexpr energy2 operator/(const energy2& a, double b)
-      {
-        return energy2(a.val / b);
-      }
-
-    constexpr energy3 operator/(const energy3& a, double b)
-      {
-        return energy3(a.val / b);
-      }
-
-    constexpr inverse_energy operator/(const inverse_energy& a, double b)
-      {
-        return inverse_energy(a.val / b);
-      }
-
-    constexpr inverse_energy2 operator/(const inverse_energy2& a, double b)
-      {
-        return inverse_energy2(a.val / b);
-      }
-
-    constexpr inverse_energy3 operator/(const inverse_energy3& a, double b)
-      {
-        return inverse_energy3(a.val / b);
+        return value<Unit>(a.val / b);
       }
 
 
@@ -349,6 +304,7 @@ namespace Mpc_units
     // express SI-type units
 
     constexpr inverse_energy  Mpc          = 1.0_Mpc;
+    constexpr inverse_energy2 Mpc2         = Mpc*Mpc;
     constexpr inverse_energy3 Mpc3         = Mpc*Mpc*Mpc;
     constexpr inverse_energy4 Mpc4         = Mpc*Mpc*Mpc*Mpc;
 
