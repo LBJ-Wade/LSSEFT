@@ -33,6 +33,8 @@ namespace oneloop_momentum_impl
     constexpr unsigned int ldxgiven              = 0;
     constexpr unsigned int nextra                = 0;
 
+    constexpr unsigned int pcores                = 10000;   // matches default Cuba value
+
 
     class integrand_data
       {
@@ -315,6 +317,12 @@ bool oneloop_momentum_integrator::kernel_integral(const FRW_model& model, const 
 
     std::unique_ptr<oneloop_momentum_impl::integrand_data> data = std::make_unique<oneloop_momentum_impl::integrand_data>(model, k, UV_cutoff, IR_cutoff, Pk);
 
+    // disable CUBA's internal auto-parallelization
+    // we're handling multiprocessor activity ourselves via the scheduler,
+    // so it's quicker to keep each core fully active rather than have threads
+    // trying to manage Cuba's workers
+    cubacores(0, oneloop_momentum_impl::pcores);
+
     Divonne(oneloop_momentum_impl::dimensions, oneloop_momentum_impl::components,
             integrand, data.get(),
             oneloop_momentum_impl::points_per_invocation,
@@ -334,7 +342,6 @@ bool oneloop_momentum_integrator::kernel_integral(const FRW_model& model, const 
     if(fail != 0)
       {
         std::cerr << "Divonne result: regions = " << regions << ", evaluations = " << evaluations << ", fail = " << fail << ", value = " << integral[0] << ", error = " << error[0] << ", probability = " << prob[0] << '\n';
-
       }
 
     // an overall factor 1 / (2pi)^3 is taken out of the integrand, so remember to put it back here
