@@ -27,7 +27,7 @@ namespace oneloop_momentum_impl
     constexpr unsigned int samples_last          = 4;
 
     constexpr unsigned int min_eval              = 0;
-    constexpr unsigned int max_eval              = 10000000;
+    constexpr unsigned int max_eval              = 20000000;
 
     constexpr unsigned int ngiven                = 0;
     constexpr unsigned int ldxgiven              = 0;
@@ -283,15 +283,15 @@ loop_integral oneloop_momentum_integrator::integrate(const FRW_model& model, con
     dimless_kernel         F;
     dimless_kernel         G;
 
-    bool fail = false;
+    bool failAA = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::AA_integrand, AA);
+    bool failAB = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::AB_integrand, AB);
+    bool failBB = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::BB_integrand, BB);
+    bool failD  = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::D_integrand, D);
+    bool failE  = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::E_integrand, E);
+    bool failF  = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::F_integrand, F);
+    bool failG  = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::G_integrand, G);
 
-    fail = fail || this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::AA_integrand, AA);
-    fail = fail || this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::AB_integrand, AB);
-    fail = fail || this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::BB_integrand, BB);
-    fail = fail || this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::D_integrand, D);
-    fail = fail || this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::E_integrand, E);
-    fail = fail || this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::F_integrand, F);
-    fail = fail || this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::G_integrand, G);
+    bool fail = failAA || failAB || failBB || failD || failE || failF || failG;
 
     timer.stop();
 
