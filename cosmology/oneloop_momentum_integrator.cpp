@@ -293,6 +293,11 @@ loop_integral oneloop_momentum_integrator::integrate(const FRW_model& model, con
 
     bool fail = failAA || failAB || failBB || failD || failE || failF || failG;
 
+    if(fail)
+      {
+        std::cout << "Integration failed: AA = " << !failAA << ", AB = " << !failAB << ", BB = " << !failBB << ", D = " << !failD << ", E = " << !failE << ", F = " << !failF << ", G = " << !failG << '\n';
+      }
+
     timer.stop();
 
     loop_integral container(k, k_tok, UV_cutoff, UV_tok, IR_cutoff, IR_tok, fail, AA, AB, BB, D, E, F, G);
