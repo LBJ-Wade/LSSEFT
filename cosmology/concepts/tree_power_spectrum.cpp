@@ -58,8 +58,8 @@ void tree_power_spectrum::ingest_CAMB(const boost::filesystem::path& p)
         double k, Pk;
         line_stream >> k >> Pk;
 
-        eV_units::energy k_in_eV = k / eV_units::Mpc;
-        eV_units::inverse_energy3 Pk_in_inv_eV3 = Pk * eV_units::Mpc3;
+        Mpc_units::energy k_in_eV = k / Mpc_units::Mpc;
+        Mpc_units::inverse_energy3 Pk_in_inv_eV3 = Pk * Mpc_units::Mpc3;
         this->database.add_record(k_in_eV, Pk_in_inv_eV3);
       }
 
@@ -76,30 +76,30 @@ void tree_power_spectrum::recalculate_spline()
 
     for(powerspectrum_database::const_record_iterator t = this->database.record_begin(); t != this->database.record_end(); ++t)
       {
-        this->table->addSample(static_cast<double>(t->get_wavenumber()), static_cast<double>(t->get_Pk()));
+        this->table->addSample(t->get_wavenumber() * Mpc_units::Mpc, t->get_Pk() / Mpc_units::Mpc3);
       }
 
     this->spline = std::make_unique<SPLINTER::BSplineApproximant>(*this->table, SPLINTER::BSplineType::CUBIC);
   }
 
 
-eV_units::inverse_energy3 tree_power_spectrum::operator()(const eV_units::energy& k) const
+Mpc_units::inverse_energy3 tree_power_spectrum::operator()(const Mpc_units::energy& k) const
   {
     if(k > 0.9*this->database.get_k_max())
       {
         std::ostringstream msg;
-        msg << ERROR_POWERSPECTRUM_SPLINE_TOO_BIG << " (k = " << k * eV_units::Mpc << " h/Mpc, k_max = " << this->database.get_k_max() * eV_units::Mpc << " h/Mpc)";
+        msg << ERROR_POWERSPECTRUM_SPLINE_TOO_BIG << " (k = " << k * Mpc_units::Mpc << " h/Mpc, k_max = " << this->database.get_k_max() * Mpc_units::Mpc << " h/Mpc)";
         throw std::overflow_error(msg.str());
       }
     if(k < 1.1*this->database.get_k_min())
       {
         std::ostringstream msg;
-        msg << ERROR_POWERSPECTRUM_SPLINE_TOO_SMALL << " (k = " << k * eV_units::Mpc << " h/Mpc, k_min = " << this->database.get_k_min() * eV_units::Mpc << " h/Mpc)";
+        msg << ERROR_POWERSPECTRUM_SPLINE_TOO_SMALL << " (k = " << k * Mpc_units::Mpc << " h/Mpc, k_min = " << this->database.get_k_min() * Mpc_units::Mpc << " h/Mpc)";
         throw std::overflow_error(msg.str());
       }
 
     SPLINTER::DenseVector x(1);
-    x(0) = static_cast<double>(k);
+    x(0) = k * Mpc_units::Mpc;
 
-    return eV_units::inverse_energy3(this->spline->eval(x));
+    return Mpc_units::inverse_energy3(this->spline->eval(x));
   }

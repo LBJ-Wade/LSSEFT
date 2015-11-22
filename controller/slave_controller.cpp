@@ -107,11 +107,11 @@ void slave_controller::process_task()
 void slave_controller::process_item(MPI_detail::new_transfer_integration& payload)
   {
     FRW_model model = payload.get_model();
-    eV_units::energy k = payload.get_k();
+    Mpc_units::energy k = payload.get_k();
     k_token tok = payload.get_token();
     std::shared_ptr<z_database> z_db = payload.get_z_db();
 
-    std::cout << "Worker " << this->worker_number() << " processing transfer item: id = " << tok.get_id() << " for k = " << k * eV_units::Mpc << " h/Mpc = " << static_cast<double>(k) << " eV" << '\n';
+    std::cout << "Worker " << this->worker_number() << " processing transfer item: id = " << tok.get_id() << " for k = " << k * Mpc_units::Mpc << " h/Mpc = " << k / Mpc_units::eV << " eV" << '\n';
 
     transfer_integrator integrator;
     transfer_function sample = integrator.integrate(model, k, tok, z_db);
@@ -125,15 +125,15 @@ void slave_controller::process_item(MPI_detail::new_transfer_integration& payloa
 void slave_controller::process_item(MPI_detail::new_loop_momentum_integration& payload)
   {
     FRW_model model = payload.get_model();
-    eV_units::energy k = payload.get_k();
-    eV_units::energy UV_cutoff = payload.get_UV_cutoff();
-    eV_units::energy IR_cutoff = payload.get_IR_cutoff();
+    Mpc_units::energy k = payload.get_k();
+    Mpc_units::energy UV_cutoff = payload.get_UV_cutoff();
+    Mpc_units::energy IR_cutoff = payload.get_IR_cutoff();
     k_token k_tok = payload.get_k_token();
     UV_token UV_tok = payload.get_UV_token();
     IR_token IR_tok = payload.get_IR_token();
     std::shared_ptr<tree_power_spectrum> Pk = payload.get_tree_power_spectrum();
 
-    std::cout << "Worker " << this->worker_number() << " processing loop integral item: id = " << k_tok.get_id() << " for k = " << k * eV_units::Mpc << " h/Mpc, IR cutoff = " << IR_cutoff * eV_units::Mpc << " h/Mpc, UV cutoff = " << UV_cutoff * eV_units::Mpc << " h/Mpc" << '\n';
+    std::cout << "Worker " << this->worker_number() << " processing loop integral item: id = " << k_tok.get_id() << " for k = " << k * Mpc_units::Mpc << " h/Mpc, IR cutoff = " << IR_cutoff * Mpc_units::Mpc << " h/Mpc, UV cutoff = " << UV_cutoff * Mpc_units::Mpc << " h/Mpc" << '\n';
 
     oneloop_momentum_integrator integrator;
     loop_integral sample = integrator.integrate(model, k, k_tok, UV_cutoff, UV_tok, IR_cutoff, IR_tok, Pk);

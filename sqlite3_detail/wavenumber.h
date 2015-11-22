@@ -31,11 +31,11 @@ namespace sqlite3_operations
 
     template <typename Token>
     boost::optional<unsigned int> lookup_wavenumber(sqlite3* db, transaction_manager& mgr,
-                                                    const eV_units::energy& k, const sqlite3_policy& policy, double tol)
+                                                    const Mpc_units::energy& k, const sqlite3_policy& policy, double tol)
       {
         assert(db != nullptr);
 
-        double k_in_h_inv_Mpc = k * eV_units::Mpc;
+        double k_in_h_inv_Mpc = k * Mpc_units::Mpc;
 
         std::ostringstream select_stmt;
         select_stmt
@@ -72,14 +72,14 @@ namespace sqlite3_operations
 
     template <typename Token>
     unsigned int insert_wavenumber(sqlite3* db, transaction_manager& mgr,
-                                   const eV_units::energy& k, const sqlite3_policy& policy)
+                                   const Mpc_units::energy& k, const sqlite3_policy& policy)
       {
         assert(db != nullptr);
 
         // get number of rows in table; this will be the identifier for the new wavenumber
         unsigned int new_id = count(db, tokenization_table<Token>(policy));
 
-        double k_in_h_inv_Mpc = k * eV_units::Mpc;
+        double k_in_h_inv_Mpc = k * Mpc_units::Mpc;
 
         std::ostringstream insert_stmt;
         insert_stmt

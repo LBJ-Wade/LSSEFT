@@ -27,7 +27,7 @@ class wavenumber_record
   public:
 
     //! build a wavenumber record
-    wavenumber_record(const eV_units::energy& _k, const Token& tok);
+    wavenumber_record(const Mpc_units::energy& _k, const Token& tok);
 
 
     // INTERFACE
@@ -35,7 +35,7 @@ class wavenumber_record
   public:
 
     //! deference to get k-value (not we return a copy, not a reference)
-    eV_units::energy operator*() const { return(this->k); }
+    Mpc_units::energy operator*() const { return(this->k); }
 
     //! get token
     const Token& get_token() const { return(this->token); }
@@ -46,7 +46,7 @@ class wavenumber_record
   private:
 
     //! value of wavenumber
-    eV_units::energy k;
+    Mpc_units::energy k;
 
     //! database token
     Token token;
@@ -64,7 +64,7 @@ class wavenumber_record
 
 
 template <typename Token>
-wavenumber_record<Token>::wavenumber_record(const eV_units::energy& _k, const Token& tok)
+wavenumber_record<Token>::wavenumber_record(const Mpc_units::energy& _k, const Token& tok)
   : k(_k),
     token(tok)
   {
@@ -97,7 +97,7 @@ namespace boost
             ar >> k;    // unpack wavenumber value
             ar >> id;   // unpack token identifier
 
-            eV_units::energy k_in_eV(k);
+            Mpc_units::energy k_in_eV(k);
 
             // invoke in-place constructor
 
@@ -105,12 +105,12 @@ namespace boost
           }
 
 
-        // for use within a std::map we also need a specialization for std::pair< eV_units::energy, wavenumber_record >
+        // for use within a std::map we also need a specialization for std::pair< Mpc_units::energy, wavenumber_record >
 
         template <typename Archive, typename Token>
-        inline void save_construct_data(Archive& ar, const std::pair< eV_units::energy, wavenumber_record<Token> >* t, const unsigned int file_version)
+        inline void save_construct_data(Archive& ar, const std::pair< Mpc_units::energy, wavenumber_record<Token> >* t, const unsigned int file_version)
           {
-            const eV_units::energy& k = *(t->second);
+            const Mpc_units::energy& k = *(t->second);
             unsigned int id = t->second.get_token().get_id();
 
             ar << boost::serialization::make_nvp("first", k);
@@ -119,15 +119,15 @@ namespace boost
 
 
         template <typename Archive, typename Token>
-        inline void load_construct_data(Archive& ar, std::pair< eV_units::energy, wavenumber_record<Token> >* t, const unsigned int file_version)
+        inline void load_construct_data(Archive& ar, std::pair< Mpc_units::energy, wavenumber_record<Token> >* t, const unsigned int file_version)
           {
-            eV_units::energy k(0);
+            Mpc_units::energy k(0);
             unsigned int id;
 
             ar >> boost::serialization::make_nvp("first", k);
             ar >> boost::serialization::make_nvp("second", id);
 
-            ::new(t) std::pair< eV_units::energy, wavenumber_record<Token> >(k, wavenumber_record<Token>(k, id));
+            ::new(t) std::pair< Mpc_units::energy, wavenumber_record<Token> >(k, wavenumber_record<Token>(k, id));
           }
 
       }   // namespace serialization

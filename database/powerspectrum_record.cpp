@@ -7,7 +7,7 @@
 #include "powerspectrum_record.h"
 
 
-Pk_record::Pk_record(const eV_units::energy& _k, const eV_units::inverse_energy3& _Pk)
+Pk_record::Pk_record(const Mpc_units::energy& _k, const Mpc_units::inverse_energy3& _Pk)
   : k(_k),
     Pk(_Pk)
   {

@@ -37,9 +37,9 @@ class oneloop_momentum_integrator
   public:
 
     //! integrate one-loop kernels
-    loop_integral integrate(const FRW_model& model, const eV_units::energy& k, const k_token& k_tok,
-                            const eV_units::energy& UV_cutoff, const UV_token& UV_tok,
-                            const eV_units::energy& IR_cutoff, const IR_token& IR_tok,
+    loop_integral integrate(const FRW_model& model, const Mpc_units::energy& k, const k_token& k_tok,
+                            const Mpc_units::energy& UV_cutoff, const UV_token& UV_tok,
+                            const Mpc_units::energy& IR_cutoff, const IR_token& IR_tok,
                             std::shared_ptr<tree_power_spectrum>& Pk);
 
 
@@ -48,9 +48,9 @@ class oneloop_momentum_integrator
   private:
 
     //! perform A integral
-    eV_units::inverse_energy3 A_integral(const FRW_model& model, const eV_units::energy& k,
-                                         const eV_units::energy& UV_cutoff, const eV_units::energy& IR_cutoff,
-                                         std::shared_ptr<tree_power_spectrum>& Pk);
+    Mpc_units::inverse_energy3 A_integral(const FRW_model& model, const Mpc_units::energy& k,
+                                          const Mpc_units::energy& UV_cutoff, const Mpc_units::energy& IR_cutoff,
+                                          std::shared_ptr<tree_power_spectrum>& Pk);
 
 
     // INTERNAL DATA

@@ -18,8 +18,8 @@ namespace Planck2013
     constexpr double           omega_m  = 1.0 - omega_cc;
     constexpr double           h        = 0.6704;
     constexpr double           f_baryon = 0.15;   // Planck+WP best fit values is 0.154706
-    constexpr eV_units::energy H0       = 100 * h * eV_units::Kilometre / (eV_units::Second * eV_units::Mpc);
-    constexpr eV_units::energy T_CMB    = 2.725 * eV_units::Kelvin;
+    constexpr Mpc_units::energy H0       = 100 * h * Mpc_units::Kilometre / (Mpc_units::Second * Mpc_units::Mpc);
+    constexpr Mpc_units::energy T_CMB    = 2.725 * Mpc_units::Kelvin;
 
     // fluctuation two-point function
     constexpr double Acurv  = 2.2150E-9;

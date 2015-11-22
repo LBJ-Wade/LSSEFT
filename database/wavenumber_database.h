@@ -30,7 +30,7 @@ class wavenumber_database
 
     //! alias for data structure;
     //! records are stored in ascending wavenumber order
-    typedef std::map< eV_units::energy, wavenumber_record<Token> > database_type;
+    typedef std::map< Mpc_units::energy, wavenumber_record<Token> > database_type;
 
     //! alias for lookup-by-key index
     typedef std::map< unsigned int, typename database_type::iterator > key_index_type;
@@ -52,11 +52,11 @@ class wavenumber_database
 
   public:
 
-    typedef configuration_database::generic_value_iterator< typename database_type::iterator, typename database_type::const_iterator, eV_units::energy, false > value_iterator;
-    typedef configuration_database::generic_value_iterator< typename database_type::iterator, typename database_type::const_iterator, eV_units::energy, true >  const_value_iterator;
+    typedef configuration_database::generic_value_iterator< typename database_type::iterator, typename database_type::const_iterator, Mpc_units::energy, false > value_iterator;
+    typedef configuration_database::generic_value_iterator< typename database_type::iterator, typename database_type::const_iterator, Mpc_units::energy, true >  const_value_iterator;
 
-    typedef configuration_database::generic_value_iterator< typename database_type::reverse_iterator, typename database_type::const_reverse_iterator, eV_units::energy, false > reverse_value_iterator;
-    typedef configuration_database::generic_value_iterator< typename database_type::reverse_iterator, typename database_type::const_reverse_iterator, eV_units::energy, true >  const_reverse_value_iterator;
+    typedef configuration_database::generic_value_iterator< typename database_type::reverse_iterator, typename database_type::const_reverse_iterator, Mpc_units::energy, false > reverse_value_iterator;
+    typedef configuration_database::generic_value_iterator< typename database_type::reverse_iterator, typename database_type::const_reverse_iterator, Mpc_units::energy, true >  const_reverse_value_iterator;
 
 
     // CONSTRUCTOR, DESTRUCTOR
@@ -119,7 +119,7 @@ class wavenumber_database
     //! add record to the database
 
     //! The record shouldn't already exist. No checks are made to test for duplicates
-    void add_record(const eV_units::energy& k, const Token& tok);
+    void add_record(const Mpc_units::energy& k, const Token& tok);
 
     //! lookup record by token
     record_iterator lookup(Token tok);
@@ -174,7 +174,7 @@ class wavenumber_database
 
 
 template <typename Token>
-void wavenumber_database<Token>::add_record(const eV_units::energy& k, const Token& tok)
+void wavenumber_database<Token>::add_record(const Mpc_units::energy& k, const Token& tok)
   {
     std::pair< typename database_type::iterator, bool> emplaced_value = this->database.emplace(k, wavenumber_record<Token>(k, tok));
     assert(emplaced_value.second);

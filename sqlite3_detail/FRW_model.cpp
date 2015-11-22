@@ -24,9 +24,9 @@ namespace sqlite3_operations
         double           omega_m  = obj.get_omega_m();
         double           omega_cc = obj.get_omega_cc();
         double           h        = obj.get_h();
-        eV_units::energy T_CMB    = obj.get_T_CMB();
+        Mpc_units::energy T_CMB    = obj.get_T_CMB();
 
-        double T_CMB_in_Kelvin = T_CMB/eV_units::Kelvin;
+        double T_CMB_in_Kelvin = T_CMB / Mpc_units::Kelvin;
 
         std::ostringstream select_stmt;
         select_stmt
@@ -77,9 +77,9 @@ namespace sqlite3_operations
         double           omega_m  = obj.get_omega_m();
         double           omega_cc = obj.get_omega_cc();
         double           h        = obj.get_h();
-        eV_units::energy T_CMB    = obj.get_T_CMB();
+        Mpc_units::energy T_CMB    = obj.get_T_CMB();
 
-        double T_CMB_in_Kelvin = T_CMB/eV_units::Kelvin;
+        double T_CMB_in_Kelvin = T_CMB / Mpc_units::Kelvin;
 
         std::ostringstream insert_stmt;
         insert_stmt

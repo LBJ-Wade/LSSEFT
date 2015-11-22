@@ -15,7 +15,7 @@ powerspectrum_database::powerspectrum_database()
   }
 
 
-void powerspectrum_database::add_record(const eV_units::energy& k, const eV_units::inverse_energy3& Pk)
+void powerspectrum_database::add_record(const Mpc_units::energy& k, const Mpc_units::inverse_energy3& Pk)
   {
     std::pair<database_type::iterator, bool> emplaced_value = this->database.emplace(k, Pk_record(k, Pk));
     assert(emplaced_value.second);

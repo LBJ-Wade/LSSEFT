@@ -54,18 +54,18 @@ class data_manager
     std::unique_ptr<z_database> build_redshift_db(range<double>& sample);
 
     //! generate wavenumber database from a set of samples
-    std::unique_ptr<k_database> build_k_db(range<eV_units::energy>& sample);
+    std::unique_ptr<k_database> build_k_db(range<Mpc_units::energy>& sample);
 
     //! generate IR cutoff database from a set of samples
-    std::unique_ptr<IR_database> build_IR_db(range<eV_units::energy>& sample);
+    std::unique_ptr<IR_database> build_IR_db(range<Mpc_units::energy>& sample);
 
     //! generate UV cutoff database from a set of samples
-    std::unique_ptr<UV_database> build_UV_db(range<eV_units::energy>& sample);
+    std::unique_ptr<UV_database> build_UV_db(range<Mpc_units::energy>& sample);
 
   protected:
 
     template <typename Token>
-    std::unique_ptr< wavenumber_database<Token> > build_wavenumber_db(range<eV_units::energy>& sample);
+    std::unique_ptr< wavenumber_database<Token> > build_wavenumber_db(range<Mpc_units::energy>& sample);
 
 
     // SERVICES
@@ -107,7 +107,7 @@ class data_manager
     //! tokenize a wavenumber of the type specified in the template
     //! generates a new transation on the database; will fail if a transaction is in progress
     template <typename Token>
-    std::unique_ptr<Token> tokenize(const eV_units::energy& k);
+    std::unique_ptr<Token> tokenize(const Mpc_units::energy& k);
 
 
     // DATA HANDLING
@@ -153,7 +153,7 @@ class data_manager
 
     //! lookup or insert a wavenumber
     template <typename Token>
-    unsigned int lookup_or_insert(transaction_manager& mgr, const eV_units::energy &k);
+    unsigned int lookup_or_insert(transaction_manager& mgr, const Mpc_units::energy &k);
 
 
     // INTERNAL DATA

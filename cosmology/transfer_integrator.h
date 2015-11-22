@@ -41,7 +41,7 @@ class transfer_integrator
   public:
 
     //! integrate transfer function for a given k-mode and set of redshift samples
-    transfer_function integrate(const FRW_model& model, const eV_units::energy& k, const k_token& tok,
+    transfer_function integrate(const FRW_model& model, const Mpc_units::energy& k, const k_token& tok,
                                 std::shared_ptr<z_database>& z_db);
 
 

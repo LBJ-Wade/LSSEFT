@@ -199,7 +199,7 @@ class transfer_function
   public:
 
     //! constructor
-    transfer_function(const eV_units::energy& _k, const k_token& t, std::shared_ptr<z_database> z);
+    transfer_function(const Mpc_units::energy& _k, const k_token& t, std::shared_ptr<z_database> z);
 
     //! destructor is default
     ~transfer_function() = default;
@@ -281,7 +281,7 @@ class transfer_function
     // CONFIGURATION DATA
 
     //! wavenumber
-    eV_units::energy k;
+    Mpc_units::energy k;
 
     //! wavenumber token
     k_token token;

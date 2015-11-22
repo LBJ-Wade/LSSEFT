@@ -106,7 +106,7 @@ namespace sqlite3_operations
         // loop through records in the database, writing entries to the table
         for(k_database::record_iterator t = k_db.record_begin(); t != k_db.record_end(); ++t)
           {
-            double k_in_h_inv_Mpc = *(*t) * eV_units::Mpc;
+            double k_in_h_inv_Mpc = *(*t) * Mpc_units::Mpc;
 
             // bind parameter values
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@id"), t->get_token().get_id()));

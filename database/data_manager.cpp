@@ -110,7 +110,7 @@ std::unique_ptr<z_token> data_manager::tokenize(double z)
 
 
 template <typename Token>
-std::unique_ptr<Token> data_manager::tokenize(const eV_units::energy& k)
+std::unique_ptr<Token> data_manager::tokenize(const Mpc_units::energy& k)
   {
     // open a new transaction on the database
     std::shared_ptr<transaction_manager> transaction = this->open_transaction();
@@ -206,7 +206,7 @@ unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, double z)
 
 
 template <typename Token>
-unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const eV_units::energy& k)
+unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const Mpc_units::energy& k)
   {
     boost::optional<unsigned int> id = sqlite3_operations::lookup_wavenumber<Token>(this->handle, mgr, k, this->policy, this->z_tol);
     if(id) return(*id);
@@ -237,15 +237,15 @@ std::unique_ptr<z_database> data_manager::build_redshift_db(range<double>& sampl
 
 
 template <typename Token>
-std::unique_ptr< wavenumber_database<Token> > data_manager::build_wavenumber_db(range<eV_units::energy>& sample)
+std::unique_ptr< wavenumber_database<Token> > data_manager::build_wavenumber_db(range<Mpc_units::energy>& sample)
   {
     // construct an empty wavenumber database
     std::unique_ptr< wavenumber_database<Token> > k_db = std::make_unique< wavenumber_database<Token> >();
 
     // grab the grid of wavenumber samples
-    const std::vector<eV_units::energy>& k_samples = sample.grid();
+    const std::vector<Mpc_units::energy>& k_samples = sample.grid();
 
-    for(std::vector<eV_units::energy>::const_iterator t = k_samples.begin(); t != k_samples.end(); ++t)
+    for(std::vector<Mpc_units::energy>::const_iterator t = k_samples.begin(); t != k_samples.end(); ++t)
       {
         std::unique_ptr<Token> tok = this->tokenize<Token>(*t);
         k_db->add_record(*t, *tok);
@@ -255,19 +255,19 @@ std::unique_ptr< wavenumber_database<Token> > data_manager::build_wavenumber_db(
   }
 
 
-std::unique_ptr<k_database> data_manager::build_k_db(range<eV_units::energy>& sample)
+std::unique_ptr<k_database> data_manager::build_k_db(range<Mpc_units::energy>& sample)
   {
     return this->build_wavenumber_db<k_token>(sample);
   }
 
 
-std::unique_ptr<IR_database> data_manager::build_IR_db(range<eV_units::energy>& sample)
+std::unique_ptr<IR_database> data_manager::build_IR_db(range<Mpc_units::energy>& sample)
   {
     return this->build_wavenumber_db<IR_token>(sample);
   }
 
 
-std::unique_ptr<UV_database> data_manager::build_UV_db(range<eV_units::energy>& sample)
+std::unique_ptr<UV_database> data_manager::build_UV_db(range<Mpc_units::energy>& sample)
   {
     return this->build_wavenumber_db<UV_token>(sample);
   }
@@ -291,7 +291,7 @@ std::unique_ptr<transfer_work_list> data_manager::build_transfer_work_list(FRW_m
     // for each wavenumber in k_db, find which z-values are missing
     for(k_database::record_iterator t = k_db.record_begin(); t != k_db.record_end(); ++t)
       {
-//        std::cout << "lsseft: checking missing redshift values for k = " << (*(*t) * eV_units::Mpc) << " h/Mpc = " << static_cast<double>(*(*t)) << " eV" << '\n';
+//        std::cout << "lsseft: checking missing redshift values for k = " << (*(*t) * Mpc_units::Mpc) << " h/Mpc = " << (*(*t)) / Mpc_units::eV << " eV" << '\n';
 
         // get a database of missing redshifts for this k-value.
         // sqlite3_operations::missing_redshifts() returns a std::unique_ptr which transfers ownership,

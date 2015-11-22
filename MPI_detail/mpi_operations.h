@@ -62,7 +62,7 @@ namespace MPI_detail
           }
 
         //! value constructor: used to construct and send a payload
-        new_transfer_integration(const FRW_model& m, const eV_units::energy& _k, const k_token& t, const std::shared_ptr<z_database>& z)
+        new_transfer_integration(const FRW_model& m, const Mpc_units::energy& _k, const k_token& t, const std::shared_ptr<z_database>& z)
           : model(m),
             k(_k),
             token(t),
@@ -82,7 +82,7 @@ namespace MPI_detail
         const FRW_model& get_model() const { return(this->model); }
 
         //! get wavenumber
-        const eV_units::energy& get_k() const { return(this->k); }
+        const Mpc_units::energy& get_k() const { return(this->k); }
 
         //! get wavenumber token
         const k_token& get_token() const { return(this->token); }
@@ -99,7 +99,7 @@ namespace MPI_detail
         FRW_model model;
 
         //! wavenumber to integrate
-        eV_units::energy k;
+        Mpc_units::energy k;
 
         //! wavenumber token
         k_token token;
@@ -132,9 +132,9 @@ namespace MPI_detail
       public:
 
         //! empty constructor: used to receive a payload
-        //! transfer_function, eV_units::energy and k_token have no default constructors
+        //! transfer_function, Mpc_units::energy and k_token have no default constructors
         transfer_integration_ready()
-          : data(eV_units::energy(0), k_token(0), std::shared_ptr<z_database>())
+          : data(Mpc_units::energy(0), k_token(0), std::shared_ptr<z_database>())
           {
           }
 
@@ -199,9 +199,9 @@ namespace MPI_detail
           }
 
         //! value constructor: used to construct and send a payload
-        new_loop_momentum_integration(const FRW_model& m, const eV_units::energy& _k, const k_token& kt,
-                                      const eV_units::energy& UV, const UV_token& UVt,
-                                      const eV_units::energy& IR, const IR_token& IRt,
+        new_loop_momentum_integration(const FRW_model& m, const Mpc_units::energy& _k, const k_token& kt,
+                                      const Mpc_units::energy& UV, const UV_token& UVt,
+                                      const Mpc_units::energy& IR, const IR_token& IRt,
                                       const std::shared_ptr<tree_power_spectrum>& _Pk)
           : model(m),
             k(_k),
@@ -226,19 +226,19 @@ namespace MPI_detail
         const FRW_model& get_model() const { return(this->model); }
 
         //! get wavenumber
-        const eV_units::energy& get_k() const { return(this->k); }
+        const Mpc_units::energy& get_k() const { return(this->k); }
 
         //! get wavenumber token
         const k_token& get_k_token() const { return(this->k_tok); }
 
         //! get UV cutoff
-        const eV_units::energy& get_UV_cutoff() const { return(this->UV_cutoff); }
+        const Mpc_units::energy& get_UV_cutoff() const { return(this->UV_cutoff); }
 
         //! get UV cutoff token
         const UV_token& get_UV_token() const { return(this->UV_tok); }
 
         //! get IR cutoff
-        const eV_units::energy& get_IR_cutoff() const { return(this->IR_cutoff); }
+        const Mpc_units::energy& get_IR_cutoff() const { return(this->IR_cutoff); }
 
         //! get IR cutoff token
         const IR_token& get_IR_token() const { return(this->IR_tok); }
@@ -255,19 +255,19 @@ namespace MPI_detail
         FRW_model model;
 
         //! wavenumber of integrate
-        eV_units::energy k;
+        Mpc_units::energy k;
 
         //! wavenumber token
         k_token k_tok;
 
         //! UV cutoff to use
-        eV_units::energy UV_cutoff;
+        Mpc_units::energy UV_cutoff;
 
         //! UV cutoff token
         UV_token UV_tok;
 
         //! IR cutoff to USE
-        eV_units::energy IR_cutoff;
+        Mpc_units::energy IR_cutoff;
 
         //! IR cutoff token
         IR_token IR_tok;
@@ -303,10 +303,10 @@ namespace MPI_detail
       public:
 
         //! empty constructor: used to receive a payload;
-        //! note eV_units::energy, k_token, IR_token and UV_token have no default constructor
+        //! note Mpc_units::energy, k_token, IR_token and UV_token have no default constructor
         loop_momentum_integration_ready()
-          : data(eV_units::energy(0), k_token(0), eV_units::energy(0), UV_token(0), eV_units::energy(0), IR_token(0),
-                 eV_units::inverse_energy3(0.0), eV_units::inverse_energy3(0.0), 0.0, 0.0, 0.0, 0.0)
+          : data(Mpc_units::energy(0), k_token(0), Mpc_units::energy(0), UV_token(0), Mpc_units::energy(0), IR_token(0),
+                 Mpc_units::inverse_energy3(0.0), Mpc_units::inverse_energy3(0.0), 0.0, 0.0, 0.0, 0.0)
           {
           }
 

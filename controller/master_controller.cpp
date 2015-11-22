@@ -111,7 +111,7 @@ void master_controller::execute()
     std::unique_ptr<FRW_model_token> model = dmgr.tokenize(cosmology_model);
 
     // set up a list of wavenumbers to sample, measured in h/Mpc
-    stepping_range<eV_units::energy> wavenumber_samples(0.01, 0.8, 30, 1.0 / eV_units::Mpc, spacing_type::linear);
+    stepping_range<Mpc_units::energy> wavenumber_samples(0.01, 0.8, 30, 1.0 / Mpc_units::Mpc, spacing_type::linear);
 
     // set up a list of redshifts at which to sample to transfer function
     stepping_range<double> hi_redshift_samples(1000.0, 1500.0, 5, 1.0, spacing_type::linear);
@@ -120,10 +120,10 @@ void master_controller::execute()
     stepping_range<double> lo_redshift_samples(0.01, 1000.0, 250, 1.0, spacing_type::logarithmic_bottom);
 
     // set up a list of UV cutoffs, measured in h/Mpc
-    stepping_range<eV_units::energy> UV_cutoffs(0.4, 0.6, 5, 1.0 / eV_units::Mpc, spacing_type::linear);
+    stepping_range<Mpc_units::energy> UV_cutoffs(0.4, 0.6, 5, 1.0 / Mpc_units::Mpc, spacing_type::linear);
 
     // set up a list of IR cutoffs, measured in h/Mpc
-    stepping_range<eV_units::energy> IR_cutoffs(0.001, 0.01, 5, 1.0 / eV_units::Mpc, spacing_type::linear);
+    stepping_range<Mpc_units::energy> IR_cutoffs(0.001, 0.01, 5, 1.0 / Mpc_units::Mpc, spacing_type::linear);
 
     // exchange these sample ranges for iterable databases
     std::unique_ptr<z_database> hi_z_db = dmgr.build_redshift_db(hi_redshift_samples);

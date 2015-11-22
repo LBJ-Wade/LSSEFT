@@ -42,7 +42,7 @@ class tree_power_spectrum
     const powerspectrum_database& get_db() const { return(this->database); }
 
     //! evaluate spline
-    eV_units::inverse_energy3 operator()(const eV_units::energy& k) const;
+    Mpc_units::inverse_energy3 operator()(const Mpc_units::energy& k) const;
 
 
     // INTERNAL API

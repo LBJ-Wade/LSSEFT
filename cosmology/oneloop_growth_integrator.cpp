@@ -67,11 +67,11 @@ class oneloop_functor
     //! reference to FRW model
     const FRW_model& model;
 
-    //! cache rho_cc in eV
-    double rho_cc;
+    //! cache H0
+    Mpc_units::energy H0;
 
-    //! cache H0 in eV
-    double H0;
+    //! cache rho_cc
+    Mpc_units::energy4 rho_cc;
 
   };
 
@@ -176,25 +176,24 @@ std::unique_ptr<oneloop_growth> oneloop_growth_integrator::integrate(const FRW_m
 
 
 oneloop_functor::oneloop_functor(const FRW_model& m)
-  : model(m)
+  : model(m),
+    H0(model.get_h() * 100.0 * Mpc_units::Kilometre / Mpc_units::Second / Mpc_units::Mpc),
+    rho_cc(3.0 * H0*H0 * Mpc_units::PlanckMass*Mpc_units::PlanckMass * model.get_omega_cc())
   {
-    // cache value of H0 and rho_cc
-    constexpr double Mp = static_cast<double>(eV_units::PlanckMass);
-    eV_units::energy H0_value = model.get_h() * 100.0 * eV_units::Kilometre / eV_units::Second / eV_units::Mpc;
-
-    H0 = static_cast<double>(H0_value);
-    rho_cc = 3.0 * H0*H0 * Mp*Mp * model.get_omega_cc();
   }
 
 
 void oneloop_functor::operator()(const state_vector& x, state_vector& dxdz, double z)
   {
-    constexpr double Mp = static_cast<double>(eV_units::PlanckMass);
+    // compute rho, remembering that we use 1/Mpc^4 as units for background densitities
+    // during the integration
+    double rho = x[RHO_M] + x[RHO_R] + this->rho_cc * Mpc_units::Mpc4;
 
-    double rho = x[RHO_M] + x[RHO_R] + this->rho_cc;
-    double H   = std::sqrt(rho / (3.0*Mp*Mp));
+    // compute H in the same units
+    double Mp_in_Mpc_units = Mpc_units::PlanckMass * Mpc_units::Mpc;
+    double H   = std::sqrt(rho / (3.0 * Mp_in_Mpc_units*Mp_in_Mpc_units));
 
-    double Hdot    = -(3.0*x[RHO_M] + 4.0*x[RHO_R]) / (6.0*Mp*Mp);
+    double Hdot    = -(3.0*x[RHO_M] + 4.0*x[RHO_R]) / (6.0 * Mp_in_Mpc_units*Mp_in_Mpc_units);
     double epsilon = -Hdot/(H*H);
 
     double Omega_m   = x[RHO_M]/rho;
@@ -249,26 +248,26 @@ void oneloop_functor::operator()(const state_vector& x, state_vector& dxdz, doub
 
 void oneloop_functor::ics(state_vector& x, double z)
   {
-    constexpr double Mp = static_cast<double>(eV_units::PlanckMass);
-
     // compute (a0/a)^3 and (a0/a)^4
     double a_three = (1.0+z)*(1.0+z)*(1.0+z);
     double a_four  = (1.0+z)*a_three;
 
     // compute matter and radiation densities today
     // for radiation, we need the Stefan-Boltzman law and the present day CMB temperature
-    double rho_m0 = this->model.get_omega_m() * (3.0*this->H0*this->H0*Mp*Mp);
+    Mpc_units::energy4 rho_m0 = this->model.get_omega_m() * (3.0 * this->H0*this->H0 * Mpc_units::PlanckMass*Mpc_units::PlanckMass);
 
-    eV_units::energy T_CMB = this->model.get_T_CMB();
-    double T_CMB_in_eV = static_cast<double>(T_CMB);
-    double rho_r0 = g_star * radiation_constant * T_CMB_in_eV*T_CMB_in_eV*T_CMB_in_eV*T_CMB_in_eV;
+    Mpc_units::energy T_CMB = this->model.get_T_CMB();
 
-    double rho_m = rho_m0 * a_three;
-    double rho_r = rho_r0 * a_four;
+    Mpc_units::energy4 rho_r0 = g_star * radiation_constant * T_CMB*T_CMB*T_CMB*T_CMB;
 
-    // initial conditions for background
-    x[RHO_M] = rho_m;
-    x[RHO_R] = rho_r;
+    Mpc_units::energy4 rho_m = rho_m0 * a_three;
+    Mpc_units::energy4 rho_r = rho_r0 * a_four;
+
+    // initial conditions for background; we need to decide which units are going to be used to
+    // represent these during the integration.
+    // We used 1/Mpc^4
+    x[RHO_M] = rho_m * Mpc_units::Mpc4;
+    x[RHO_R] = rho_r * Mpc_units::Mpc4;
 
     // initial conditions for linear growth factor
     x[ELEMENT_g] = 1.0;

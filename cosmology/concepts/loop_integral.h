@@ -22,10 +22,10 @@ class loop_integral
   public:
 
     //! constructor
-    loop_integral(const eV_units::energy& _k, const k_token& kt,
-                  const eV_units::energy& UV, const UV_token& UVt,
-                  const eV_units::energy& IR, const IR_token& IRt,
-                  const eV_units::inverse_energy3& _A, const eV_units::inverse_energy3& _B,
+    loop_integral(const Mpc_units::energy& _k, const k_token& kt,
+                  const Mpc_units::energy& UV, const UV_token& UVt,
+                  const Mpc_units::energy& IR, const IR_token& IRt,
+                  const Mpc_units::inverse_energy3& _A, const Mpc_units::inverse_energy3& _B,
                   double _D, double _E, double _F, double _G);
 
     //! destructor is default
@@ -46,10 +46,10 @@ class loop_integral
     const IR_token& get_IR_token() const { return(this->IR_tok); }
 
     //! get A-value
-    const eV_units::inverse_energy3& get_A() const { return(this->A); }
+    const Mpc_units::inverse_energy3& get_A() const { return(this->A); }
 
     //! get B-value
-    const eV_units::inverse_energy3& get_B() const { return(this->B); }
+    const Mpc_units::inverse_energy3& get_B() const { return(this->B); }
 
     //! get D-value
     double get_D() const { return(this->D); }
@@ -85,19 +85,19 @@ class loop_integral
     // CONFIGURATION DATA
 
     //! wavenumber
-    eV_units::energy k;
+    Mpc_units::energy k;
 
     //! wavenumber token
     k_token k_tok;
 
     //! UV cutoff
-    eV_units::energy UV_cutoff;
+    Mpc_units::energy UV_cutoff;
 
     //! UV cutoff token
     UV_token UV_tok;
 
     //! IR cutoff
-    eV_units::energy IR_cutoff;
+    Mpc_units::energy IR_cutoff;
 
     //! IR cutoff token
     IR_token IR_tok;
@@ -106,10 +106,10 @@ class loop_integral
     // VALUE
 
     //! A-type integral P_13
-    eV_units::inverse_energy3 A;
+    Mpc_units::inverse_energy3 A;
 
     //! B-type integral P_13
-    eV_units::inverse_energy3 B;
+    Mpc_units::inverse_energy3 B;
 
     //! D-type integral P_13
     double D;

@@ -28,7 +28,7 @@ class transfer_work_record
     //! we are going to share ownership with an object representing an MPI
     //! message. Ultimately we may want to look at this again (it doesn't seem to get the
     //! ownership concept right) but it avoids costly copies of the redshift database
-    transfer_work_record(const eV_units::energy& _k, const k_token& kt, std::shared_ptr<z_database>& z)
+    transfer_work_record(const Mpc_units::energy& _k, const k_token& kt, std::shared_ptr<z_database>& z)
       : k(_k),
         k_tok(kt),
         z_db(z)
@@ -44,7 +44,7 @@ class transfer_work_record
   public:
 
     //! dereference to get wavenumber
-    const eV_units::energy& operator*() const { return(this->k); }
+    const Mpc_units::energy& operator*() const { return(this->k); }
 
     //! get token
     const k_token& get_token() const { return(this->k_tok); }
@@ -58,7 +58,7 @@ class transfer_work_record
   private:
 
     //! wavenumber
-    eV_units::energy k;
+    Mpc_units::energy k;
 
     //! wavenumber token
     k_token k_tok;
@@ -81,9 +81,9 @@ class loop_momentum_work_record
   public:
 
     //! constructor
-    loop_momentum_work_record(const eV_units::energy& _k, const k_token& kt,
-                              const eV_units::energy& _UV, const UV_token& UVt,
-                              const eV_units::energy& _IR, const IR_token& IRt,
+    loop_momentum_work_record(const Mpc_units::energy& _k, const k_token& kt,
+                              const Mpc_units::energy& _UV, const UV_token& UVt,
+                              const Mpc_units::energy& _IR, const IR_token& IRt,
                               std::shared_ptr<tree_power_spectrum>& _Pk)
       : k(_k),
         UV_cutoff(_UV),
@@ -104,19 +104,19 @@ class loop_momentum_work_record
   public:
 
     //! deference to get wavenumber
-    const eV_units::energy& operator*() const { return(this->k); }
+    const Mpc_units::energy& operator*() const { return(this->k); }
 
     //! get wavenumber token
     const k_token& get_k_token() const { return(this->k_tok); }
 
     //! get UV cutoff
-    const eV_units::energy& get_UV_cutoff() const { return(this->UV_cutoff); }
+    const Mpc_units::energy& get_UV_cutoff() const { return(this->UV_cutoff); }
 
     //! get UV cutoff token
     const UV_token& get_UV_token() const { return(this->UV_tok); }
 
     //! get IR cutoff
-    const eV_units::energy& get_IR_cutoff() const { return(this->IR_cutoff); }
+    const Mpc_units::energy& get_IR_cutoff() const { return(this->IR_cutoff); }
 
     //! get IR cutoff token
     const IR_token& get_IR_token() const { return(this->IR_tok); }
@@ -130,13 +130,13 @@ class loop_momentum_work_record
   private:
 
     //! wavenumber
-    eV_units::energy k;
+    Mpc_units::energy k;
 
     //! UV cutoff
-    eV_units::energy UV_cutoff;
+    Mpc_units::energy UV_cutoff;
 
     //! IR cutoff
-    eV_units::energy IR_cutoff;
+    Mpc_units::energy IR_cutoff;
 
     //! wavenumber token
     k_token k_tok;

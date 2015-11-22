@@ -11,13 +11,12 @@
 #include "boost/serialization/serialization.hpp"
 
 
-namespace eV_units
+namespace Mpc_units
   {
 
     // set up a template class representing a unit in a natural system where c=hbar=1
-    // Here, we use eV as the base unit
-    // That only leaves the reduced Planck mass Mp as a dimensionful object,
-    // and we express everything else in terms of it
+    // Here, we use Mpc as the base unit because this gives nice order-unity
+    // values for most of our numbers
 
     // adapted from Bjarne Stroustrup's Going Native 2012 example
     // https://channel9.msdn.com/Events/GoingNative/GoingNative-2012/Keynote-Bjarne-Stroustrup-Cpp11-Style
@@ -74,35 +73,32 @@ namespace eV_units
 
       };
 
-    using eV_unit          = unit<1>;
-    using eV2_unit         = unit<2>;
-    using eV3_unit         = unit<3>;
-    using inverse_eV_unit  = unit<-1>;
-    using inverse_eV2_unit = unit<-2>;
-    using inverse_eV3_unit = unit<-3>;
-    using inverse_eV4_unit = unit<-4>;
+    using Mpc_unit          = unit<1>;
+    using Mpc2_unit         = unit<2>;
+    using Mpc3_unit         = unit<3>;
+    using Mpc4_unit         = unit<4>;
+    using inverse_Mpc_unit  = unit<-1>;
+    using inverse_Mpc2_unit = unit<-2>;
+    using inverse_Mpc3_unit = unit<-3>;
+    using inverse_Mpc4_unit = unit<-4>;
 
-    using energy           = value<eV_unit>;
-    using energy2          = value<eV2_unit>;
-    using energy3          = value<eV3_unit>;
-    using inverse_energy   = value<inverse_eV_unit>;
-    using inverse_energy2  = value<inverse_eV2_unit>;
-    using inverse_energy3  = value<inverse_eV3_unit>;
-    using inverse_energy4  = value<inverse_eV4_unit>;
+    using energy           = value<inverse_Mpc_unit>;
+    using energy2          = value<inverse_Mpc2_unit>;
+    using energy3          = value<inverse_Mpc3_unit>;
+    using energy4          = value<inverse_Mpc4_unit>;
+    using inverse_energy   = value<Mpc_unit>;
+    using inverse_energy2  = value<Mpc2_unit>;
+    using inverse_energy3  = value<Mpc3_unit>;
+    using inverse_energy4  = value<Mpc4_unit>;
+
 
     // set up some default units
     // note only long double allowed on a user-defined literal operator
 
-    // eV is the fundamental unit
-    constexpr value<eV_unit> operator "" _eV(long double d)
+    // Mpc is the fundamental unit
+    constexpr value<Mpc_unit> operator "" _Mpc(long double d)
       {
-        return energy(d);
-      }
-
-    // reduced Planck mass, expressed in eV
-    constexpr value<eV_unit> operator "" _Mp(long double d)
-      {
-        return energy(2.436E27*d);
+        return inverse_energy(d);
       }
 
 
@@ -137,6 +133,26 @@ namespace eV_units
     constexpr energy3 operator*(const energy& a, const energy2& b)
       {
         return energy3(a.val * b.val);
+      }
+
+    constexpr energy3 operator*(const energy2& a, const energy& b)
+      {
+        return energy3(a.val * b.val);
+      }
+
+    constexpr energy4 operator*(const energy& a, const energy3& b)
+      {
+        return energy4(a.val * b.val);
+      }
+
+    constexpr energy4 operator*(const energy3& a, const energy& b)
+      {
+        return energy4(a.val * b.val);
+      }
+
+    constexpr energy4 operator*(const energy2& a, const energy2& b)
+      {
+        return energy4(a.val * b.val);
       }
 
     constexpr inverse_energy2 operator*(const inverse_energy& a, const inverse_energy& b)
@@ -210,6 +226,21 @@ namespace eV_units
         return a.val*b.val;
       }
 
+    constexpr double operator*(const energy3& a, const inverse_energy3& b)
+      {
+        return a.val*b.val;
+      }
+
+    constexpr double operator/(const inverse_energy3& a, const inverse_energy3& b)
+      {
+        return a.val/b.val;
+      }
+
+    constexpr double operator*(const energy4& a, const inverse_energy4& b)
+      {
+        return a.val*b.val;
+      }
+
 
     // DIMENSIONLESS MULTIPLICATION
 
@@ -228,6 +259,11 @@ namespace eV_units
         return energy3(a * b.val);
       }
 
+    constexpr energy4 operator*(double a, const energy4& b)
+      {
+        return energy4(a * b.val);
+      }
+
     constexpr inverse_energy operator*(double a, const inverse_energy& b)
       {
         return inverse_energy(a * b.val);
@@ -241,6 +277,11 @@ namespace eV_units
     constexpr inverse_energy3 operator*(double a, const inverse_energy3& b)
       {
         return inverse_energy3(a * b.val);
+      }
+
+    constexpr inverse_energy4 operator*(double a, const inverse_energy4& b)
+      {
+        return inverse_energy4(a * b.val);
       }
 
 
@@ -302,23 +343,25 @@ namespace eV_units
 
     // express SI-type units
 
-    constexpr energy PlanckMass = 1.0_Mp;
+    constexpr inverse_energy  Mpc          = 1.0_Mpc;
+    constexpr inverse_energy3 Mpc3         = Mpc*Mpc*Mpc;
+    constexpr inverse_energy4 Mpc4         = Mpc*Mpc*Mpc*Mpc;
+
+    constexpr inverse_energy  Metre        = Mpc / 3.08567758E22;
+    constexpr inverse_energy  Kilometre    = 1000 * Metre;
+
+    constexpr inverse_energy  sqrt_NewtonG = 1.616199E-35 * Metre;
+
+    constexpr energy          Kilogram     = 1.0 / (2.17651E-8 * sqrt_NewtonG);
+    constexpr inverse_energy  Second       = sqrt_NewtonG / 5.39106E-44;
+    constexpr energy          Kelvin       = 1.0 / (1.416833E32 * sqrt_NewtonG);
 
     // numerical constant here is sqrt(1/8pi); note we have to write the literal explicitly
     // in C++11 (and probably C++14) because there is no constexpr square root function
-    constexpr inverse_energy  sqrt_NewtonG = 0.1994711402007163 / PlanckMass;
+    constexpr energy          PlanckMass   = 0.1994711402007163 / sqrt_NewtonG;
+    constexpr energy          eV           = PlanckMass / 2.436E27;
 
-    constexpr inverse_energy  Metre    = sqrt_NewtonG / 1.616199E-35;
-    constexpr energy          Kilogram = 1.0 / (2.17651E-8 * sqrt_NewtonG);
-    constexpr inverse_energy  Second   = sqrt_NewtonG / 5.39106E-44;
-    constexpr energy          Kelvin   = 1.0 / (1.416833E32 * sqrt_NewtonG);
-
-    constexpr inverse_energy  Kilometre = 1000 * Metre;
-    constexpr inverse_energy  Mpc       = 3.08567758E22 * Metre;
-
-    constexpr inverse_energy3 Mpc3     = Mpc*Mpc*Mpc;
-
-    constexpr double          c        = 299792458 * Metre / Second;
+    constexpr double          c            = 299792458 * Metre / Second;
 
   }
 
