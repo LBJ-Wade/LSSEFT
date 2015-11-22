@@ -29,8 +29,7 @@ namespace sqlite3_operations
         return(name.str());
       }
 
-    std::string z_table(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
-                        z_database& z_db)
+    std::string z_table(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, z_database& z_db)
       {
         assert(db != nullptr);
 
@@ -77,8 +76,7 @@ namespace sqlite3_operations
       }
 
 
-    std::string k_table(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
-                        k_database& k_db)
+    std::string k_table(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, k_database& k_db)
       {
         assert(db != nullptr);
 

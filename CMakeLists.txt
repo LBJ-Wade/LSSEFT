@@ -95,7 +95,7 @@ set(UNITS_SOURCE_FILES
   units/Mpc_units.h)
 
 set(DATABASE_SOURCE_FILES
-  database/data_manager.cpp database/data_manager.h
+  database/data_manager.cpp database/data_manager.h database/data_manager_impl.h
   database/tokens.cpp database/tokens.h
   database/transaction_manager.cpp database/transaction_manager.h
   database/wavenumber_database.h

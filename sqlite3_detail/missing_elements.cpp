@@ -207,33 +207,45 @@ namespace sqlite3_operations
 
 
     //! find missing wavenumbers for a loop momentum sample
-    std::unique_ptr<k_database> missing_loop_momentum(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
-                                                               const FRW_model_token& model, const k_database& k_db,
-                                                               const std::string& k_table)
+    void missing_loop_momentum(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
+                               const FRW_model_token& model, const k_database& k_db,
+                               std::list<data_manager_impl::loop_momentum_configuration>& combinations)
       {
         assert(db != nullptr);
 
-        // set up null pointer; will be attached to any empty database later if needed
-        std::unique_ptr<k_database> missing_db;
+        std::ostringstream count_stmt;
+        count_stmt
+        << "SELECT COUNT(*) FROM (SELECT * FROM " << policy.loop_momentum_table() << " "
+        << "WHERE mid=@mid AND kid=@kid AND UV_id=@UV_id AND IR_id=@IR_id);";
 
-        // get list of missing k-values
-        std::list<unsigned int> missing_list = missing_wavenumbers_for_table(db, model, policy.loop_momentum_table(), k_table);
+        // prepare statement
+        sqlite3_stmt* stmt;
+        check_stmt(db, sqlite3_prepare_v2(db, count_stmt.str().c_str(), count_stmt.str().length()+1, &stmt, nullptr));
 
-        if(missing_list.size() > 0)
+        for(data_manager_impl::loop_momentum_configuration& t : combinations)
           {
-            missing_db = std::make_unique<k_database>();
+            // bind paramaeter values
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@mid"), model.get_id()));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@kid"), t.k->get_token().get_id()));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@UV_id"), t.UV->get_token().get_id()));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_id"), t.IR->get_token().get_id()));
 
-            for(unsigned int t : missing_list)
+            int status = 0;
+            while((status = sqlite3_step(stmt)) != SQLITE_DONE)
               {
-                // lookup record for this identifier
-                k_database::const_record_iterator rec = k_db.lookup(k_token(t));
-
-                // add a corresponding record to the missing database
-                missing_db->add_record(*(*rec), rec->get_token());
+                if(status == SQLITE_ROW)
+                  {
+                    if(sqlite3_column_int(stmt, 0) > 0) t.include = false;
+                  }
               }
+
+            // release bindings and reset statement
+            check_stmt(db, sqlite3_clear_bindings(stmt));
+            check_stmt(db, sqlite3_reset(stmt));
           }
 
-        return(missing_db);
+        // finalize stataement to release resources
+        check_stmt(db, sqlite3_finalize(stmt));
       }
 
 

@@ -9,6 +9,7 @@
 #include <assert.h>
 
 #include "data_manager.h"
+#include "data_manager_impl.h"
 
 #include "sqlite3_detail/utilities.h"
 #include "sqlite3_detail/operations.h"
@@ -362,28 +363,30 @@ std::unique_ptr<loop_momentum_work_list> data_manager::build_loop_momentum_work_
     // open a transaction on the database
     std::shared_ptr<transaction_manager> transaction = this->open_transaction();
 
-    // set up temporary table of desired wavenumber identifiers
-    std::string k_table = sqlite3_operations::k_table(this->handle, *transaction, this->policy, k_db);
+    // tensor together the desired k-values with the IR and UV cutoffs to obtain a set of
+    // desired combinations
+    std::list< data_manager_impl::loop_momentum_configuration > combinations;
 
-    std::unique_ptr<k_database> missing_values = sqlite3_operations::missing_loop_momentum(this->handle, *transaction, this->policy, model, k_db, k_table);
-
-    // if any wavenumbers were missing, set up a record in the work list
-    if(missing_values)
+    for(k_database::const_record_iterator t = k_db.record_begin(); t != k_db.record_end(); ++t)
       {
-        for(k_database::record_iterator t = missing_values->record_begin(); t != missing_values->record_end(); ++t)
+        for(UV_database::const_record_iterator u = UV_db.record_begin(); u != UV_db.record_end(); ++u)
           {
-            for(UV_database::record_iterator u = UV_db.record_begin(); u != UV_db.record_end(); ++u)
+            for(IR_database::const_record_iterator v = IR_db.record_begin(); v != IR_db.record_end(); ++v)
               {
-                for(IR_database::record_iterator v = IR_db.record_begin(); v != IR_db.record_end(); ++v)
-                  {
-                    work_list->emplace_back(*(*t), t->get_token(), *(*u), u->get_token(), *(*v), v->get_token(), Pk);
-                  }
+                combinations.emplace_back(t, u, v);
               }
           }
       }
 
-    // drop unneeded temporary tables
-    sqlite3_operations::drop_temp(this->handle, *transaction, k_table);
+    sqlite3_operations::missing_loop_momentum(this->handle, *transaction, this->policy, model, k_db, combinations);
+
+    for(const data_manager_impl::loop_momentum_configuration& record : combinations)
+      {
+        if(record.include)
+          {
+            work_list->emplace_back(*(*record.k), record.k->get_token(), *(*record.UV), record.UV->get_token(), *(*record.IR), record.IR->get_token(), Pk);
+          }
+      }
 
     // close transaction
     transaction->commit();

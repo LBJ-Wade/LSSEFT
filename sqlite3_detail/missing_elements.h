@@ -13,6 +13,7 @@
 #include "database/tokens.h"
 #include "database/z_database.h"
 #include "database/k_database.h"
+#include "database/data_manager_impl.h"
 
 #include "sqlite3.h"
 
@@ -35,11 +36,11 @@ namespace sqlite3_operations
                                                           const z_database& z_db, const std::string& z_table);
 
 
-    //! construct a database of wavenumbers which need to be computed for the one-loop loop momentum integral
-    //! ownership of the resulting database is transferred via std::unique_ptr<>
-    std::unique_ptr<k_database> missing_loop_momentum(sqlite3* db, transaction_manager& mgr,
-                                                      const sqlite3_policy& policy, const FRW_model_token& model,
-                                                      const k_database& k_db, const std::string& k_table);
+    //! process a list of configurations for loop momentum integrals;
+    //! we detect which ones are already present in the database and mark them not to be computed
+    void missing_loop_momentum(sqlite3* db, transaction_manager& mgr,
+                               const sqlite3_policy& policy, const FRW_model_token& model, const k_database& k_db,
+                               std::list<data_manager_impl::loop_momentum_configuration>& combinations);
 
   }   // namespace sqlite3_operations
 
