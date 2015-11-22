@@ -24,7 +24,7 @@ namespace oneloop_momentum_impl
     constexpr unsigned int samples_last          = 4;
 
     constexpr unsigned int min_eval              = 0;
-    constexpr unsigned int max_eval              = 50000;
+    constexpr unsigned int max_eval              = 10000000;
 
 
     class integrand_data
@@ -137,7 +137,7 @@ Mpc_units::inverse_energy3 oneloop_momentum_integrator::A_integral(const FRW_mod
           &regions, &evaluations, &fail,
           integral, error, prob);
 
-    std::cout << "Cuhre result: regions = " << regions << ", evaluations = " << evaluations << ", fail = " << fail << ", value = " << integral[0] << ", error = " << error[0] << ", probability = " << prob[0] << '\n';
+    std::cerr << "Cuhre result: regions = " << regions << ", evaluations = " << evaluations << ", fail = " << fail << ", value = " << integral[0] << ", error = " << error[0] << ", probability = " << prob[0] << '\n';
 
     // an overall factor 2 / (2pi)^3 is taken out of the integrand, so remember to put it back here
     return Mpc_units::inverse_energy3(integral[0] / (8.0 * M_PI_2 * M_PI));
