@@ -14,6 +14,64 @@
 #include "boost/serialization/serialization.hpp"
 
 
+class inverse_energy3_kernel
+  {
+
+  public:
+
+    typedef Mpc_units::inverse_energy3 value_type;
+
+    value_type value = value_type(0.0);
+    unsigned int regions;
+    unsigned int evaluations;
+    double       error;
+
+  private:
+
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & value;
+        ar & regions;
+        ar & evaluations;
+        ar & error;
+      }
+
+  };
+
+
+class dimless_kernel
+  {
+
+  public:
+
+    typedef double value_type;
+
+    value_type   value;
+    unsigned int regions;
+    unsigned int evaluations;
+    double       error;
+
+  private:
+
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & value;
+        ar & regions;
+        ar & evaluations;
+        ar & error;
+      }
+
+  };
+
+
 class loop_integral
   {
 
@@ -25,8 +83,8 @@ class loop_integral
     loop_integral(const Mpc_units::energy& _k, const k_token& kt,
                   const Mpc_units::energy& UV, const UV_token& UVt,
                   const Mpc_units::energy& IR, const IR_token& IRt,
-                  const Mpc_units::inverse_energy3& _A, const Mpc_units::inverse_energy3& _B,
-                  double _D, double _E, double _F, double _G);
+                  bool f, const inverse_energy3_kernel& _A, const inverse_energy3_kernel& _B,
+                  const dimless_kernel& _D, const dimless_kernel& _E, const dimless_kernel& _F, const dimless_kernel& _G);
 
     //! destructor is default
     ~loop_integral() = default;
@@ -35,6 +93,9 @@ class loop_integral
     // INTERFACE
 
   public:
+
+    //! get failure state
+    bool get_fail() const { return(this->fail); }
 
     //! get wavenumber token
     const k_token& get_k_token() const { return(this->k_tok); }
@@ -46,22 +107,22 @@ class loop_integral
     const IR_token& get_IR_token() const { return(this->IR_tok); }
 
     //! get A-value
-    const Mpc_units::inverse_energy3& get_A() const { return(this->A); }
+    const inverse_energy3_kernel& get_A() const { return(this->A); }
 
     //! get B-value
-    const Mpc_units::inverse_energy3& get_B() const { return(this->B); }
+    const inverse_energy3_kernel& get_B() const { return(this->B); }
 
     //! get D-value
-    double get_D() const { return(this->D); }
+    const dimless_kernel& get_D() const { return(this->D); }
 
     //! get E-value
-    double get_E() const { return(this->E); }
+    const dimless_kernel& get_E() const { return(this->E); }
 
     //! get F-value
-    double get_F() const { return(this->F); }
+    const dimless_kernel& get_F() const { return(this->F); }
 
     //! get G-value
-    double get_G() const { return(this->G); }
+    const dimless_kernel& get_G() const { return(this->G); }
 
 
     // METADATA
@@ -69,13 +130,10 @@ class loop_integral
   public:
 
     //! store integration time
-    void set_integration_metadata(boost::timer::nanosecond_type t, size_t s);
+    void set_integration_metadata(boost::timer::nanosecond_type t);
 
     //! get integration time
     boost::timer::nanosecond_type get_integration_time() const { return(this->integration_time); }
-
-    //! get number of steps used by integrator
-    size_t get_integration_steps() const { return(this->steps); }
 
 
     // INTERNAL DATA
@@ -83,6 +141,9 @@ class loop_integral
   private:
 
     // CONFIGURATION DATA
+
+    //! failure state
+    bool fail;
 
     //! wavenumber
     Mpc_units::energy k;
@@ -106,31 +167,28 @@ class loop_integral
     // VALUE
 
     //! A-type integral P_13
-    Mpc_units::inverse_energy3 A;
+    inverse_energy3_kernel A;
 
     //! B-type integral P_13
-    Mpc_units::inverse_energy3 B;
+    inverse_energy3_kernel B;
 
     //! D-type integral P_13
-    double D;
+    dimless_kernel D;
 
     //! E-type integral P_13
-    double E;
+    dimless_kernel E;
 
     //! F-type integral P_13
-    double F;
+    dimless_kernel F;
 
     //! G-type integral P_13
-    double G;
+    dimless_kernel G;
 
 
     // METADATA
 
     //! time taken to perform integration
     boost::timer::nanosecond_type integration_time;
-
-    //! number of steps used by integrator
-    size_t steps;
 
 
     // enable boost::serialization support, and hence automated packing for transmission over MPI
@@ -152,7 +210,6 @@ class loop_integral
         ar & F;
         ar & G;
         ar & integration_time;
-        ar & steps;
       }
 
   };

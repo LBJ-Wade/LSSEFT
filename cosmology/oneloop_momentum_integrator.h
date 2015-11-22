@@ -7,6 +7,8 @@
 #define LSSEFT_ONELOOP_MOMENTUM_INTEGRATOR_H
 
 
+#include <random>
+
 #include "FRW_model.h"
 #include "concepts/loop_integral.h"
 #include "concepts/tree_power_spectrum.h"
@@ -14,6 +16,8 @@
 #include "database/tokens.h"
 
 #include "defaults.h"
+
+#include "cuba.h"
 
 #include "boost/timer/timer.hpp"
 
@@ -47,10 +51,12 @@ class oneloop_momentum_integrator
 
   private:
 
-    //! perform A integral
-    Mpc_units::inverse_energy3 A_integral(const FRW_model& model, const Mpc_units::energy& k,
-                                          const Mpc_units::energy& UV_cutoff, const Mpc_units::energy& IR_cutoff,
-                                          std::shared_ptr<tree_power_spectrum>& Pk);
+    //! perform a kernel integral
+    template <typename KernelRecord>
+    bool kernel_integral(const FRW_model& model, const Mpc_units::energy& k,
+                         const Mpc_units::energy& UV_cutoff, const Mpc_units::energy& IR_cutoff,
+                         std::shared_ptr<tree_power_spectrum>& Pk,
+                         integrand_t interand, KernelRecord& result);
 
 
     // INTERNAL DATA
@@ -62,6 +68,12 @@ class oneloop_momentum_integrator
 
     //! relative tolerance
     double rel_err;
+
+
+    // RANDOM NUMBER GENERATORS
+
+    std::random_device random_device;
+    std::mt19937       mersenne_twister;
 
   };
 

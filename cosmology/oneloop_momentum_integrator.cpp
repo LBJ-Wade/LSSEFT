@@ -3,9 +3,12 @@
 // Copyright (c) 2015 University of Sussex. All rights reserved.
 //
 
+
 #include "oneloop_momentum_integrator.h"
 
 #include "cuba.h"
+
+#include "boost/timer/timer.hpp"
 
 
 namespace oneloop_momentum_impl
@@ -25,6 +28,10 @@ namespace oneloop_momentum_impl
 
     constexpr unsigned int min_eval              = 0;
     constexpr unsigned int max_eval              = 10000000;
+
+    constexpr unsigned int ngiven                = 0;
+    constexpr unsigned int ldxgiven              = 0;
+    constexpr unsigned int nextra                = 0;
 
 
     class integrand_data
@@ -85,9 +92,59 @@ namespace oneloop_momentum_impl
 
         double alpha = (k_minus_q*k_minus_q*k_dot_q + q*q*data->k_value*data->k_value - q*q*k_dot_q) / (2.0 * q*q * k_minus_q*k_minus_q);
 
-        f[0] = data->jacobian * static_cast<double>(PP_prod) * alpha;
+        f[0] = data->jacobian * 2.0 * static_cast<double>(PP_prod) * alpha;
 
         return(0);  // return value irrelevant unless = -999, which means stop integration
+      }
+
+
+    static int B_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
+      {
+        oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
+
+        f[0] = 0.0;
+
+        return(0);
+      }
+
+
+    static int D_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
+      {
+        oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
+
+        f[0] = 0.0;
+
+        return(0);
+      }
+
+
+    static int E_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
+      {
+        oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
+
+        f[0] = 0.0;
+
+        return(0);
+      }
+
+
+    static int F_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
+      {
+        oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
+
+        f[0] = 0.0;
+
+        return(0);
+      }
+
+
+    static int G_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
+      {
+        oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
+
+        f[0] = 0.0;
+
+        return(0);
       }
 
   }
@@ -97,6 +154,8 @@ oneloop_momentum_integrator::oneloop_momentum_integrator(double a, double r)
   : abs_err(std::fabs(a)),
     rel_err(std::fabs(r))
   {
+    // seed random number generator
+    mersenne_twister.seed(random_device());
   }
 
 
@@ -105,17 +164,37 @@ loop_integral oneloop_momentum_integrator::integrate(const FRW_model& model, con
                                                      const UV_token& UV_tok, const Mpc_units::energy& IR_cutoff,
                                                      const IR_token& IR_tok, std::shared_ptr<tree_power_spectrum>& Pk)
   {
-    Mpc_units::inverse_energy3 A = this->A_integral(model, k, UV_cutoff, IR_cutoff, Pk);
+    boost::timer::cpu_timer timer;
 
-    return loop_integral(k, k_tok, UV_cutoff, UV_tok, IR_cutoff, IR_tok,
-                         A, Mpc_units::inverse_energy3(0.0), 0.0, 0.0, 0.0, 0.0);
+    inverse_energy3_kernel A;
+    inverse_energy3_kernel B;
+    dimless_kernel         D;
+    dimless_kernel         E;
+    dimless_kernel         F;
+    dimless_kernel         G;
+
+    bool fail = false;
+
+    fail = fail || this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::A_integrand, A);
+    fail = fail || this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::B_integrand, B);
+    fail = fail || this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::D_integrand, D);
+    fail = fail || this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::E_integrand, E);
+    fail = fail || this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::F_integrand, F);
+    fail = fail || this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::G_integrand, G);
+
+    timer.stop();
+
+    loop_integral container(k, k_tok, UV_cutoff, UV_tok, IR_cutoff, IR_tok, fail, A, B, D, E, F, G);
+    container.set_integration_metadata(timer.elapsed().wall);
+
+    return container;
   }
 
 
-Mpc_units::inverse_energy3 oneloop_momentum_integrator::A_integral(const FRW_model& model, const Mpc_units::energy& k,
-                                                                   const Mpc_units::energy& UV_cutoff,
-                                                                   const Mpc_units::energy& IR_cutoff,
-                                                                   std::shared_ptr<tree_power_spectrum>& Pk)
+template <typename KernelRecord>
+bool oneloop_momentum_integrator::kernel_integral(const FRW_model& model, const Mpc_units::energy& k,
+                                                  const Mpc_units::energy& UV_cutoff, const Mpc_units::energy& IR_cutoff,
+                                                  std::shared_ptr<tree_power_spectrum>& Pk, integrand_t integrand, KernelRecord& result)
   {
     cubareal integral[oneloop_momentum_impl::dimensions];
     cubareal error[oneloop_momentum_impl::dimensions];
@@ -127,18 +206,33 @@ Mpc_units::inverse_energy3 oneloop_momentum_integrator::A_integral(const FRW_mod
 
     std::unique_ptr<oneloop_momentum_impl::integrand_data> data = std::make_unique<oneloop_momentum_impl::integrand_data>(model, k, UV_cutoff, IR_cutoff, Pk);
 
-    Cuhre(oneloop_momentum_impl::dimensions, oneloop_momentum_impl::components,
-          &oneloop_momentum_impl::A_integrand, data.get(),
-          oneloop_momentum_impl::points_per_invocation,
-          this->rel_err, this->abs_err,
-          oneloop_momentum_impl::verbosity_none | oneloop_momentum_impl::samples_last,
-          oneloop_momentum_impl::min_eval, oneloop_momentum_impl::max_eval,
-          LSSEFT_DEFAULT_CUHRE_KEY, nullptr, nullptr,
-          &regions, &evaluations, &fail,
-          integral, error, prob);
+    Divonne(oneloop_momentum_impl::dimensions, oneloop_momentum_impl::components,
+            integrand, data.get(),
+            oneloop_momentum_impl::points_per_invocation,
+            this->rel_err, this->abs_err,
+            oneloop_momentum_impl::verbosity_none | oneloop_momentum_impl::samples_last,
+            this->mersenne_twister(),                                                          // seed for internal Cuba random number generator
+            oneloop_momentum_impl::min_eval, oneloop_momentum_impl::max_eval,
+            LSSEFT_DEFAULT_DIVONNE_KEY1, LSSEFT_DEFAULT_DIVONNE_KEY2, LSSEFT_DEFAULT_DIVONNE_KEY3,
+            LSSEFT_DEFAULT_DIVONNE_MAXPASS,
+            LSSEFT_DEFAULT_DIVONNE_BORDER, LSSEFT_DEFAULT_DIVONNE_MAXCHISQ, LSSEFT_DEFAULT_DIVONNE_MINCHISQ,
+            oneloop_momentum_impl::ngiven, oneloop_momentum_impl::ldxgiven, nullptr,
+            oneloop_momentum_impl::nextra, nullptr,
+            nullptr, nullptr,
+            &regions, &evaluations, &fail,
+            integral, error, prob);
 
-    std::cerr << "Cuhre result: regions = " << regions << ", evaluations = " << evaluations << ", fail = " << fail << ", value = " << integral[0] << ", error = " << error[0] << ", probability = " << prob[0] << '\n';
+    if(fail != 0)
+      {
+        std::cerr << "Divonne result: regions = " << regions << ", evaluations = " << evaluations << ", fail = " << fail << ", value = " << integral[0] << ", error = " << error[0] << ", probability = " << prob[0] << '\n';
 
-    // an overall factor 2 / (2pi)^3 is taken out of the integrand, so remember to put it back here
-    return Mpc_units::inverse_energy3(integral[0] / (8.0 * M_PI_2 * M_PI));
+      }
+
+    // an overall factor 1 / (2pi)^3 is taken out of the integrand, so remember to put it back here
+    result.value       = typename KernelRecord::value_type(integral[0] / (16.0 * M_PI_2 * M_PI));
+    result.regions     = regions;
+    result.evaluations = evaluations;
+    result.error       = error[0];
+
+    return(fail != 0);
   }

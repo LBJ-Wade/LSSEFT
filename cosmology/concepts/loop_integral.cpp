@@ -8,14 +8,15 @@
 
 loop_integral::loop_integral(const Mpc_units::energy& _k, const k_token& kt, const Mpc_units::energy& UV,
                              const UV_token& UVt, const Mpc_units::energy& IR, const IR_token& IRt,
-                             const Mpc_units::inverse_energy3& _A, const Mpc_units::inverse_energy3& _B,
-                             double _D, double _E, double _F, double _G)
+                             bool f, const inverse_energy3_kernel& _A, const inverse_energy3_kernel& _B,
+                             const dimless_kernel& _D, const dimless_kernel& _E, const dimless_kernel& _F, const dimless_kernel& _G)
   : k(_k),
     k_tok(kt),
     UV_cutoff(UV),
     UV_tok(UVt),
     IR_cutoff(IR),
     IR_tok(IRt),
+    fail(f),
     A(_A),
     B(_B),
     D(_D),
@@ -26,8 +27,7 @@ loop_integral::loop_integral(const Mpc_units::energy& _k, const k_token& kt, con
   }
 
 
-void loop_integral::set_integration_metadata(boost::timer::nanosecond_type t, size_t s)
+void loop_integral::set_integration_metadata(boost::timer::nanosecond_type t)
   {
     this->integration_time = t;
-    this->steps = s;
   }

@@ -306,7 +306,8 @@ namespace MPI_detail
         //! note Mpc_units::energy, k_token, IR_token and UV_token have no default constructor
         loop_momentum_integration_ready()
           : data(Mpc_units::energy(0), k_token(0), Mpc_units::energy(0), UV_token(0), Mpc_units::energy(0), IR_token(0),
-                 Mpc_units::inverse_energy3(0.0), Mpc_units::inverse_energy3(0.0), 0.0, 0.0, 0.0, 0.0)
+                 false, inverse_energy3_kernel(), inverse_energy3_kernel(),
+                 dimless_kernel(), dimless_kernel(), dimless_kernel(), dimless_kernel())
           {
           }
 
