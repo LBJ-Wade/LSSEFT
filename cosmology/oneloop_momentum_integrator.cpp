@@ -46,11 +46,11 @@ namespace oneloop_momentum_impl
             UV_cutoff(UV),
             IR_cutoff(IR),
             Pk(_Pk),
-            jacobian(2.0*M_PI_2*(static_cast<double>(UV_cutoff) - static_cast<double>(IR_cutoff))),    // Jacobian in angular directions in 2pi * pi = 2pi^2
-            q_min(static_cast<double>(IR_cutoff)),                                                     // note guaranteed to be constructed after IR_cutoff, UV_cutoff
-            q_max(static_cast<double>(UV_cutoff)),
+            jacobian(2.0*M_PI_2*(UV_cutoff*Mpc_units::Mpc - IR_cutoff*Mpc_units::Mpc)),    // Jacobian in angular directions in 2pi * pi = 2pi^2
+            q_min(IR_cutoff*Mpc_units::Mpc),                                               // note guaranteed to be constructed after IR_cutoff, UV_cutoff
+            q_max(UV_cutoff*Mpc_units::Mpc),
             q_range(q_max - q_min),
-            k_value(static_cast<double>(k))
+            k_value(k*Mpc_units::Mpc)
           {
           }
 
@@ -69,7 +69,7 @@ namespace oneloop_momentum_impl
       };
 
 
-    static int A_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
+    static int AA_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
 
@@ -80,29 +80,78 @@ namespace oneloop_momentum_impl
         double k_dot_q   = data->k_value*q*std::cos(theta);
         double k_minus_q = std::sqrt(data->k_value*data->k_value + q*q - 2.0*k_dot_q);
 
-        Mpc_units::energy q_in_eV(q);
+        Mpc_units::energy q_in_Mpc(q);
         Mpc_units::energy k_minus_q_in_eV(k_minus_q);
 
-        // integral is P(q) P(k-q) alpha(q,k-q)
-        Mpc_units::inverse_energy3 Pq         = (*(data->Pk))(q_in_eV);
+        // integral is P(q) P(k-q) alpha(q,k-q)^2
+        Mpc_units::inverse_energy3 Pq         = (*(data->Pk))(q_in_Mpc);
         Mpc_units::inverse_energy3 Pk_minus_q = k_minus_q > data->q_min ? (*(data->Pk))(k_minus_q_in_eV) : Mpc_units::inverse_energy3(0);
 
-        Mpc_units::inverse_energy  qqPq = q_in_eV * q_in_eV * Pq;
+        Mpc_units::inverse_energy  qqPq    = std::sin(theta) * q_in_Mpc * q_in_Mpc * Pq;
         Mpc_units::inverse_energy4 PP_prod = qqPq * Pk_minus_q;
 
         double alpha = (k_minus_q*k_minus_q*k_dot_q + q*q*data->k_value*data->k_value - q*q*k_dot_q) / (2.0 * q*q * k_minus_q*k_minus_q);
 
-        f[0] = data->jacobian * 2.0 * static_cast<double>(PP_prod) * alpha;
+        f[0] = data->jacobian * 2.0 * (PP_prod/Mpc_units::Mpc4) * alpha*alpha;
 
         return(0);  // return value irrelevant unless = -999, which means stop integration
       }
 
 
-    static int B_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
+    static int AB_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
 
-        f[0] = 0.0;
+        double q     = data->q_min + x[0] * data->q_range;
+        double theta = 2.0 * M_PI * x[1];
+        double phi   = M_PI * x[2];
+
+        double k_dot_q   = data->k_value*q*std::cos(theta);
+        double k_minus_q = std::sqrt(data->k_value*data->k_value + q*q - 2.0*k_dot_q);
+
+        Mpc_units::energy q_in_Mpc(q);
+        Mpc_units::energy k_minus_q_in_eV(k_minus_q);
+
+        // integral is P(q) P(k-q) alpha(q,k-q) gamma(q,k-q)
+        Mpc_units::inverse_energy3 Pq         = (*(data->Pk))(q_in_Mpc);
+        Mpc_units::inverse_energy3 Pk_minus_q = k_minus_q > data->q_min ? (*(data->Pk))(k_minus_q_in_eV) : Mpc_units::inverse_energy3(0);
+
+        Mpc_units::inverse_energy  qqPq    = std::sin(theta) * q_in_Mpc * q_in_Mpc * Pq;
+        Mpc_units::inverse_energy4 PP_prod = qqPq * Pk_minus_q;
+
+        double alpha = (k_minus_q*k_minus_q*k_dot_q + q*q*data->k_value*data->k_value - q*q*k_dot_q) / (2.0 * q*q * k_minus_q*k_minus_q);
+        double gamma = (k_minus_q*k_minus_q*k_dot_q - q*q*k_dot_q + data->k_value*data->k_value*k_dot_q) / (2.0 * q*q * k_minus_q*k_minus_q);
+
+        f[0] = data->jacobian * 4.0 * (PP_prod/Mpc_units::Mpc4) * alpha*gamma;
+
+        return(0);
+      }
+
+
+    static int BB_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
+      {
+        oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
+
+        double q     = data->q_min + x[0] * data->q_range;
+        double theta = 2.0 * M_PI * x[1];
+        double phi   = M_PI * x[2];
+
+        double k_dot_q   = data->k_value*q*std::cos(theta);
+        double k_minus_q = std::sqrt(data->k_value*data->k_value + q*q - 2.0*k_dot_q);
+
+        Mpc_units::energy q_in_Mpc(q);
+        Mpc_units::energy k_minus_q_in_eV(k_minus_q);
+
+        // integral is P(q) P(k-q) gamma(q,k-q)^2
+        Mpc_units::inverse_energy3 Pq         = (*(data->Pk))(q_in_Mpc);
+        Mpc_units::inverse_energy3 Pk_minus_q = k_minus_q > data->q_min ? (*(data->Pk))(k_minus_q_in_eV) : Mpc_units::inverse_energy3(0);
+
+        Mpc_units::inverse_energy  qqPq    = std::sin(theta) * q_in_Mpc * q_in_Mpc * Pq;
+        Mpc_units::inverse_energy4 PP_prod = qqPq * Pk_minus_q;
+
+        double gamma = (k_minus_q*k_minus_q*k_dot_q - q*q*k_dot_q + data->k_value*data->k_value*k_dot_q) / (2.0 * q*q * k_minus_q*k_minus_q);
+
+        f[0] = data->jacobian * 2.0 * (PP_prod/Mpc_units::Mpc4) * gamma*gamma;
 
         return(0);
       }
@@ -112,7 +161,22 @@ namespace oneloop_momentum_impl
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
 
-        f[0] = 0.0;
+        double q     = data->q_min + x[0] * data->q_range;
+        double theta = 2.0 * M_PI * x[1];
+        double phi   = M_PI * x[2];
+
+        double k_dot_q   = data->k_value*q*std::cos(theta);
+        double k_minus_q = std::sqrt(data->k_value*data->k_value + q*q - 2.0*k_dot_q);
+
+        Mpc_units::energy q_in_Mpc(q);
+        Mpc_units::inverse_energy3 Pq  = (*(data->Pk))(q_in_Mpc);
+        Mpc_units::inverse_energy qqPq = std::sin(theta) * q_in_Mpc * q_in_Mpc * Pq;
+
+        // integral is P(q) gamma(k-r,r) alpha(k,-r)
+        double gamma1 = (k_minus_q*k_minus_q*k_dot_q - q*q*k_dot_q + data->k_value*data->k_value*k_dot_q) / (2.0 * q*q * k_minus_q*k_minus_q);
+        double alpha2 = (2.0*data->k_value*data->k_value*q*q - k_dot_q*(data->k_value*data->k_value + q*q)) / (2.0 * q*q * data->k_value*data->k_value);
+
+        f[0] = data->jacobian * 3.0 * (qqPq/Mpc_units::Mpc) * gamma1*alpha2;
 
         return(0);
       }
@@ -122,7 +186,22 @@ namespace oneloop_momentum_impl
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
 
-        f[0] = 0.0;
+        double q     = data->q_min + x[0] * data->q_range;
+        double theta = 2.0 * M_PI * x[1];
+        double phi   = M_PI * x[2];
+
+        double k_dot_q   = data->k_value*q*std::cos(theta);
+        double k_minus_q = std::sqrt(data->k_value*data->k_value + q*q - 2.0*k_dot_q);
+
+        Mpc_units::energy q_in_Mpc(q);
+        Mpc_units::inverse_energy3 Pq  = (*(data->Pk))(q_in_Mpc);
+        Mpc_units::inverse_energy qqPq = std::sin(theta) * q_in_Mpc * q_in_Mpc * Pq;
+
+        // integral is P(q) gamma(k-r,r) gamma(k,-r)
+        double gamma1 = (k_minus_q*k_minus_q*k_dot_q - q*q*k_dot_q + data->k_value*data->k_value*k_dot_q) / (2.0 * q*q * k_minus_q*k_minus_q);
+        double gamma2 = (2.0*data->k_value*data->k_value - k_dot_q*(2.0*data->k_value*data->k_value + 2.0*q*q - 2.0*k_dot_q)) / (2.0 * q*q * data->k_value*data->k_value);
+
+        f[0] = data->jacobian * 3.0 * (qqPq/Mpc_units::Mpc) * gamma1*gamma2;
 
         return(0);
       }
@@ -132,7 +211,22 @@ namespace oneloop_momentum_impl
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
 
-        f[0] = 0.0;
+        double q     = data->q_min + x[0] * data->q_range;
+        double theta = 2.0 * M_PI * x[1];
+        double phi   = M_PI * x[2];
+
+        double k_dot_q   = data->k_value*q*std::cos(theta);
+        double k_minus_q = std::sqrt(data->k_value*data->k_value + q*q - 2.0*k_dot_q);
+
+        Mpc_units::energy q_in_Mpc(q);
+        Mpc_units::inverse_energy3 Pq  = (*(data->Pk))(q_in_Mpc);
+        Mpc_units::inverse_energy qqPq = std::sin(theta) * q_in_Mpc * q_in_Mpc * Pq;
+
+        // integral is P(q) alpha(k-r,r) alpha(k,-r)
+        double alpha1 = (k_minus_q*k_minus_q*k_dot_q + q*q*data->k_value*data->k_value - q*q*k_dot_q) / (2.0 * q*q * k_minus_q*k_minus_q);
+        double alpha2 = (2.0*data->k_value*data->k_value*q*q - k_dot_q*(data->k_value*data->k_value + q*q)) / (2.0 * q*q * data->k_value*data->k_value);
+
+        f[0] = data->jacobian * 3.0 * (qqPq/Mpc_units::Mpc) * alpha1*alpha2;
 
         return(0);
       }
@@ -142,7 +236,22 @@ namespace oneloop_momentum_impl
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
 
-        f[0] = 0.0;
+        double q     = data->q_min + x[0] * data->q_range;
+        double theta = 2.0 * M_PI * x[1];
+        double phi   = M_PI * x[2];
+
+        double k_dot_q   = data->k_value*q*std::cos(theta);
+        double k_minus_q = std::sqrt(data->k_value*data->k_value + q*q - 2.0*k_dot_q);
+
+        Mpc_units::energy q_in_Mpc(q);
+        Mpc_units::inverse_energy3 Pq  = (*(data->Pk))(q_in_Mpc);
+        Mpc_units::inverse_energy qqPq = std::sin(theta) * q_in_Mpc * q_in_Mpc * Pq;
+
+        // integral is P(q) alpha(k-r,r) gamma(k,-r)
+        double alpha1 = (k_minus_q*k_minus_q*k_dot_q + q*q*data->k_value*data->k_value - q*q*k_dot_q) / (2.0 * q*q * k_minus_q*k_minus_q);
+        double gamma2 = (2.0*data->k_value*data->k_value - k_dot_q*(2.0*data->k_value*data->k_value + 2.0*q*q - 2.0*k_dot_q)) / (2.0 * q*q * data->k_value*data->k_value);
+
+        f[0] = data->jacobian * 3.0 * (qqPq/Mpc_units::Mpc) * alpha1*gamma2;
 
         return(0);
       }
@@ -166,8 +275,9 @@ loop_integral oneloop_momentum_integrator::integrate(const FRW_model& model, con
   {
     boost::timer::cpu_timer timer;
 
-    inverse_energy3_kernel A;
-    inverse_energy3_kernel B;
+    inverse_energy3_kernel AA;
+    inverse_energy3_kernel AB;
+    inverse_energy3_kernel BB;
     dimless_kernel         D;
     dimless_kernel         E;
     dimless_kernel         F;
@@ -175,8 +285,9 @@ loop_integral oneloop_momentum_integrator::integrate(const FRW_model& model, con
 
     bool fail = false;
 
-    fail = fail || this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::A_integrand, A);
-    fail = fail || this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::B_integrand, B);
+    fail = fail || this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::AA_integrand, AA);
+    fail = fail || this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::AB_integrand, AB);
+    fail = fail || this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::BB_integrand, BB);
     fail = fail || this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::D_integrand, D);
     fail = fail || this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::E_integrand, E);
     fail = fail || this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::F_integrand, F);
@@ -184,7 +295,7 @@ loop_integral oneloop_momentum_integrator::integrate(const FRW_model& model, con
 
     timer.stop();
 
-    loop_integral container(k, k_tok, UV_cutoff, UV_tok, IR_cutoff, IR_tok, fail, A, B, D, E, F, G);
+    loop_integral container(k, k_tok, UV_cutoff, UV_tok, IR_cutoff, IR_tok, fail, AA, AB, BB, D, E, F, G);
     container.set_integration_metadata(timer.elapsed().wall);
 
     return container;

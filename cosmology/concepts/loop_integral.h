@@ -83,7 +83,7 @@ class loop_integral
     loop_integral(const Mpc_units::energy& _k, const k_token& kt,
                   const Mpc_units::energy& UV, const UV_token& UVt,
                   const Mpc_units::energy& IR, const IR_token& IRt,
-                  bool f, const inverse_energy3_kernel& _A, const inverse_energy3_kernel& _B,
+                  bool f, const inverse_energy3_kernel& _AA, const inverse_energy3_kernel& _AB, const inverse_energy3_kernel& _BB,
                   const dimless_kernel& _D, const dimless_kernel& _E, const dimless_kernel& _F, const dimless_kernel& _G);
 
     //! destructor is default
@@ -106,11 +106,14 @@ class loop_integral
     //! get IR cutoff token
     const IR_token& get_IR_token() const { return(this->IR_tok); }
 
-    //! get A-value
-    const inverse_energy3_kernel& get_A() const { return(this->A); }
+    //! get AA-value
+    const inverse_energy3_kernel& get_AA() const { return(this->AA); }
 
-    //! get B-value
-    const inverse_energy3_kernel& get_B() const { return(this->B); }
+    //! get AB-value
+    const inverse_energy3_kernel& get_AB() const { return(this->AB); }
+
+    //! get BB-value
+    const inverse_energy3_kernel& get_BB() const { return(this->BB); }
 
     //! get D-value
     const dimless_kernel& get_D() const { return(this->D); }
@@ -166,11 +169,14 @@ class loop_integral
 
     // VALUE
 
-    //! A-type integral P_13
-    inverse_energy3_kernel A;
+    //! AA-type integral P_22
+    inverse_energy3_kernel AA;
 
-    //! B-type integral P_13
-    inverse_energy3_kernel B;
+    //! AB-type integral P_22
+    inverse_energy3_kernel AB;
+
+    //! BB-type integral P_22
+    inverse_energy3_kernel BB;
 
     //! D-type integral P_13
     dimless_kernel D;
@@ -203,8 +209,9 @@ class loop_integral
         ar & UV_tok;
         ar & IR_cutoff;
         ar & IR_tok;
-        ar & A;
-        ar & B;
+        ar & AA;
+        ar & AB;
+        ar & BB;
         ar & D;
         ar & E;
         ar & F;

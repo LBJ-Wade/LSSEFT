@@ -107,52 +107,59 @@ namespace sqlite3_operations
       {
         assert(db != nullptr);
 
-        // construct SQL insert statement
-        std::ostringstream insert_stmt;
-        insert_stmt
-          << "INSERT INTO " << policy.loop_momentum_table() << " VALUES (@mid, @kid, @IR_id, @UV_id, @A, @B, @D, @E, @F, @G, @A_regions, @B_regions, @D_regions, @E_regions, @F_regions, @G_regions, @A_evals, @B_evals, @D_evals, @E_evals, @F_evals, @G_evals, @A_err, @B_err, @D_err, @E_err, @F_err, @G_err, @integration_time);";
+        if(!sample.get_fail())
+          {
+            // construct SQL insert statement
+            std::ostringstream insert_stmt;
+            insert_stmt
+            << "INSERT INTO " << policy.loop_momentum_table() << " VALUES (@mid, @kid, @IR_id, @UV_id, @AA, @AB, @BB, @D, @E, @F, @G, @AA_regions, @AB_regions, @BB_regions, @D_regions, @E_regions, @F_regions, @G_regions, @AA_evals, @AB_evals, @BB_evals, @D_evals, @E_evals, @F_evals, @G_evals, @AA_err, @AB_err, @BB_err, @D_err, @E_err, @F_err, @G_err, @integration_time);";
 
-        // prepare statement
-        sqlite3_stmt* stmt;
-        check_stmt(db, sqlite3_prepare_v2(db, insert_stmt.str().c_str(), insert_stmt.str().length()+1, &stmt, nullptr));
+            // prepare statement
+            sqlite3_stmt* stmt;
+            check_stmt(db, sqlite3_prepare_v2(db, insert_stmt.str().c_str(), insert_stmt.str().length()+1, &stmt, nullptr));
 
-        // bind values
-        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@mid"), model.get_id()));
-        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@kid"), sample.get_k_token().get_id()));
-        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_id"), sample.get_IR_token().get_id()));
-        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@UV_id"), sample.get_UV_token().get_id()));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@A"), sample.get_A().value / Mpc_units::Mpc3));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@B"), sample.get_B().value / Mpc_units::Mpc3));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@D"), sample.get_D().value));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@E"), sample.get_E().value));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@F"), sample.get_F().value));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@G"), sample.get_G().value));
-        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@A_regions"), sample.get_A().regions));
-        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@B_regions"), sample.get_B().regions));
-        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@D_regions"), sample.get_D().regions));
-        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@E_regions"), sample.get_E().regions));
-        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@F_regions"), sample.get_F().regions));
-        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@G_regions"), sample.get_G().regions));
-        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@A_evals"), sample.get_A().evaluations));
-        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@B_evals"), sample.get_B().evaluations));
-        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@D_evals"), sample.get_D().evaluations));
-        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@E_evals"), sample.get_E().evaluations));
-        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@F_evals"), sample.get_F().evaluations));
-        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@G_evals"), sample.get_G().evaluations));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@A_err"), sample.get_A().error));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@B_err"), sample.get_B().error));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@D_err"), sample.get_D().error));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@E_err"), sample.get_E().error));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@F_err"), sample.get_F().error));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@G_err"), sample.get_G().error));
-        check_stmt(db, sqlite3_bind_int64(stmt, sqlite3_bind_parameter_index(stmt, "@integration_time"), sample.get_integration_time()));
+            // bind values
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@mid"), model.get_id()));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@kid"), sample.get_k_token().get_id()));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_id"), sample.get_IR_token().get_id()));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@UV_id"), sample.get_UV_token().get_id()));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@AA"), sample.get_AA().value / Mpc_units::Mpc3));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@AB"), sample.get_AB().value / Mpc_units::Mpc3));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@BB"), sample.get_BB().value / Mpc_units::Mpc3));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@D"), sample.get_D().value));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@E"), sample.get_E().value));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@F"), sample.get_F().value));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@G"), sample.get_G().value));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@AA_regions"), sample.get_AA().regions));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@AB_regions"), sample.get_AB().regions));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@BB_regions"), sample.get_BB().regions));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@D_regions"), sample.get_D().regions));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@E_regions"), sample.get_E().regions));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@F_regions"), sample.get_F().regions));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@G_regions"), sample.get_G().regions));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@AA_evals"), sample.get_AA().evaluations));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@AB_evals"), sample.get_AB().evaluations));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@BB_evals"), sample.get_BB().evaluations));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@D_evals"), sample.get_D().evaluations));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@E_evals"), sample.get_E().evaluations));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@F_evals"), sample.get_F().evaluations));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@G_evals"), sample.get_G().evaluations));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@AA_err"), sample.get_AA().error));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@AB_err"), sample.get_AB().error));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@BB_err"), sample.get_BB().error));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@D_err"), sample.get_D().error));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@E_err"), sample.get_E().error));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@F_err"), sample.get_F().error));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@G_err"), sample.get_G().error));
+            check_stmt(db, sqlite3_bind_int64(stmt, sqlite3_bind_parameter_index(stmt, "@integration_time"), sample.get_integration_time()));
 
-        // perform insertion
-        check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_LOOP_MOMENTUM_FAIL, SQLITE_DONE);
+            // perform insertion
+            check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_LOOP_MOMENTUM_FAIL, SQLITE_DONE);
 
-        // clear bindings and release
-        check_stmt(db, sqlite3_clear_bindings(stmt));
-        check_stmt(db, sqlite3_finalize(stmt));
+            // clear bindings and release
+            check_stmt(db, sqlite3_clear_bindings(stmt));
+            check_stmt(db, sqlite3_finalize(stmt));
+          }
       }
 
 

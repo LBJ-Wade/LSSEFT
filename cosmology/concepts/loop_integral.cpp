@@ -8,7 +8,7 @@
 
 loop_integral::loop_integral(const Mpc_units::energy& _k, const k_token& kt, const Mpc_units::energy& UV,
                              const UV_token& UVt, const Mpc_units::energy& IR, const IR_token& IRt,
-                             bool f, const inverse_energy3_kernel& _A, const inverse_energy3_kernel& _B,
+                             bool f, const inverse_energy3_kernel& _AA, const inverse_energy3_kernel& _AB, const inverse_energy3_kernel& _BB,
                              const dimless_kernel& _D, const dimless_kernel& _E, const dimless_kernel& _F, const dimless_kernel& _G)
   : k(_k),
     k_tok(kt),
@@ -17,8 +17,9 @@ loop_integral::loop_integral(const Mpc_units::energy& _k, const k_token& kt, con
     IR_cutoff(IR),
     IR_tok(IRt),
     fail(f),
-    A(_A),
-    B(_B),
+    AA(_AA),
+    AB(_AB),
+    BB(_BB),
     D(_D),
     E(_E),
     F(_F),
