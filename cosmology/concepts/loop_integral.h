@@ -203,6 +203,7 @@ class loop_integral
     template <typename Archive>
     void serialize(Archive& ar, unsigned int version)
       {
+        ar & fail;
         ar & k;
         ar & k_tok;
         ar & UV_cutoff;
