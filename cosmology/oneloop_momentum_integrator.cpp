@@ -344,9 +344,20 @@ bool oneloop_momentum_integrator::kernel_integral(const FRW_model& model, const 
             &regions, &evaluations, &fail,
             integral, error, prob);
 
+//    Cuhre(oneloop_momentum_impl::dimensions, oneloop_momentum_impl::components,
+//          integrand, data.get(),
+//          oneloop_momentum_impl::points_per_invocation,
+//          this->rel_err, this->abs_err,
+//          oneloop_momentum_impl::verbosity_none | oneloop_momentum_impl::samples_last,
+//          oneloop_momentum_impl::min_eval, oneloop_momentum_impl::max_eval,
+//          LSSEFT_DEFAULT_CUHRE_KEY,
+//          nullptr, nullptr,
+//          &regions, &evaluations, &fail,
+//          integral, error, prob);
+
     if(fail != 0)
       {
-        std::cerr << "Divonne result: regions = " << regions << ", evaluations = " << evaluations << ", fail = " << fail << ", value = " << integral[0] << ", error = " << error[0] << ", probability = " << prob[0] << '\n';
+        std::cerr << "Integration failure: regions = " << regions << ", evaluations = " << evaluations << ", fail = " << fail << ", value = " << integral[0] << ", error = " << error[0] << ", probability = " << prob[0] << '\n';
       }
 
     // an overall factor 1 / (2pi)^3 is taken out of the integrand, so remember to put it back here
