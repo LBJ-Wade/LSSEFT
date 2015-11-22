@@ -92,7 +92,7 @@ set(COSMOLOGY_SOURCE_FILES
   cosmology/constants.h)
 
 set(UNITS_SOURCE_FILES
-  units/eV_units.h)
+  units/Mpc_units.h)
 
 set(DATABASE_SOURCE_FILES
   database/data_manager.cpp database/data_manager.h
