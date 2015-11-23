@@ -16,8 +16,8 @@ ADD_SUBDIRECTORY ( "thirdparty/splinter" "splinter-build" )
 SET ( EIGEN3_INCLUDE_DIR  "thirdparty/splinter/thirdparty/Eigen" )
 
 # Cuba libraries and include files
-SET ( CUBA_INCLUDE_DIR "/Users/ds283/Documents/Code/Cuba/Cuba-4.2" "/Users/david/Documents/Code/Cuba/Cuba-4.2" )
-SET ( CUBA_LIBRARY_DIR "/Users/ds283/Documents/Code/Cuba/Cuba-4.2" "/Users/david/Documents/Code/Cuba/Cuba-4.2" )
+SET ( CUBA_INCLUDE_DIR "/Users/ds283/Documents/Code/Cuba/Cuba-4.2" "/Users/david/Documents/Code/Cuba/Cuba-4.2" "/usr/local/include" )
+SET ( CUBA_LIBRARY_DIR "/Users/ds283/Documents/Code/Cuba/Cuba-4.2" "/Users/david/Documents/Code/Cuba/Cuba-4.2" "/usr/local/lib" )
 
 include_directories(./
   thirdparty/splinter/include
