@@ -277,7 +277,7 @@ std::unique_ptr<scheduler> master_controller::set_up_workers(unsigned int tag)
     boost::mpi::wait_all(requests.begin(), requests.end());
 
     // create scheduler object
-    std::unique_ptr<scheduler> sch(new scheduler(this->mpi_world.size() - 1));
+    std::unique_ptr<scheduler> sch = std::make_unique<scheduler>(this->mpi_world.size() - 1);
 
     // wait for messages from workers reporting that they are correctly set up
     while(!sch->is_ready())
