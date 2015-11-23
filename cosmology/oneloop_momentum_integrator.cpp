@@ -81,7 +81,7 @@ namespace oneloop_momentum_impl
 
         // integral is P(q) P(k-q) alpha(q,k-q)^2
         Mpc_units::inverse_energy3 Pq         = (*(data->Pk))(q);
-        Mpc_units::inverse_energy3 Pk_minus_q = k_minus_q > data->IR_cutoff ? (*(data->Pk))(k_minus_q) : Mpc_units::inverse_energy3(0);
+        Mpc_units::inverse_energy3 Pk_minus_q = k_minus_q > data->IR_cutoff && k_minus_q < data->UV_cutoff ? (*(data->Pk))(k_minus_q) : Mpc_units::inverse_energy3(0);
 
         Mpc_units::inverse_energy  qqPq       = std::sin(theta) * q*q * Pq;
         Mpc_units::inverse_energy4 PP_prod    = qqPq * Pk_minus_q;
@@ -109,7 +109,7 @@ namespace oneloop_momentum_impl
 
         // integral is P(q) P(k-q) alpha(q,k-q) gamma(q,k-q)
         Mpc_units::inverse_energy3 Pq         = (*(data->Pk))(q);
-        Mpc_units::inverse_energy3 Pk_minus_q = k_minus_q > data->IR_cutoff ? (*(data->Pk))(k_minus_q) : Mpc_units::inverse_energy3(0);
+        Mpc_units::inverse_energy3 Pk_minus_q = k_minus_q > data->IR_cutoff && k_minus_q < data->UV_cutoff ? (*(data->Pk))(k_minus_q) : Mpc_units::inverse_energy3(0);
 
         // integral is P(q) P(k-q) alpha(q,k-q) gamma(q,k-q)
         Mpc_units::inverse_energy  qqPq       = std::sin(theta) * q*q * Pq;
@@ -139,7 +139,7 @@ namespace oneloop_momentum_impl
 
         // integral is P(q) P(k-q) alpha(q,k-q) gamma(q,k-q)
         Mpc_units::inverse_energy3 Pq         = (*(data->Pk))(q);
-        Mpc_units::inverse_energy3 Pk_minus_q = k_minus_q > data->IR_cutoff ? (*(data->Pk))(k_minus_q) : Mpc_units::inverse_energy3(0);
+        Mpc_units::inverse_energy3 Pk_minus_q = k_minus_q > data->IR_cutoff && k_minus_q < data->UV_cutoff ? (*(data->Pk))(k_minus_q) : Mpc_units::inverse_energy3(0);
 
         // integral is P(q) P(k-q) gamma(q,k-q)^2
         Mpc_units::inverse_energy  qqPq       = std::sin(theta) * q*q * Pq;

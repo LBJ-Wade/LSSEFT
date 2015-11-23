@@ -55,12 +55,12 @@ void tree_power_spectrum::ingest_CAMB(const boost::filesystem::path& p)
       {
         std::stringstream line_stream(line);
 
-        double k, Pk;
-        line_stream >> k >> Pk;
+        double _k, _Pk;
+        line_stream >> _k >> _Pk;
 
-        Mpc_units::energy k_in_eV = k / Mpc_units::Mpc;
-        Mpc_units::inverse_energy3 Pk_in_inv_eV3 = Pk * Mpc_units::Mpc3;
-        this->database.add_record(k_in_eV, Pk_in_inv_eV3);
+        Mpc_units::energy k = _k / Mpc_units::Mpc;
+        Mpc_units::inverse_energy3 Pk = _Pk * Mpc_units::Mpc3;
+        this->database.add_record(k, Pk);
       }
 
     in.close();
@@ -101,5 +101,5 @@ Mpc_units::inverse_energy3 tree_power_spectrum::operator()(const Mpc_units::ener
     SPLINTER::DenseVector x(1);
     x(0) = k * Mpc_units::Mpc;
 
-    return Mpc_units::inverse_energy3(this->spline->eval(x));
+    return(this->spline->eval(x) * Mpc_units::Mpc3);
   }
