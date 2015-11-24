@@ -14,7 +14,7 @@
 namespace oneloop_momentum_impl
   {
 
-    constexpr unsigned int dimensions            = 3;
+    constexpr unsigned int dimensions            = 2;   // no point doing integrals over phi, because the integrands don't depend on it
     constexpr unsigned int components            = 1;
     constexpr unsigned int points_per_invocation = 1;
 
@@ -57,7 +57,8 @@ namespace oneloop_momentum_impl
             UV_cutoff(UV),
             IR_cutoff(IR),
             Pk(_Pk),
-            jacobian(2.0*M_PI_2*(UV_cutoff-IR_cutoff)),    // Jacobian in angular directions in 2pi * pi = 2pi^2
+            jacobian(2.0*M_PI_2*(UV_cutoff-IR_cutoff)),    // Jacobian in angular directions in 2pi * pi = 2pi^2;
+                                                           // the integral over phi isn't done (the integrand doesn't depend on it), but this accounts for its contribution
             q_range(UV_cutoff - IR_cutoff),
             k_sq(k*k)
           {
@@ -81,12 +82,12 @@ namespace oneloop_momentum_impl
 
         Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
         double theta        = 2.0 * M_PI * x[1];
-        double phi          = M_PI * x[2];
+//        double phi          = M_PI * x[2];
 
         Mpc_units::energy2 k_dot_q       = std::cos(theta) * data->k * q;
         Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
 
-        Mpc_units::energy  k_minus_q(std::sqrt(k_minus_q_sq * Mpc_units::Mpc2));
+        Mpc_units::energy  k_minus_q     = std::sqrt(k_minus_q_sq * Mpc_units::Mpc2) / Mpc_units::Mpc;
 
         // integral is P(q) P(k-q) alpha(q,k-q)^2
         Mpc_units::inverse_energy3 Pq         = (*(data->Pk))(q);
@@ -109,12 +110,12 @@ namespace oneloop_momentum_impl
 
         Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
         double theta        = 2.0 * M_PI * x[1];
-        double phi          = M_PI * x[2];
+//        double phi          = M_PI * x[2];
 
         Mpc_units::energy2 k_dot_q       = std::cos(theta) * data->k * q;
         Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
 
-        Mpc_units::energy  k_minus_q(std::sqrt(k_minus_q_sq * Mpc_units::Mpc2));
+        Mpc_units::energy  k_minus_q     = std::sqrt(k_minus_q_sq * Mpc_units::Mpc2) / Mpc_units::Mpc;
 
         // integral is P(q) P(k-q) alpha(q,k-q) gamma(q,k-q)
         Mpc_units::inverse_energy3 Pq         = (*(data->Pk))(q);
@@ -139,12 +140,12 @@ namespace oneloop_momentum_impl
 
         Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
         double theta        = 2.0 * M_PI * x[1];
-        double phi          = M_PI * x[2];
+//        double phi          = M_PI * x[2];
 
         Mpc_units::energy2 k_dot_q       = std::cos(theta) * data->k * q;
         Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
 
-        Mpc_units::energy  k_minus_q(std::sqrt(k_minus_q_sq * Mpc_units::Mpc2));
+        Mpc_units::energy  k_minus_q     = std::sqrt(k_minus_q_sq * Mpc_units::Mpc2) / Mpc_units::Mpc;
 
         // integral is P(q) P(k-q) alpha(q,k-q) gamma(q,k-q)
         Mpc_units::inverse_energy3 Pq         = (*(data->Pk))(q);
@@ -168,12 +169,10 @@ namespace oneloop_momentum_impl
 
         Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
         double theta        = 2.0 * M_PI * x[1];
-        double phi          = M_PI * x[2];
+//        double phi          = M_PI * x[2];
 
         Mpc_units::energy2 k_dot_q       = std::cos(theta) * data->k * q;
         Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
-
-        Mpc_units::energy  k_minus_q(std::sqrt(k_minus_q_sq * Mpc_units::Mpc2));
 
         Mpc_units::inverse_energy3 Pq   = (*(data->Pk))(q);
         Mpc_units::inverse_energy  qqPq = std::sin(theta) * q*q * Pq;
@@ -194,12 +193,10 @@ namespace oneloop_momentum_impl
 
         Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
         double theta        = 2.0 * M_PI * x[1];
-        double phi          = M_PI * x[2];
+//        double phi          = M_PI * x[2];
 
         Mpc_units::energy2 k_dot_q       = std::cos(theta) * data->k * q;
         Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
-
-        Mpc_units::energy  k_minus_q(std::sqrt(k_minus_q_sq * Mpc_units::Mpc2));
 
         Mpc_units::inverse_energy3 Pq   = (*(data->Pk))(q);
         Mpc_units::inverse_energy  qqPq = std::sin(theta) * q*q * Pq;
@@ -220,12 +217,10 @@ namespace oneloop_momentum_impl
 
         Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
         double theta        = 2.0 * M_PI * x[1];
-        double phi          = M_PI * x[2];
+//        double phi          = M_PI * x[2];
 
         Mpc_units::energy2 k_dot_q       = std::cos(theta) * data->k * q;
         Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
-
-        Mpc_units::energy  k_minus_q(std::sqrt(k_minus_q_sq * Mpc_units::Mpc2));
 
         Mpc_units::inverse_energy3 Pq   = (*(data->Pk))(q);
         Mpc_units::inverse_energy  qqPq = std::sin(theta) * q*q * Pq;
@@ -246,12 +241,10 @@ namespace oneloop_momentum_impl
 
         Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
         double theta        = 2.0 * M_PI * x[1];
-        double phi          = M_PI * x[2];
+//        double phi          = M_PI * x[2];
 
         Mpc_units::energy2 k_dot_q       = std::cos(theta) * data->k * q;
         Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
-
-        Mpc_units::energy  k_minus_q(std::sqrt(k_minus_q_sq * Mpc_units::Mpc2));
 
         Mpc_units::inverse_energy3 Pq   = (*(data->Pk))(q);
         Mpc_units::inverse_energy  qqPq = std::sin(theta) * q*q * Pq;
