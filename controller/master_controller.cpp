@@ -161,7 +161,7 @@ void master_controller::execute()
         std::unique_ptr<loop_momentum_work_list> loop_momentum_work = dmgr.build_loop_momentum_work_list(*model, *k_db, *IR_db, *UV_db, Pk);
 
         // distribute this work list among the worker processes
-        this->scatter(cosmology_model, *model, *loop_momentum_work, dmgr);
+        if(loop_momentum_work) this->scatter(cosmology_model, *model, *loop_momentum_work, dmgr);
       }
 
     // instruct slave processes to terminate

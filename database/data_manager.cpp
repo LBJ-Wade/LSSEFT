@@ -394,5 +394,8 @@ std::unique_ptr<loop_momentum_work_list> data_manager::build_loop_momentum_work_
     timer.stop();
     std::cout << "lsseft: constructed loop momentum work list in time " << format_time(timer.elapsed().wall) << '\n';
 
+    // release list if it contains no work
+    if(work_list->size() == 0) work_list.release();
+
     return(work_list);
   }
