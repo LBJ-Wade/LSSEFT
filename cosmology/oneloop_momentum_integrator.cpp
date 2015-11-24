@@ -35,6 +35,15 @@ namespace oneloop_momentum_impl
 
     constexpr unsigned int pcores                = 10000;   // matches default Cuba value
 
+    constexpr unsigned int cuhre_key             = 11;
+    constexpr unsigned int divonne_key1          = 47;
+    constexpr unsigned int divonne_key2          = 11;
+    constexpr unsigned int divonne_key3          = 1;
+    constexpr unsigned int divonne_maxpass       = 5;
+    constexpr unsigned int divonne_border        = 0;
+    constexpr double       divonne_maxchisq      = 10.0;
+    constexpr double       divonne_minchisq      = 0.25;
+
 
     class integrand_data
       {
@@ -324,8 +333,8 @@ bool oneloop_momentum_integrator::kernel_integral(const FRW_model& model, const 
 
     // disable CUBA's internal auto-parallelization
     // we're handling multiprocessor activity ourselves via the scheduler,
-    // so it's quicker to keep each core fully active rather than have threads
-    // trying to manage Cuba's workers
+    // so it's preferable to keep each core fully active rather than have threads
+    // trying to manage Cuba's subworkers
     cubacores(0, oneloop_momentum_impl::pcores);
 
     Divonne(oneloop_momentum_impl::dimensions, oneloop_momentum_impl::components,
@@ -335,9 +344,9 @@ bool oneloop_momentum_integrator::kernel_integral(const FRW_model& model, const 
             oneloop_momentum_impl::verbosity_none | oneloop_momentum_impl::samples_last,
             this->mersenne_twister(),                                                          // seed for internal Cuba random number generator
             oneloop_momentum_impl::min_eval, oneloop_momentum_impl::max_eval,
-            LSSEFT_DEFAULT_DIVONNE_KEY1, LSSEFT_DEFAULT_DIVONNE_KEY2, LSSEFT_DEFAULT_DIVONNE_KEY3,
-            LSSEFT_DEFAULT_DIVONNE_MAXPASS,
-            LSSEFT_DEFAULT_DIVONNE_BORDER, LSSEFT_DEFAULT_DIVONNE_MAXCHISQ, LSSEFT_DEFAULT_DIVONNE_MINCHISQ,
+            oneloop_momentum_impl::divonne_key1, oneloop_momentum_impl::divonne_key2, oneloop_momentum_impl::divonne_key3,
+            oneloop_momentum_impl::divonne_maxpass,
+            oneloop_momentum_impl::divonne_border, oneloop_momentum_impl::divonne_maxchisq, oneloop_momentum_impl::divonne_minchisq,
             oneloop_momentum_impl::ngiven, oneloop_momentum_impl::ldxgiven, nullptr,
             oneloop_momentum_impl::nextra, nullptr,
             nullptr, nullptr,
@@ -350,7 +359,7 @@ bool oneloop_momentum_integrator::kernel_integral(const FRW_model& model, const 
 //          this->rel_err, this->abs_err,
 //          oneloop_momentum_impl::verbosity_none | oneloop_momentum_impl::samples_last,
 //          oneloop_momentum_impl::min_eval, oneloop_momentum_impl::max_eval,
-//          LSSEFT_DEFAULT_CUHRE_KEY,
+//          oneloop_momentum_impl::cuhre_key,
 //          nullptr, nullptr,
 //          &regions, &evaluations, &fail,
 //          integral, error, prob);
