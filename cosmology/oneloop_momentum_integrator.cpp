@@ -38,9 +38,9 @@ namespace oneloop_momentum_impl
 
     constexpr unsigned int pcores                = 10000;   // matches default Cuba value
 
-    constexpr unsigned int cuhre_key             = 11;
+    constexpr unsigned int cuhre_key             = 13;      // degree-13 only available in 2-dimensions
     constexpr unsigned int divonne_key1          = 47;
-    constexpr unsigned int divonne_key2          = 11;
+    constexpr unsigned int divonne_key2          = 13;      // degree-13 only available in 2-dimensions
     constexpr unsigned int divonne_key3          = 1;
     constexpr unsigned int divonne_maxpass       = 5;
     constexpr unsigned int divonne_border        = 0;
