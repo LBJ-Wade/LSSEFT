@@ -172,6 +172,8 @@ void master_controller::execute()
 template <typename WorkItem>
 void master_controller::scatter(const FRW_model& model, const FRW_model_token& token, std::list<WorkItem>& work, data_manager& dmgr)
   {
+    boost::timer::cpu_timer timer;
+
     if(this->mpi_world.size() == 1) throw runtime_exception(exception_type::runtime_error, ERROR_TOO_FEW_WORKERS);
 
     // instruct slave processes to await transfer function tasks
@@ -237,6 +239,9 @@ void master_controller::scatter(const FRW_model& model, const FRW_model_token& t
             stat = this->mpi_world.iprobe();
           }
       }
+
+    timer.stop();
+    std::cout << "lsseft: completed work in time " << format_time(timer.elapsed().wall) << '\n';
   }
 
 
