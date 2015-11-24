@@ -359,6 +359,8 @@ bool oneloop_momentum_integrator::kernel_integral(const FRW_model& model, const 
 
     timer.stop();
 
+    if(fail != 0) std::cerr << "Integration failure: regions = " << regions << ", evaluations = " << evaluations << ", fail = " << fail << ", value = " << integral[0] << ", error = " << error[0] << ", probability = " << prob[0] << '\n';
+//    else          std::cerr << "Integration success: regions = " << regions << ", evaluations = " << evaluations << ", fail = " << fail << ", value = " << integral[0] << ", error = " << error[0] << ", probability = " << prob[0] << '\n';
 
     // an overall factor 1 / (2pi)^3 is taken out of the integrand, so remember to put it back here
     result.value       = typename KernelRecord::value_type(integral[0] / (16.0 * M_PI_2 * M_PI));
