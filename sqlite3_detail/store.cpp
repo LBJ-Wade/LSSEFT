@@ -112,7 +112,7 @@ namespace sqlite3_operations
             // construct SQL insert statement
             std::ostringstream insert_stmt;
             insert_stmt
-            << "INSERT INTO " << policy.loop_momentum_table() << " VALUES (@mid, @kid, @IR_id, @UV_id, @AA, @AB, @BB, @D, @E, @F, @G, @AA_regions, @AB_regions, @BB_regions, @D_regions, @E_regions, @F_regions, @G_regions, @AA_evals, @AB_evals, @BB_evals, @D_evals, @E_evals, @F_evals, @G_evals, @AA_err, @AB_err, @BB_err, @D_err, @E_err, @F_err, @G_err, @integration_time);";
+            << "INSERT INTO " << policy.loop_momentum_table() << " VALUES (@mid, @kid, @IR_id, @UV_id, @AA, @AB, @BB, @D, @E, @F, @G, @AA_regions, @AB_regions, @BB_regions, @D_regions, @E_regions, @F_regions, @G_regions, @AA_evals, @AB_evals, @BB_evals, @D_evals, @E_evals, @F_evals, @G_evals, @AA_err, @AB_err, @BB_err, @D_err, @E_err, @F_err, @G_err, @AA_time, @AB_time, @BB_time, @D_time, @E_time, @F_time, @G_time);";
 
             // prepare statement
             sqlite3_stmt* stmt;
@@ -151,7 +151,13 @@ namespace sqlite3_operations
             check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@E_err"), sample.get_E().error));
             check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@F_err"), sample.get_F().error));
             check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@G_err"), sample.get_G().error));
-            check_stmt(db, sqlite3_bind_int64(stmt, sqlite3_bind_parameter_index(stmt, "@integration_time"), sample.get_integration_time()));
+            check_stmt(db, sqlite3_bind_int64(stmt, sqlite3_bind_parameter_index(stmt, "@AA_time"), sample.get_AA().time));
+            check_stmt(db, sqlite3_bind_int64(stmt, sqlite3_bind_parameter_index(stmt, "@AB_time"), sample.get_AB().time));
+            check_stmt(db, sqlite3_bind_int64(stmt, sqlite3_bind_parameter_index(stmt, "@BB_time"), sample.get_BB().time));
+            check_stmt(db, sqlite3_bind_int64(stmt, sqlite3_bind_parameter_index(stmt, "@D_time"), sample.get_D().time));
+            check_stmt(db, sqlite3_bind_int64(stmt, sqlite3_bind_parameter_index(stmt, "@E_time"), sample.get_E().time));
+            check_stmt(db, sqlite3_bind_int64(stmt, sqlite3_bind_parameter_index(stmt, "@F_time"), sample.get_F().time));
+            check_stmt(db, sqlite3_bind_int64(stmt, sqlite3_bind_parameter_index(stmt, "@G_time"), sample.get_G().time));
 
             // perform insertion
             check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_LOOP_MOMENTUM_FAIL, SQLITE_DONE);

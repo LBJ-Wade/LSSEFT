@@ -278,8 +278,6 @@ loop_integral oneloop_momentum_integrator::integrate(const FRW_model& model, con
                                                      const UV_token& UV_tok, const Mpc_units::energy& IR_cutoff,
                                                      const IR_token& IR_tok, std::shared_ptr<tree_power_spectrum>& Pk)
   {
-    boost::timer::cpu_timer timer;
-
     inverse_energy3_kernel AA;
     inverse_energy3_kernel AB;
     inverse_energy3_kernel BB;
@@ -303,10 +301,7 @@ loop_integral oneloop_momentum_integrator::integrate(const FRW_model& model, con
         std::cout << "Integration failed: AA = " << !failAA << ", AB = " << !failAB << ", BB = " << !failBB << ", D = " << !failD << ", E = " << !failE << ", F = " << !failF << ", G = " << !failG << '\n';
       }
 
-    timer.stop();
-
     loop_integral container(k, k_tok, UV_cutoff, UV_tok, IR_cutoff, IR_tok, fail, AA, AB, BB, D, E, F, G);
-    container.set_integration_metadata(timer.elapsed().wall);
 
     return container;
   }
@@ -317,6 +312,8 @@ bool oneloop_momentum_integrator::kernel_integral(const FRW_model& model, const 
                                                   const Mpc_units::energy& UV_cutoff, const Mpc_units::energy& IR_cutoff,
                                                   std::shared_ptr<tree_power_spectrum>& Pk, integrand_t integrand, KernelRecord& result)
   {
+    boost::timer::cpu_timer timer;
+
     cubareal integral[oneloop_momentum_impl::dimensions];
     cubareal error[oneloop_momentum_impl::dimensions];
     cubareal prob[oneloop_momentum_impl::dimensions];
@@ -333,43 +330,42 @@ bool oneloop_momentum_integrator::kernel_integral(const FRW_model& model, const 
     // trying to manage Cuba's subworkers
     cubacores(0, oneloop_momentum_impl::pcores);
 
-    Divonne(oneloop_momentum_impl::dimensions, oneloop_momentum_impl::components,
-            integrand, data.get(),
-            oneloop_momentum_impl::points_per_invocation,
-            this->rel_err, this->abs_err,
-            oneloop_momentum_impl::verbosity_none | oneloop_momentum_impl::samples_last,
-            this->mersenne_twister(),                                                          // seed for internal Cuba random number generator
-            oneloop_momentum_impl::min_eval, oneloop_momentum_impl::max_eval,
-            oneloop_momentum_impl::divonne_key1, oneloop_momentum_impl::divonne_key2, oneloop_momentum_impl::divonne_key3,
-            oneloop_momentum_impl::divonne_maxpass,
-            oneloop_momentum_impl::divonne_border, oneloop_momentum_impl::divonne_maxchisq, oneloop_momentum_impl::divonne_minchisq,
-            oneloop_momentum_impl::ngiven, oneloop_momentum_impl::ldxgiven, nullptr,
-            oneloop_momentum_impl::nextra, nullptr,
-            nullptr, nullptr,
-            &regions, &evaluations, &fail,
-            integral, error, prob);
+//    Divonne(oneloop_momentum_impl::dimensions, oneloop_momentum_impl::components,
+//            integrand, data.get(),
+//            oneloop_momentum_impl::points_per_invocation,
+//            this->rel_err, this->abs_err,
+//            oneloop_momentum_impl::verbosity_none | oneloop_momentum_impl::samples_last,
+//            this->mersenne_twister(),                                                          // seed for internal Cuba random number generator
+//            oneloop_momentum_impl::min_eval, oneloop_momentum_impl::max_eval,
+//            oneloop_momentum_impl::divonne_key1, oneloop_momentum_impl::divonne_key2, oneloop_momentum_impl::divonne_key3,
+//            oneloop_momentum_impl::divonne_maxpass,
+//            oneloop_momentum_impl::divonne_border, oneloop_momentum_impl::divonne_maxchisq, oneloop_momentum_impl::divonne_minchisq,
+//            oneloop_momentum_impl::ngiven, oneloop_momentum_impl::ldxgiven, nullptr,
+//            oneloop_momentum_impl::nextra, nullptr,
+//            nullptr, nullptr,
+//            &regions, &evaluations, &fail,
+//            integral, error, prob);
 
-//    Cuhre(oneloop_momentum_impl::dimensions, oneloop_momentum_impl::components,
-//          integrand, data.get(),
-//          oneloop_momentum_impl::points_per_invocation,
-//          this->rel_err, this->abs_err,
-//          oneloop_momentum_impl::verbosity_none | oneloop_momentum_impl::samples_last,
-//          oneloop_momentum_impl::min_eval, oneloop_momentum_impl::max_eval,
-//          oneloop_momentum_impl::cuhre_key,
-//          nullptr, nullptr,
-//          &regions, &evaluations, &fail,
-//          integral, error, prob);
+    Cuhre(oneloop_momentum_impl::dimensions, oneloop_momentum_impl::components,
+          integrand, data.get(),
+          oneloop_momentum_impl::points_per_invocation,
+          this->rel_err, this->abs_err,
+          oneloop_momentum_impl::verbosity_none | oneloop_momentum_impl::samples_last,
+          oneloop_momentum_impl::min_eval, oneloop_momentum_impl::max_eval,
+          oneloop_momentum_impl::cuhre_key,
+          nullptr, nullptr,
+          &regions, &evaluations, &fail,
+          integral, error, prob);
 
-    if(fail != 0)
-      {
-        std::cerr << "Integration failure: regions = " << regions << ", evaluations = " << evaluations << ", fail = " << fail << ", value = " << integral[0] << ", error = " << error[0] << ", probability = " << prob[0] << '\n';
-      }
+    timer.stop();
+
 
     // an overall factor 1 / (2pi)^3 is taken out of the integrand, so remember to put it back here
     result.value       = typename KernelRecord::value_type(integral[0] / (16.0 * M_PI_2 * M_PI));
     result.regions     = regions;
     result.evaluations = evaluations;
     result.error       = error[0];
+    result.time        = timer.elapsed().wall;
 
     return(fail != 0);
   }

@@ -21,10 +21,11 @@ class inverse_energy3_kernel
 
     typedef Mpc_units::inverse_energy3 value_type;
 
-    value_type value = value_type(0.0);
-    unsigned int regions;
-    unsigned int evaluations;
-    double       error;
+    value_type                    value = value_type(0.0);
+    unsigned int                  regions;
+    unsigned int                  evaluations;
+    double                        error;
+    boost::timer::nanosecond_type time;
 
   private:
 
@@ -38,6 +39,7 @@ class inverse_energy3_kernel
         ar & regions;
         ar & evaluations;
         ar & error;
+        ar & time;
       }
 
   };
@@ -50,10 +52,11 @@ class dimless_kernel
 
     typedef double value_type;
 
-    value_type   value;
-    unsigned int regions;
-    unsigned int evaluations;
-    double       error;
+    value_type                    value;
+    unsigned int                  regions;
+    unsigned int                  evaluations;
+    double                        error;
+    boost::timer::nanosecond_type time;
 
   private:
 
@@ -67,6 +70,7 @@ class dimless_kernel
         ar & regions;
         ar & evaluations;
         ar & error;
+        ar & time;
       }
 
   };
@@ -128,17 +132,6 @@ class loop_integral
     const dimless_kernel& get_G() const { return(this->G); }
 
 
-    // METADATA
-
-  public:
-
-    //! store integration time
-    void set_integration_metadata(boost::timer::nanosecond_type t);
-
-    //! get integration time
-    boost::timer::nanosecond_type get_integration_time() const { return(this->integration_time); }
-
-
     // INTERNAL DATA
 
   private:
@@ -191,12 +184,6 @@ class loop_integral
     dimless_kernel G;
 
 
-    // METADATA
-
-    //! time taken to perform integration
-    boost::timer::nanosecond_type integration_time;
-
-
     // enable boost::serialization support, and hence automated packing for transmission over MPI
     friend class boost::serialization::access;
 
@@ -217,7 +204,6 @@ class loop_integral
         ar & E;
         ar & F;
         ar & G;
-        ar & integration_time;
       }
 
   };

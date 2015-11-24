@@ -26,9 +26,3 @@ loop_integral::loop_integral(const Mpc_units::energy& _k, const k_token& kt, con
     G(_G)
   {
   }
-
-
-void loop_integral::set_integration_metadata(boost::timer::nanosecond_type t)
-  {
-    this->integration_time = t;
-  }
