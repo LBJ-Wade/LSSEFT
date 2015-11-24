@@ -84,8 +84,8 @@ namespace oneloop_momentum_impl
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
 
         Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
-        double theta        = 2.0 * M_PI * x[1];
-//        double phi          = M_PI * x[2];
+        double theta        = M_PI * x[1];
+//        double phi          = 2.0 * M_PI * x[2];
 
         Mpc_units::energy2 k_dot_q       = std::cos(theta) * data->k * q;
         Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
@@ -112,8 +112,8 @@ namespace oneloop_momentum_impl
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
 
         Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
-        double theta        = 2.0 * M_PI * x[1];
-//        double phi          = M_PI * x[2];
+        double theta        = M_PI * x[1];
+//        double phi          = 2.0 * M_PI * x[2];
 
         Mpc_units::energy2 k_dot_q       = std::cos(theta) * data->k * q;
         Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
@@ -142,8 +142,8 @@ namespace oneloop_momentum_impl
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
 
         Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
-        double theta        = 2.0 * M_PI * x[1];
-//        double phi          = M_PI * x[2];
+        double theta        = M_PI * x[1];
+//        double phi          = 2.0 * M_PI * x[2];
 
         Mpc_units::energy2 k_dot_q       = std::cos(theta) * data->k * q;
         Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
@@ -171,8 +171,8 @@ namespace oneloop_momentum_impl
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
 
         Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
-        double theta        = 2.0 * M_PI * x[1];
-//        double phi          = M_PI * x[2];
+        double theta        = M_PI * x[1];
+//        double phi          = 2.0 * M_PI * x[2];
 
         Mpc_units::energy2 k_dot_q       = std::cos(theta) * data->k * q;
         Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
@@ -195,8 +195,8 @@ namespace oneloop_momentum_impl
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
 
         Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
-        double theta        = 2.0 * M_PI * x[1];
-//        double phi          = M_PI * x[2];
+        double theta        = M_PI * x[1];
+//        double phi          = 2.0 * M_PI * x[2];
 
         Mpc_units::energy2 k_dot_q       = std::cos(theta) * data->k * q;
         Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
@@ -219,8 +219,8 @@ namespace oneloop_momentum_impl
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
 
         Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
-        double theta        = 2.0 * M_PI * x[1];
-//        double phi          = M_PI * x[2];
+        double theta        = M_PI * x[1];
+//        double phi          = 2.0 * M_PI * x[2];
 
         Mpc_units::energy2 k_dot_q       = std::cos(theta) * data->k * q;
         Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
@@ -243,8 +243,8 @@ namespace oneloop_momentum_impl
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
 
         Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
-        double theta        = 2.0 * M_PI * x[1];
-//        double phi          = M_PI * x[2];
+        double theta        = M_PI * x[1];
+//        double phi          = 2.0 * M_PI * x[2];
 
         Mpc_units::energy2 k_dot_q       = std::cos(theta) * data->k * q;
         Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
