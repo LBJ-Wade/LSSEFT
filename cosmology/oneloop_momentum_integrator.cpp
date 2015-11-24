@@ -4,6 +4,9 @@
 //
 
 
+#include <iostream>
+#include <fstream>
+
 #include "oneloop_momentum_integrator.h"
 
 #include "cuba.h"
@@ -369,4 +372,84 @@ bool oneloop_momentum_integrator::kernel_integral(const FRW_model& model, const 
     result.error       = error[0];
 
     return(fail != 0);
+  }
+
+
+void oneloop_momentum_integrator::write_integrands(const FRW_model& model, const Mpc_units::energy& k,
+                                                   const Mpc_units::energy& UV_cutoff, const Mpc_units::energy& IR_cutoff,
+                                                   std::shared_ptr<tree_power_spectrum>& Pk, unsigned int Npoints)
+  {
+    std::ofstream AA;
+    std::ofstream AB;
+    std::ofstream BB;
+    std::ofstream D;
+    std::ofstream E;
+    std::ofstream F;
+    std::ofstream G;
+
+    AA.open("AA.csv", std::ofstream::out | std::ofstream::trunc);
+    AB.open("AB.csv", std::ofstream::out | std::ofstream::trunc);
+    BB.open("BB.csv", std::ofstream::out | std::ofstream::trunc);
+    D.open("D.csv", std::ofstream::out | std::ofstream::trunc);
+    E.open("E.csv", std::ofstream::out | std::ofstream::trunc);
+    F.open("F.csv", std::ofstream::out | std::ofstream::trunc);
+    G.open("G.csv", std::ofstream::out | std::ofstream::trunc);
+
+    AA.precision(12);
+    AB.precision(12);
+    BB.precision(12);
+    D.precision(12);
+    E.precision(12);
+    F.precision(12);
+    G.precision(12);
+
+    std::shared_ptr<oneloop_momentum_impl::integrand_data> data = std::make_shared<oneloop_momentum_impl::integrand_data>(model, k, UV_cutoff, IR_cutoff, Pk);
+
+    for(unsigned int l = 0; l <= Npoints; ++l)
+      {
+        for(unsigned int m = 0; m <= Npoints; ++m)
+          {
+            cubareal x[oneloop_momentum_impl::dimensions];
+            cubareal f[oneloop_momentum_impl::components];
+
+            x[0] = static_cast<cubareal>(l) / static_cast<cubareal>(Npoints);
+            x[1] = static_cast<cubareal>(m) / static_cast<cubareal>(Npoints);
+
+            f[0] = -1000.0;
+            oneloop_momentum_impl::AA_integrand(nullptr, x, nullptr, f, data.get());
+            AA << l << "," << m << "," << x[0] << "," << x[1] << "," << f[0] << '\n';
+
+            f[0] = -1000.0;
+            oneloop_momentum_impl::AB_integrand(nullptr, x, nullptr, f, data.get());
+            AB << l << "," << m << "," << x[0] << "," << x[1] << "," << f[0] << '\n';
+
+            f[0] = -1000.0;
+            oneloop_momentum_impl::BB_integrand(nullptr, x, nullptr, f, data.get());
+            BB << l << "," << m << "," << x[0] << "," << x[1] << "," << f[0] << '\n';
+
+            f[0] = -1000.0;
+            oneloop_momentum_impl::D_integrand(nullptr, x, nullptr, f, data.get());
+            D << l << "," << m << "," << x[0] << "," << x[1] << "," << f[0] << '\n';
+
+            f[0] = -1000.0;
+            oneloop_momentum_impl::E_integrand(nullptr, x, nullptr, f, data.get());
+            E << l << "," << m << "," << x[0] << "," << x[1] << "," << f[0] << '\n';
+
+            f[0] = -1000.0;
+            oneloop_momentum_impl::F_integrand(nullptr, x, nullptr, f, data.get());
+            F << l << "," << m << "," << x[0] << "," << x[1] << "," << f[0] << '\n';
+
+            f[0] = -1000.0;
+            oneloop_momentum_impl::G_integrand(nullptr, x, nullptr, f, data.get());
+            G << l << "," << m << "," << x[0] << "," << x[1] << "," << f[0] << '\n';
+          }
+      }
+
+    AA.close();
+    AB.close();
+    BB.close();
+    D.close();
+    E.close();
+    F.close();
+    G.close();
   }
