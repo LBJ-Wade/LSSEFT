@@ -111,7 +111,7 @@ void master_controller::execute()
     std::unique_ptr<FRW_model_token> model = dmgr.tokenize(cosmology_model);
 
     // set up a list of wavenumbers to sample, measured in h/Mpc
-    stepping_range<Mpc_units::energy> wavenumber_samples(0.01, 0.8, 30, 1.0 / Mpc_units::Mpc, spacing_type::linear);
+    stepping_range<Mpc_units::energy> transfer_k_samples(0.01, 0.8, 30, 1.0 / Mpc_units::Mpc, spacing_type::linear);
 
     // set up a list of redshifts at which to sample to transfer function
     stepping_range<double> hi_redshift_samples(1000.0, 1500.0, 5, 1.0, spacing_type::linear);
@@ -125,12 +125,16 @@ void master_controller::execute()
     // set up a list of IR cutoffs, measured in h/Mpc
     stepping_range<Mpc_units::energy> IR_cutoffs(0.001, 0.01, 5, 1.0 / Mpc_units::Mpc, spacing_type::linear);
 
+    // set up a list of k at which to compute the loop integral
+    stepping_range<Mpc_units::energy> loop_k_samples(0.01, 0.3, 20, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
+
     // exchange these sample ranges for iterable databases
     std::unique_ptr<z_database> hi_z_db = dmgr.build_redshift_db(hi_redshift_samples);
     std::unique_ptr<z_database> lo_z_db = dmgr.build_redshift_db(lo_redshift_samples);
-    std::unique_ptr<k_database> k_db = dmgr.build_k_db(wavenumber_samples);
+    std::unique_ptr<k_database> transfer_k_db = dmgr.build_k_db(transfer_k_samples);
     std::unique_ptr<UV_database> UV_db = dmgr.build_UV_db(UV_cutoffs);
     std::unique_ptr<IR_database> IR_db = dmgr.build_IR_db(IR_cutoffs);
+    std::unique_ptr<k_database> loop_k_db = dmgr.build_k_db(loop_k_samples);
 
     // GENERATE TARGETS
 
@@ -138,7 +142,7 @@ void master_controller::execute()
     // plus the time-dependent 1-loop kernels through the subsequent evolution
 
     // build a work list for transfer functions
-    std::unique_ptr<transfer_work_list> transfer_work = dmgr.build_transfer_work_list(*model, *k_db, *hi_z_db);
+    std::unique_ptr<transfer_work_list> transfer_work = dmgr.build_transfer_work_list(*model, *transfer_k_db, *hi_z_db);
 
     // distribute this work list among the worker processes
     this->scatter(cosmology_model, *model, *transfer_work, dmgr);
@@ -158,7 +162,7 @@ void master_controller::execute()
         std::shared_ptr<tree_power_spectrum> Pk = std::make_shared<tree_power_spectrum>(this->arg_cache.get_powerspectrum_path());
 
         // build a work list among the worker processes
-        std::unique_ptr<loop_momentum_work_list> loop_momentum_work = dmgr.build_loop_momentum_work_list(*model, *k_db, *IR_db, *UV_db, Pk);
+        std::unique_ptr<loop_momentum_work_list> loop_momentum_work = dmgr.build_loop_momentum_work_list(*model, *loop_k_db, *IR_db, *UV_db, Pk);
 
         // distribute this work list among the worker processes
         if(loop_momentum_work) this->scatter(cosmology_model, *model, *loop_momentum_work, dmgr);
