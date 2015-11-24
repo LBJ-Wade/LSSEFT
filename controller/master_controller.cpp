@@ -120,21 +120,22 @@ void master_controller::execute()
     stepping_range<double> lo_redshift_samples(0.01, 1000.0, 250, 1.0, spacing_type::logarithmic_bottom);
 
     // set up a list of UV cutoffs, measured in h/Mpc
-    stepping_range<Mpc_units::energy> UV_cutoffs(0.4, 0.6, 5, 1.0 / Mpc_units::Mpc, spacing_type::linear);
+    stepping_range<Mpc_units::energy> UV_cutoffs(0.4, 0.8, 10, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
 
     // set up a list of IR cutoffs, measured in h/Mpc
-    stepping_range<Mpc_units::energy> IR_cutoffs(0.001, 0.01, 5, 1.0 / Mpc_units::Mpc, spacing_type::linear);
+    stepping_range<Mpc_units::energy> IR_cutoffs(1E-4, 1E-2, 10, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
 
     // set up a list of k at which to compute the loop integral
     stepping_range<Mpc_units::energy> loop_k_samples(0.01, 0.3, 20, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
 
     // exchange these sample ranges for iterable databases
-    std::unique_ptr<z_database> hi_z_db = dmgr.build_redshift_db(hi_redshift_samples);
-    std::unique_ptr<z_database> lo_z_db = dmgr.build_redshift_db(lo_redshift_samples);
+    std::unique_ptr<z_database> hi_z_db       = dmgr.build_redshift_db(hi_redshift_samples);
+    std::unique_ptr<z_database> lo_z_db       = dmgr.build_redshift_db(lo_redshift_samples);
     std::unique_ptr<k_database> transfer_k_db = dmgr.build_k_db(transfer_k_samples);
-    std::unique_ptr<UV_database> UV_db = dmgr.build_UV_db(UV_cutoffs);
-    std::unique_ptr<IR_database> IR_db = dmgr.build_IR_db(IR_cutoffs);
-    std::unique_ptr<k_database> loop_k_db = dmgr.build_k_db(loop_k_samples);
+
+    std::unique_ptr<UV_database> UV_db        = dmgr.build_UV_db(UV_cutoffs);
+    std::unique_ptr<IR_database> IR_db        = dmgr.build_IR_db(IR_cutoffs);
+    std::unique_ptr<k_database>  loop_k_db    = dmgr.build_k_db(loop_k_samples);
 
     // GENERATE TARGETS
 
