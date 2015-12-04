@@ -270,8 +270,10 @@ void oneloop_functor::ics(state_vector& x, double z)
     x[RHO_R] = rho_r * Mpc_units::Mpc4;
 
     // initial conditions for linear growth factor
+    // to get the derviative, assume that we are early in matter domination and g(z) grows like a(z).
+    // so g(z) = a(z)/a_init(z). Then dg/dz = -da/dz / a_init = (a_0/a_init) / (1+z)^2 = 1/(1+z).
     x[ELEMENT_g] = 1.0;
-    x[ELEMENT_dgdz] = 0.0;
+    x[ELEMENT_dgdz] = -1.0 / (1.0+z);
 
     // initial conditions for one-loop kernel
     x[ELEMENT_A] = x[ELEMENT_dAdz] = 0.0;
