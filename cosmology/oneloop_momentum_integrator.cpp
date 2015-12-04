@@ -150,7 +150,7 @@ namespace oneloop_momentum_impl
 
         Mpc_units::energy  k_minus_q     = std::sqrt(k_minus_q_sq * Mpc_units::Mpc2) / Mpc_units::Mpc;
 
-        // integral is P(q) P(k-q) alpha(q,k-q) gamma(q,k-q)
+        // integral is P(q) P(k-q) gamma(q,k-q)^2
         Mpc_units::inverse_energy3 Pq         = (*(data->Pk))(q);
         Mpc_units::inverse_energy3 Pk_minus_q = k_minus_q > data->IR_cutoff && k_minus_q < data->UV_cutoff ? (*(data->Pk))(k_minus_q) : Mpc_units::inverse_energy3(0);
 
