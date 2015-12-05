@@ -191,16 +191,16 @@ void oneloop_functor::operator()(const state_vector& x, state_vector& dxdz, doub
 
     // compute H in the same units
     double Mp_in_Mpc_units = Mpc_units::PlanckMass * Mpc_units::Mpc;
-    double H   = std::sqrt(rho / (3.0 * Mp_in_Mpc_units*Mp_in_Mpc_units));
+    double H               = std::sqrt(rho / (3.0 * Mp_in_Mpc_units*Mp_in_Mpc_units));
 
-    double Hdot    = -(3.0*x[RHO_M] + 4.0*x[RHO_R]) / (6.0 * Mp_in_Mpc_units*Mp_in_Mpc_units);
-    double epsilon = -Hdot/(H*H);
+    double Hdot            = -(3.0*x[RHO_M] + 4.0*x[RHO_R]) / (6.0 * Mp_in_Mpc_units*Mp_in_Mpc_units);
+    double epsilon         = -Hdot/(H*H);
 
-    double Omega_m   = x[RHO_M]/rho;
-    double Omega_r   = x[RHO_R]/rho;
+    double Omega_m         = x[RHO_M]/rho;
+    double Omega_r         = x[RHO_R]/rho;
 
-    double one_plus_z = 1.0+z;
-    double one_plus_z_sq = (1.0+z)*(1.0+z);
+    double one_plus_z      = 1.0+z;
+    double one_plus_z_sq   = (1.0+z)*(1.0+z);
 
     // evolve background
     dxdz[RHO_M] = 3.0*x[RHO_M] / one_plus_z;
@@ -258,7 +258,7 @@ void oneloop_functor::ics(state_vector& x, double z)
 
     Mpc_units::energy T_CMB = this->model.get_T_CMB();
 
-    Mpc_units::energy4 rho_r0 = g_star * radiation_constant * T_CMB*T_CMB*T_CMB*T_CMB;
+    Mpc_units::energy4 rho_r0 = g_star * radiation_constant * T_CMB*T_CMB*T_CMB*T_CMB * (1.0 + this->model.get_Neff() * (7.0/8.0) * std::pow(4.0/11.0, 4.0/3.0));
 
     Mpc_units::energy4 rho_m = rho_m0 * a_three;
     Mpc_units::energy4 rho_r = rho_r0 * a_four;

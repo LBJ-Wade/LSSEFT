@@ -21,7 +21,8 @@ namespace sqlite3_operations
           << "omega_m DOUBLE, "
           << "omega_cc DOUBLE, "
           << "h DOUBLE, "
-          << "T_CMB DOUBLE"
+          << "T_CMB DOUBLE, "
+          << "Neff DOUBLE"
           << ")";
 
         exec(db, models_stmt.str());
