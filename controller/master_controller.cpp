@@ -117,16 +117,16 @@ void master_controller::execute()
     stepping_range<double> hi_redshift_samples(1000.0, 1500.0, 5, 1.0, spacing_type::linear);
 
     // set up a list of redshifts at which to sample the late-time growth functions
-    stepping_range<double> lo_redshift_samples(0.01, 1000.0, 250, 1.0, spacing_type::logarithmic_bottom);
+    stepping_range<double> lo_redshift_samples(0.0, 50.0, 250, 1.0, spacing_type::logarithmic_bottom);
 
     // set up a list of UV cutoffs, measured in h/Mpc
-    stepping_range<Mpc_units::energy> UV_cutoffs(0.4, 0.8, 10, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
+    stepping_range<Mpc_units::energy> UV_cutoffs(0.8, 0.8, 0, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
 
     // set up a list of IR cutoffs, measured in h/Mpc
-    stepping_range<Mpc_units::energy> IR_cutoffs(1E-4, 1E-2, 10, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
+    stepping_range<Mpc_units::energy> IR_cutoffs(1E-4, 1E-4, 0, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
 
     // set up a list of k at which to compute the loop integral
-    stepping_range<Mpc_units::energy> loop_k_samples(0.01, 0.3, 20, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
+    stepping_range<Mpc_units::energy> loop_k_samples(0.005, 0.5, 200, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
 
     // exchange these sample ranges for iterable databases
     std::unique_ptr<z_database> hi_z_db       = dmgr.build_redshift_db(hi_redshift_samples);
