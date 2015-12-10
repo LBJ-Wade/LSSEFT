@@ -24,15 +24,17 @@ constexpr unsigned int ELEMENT_D    = 5;
 constexpr unsigned int ELEMENT_E    = 6;
 constexpr unsigned int ELEMENT_F    = 7;
 constexpr unsigned int ELEMENT_G    = 8;
-constexpr unsigned int ELEMENT_dgdz = 9;
-constexpr unsigned int ELEMENT_dAdz = 10;
-constexpr unsigned int ELEMENT_dBdz = 11;
-constexpr unsigned int ELEMENT_dDdz = 12;
-constexpr unsigned int ELEMENT_dEdz = 13;
-constexpr unsigned int ELEMENT_dFdz = 14;
-constexpr unsigned int ELEMENT_dGdz = 15;
+constexpr unsigned int ELEMENT_J    = 9;
+constexpr unsigned int ELEMENT_dgdz = 10;
+constexpr unsigned int ELEMENT_dAdz = 11;
+constexpr unsigned int ELEMENT_dBdz = 12;
+constexpr unsigned int ELEMENT_dDdz = 13;
+constexpr unsigned int ELEMENT_dEdz = 14;
+constexpr unsigned int ELEMENT_dFdz = 15;
+constexpr unsigned int ELEMENT_dGdz = 16;
+constexpr unsigned int ELEMENT_dJdz = 17;
 
-constexpr unsigned int STATE_SIZE = 16;
+constexpr unsigned int STATE_SIZE   = 18;
 
 
 class oneloop_functor
@@ -218,6 +220,7 @@ void oneloop_functor::operator()(const state_vector& x, state_vector& dxdz, doub
     dxdz[ELEMENT_E] = x[ELEMENT_dEdz];
     dxdz[ELEMENT_F] = x[ELEMENT_dFdz];
     dxdz[ELEMENT_G] = x[ELEMENT_dGdz];
+    dxdz[ELEMENT_J] = x[ELEMENT_dJdz];
 
     // evolve one-loop kernels -- second derivatives
     dxdz[ELEMENT_dAdz] = (3.0 * Omega_m / 2.0) * x[ELEMENT_g] * x[ELEMENT_g] / one_plus_z_sq
@@ -243,6 +246,10 @@ void oneloop_functor::operator()(const state_vector& x, state_vector& dxdz, doub
     dxdz[ELEMENT_dGdz] = (3.0 * Omega_m / 2.0) * x[ELEMENT_g] * x[ELEMENT_B] / one_plus_z_sq
                          + (1.0 - epsilon) * x[ELEMENT_dGdz] / one_plus_z
                          + (3.0 * Omega_m / 2.0) * x[ELEMENT_G] / one_plus_z_sq;
+
+    dxdz[ELEMENT_dJdz] = x[ELEMENT_dgdz] * x[ELEMENT_dgdz] * x[ELEMENT_g]
+                         + (1.0 - epsilon) * x[ELEMENT_dJdz] / one_plus_z
+                         + (3.0 * Omega_m / 2.0) * x[ELEMENT_J] / one_plus_z_sq;
   }
 
 
@@ -282,6 +289,7 @@ void oneloop_functor::ics(state_vector& x, double z)
     x[ELEMENT_E] = x[ELEMENT_dEdz] = 0.0;
     x[ELEMENT_F] = x[ELEMENT_dFdz] = 0.0;
     x[ELEMENT_G] = x[ELEMENT_dGdz] = 0.0;
+    x[ELEMENT_J] = x[ELEMENT_dJdz] = 0.0;
   }
 
 
@@ -316,5 +324,5 @@ boost::timer::nanosecond_type oneloop_observer::read_timer()
 
 void oneloop_observer::operator()(const state_vector& x, double z)
   {
-    this->container.push_back(x[ELEMENT_g], x[ELEMENT_A], x[ELEMENT_B], x[ELEMENT_D], x[ELEMENT_E], x[ELEMENT_F], x[ELEMENT_G]);
+    this->container.push_back(x[ELEMENT_g], x[ELEMENT_A], x[ELEMENT_B], x[ELEMENT_D], x[ELEMENT_E], x[ELEMENT_F], x[ELEMENT_G], x[ELEMENT_J]);
   }

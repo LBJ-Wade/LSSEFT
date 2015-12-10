@@ -9,17 +9,18 @@
 oneloop_growth::oneloop_growth(z_database& z)
   : z_db(z)
   {
-    g_linear.reset(new std::vector<double>);
-    A.reset(new std::vector<double>);
-    B.reset(new std::vector<double>);
-    D.reset(new std::vector<double>);
-    E.reset(new std::vector<double>);
-    F.reset(new std::vector<double>);
-    G.reset(new std::vector<double>);
+    g_linear = std::make_unique< std::vector<double> >();
+    A = std::make_unique< std::vector<double> >();
+    B = std::make_unique< std::vector<double> >();
+    D = std::make_unique< std::vector<double> >();
+    E = std::make_unique< std::vector<double> >();
+    F = std::make_unique< std::vector<double> >();
+    G = std::make_unique< std::vector<double> >();
+    J = std::make_unique< std::vector<double> >();
   }
 
 
-void oneloop_growth::push_back(double g, double A, double B, double D, double E, double F, double G)
+void oneloop_growth::push_back(double g, double A, double B, double D, double E, double F, double G, double J)
   {
     this->g_linear->push_back(g);
     this->A->push_back(A);
@@ -28,6 +29,7 @@ void oneloop_growth::push_back(double g, double A, double B, double D, double E,
     this->E->push_back(E);
     this->F->push_back(F);
     this->G->push_back(G);
+    this->J->push_back(J);
   }
 
 

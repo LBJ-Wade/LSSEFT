@@ -89,6 +89,7 @@ namespace sqlite3_operations
           << "E DOUBLE, "
           << "F DOUBLE, "
           << "G DOUBLE, "
+          << "J DOUBLE, "
           << "PRIMARY KEY (mid, zid), "
           << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
           << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id));";

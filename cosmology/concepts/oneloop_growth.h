@@ -25,6 +25,7 @@ struct oneloop_growth_record
     double E;
     double F;
     double G;
+    double J;
   };
 
 
@@ -57,7 +58,7 @@ namespace oneloop_growth_impl
         //! value constructor; points to a given element in the transfer function sample
         generic_token_iterator(record_iterator r,
                                value_iterator g, value_iterator A, value_iterator B, value_iterator D, value_iterator E,
-                               value_iterator F, value_iterator G)
+                               value_iterator F, value_iterator G, value_iterator J)
           : record_iter(r),
             g_iter(g),
             A_iter(A),
@@ -65,7 +66,8 @@ namespace oneloop_growth_impl
             D_iter(D),
             E_iter(E),
             F_iter(F),
-            G_iter(G)
+            G_iter(G),
+            J_iter(J)
           {
           }
 
@@ -78,7 +80,8 @@ namespace oneloop_growth_impl
             D_iter(obj.D_iter),
             E_iter(obj.E_iter),
             F_iter(obj.F_iter),
-            G_iter(obj.G_iter)
+            G_iter(obj.G_iter),
+            J_iter(obj.J_iter)
           {
           }
 
@@ -117,6 +120,7 @@ namespace oneloop_growth_impl
             rec.E = *this->E_iter;
             rec.F = *this->F_iter;
             rec.G = *this->G_iter;
+            rec.J = *this->J_iter;
 
             return oneloop_value(this->record_iter->get_token(), rec);
           }
@@ -136,6 +140,7 @@ namespace oneloop_growth_impl
             --this->E_iter;
             --this->F_iter;
             --this->G_iter;
+            --this->J_iter;
             --this->record_iter;
             return(*this);
           }
@@ -158,6 +163,7 @@ namespace oneloop_growth_impl
             ++this->E_iter;
             ++this->F_iter;
             ++this->G_iter;
+            ++this->J_iter;
             ++this->record_iter;
             return(*this);
           }
@@ -203,6 +209,9 @@ namespace oneloop_growth_impl
         //! iterator into G sample
         value_iterator G_iter;
 
+        //! iterator into J sample
+        value_iterator J_iter;
+
       };
 
 
@@ -237,32 +246,32 @@ class oneloop_growth
 
     token_iterator token_begin()
       {
-        return(token_iterator(this->z_db.record_rbegin(), this->g_linear->begin(), this->A->begin(), this->B->begin(), this->D->begin(), this->E->begin(), this->F->begin(), this->G->begin()));
+        return(token_iterator(this->z_db.record_rbegin(), this->g_linear->begin(), this->A->begin(), this->B->begin(), this->D->begin(), this->E->begin(), this->F->begin(), this->G->begin(), this->J->begin()));
       }
 
     token_iterator token_end()
       {
-        return(token_iterator(this->z_db.record_rend(), this->g_linear->end(), this->A->end(), this->B->end(), this->D->end(), this->E->end(), this->F->end(), this->G->end()));
+        return(token_iterator(this->z_db.record_rend(), this->g_linear->end(), this->A->end(), this->B->end(), this->D->end(), this->E->end(), this->F->end(), this->G->end(), this->J->end()));
       }
 
     const_token_iterator token_begin() const
       {
-        return(const_token_iterator(this->z_db.record_crbegin(), this->g_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin()));
+        return(const_token_iterator(this->z_db.record_crbegin(), this->g_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->J->cbegin()));
       }
 
     const_token_iterator token_end() const
       {
-        return(const_token_iterator(this->z_db.record_crend(), this->g_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend()));
+        return(const_token_iterator(this->z_db.record_crend(), this->g_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->J->cend()));
       }
 
     const_token_iterator token_cbegin() const
       {
-        return(const_token_iterator(this->z_db.record_crbegin(), this->g_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin()));
+        return(const_token_iterator(this->z_db.record_crbegin(), this->g_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->J->cbegin()));
       }
 
     const_token_iterator token_cend() const
       {
-        return(const_token_iterator(this->z_db.record_crend(), this->g_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend()));
+        return(const_token_iterator(this->z_db.record_crend(), this->g_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->J->cend()));
       }
 
 
@@ -271,7 +280,7 @@ class oneloop_growth
   public:
 
     //! store components
-    void push_back(double g, double A, double B, double D, double E, double F, double G);
+    void push_back(double g, double A, double B, double D, double E, double F, double G, double J);
 
 
     // METADATA
@@ -305,23 +314,26 @@ class oneloop_growth
     //! linear growth factor
     std::unique_ptr< std::vector<double> > g_linear;
 
-    //! A kernel
+    //! A growth factor
     std::unique_ptr< std::vector<double> > A;
 
-    //! B kernel
+    //! B growth factor
     std::unique_ptr< std::vector<double> > B;
 
-    //! D kernel
+    //! D growth factor
     std::unique_ptr< std::vector<double> > D;
 
-    //! E kernel
+    //! E growth factor
     std::unique_ptr< std::vector<double> > E;
 
-    //! F kernel
+    //! F growth factor
     std::unique_ptr< std::vector<double> > F;
 
-    //! G kernel
+    //! G growth factor
     std::unique_ptr< std::vector<double> > G;
+
+    //! J growth factor
+    std::unique_ptr< std::vector<double> > J;
 
 
     // METADATA
