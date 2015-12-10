@@ -88,7 +88,7 @@ class loop_integral
                   const Mpc_units::energy& UV, const UV_token& UVt,
                   const Mpc_units::energy& IR, const IR_token& IRt,
                   bool f, const inverse_energy3_kernel& _AA, const inverse_energy3_kernel& _AB, const inverse_energy3_kernel& _BB,
-                  const dimless_kernel& _D, const dimless_kernel& _E, const dimless_kernel& _F, const dimless_kernel& _G);
+                  const dimless_kernel& _D, const dimless_kernel& _E, const dimless_kernel& _F, const dimless_kernel& _G, const dimless_kernel& _J);
 
     //! destructor is default
     ~loop_integral() = default;
@@ -130,6 +130,9 @@ class loop_integral
 
     //! get G-value
     const dimless_kernel& get_G() const { return(this->G); }
+
+    //! get J-value
+    const dimless_kernel& get_J() const { return(this->J); }
 
 
     // INTERNAL DATA
@@ -183,6 +186,9 @@ class loop_integral
     //! G-type integral P_13
     dimless_kernel G;
 
+    //! J-type kernel P_13
+    dimless_kernel J;
+
 
     // enable boost::serialization support, and hence automated packing for transmission over MPI
     friend class boost::serialization::access;
@@ -204,6 +210,7 @@ class loop_integral
         ar & E;
         ar & F;
         ar & G;
+        ar & J;
       }
 
   };
