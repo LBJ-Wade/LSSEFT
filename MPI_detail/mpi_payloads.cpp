@@ -1,0 +1,26 @@
+//
+// Created by David Seery on 21/11/2015.
+// Copyright (c) 2015 University of Sussex. All rights reserved.
+//
+
+#include "mpi_payloads.h"
+
+
+namespace MPI_detail
+  {
+
+    new_transfer_integration build_payload(const FRW_model& model, std::list<transfer_work_record>::const_iterator& t)
+      {
+        return new_transfer_integration(model, *(*t), t->get_token(), t->get_z_db());
+      }
+
+
+    new_loop_momentum_integration build_payload(const FRW_model& model,
+                                                std::list<loop_momentum_work_record>::const_iterator& t)
+      {
+        return new_loop_momentum_integration(model, *(*t), t->get_k_token(),
+                                             t->get_UV_cutoff(), t->get_UV_token(),
+                                             t->get_IR_cutoff(), t->get_IR_token(),
+                                             t->get_Pk_db());
+      }
+  }

@@ -62,16 +62,25 @@ class slave_controller
 
   protected:
 
-    //! process transfer function task
-    void process_transfer_task();
+    //! process task corresponding to given work item type
+    template <typename WorkItem>
+    void process_task();
 
 
     // TRANSFER FUNCTION TASKS
 
   protected:
 
-    //! integrate a given transfer function task
-    void transfer_integration(MPI_detail::new_transfer_integration& payload);
+    //! integrate a given transfer function
+    void process_item(MPI_detail::new_transfer_integration& payload);
+
+
+    // LOOP MOMENTUM TASKS
+
+  protected:
+
+    //! integrate a given loop
+    void process_item(MPI_detail::new_loop_momentum_integration& payload);
 
 
     // INTERNAL DATA

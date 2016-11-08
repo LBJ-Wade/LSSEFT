@@ -7,8 +7,8 @@
 #define LSSEFT_COSMOLOGY_CONSTANTS_H
 
 
-// g_star = 2 + (7.0/8.0) * 6 * std::pow(4.0/11.0, 4.0/3.0)
-constexpr double g_star = 3.36264390596;
+// g_star = 2, either for two polarization states of the photon or two spin states of a neutrino
+constexpr double g_star = 2.0;
 
 // radiation constant = pi^2/30
 constexpr double radiation_constant = 0.32898681337;

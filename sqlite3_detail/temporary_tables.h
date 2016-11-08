@@ -14,8 +14,8 @@
 
 #include "database/transaction_manager.h"
 #include "database/tokens.h"
-#include "database/redshift_database.h"
-#include "database/wavenumber_database.h"
+#include "database/z_database.h"
+#include "database/k_database.h"
 
 #include "sqlite3.h"
 
@@ -25,11 +25,11 @@ namespace sqlite3_operations
 
     //! create temporary table of redshifts
     std::string z_table(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
-                        redshift_database& z_db);
+                        z_database& z_db);
 
     //! create temporary table of wavenumbres
     std::string k_table(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
-                        wavenumber_database& k_db);
+                        k_database& k_db);
 
     //! drop a temporary table
     void drop_temp(sqlite3* db, transaction_manager& mgr, const std::string& table);

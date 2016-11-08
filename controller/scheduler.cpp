@@ -27,7 +27,8 @@ void scheduler_detail::worker_data::initialize(unsigned int n)
 scheduler::scheduler(unsigned int N)
   : workers(N),
     waiting_for_initialization(N),
-    active(0)
+    active(0),
+    unassigned(N)
   {
     worker_list.clear();
     worker_list.resize(workers);

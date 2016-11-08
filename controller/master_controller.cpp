@@ -4,19 +4,21 @@
 //
 
 
+#include <MPI_detail/mpi_traits.h>
 #include "core.h"
 
 #include "master_controller.h"
 #include "scheduler.h"
 
 #include "cosmology/FRW_model.h"
-#include "cosmology/oneloop_integrator.h"
+#include "cosmology/oneloop_growth_integrator.h"
 #include "cosmology/concepts/range.h"
 #include "cosmology/concepts/tree_power_spectrum.h"
 
 #include "database/data_manager.h"
 
-#include "MPI_detail/mpi_operations.h"
+#include "MPI_detail/mpi_traits.h"
+#include "MPI_detail/mpi_payloads.h"
 
 #include "utilities/formatter.h"
 
@@ -108,19 +110,32 @@ void master_controller::execute()
 
     std::unique_ptr<FRW_model_token> model = dmgr.tokenize(cosmology_model);
 
-    // set up a list of wavenumber to sample, measured in h/Mpc
-    stepping_range<eV_units::energy> wavenumber_samples(0.05, 0.3, 30, 1.0 / eV_units::Mpc, spacing_type::linear);
+    // set up a list of wavenumbers to sample, measured in h/Mpc
+    stepping_range<Mpc_units::energy> transfer_k_samples(0.01, 0.8, 30, 1.0 / Mpc_units::Mpc, spacing_type::linear);
 
     // set up a list of redshifts at which to sample to transfer function
-    stepping_range<double> hi_redshift_samples(1000.0, 1500.0, 5.0, 1.0, spacing_type::linear);
+    stepping_range<double> hi_redshift_samples(1000.0, 1500.0, 5, 1.0, spacing_type::linear);
 
     // set up a list of redshifts at which to sample the late-time growth functions
-    stepping_range<double> lo_redshift_samples(0.01, 1000.0, 250, 1.0, spacing_type::logarithmic_bottom);
+    stepping_range<double> lo_redshift_samples(0.0, 50.0, 250, 1.0, spacing_type::logarithmic_bottom);
+
+    // set up a list of UV cutoffs, measured in h/Mpc
+    stepping_range<Mpc_units::energy> UV_cutoffs(0.8, 0.8, 0, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
+
+    // set up a list of IR cutoffs, measured in h/Mpc
+    stepping_range<Mpc_units::energy> IR_cutoffs(1E-4, 1E-4, 0, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
+
+    // set up a list of k at which to compute the loop integral
+    stepping_range<Mpc_units::energy> loop_k_samples(0.005, 0.5, 200, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
 
     // exchange these sample ranges for iterable databases
-    std::unique_ptr<redshift_database> hi_z_db = dmgr.build_db(hi_redshift_samples);
-    std::unique_ptr<redshift_database> lo_z_db = dmgr.build_db(lo_redshift_samples);
-    std::unique_ptr<wavenumber_database> k_db = dmgr.build_db(wavenumber_samples);
+    std::unique_ptr<z_database> hi_z_db       = dmgr.build_redshift_db(hi_redshift_samples);
+    std::unique_ptr<z_database> lo_z_db       = dmgr.build_redshift_db(lo_redshift_samples);
+    std::unique_ptr<k_database> transfer_k_db = dmgr.build_k_db(transfer_k_samples);
+
+    std::unique_ptr<UV_database> UV_db        = dmgr.build_UV_db(UV_cutoffs);
+    std::unique_ptr<IR_database> IR_db        = dmgr.build_IR_db(IR_cutoffs);
+    std::unique_ptr<k_database>  loop_k_db    = dmgr.build_k_db(loop_k_samples);
 
     // GENERATE TARGETS
 
@@ -128,21 +143,30 @@ void master_controller::execute()
     // plus the time-dependent 1-loop kernels through the subsequent evolution
 
     // build a work list for transfer functions
-    std::unique_ptr<transfer_work_list> transfer_work_list = dmgr.build_transfer_work_list(*model, *k_db, *hi_z_db);
+    std::unique_ptr<transfer_work_list> transfer_work = dmgr.build_transfer_work_list(*model, *transfer_k_db, *hi_z_db);
 
-    // distribute this work list among the slave processes
-    this->scatter(cosmology_model, *model, *transfer_work_list, dmgr);
+    // distribute this work list among the worker processes
+    this->scatter(cosmology_model, *model, *transfer_work, dmgr);
 
     // build a work list for late-time growth functions;
     // we inherit ownership of its lifetime using std::unique_ptr<>
-    std::unique_ptr<redshift_database> oneloop_work_list = dmgr.build_oneloop_work_list(*model, *lo_z_db);
+    std::unique_ptr<z_database> loop_growth_work = dmgr.build_oneloop_work_list(*model, *lo_z_db);
 
     // compute one-loop functions, if needed; can be done on master process since there is only one integration
-    if(oneloop_work_list) this->integrate_oneloop(cosmology_model, *model, *oneloop_work_list, dmgr);
+    if(loop_growth_work) this->integrate_oneloop(cosmology_model, *model, *loop_growth_work, dmgr);
 
     if(this->arg_cache.get_powerspectrum_set())
       {
-        tree_power_spectrum Pk(this->arg_cache.get_powerspectrum_path());
+        // read in tree-level power spectrum in CAMB format;
+        // we manage its lifetime with std::shared_ptr since ownership is shared with the
+        // MPI messaging routines
+        std::shared_ptr<tree_power_spectrum> Pk = std::make_shared<tree_power_spectrum>(this->arg_cache.get_powerspectrum_path());
+
+        // build a work list among the worker processes
+        std::unique_ptr<loop_momentum_work_list> loop_momentum_work = dmgr.build_loop_momentum_work_list(*model, *loop_k_db, *IR_db, *UV_db, Pk);
+
+        // distribute this work list among the worker processes
+        if(loop_momentum_work) this->scatter(cosmology_model, *model, *loop_momentum_work, dmgr);
       }
 
     // instruct slave processes to terminate
@@ -150,16 +174,18 @@ void master_controller::execute()
   }
 
 
-void master_controller::scatter(const FRW_model& model, const FRW_model_token& token, transfer_work_list& work,
-                                data_manager& dmgr)
+template <typename WorkItem>
+void master_controller::scatter(const FRW_model& model, const FRW_model_token& token, std::list<WorkItem>& work, data_manager& dmgr)
   {
+    boost::timer::cpu_timer timer;
+
     if(this->mpi_world.size() == 1) throw runtime_exception(exception_type::runtime_error, ERROR_TOO_FEW_WORKERS);
 
     // instruct slave processes to await transfer function tasks
-    std::unique_ptr<scheduler> sch = this->set_up_workers(MPI_detail::MESSAGE_NEW_TRANSFER_TASK);
+    std::unique_ptr<scheduler> sch = this->set_up_workers(MPI_detail::work_item_traits<WorkItem>::new_task_message());
 
     bool sent_closedown = false;
-    transfer_work_list::iterator next_work_item = work.begin();
+    typename std::list<WorkItem>::const_iterator next_work_item = work.begin();
 
     while(!sch->all_inactive())
       {
@@ -180,9 +206,7 @@ void master_controller::scatter(const FRW_model& model, const FRW_model_token& t
                 next_work_item != work.end() && t != unassigned_list.end(); ++t)
               {
                 // assign next work item to this worker
-                MPI_detail::new_transfer_integration payload(model, *(*next_work_item), next_work_item->get_token(),
-                                                             next_work_item->get_z_db());
-                requests.push_back(this->mpi_world.isend(this->worker_rank(*t), MPI_detail::MESSAGE_NEW_TRANSFER_INTEGRATION, payload));
+                requests.push_back(this->mpi_world.isend(this->worker_rank(*t), MPI_detail::work_item_traits<WorkItem>::new_item_message(), MPI_detail::build_payload(model, next_work_item)));
 
                 sch->mark_assigned(*t);
                 ++next_work_item;
@@ -199,12 +223,10 @@ void master_controller::scatter(const FRW_model& model, const FRW_model_token& t
           {
             switch(stat->tag())
               {
-                case MPI_detail::MESSAGE_TRANSFER_INTEGRATION_READY:
+                case MPI_detail::MESSAGE_WORK_PRODUCT_READY:
                   {
-                    MPI_detail::transfer_integration_ready payload;
-                    this->mpi_world.recv(stat->source(), MPI_detail::MESSAGE_TRANSFER_INTEGRATION_READY, payload);
+                    this->store_payload<WorkItem>(token, stat->source(), dmgr);
                     sch->mark_unassigned(this->worker_number(stat->source()));
-                    dmgr.store(token, payload.get_data());
                     break;
                   }
 
@@ -222,6 +244,19 @@ void master_controller::scatter(const FRW_model& model, const FRW_model_token& t
             stat = this->mpi_world.iprobe();
           }
       }
+
+    timer.stop();
+    std::cout << "lsseft: completed work in time " << format_time(timer.elapsed().wall) << '\n';
+  }
+
+
+template <typename WorkItem>
+void master_controller::store_payload(const FRW_model_token& token, unsigned int source, data_manager& dmgr)
+  {
+    typename MPI_detail::work_item_traits<WorkItem>::incoming_payload_type payload;
+
+    this->mpi_world.recv(source, MPI_detail::MESSAGE_WORK_PRODUCT_READY, payload);
+    dmgr.store(token, payload.get_data());
   }
 
 
@@ -252,7 +287,7 @@ std::unique_ptr<scheduler> master_controller::set_up_workers(unsigned int tag)
     boost::mpi::wait_all(requests.begin(), requests.end());
 
     // create scheduler object
-    std::unique_ptr<scheduler> sch(new scheduler(this->mpi_world.size() - 1));
+    std::unique_ptr<scheduler> sch = std::make_unique<scheduler>(this->mpi_world.size() - 1);
 
     // wait for messages from workers reporting that they are correctly set up
     while(!sch->is_ready())
@@ -287,10 +322,10 @@ void master_controller::close_down_workers()
   }
 
 
-void master_controller::integrate_oneloop(const FRW_model& model, const FRW_model_token& token, redshift_database& z_db,
+void master_controller::integrate_oneloop(const FRW_model& model, const FRW_model_token& token, z_database& z_db,
                                           data_manager& dmgr)
   {
-    oneloop_integrator integrator;
-    std::unique_ptr<oneloop> sample = integrator.integrate(model, z_db);
+    oneloop_growth_integrator integrator;
+    std::unique_ptr<oneloop_growth> sample = integrator.integrate(model, z_db);
     dmgr.store(token, *sample);
   }

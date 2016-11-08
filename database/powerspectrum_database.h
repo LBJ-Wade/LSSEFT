@@ -12,56 +12,13 @@
 
 #include "generic_record_iterator.h"
 #include "generic_value_iterator.h"
+#include "powerspectrum_record.h"
 
-#include "units/eV_units.h"
+#include "units/Mpc_units.h"
 
 #include "boost/timer/timer.hpp"
 #include "boost/serialization/serialization.hpp"
-
-
-class Pk_record
-  {
-
-    // CONSTRUCTOR, DESTRUCTOR
-
-  public:
-
-    //! constructor
-    Pk_record(const eV_units::energy& in_k, const eV_units::inverse_energy3& in_Pk)
-      : k(in_k),
-        Pk(in_Pk)
-      {
-      }
-
-    //! destructor is default
-    ~Pk_record() = default;
-
-
-    // INTERFACE
-
-  public:
-
-    //! dereference to get Pk-value (note we return a copy, not a reference)
-    const eV_units::inverse_energy3& operator*() const { return(this->Pk); }
-
-    //! get wavenumber
-    const eV_units::energy& get_wavenumber() const { return(this->k); }
-
-    //! get Pk-value
-    const eV_units::inverse_energy3& get_Pk() const { return(this->Pk); }
-
-
-    // INTERNAL DATA
-
-  private:
-
-    //! k-value in units of eV
-    eV_units::energy k;
-
-    //! P(k) for this k-value in units of (Mpc/h)^3
-    eV_units::inverse_energy3 Pk;
-
-  };
+#include "boost/serialization/map.hpp"
 
 
 class powerspectrum_database
@@ -72,9 +29,9 @@ class powerspectrum_database
     // use a map type to store the ordered power spectrum data
     // so a power spectrum is a map k -> P(k)
     // where k is measured in eV
-    typedef std::map< eV_units::energy, Pk_record > database_type;
+    typedef std::map< Mpc_units::energy, Pk_record > database_type;
 
-    typedef eV_units::inverse_energy3 Pk_units;
+    typedef Mpc_units::inverse_energy3 Pk_units;
 
 
     // RECORD-VALUED ITERATORS
@@ -160,7 +117,7 @@ class powerspectrum_database
     //! add record to the database
 
     //! the record shouldn't already exist, but no check is made to enforce this
-    void add_record(const eV_units::energy& k, const eV_units::inverse_energy3& Pk);
+    void add_record(const Mpc_units::energy& k, const Mpc_units::inverse_energy3& Pk);
 
 
     // UTILITY FUNCTIONS
@@ -169,6 +126,12 @@ class powerspectrum_database
 
     //! get number of elements in the database
     size_t size() const { return(this->database.size()); }
+
+    //! get largest stored k-value
+    const Mpc_units::energy& get_k_min() const { return(this->k_min); }
+
+    //! get smallest stored k-value
+    const Mpc_units::energy& get_k_max() const { return(this->k_max); }
 
 
     // INTERNAL DATA
@@ -179,10 +142,22 @@ class powerspectrum_database
     database_type database;
 
     //! smallest k-mode in the database
-    eV_units::energy k_min;
+    Mpc_units::energy k_min;
 
     //! largest k-mode in the database
-    eV_units::energy k_max;
+    Mpc_units::energy k_max;
+
+
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & database;
+        ar & k_min;
+        ar & k_max;
+      }
 
   };
 

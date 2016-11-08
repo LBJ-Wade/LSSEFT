@@ -9,6 +9,7 @@
 #include <assert.h>
 
 #include "data_manager.h"
+#include "data_manager_impl.h"
 
 #include "sqlite3_detail/utilities.h"
 #include "sqlite3_detail/operations.h"
@@ -94,7 +95,7 @@ std::unique_ptr<FRW_model_token> data_manager::tokenize(const FRW_model& obj)
   }
 
 
-std::unique_ptr<redshift_token> data_manager::tokenize(double z)
+std::unique_ptr<z_token> data_manager::tokenize(double z)
   {
     // open a new transaction on the database
     std::shared_ptr<transaction_manager> transaction = this->open_transaction();
@@ -105,22 +106,23 @@ std::unique_ptr<redshift_token> data_manager::tokenize(double z)
     // commit the transaction
     transaction->commit();
 
-    return std::make_unique<redshift_token>(id);
+    return std::make_unique<z_token>(id);
   }
 
 
-std::unique_ptr<wavenumber_token> data_manager::tokenize(const eV_units::energy& k)
+template <typename Token>
+std::unique_ptr<Token> data_manager::tokenize(const Mpc_units::energy& k)
   {
     // open a new transaction on the database
     std::shared_ptr<transaction_manager> transaction = this->open_transaction();
 
     // lookup id for this wavenumber, or generate one if it does not already exist
-    unsigned int id = this->lookup_or_insert(*transaction, k);
+    unsigned int id = this->lookup_or_insert<Token>(*transaction, k);
 
     // commit the transaction
     transaction->commit();
 
-    return std::make_unique<wavenumber_token>(id);
+    return std::make_unique<Token>(id);
   }
 
 
@@ -204,29 +206,30 @@ unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, double z)
   }
 
 
-unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const eV_units::energy& k)
+template <typename Token>
+unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const Mpc_units::energy& k)
   {
-    boost::optional<unsigned int> id = sqlite3_operations::lookup_wavenumber(this->handle, mgr, k, this->policy, this->z_tol);
+    boost::optional<unsigned int> id = sqlite3_operations::lookup_wavenumber<Token>(this->handle, mgr, k, this->policy, this->z_tol);
     if(id) return(*id);
 
-    return sqlite3_operations::insert_wavenumber(this->handle, mgr, k, this->policy);
+    return sqlite3_operations::insert_wavenumber<Token>(this->handle, mgr, k, this->policy);
   }
 
 
 // GENERATE REDSHIFT AND WAVENUMBER DATABASES
 
 
-std::unique_ptr<redshift_database> data_manager::build_db(range<double>& sample)
+std::unique_ptr<z_database> data_manager::build_redshift_db(range<double>& sample)
   {
     // construct an empty redshift database
-    std::unique_ptr<redshift_database> z_db(new redshift_database);
+    std::unique_ptr<z_database> z_db(new z_database);
 
     // grab the grid of redshift samples
     const std::vector<double>& z_samples = sample.grid();
 
     for(std::vector<double>::const_iterator t = z_samples.begin(); t != z_samples.end(); ++t)
       {
-        std::unique_ptr<redshift_token> tok = this->tokenize(*t);
+        std::unique_ptr<z_token> tok = this->tokenize(*t);
         z_db->add_record(*t, *tok);
       }
 
@@ -234,17 +237,18 @@ std::unique_ptr<redshift_database> data_manager::build_db(range<double>& sample)
   }
 
 
-std::unique_ptr<wavenumber_database> data_manager::build_db(range<eV_units::energy>& sample)
+template <typename Token>
+std::unique_ptr< wavenumber_database<Token> > data_manager::build_wavenumber_db(range<Mpc_units::energy>& sample)
   {
     // construct an empty wavenumber database
-    std::unique_ptr<wavenumber_database> k_db = std::make_unique<wavenumber_database>();
+    std::unique_ptr< wavenumber_database<Token> > k_db = std::make_unique< wavenumber_database<Token> >();
 
     // grab the grid of wavenumber samples
-    const std::vector<eV_units::energy>& k_samples = sample.grid();
+    const std::vector<Mpc_units::energy>& k_samples = sample.grid();
 
-    for(std::vector<eV_units::energy>::const_iterator t = k_samples.begin(); t != k_samples.end(); ++t)
+    for(std::vector<Mpc_units::energy>::const_iterator t = k_samples.begin(); t != k_samples.end(); ++t)
       {
-        std::unique_ptr<wavenumber_token> tok = this->tokenize(*t);
+        std::unique_ptr<Token> tok = this->tokenize<Token>(*t);
         k_db->add_record(*t, *tok);
       }
 
@@ -252,8 +256,26 @@ std::unique_ptr<wavenumber_database> data_manager::build_db(range<eV_units::ener
   }
 
 
-std::unique_ptr<transfer_work_list> data_manager::build_transfer_work_list(FRW_model_token& model, wavenumber_database& k_db,
-                                                                           redshift_database& z_db)
+std::unique_ptr<k_database> data_manager::build_k_db(range<Mpc_units::energy>& sample)
+  {
+    return this->build_wavenumber_db<k_token>(sample);
+  }
+
+
+std::unique_ptr<IR_database> data_manager::build_IR_db(range<Mpc_units::energy>& sample)
+  {
+    return this->build_wavenumber_db<IR_token>(sample);
+  }
+
+
+std::unique_ptr<UV_database> data_manager::build_UV_db(range<Mpc_units::energy>& sample)
+  {
+    return this->build_wavenumber_db<UV_token>(sample);
+  }
+
+
+std::unique_ptr<transfer_work_list> data_manager::build_transfer_work_list(FRW_model_token& model, k_database& k_db,
+                                                                           z_database& z_db)
   {
     // start timer
     boost::timer::cpu_timer timer;
@@ -268,12 +290,17 @@ std::unique_ptr<transfer_work_list> data_manager::build_transfer_work_list(FRW_m
     std::string z_table = sqlite3_operations::z_table(this->handle, *transaction, this->policy, z_db);
 
     // for each wavenumber in k_db, find which z-values are missing
-    for(wavenumber_database::record_iterator t = k_db.record_begin(); t != k_db.record_end(); ++t)
+    for(k_database::record_iterator t = k_db.record_begin(); t != k_db.record_end(); ++t)
       {
-//        std::cout << "lsseft: checking missing redshift values for k = " << (*(*t) * eV_units::Mpc) << " h/Mpc = " << static_cast<double>(*(*t)) << " eV" << '\n';
+//        std::cout << "lsseft: checking missing redshift values for k = " << (*(*t) * Mpc_units::Mpc) << " h/Mpc = " << (*(*t)) / Mpc_units::eV << " eV" << '\n';
 
-        // get a database of missing redshifts for this k-value
-        std::shared_ptr<redshift_database> missing_values = sqlite3_operations::missing_redshifts(this->handle, *transaction, this->policy, model, t->get_token(), z_db, z_table);
+        // get a database of missing redshifts for this k-value.
+        // sqlite3_operations::missing_redshifts() returns a std::unique_ptr which transfers ownership,
+        // but we want to convert that to a std::shared_ptr which is what transfer_work_item expects,
+        // because it shares ownership with objects representing MPI messages
+        // (see comments in transfer_work_item constructor)
+        std::shared_ptr<z_database> missing_values(std::move(sqlite3_operations::missing_transfer_redshifts(this->handle, *transaction, this->policy, model,
+                                                                                                            t->get_token(), z_db, z_table)));
 
         // if any redshifts were missing, set up a record in the work list
         if(missing_values)
@@ -297,19 +324,7 @@ std::unique_ptr<transfer_work_list> data_manager::build_transfer_work_list(FRW_m
   }
 
 
-void data_manager::store(const FRW_model_token& model_token, const transfer_function& sample)
-  {
-    // open a transaction on the database
-    std::shared_ptr<transaction_manager> transaction = this->open_transaction();
-
-    sqlite3_operations::store(this->handle, *transaction, this->policy, model_token, sample);
-
-    // commit the transaction before allowing it to go out of scope
-    transaction->commit();
-  }
-
-
-std::unique_ptr<redshift_database> data_manager::build_oneloop_work_list(FRW_model_token& model, redshift_database& z_db)
+std::unique_ptr<z_database> data_manager::build_oneloop_work_list(FRW_model_token& model, z_database& z_db)
   {
     // start timer
     boost::timer::cpu_timer timer;
@@ -320,7 +335,10 @@ std::unique_ptr<redshift_database> data_manager::build_oneloop_work_list(FRW_mod
     // set up temporary table of desired z identifier
     std::string z_table = sqlite3_operations::z_table(this->handle, *transaction, this->policy, z_db);
 
-    std::unique_ptr<redshift_database> work_list = sqlite3_operations::missing_redshifts(this->handle, *transaction, this->policy, model, z_db, z_table);
+    std::unique_ptr<z_database> work_list = sqlite3_operations::missing_oneloop_redshifts(this->handle, *transaction, this->policy, model, z_db, z_table);
+
+    // drop unneeded temporary tables
+    sqlite3_operations::drop_temp(this->handle, *transaction, z_table);
 
     // close transaction
     transaction->commit();
@@ -332,13 +350,52 @@ std::unique_ptr<redshift_database> data_manager::build_oneloop_work_list(FRW_mod
   }
 
 
-void data_manager::store(const FRW_model_token& model_token, const oneloop& sample)
+std::unique_ptr<loop_momentum_work_list> data_manager::build_loop_momentum_work_list(FRW_model_token& model, k_database& k_db,
+                                                                                     IR_database& IR_db, UV_database& UV_db,
+                                                                                     std::shared_ptr<tree_power_spectrum>& Pk)
   {
+    // start timer
+    boost::timer::cpu_timer timer;
+
+    // construct an empty work list
+    std::unique_ptr<loop_momentum_work_list> work_list = std::make_unique<loop_momentum_work_list>();
+
     // open a transaction on the database
     std::shared_ptr<transaction_manager> transaction = this->open_transaction();
 
-    sqlite3_operations::store(this->handle, *transaction, this->policy, model_token, sample);
+    // tensor together the desired k-values with the IR and UV cutoffs to obtain a set of
+    // desired combinations
+    std::list< data_manager_impl::loop_momentum_configuration > combinations;
 
-    // commit the transaction
+    for(k_database::const_record_iterator t = k_db.record_begin(); t != k_db.record_end(); ++t)
+      {
+        for(UV_database::const_record_iterator u = UV_db.record_begin(); u != UV_db.record_end(); ++u)
+          {
+            for(IR_database::const_record_iterator v = IR_db.record_begin(); v != IR_db.record_end(); ++v)
+              {
+                combinations.emplace_back(t, u, v);
+              }
+          }
+      }
+
+    sqlite3_operations::missing_loop_momentum(this->handle, *transaction, this->policy, model, k_db, combinations);
+
+    for(const data_manager_impl::loop_momentum_configuration& record : combinations)
+      {
+        if(record.include)
+          {
+            work_list->emplace_back(*(*record.k), record.k->get_token(), *(*record.UV), record.UV->get_token(), *(*record.IR), record.IR->get_token(), Pk);
+          }
+      }
+
+    // close transaction
     transaction->commit();
+
+    timer.stop();
+    std::cout << "lsseft: constructed loop momentum work list in time " << format_time(timer.elapsed().wall) << '\n';
+
+    // release list if it contains no work
+    if(work_list->size() == 0) work_list.release();
+
+    return(work_list);
   }

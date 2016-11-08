@@ -6,7 +6,7 @@
 #include "transfer_function.h"
 
 
-transfer_function::transfer_function(const eV_units::energy& _k, const wavenumber_token& t, std::shared_ptr<redshift_database> z)
+transfer_function::transfer_function(const Mpc_units::energy& _k, const k_token& t, std::shared_ptr<z_database> z)
   : k(_k),
     token(t),
     z_db(z)

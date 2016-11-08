@@ -15,17 +15,21 @@ ADD_SUBDIRECTORY ( "thirdparty/splinter" "splinter-build" )
 # use version of Eigen3 bundled with SPLINTER
 SET ( EIGEN3_INCLUDE_DIR  "thirdparty/splinter/thirdparty/Eigen" )
 
+# Cuba libraries and include files
+SET ( CUBA_INCLUDE_DIR "/Users/ds283/Documents/Code/Cuba/Cuba-4.2" "/Users/david/Documents/Code/Cuba/Cuba-4.2" "/usr/local/include" )
+SET ( CUBA_LIBRARY_DIR "/Users/ds283/Documents/Code/Cuba/Cuba-4.2" "/Users/david/Documents/Code/Cuba/Cuba-4.2" "/usr/local/lib" )
+
 include_directories(./
   thirdparty/splinter/include
   ${EIGEN3_INCLUDE_DIR}
   ${Boost_INCLUDE_DIRS}
-  ${MPI_CXX_INCLUDE_PATH})
+  ${MPI_CXX_INCLUDE_PATH}
+  ${CUBA_INCLUDE_DIR})
 
 set(LOCALIZATION
   localizations/messages.h)
 
-link_directories("/Users/ds283/Documents/Code/Cuba/Cuba-4.2")
-link_directories("/Users/david/Documents/Code/Cuba/Cuba-4.2")
+link_directories(${CUBA_LIBRARY_DIR})
 
 set(LOCALIZATION_EN_GB
   localizations/en_GB/en_GB.h
@@ -65,7 +69,9 @@ set(MISC_SOURCE_FILES
   misc/ansi_colour_codes.h)
 
 set(MPI_SOURCE_FILES
-  MPI_detail/mpi_operations.h)
+  MPI_detail/mpi_operations.h
+  MPI_detail/mpi_traits.h
+  MPI_detail/mpi_payloads.cpp MPI_detail/mpi_payloads.h)
 
 set(COSMOLOGY_SOURCE_FILES
   cosmology/FRW_model.cpp cosmology/FRW_model.h
@@ -76,24 +82,30 @@ set(COSMOLOGY_SOURCE_FILES
   cosmology/concepts/range_detail/range.h
   cosmology/concepts/range_detail/common.h
   cosmology/concepts/range_detail/aggregation.h
-  cosmology/transfer_integrator.cpp cosmology/transfer_integrator.h
-  cosmology/concepts/oneloop.cpp cosmology/concepts/oneloop.h
+  cosmology/concepts/oneloop_growth.cpp cosmology/concepts/oneloop_growth.h
+  cosmology/oneloop_momentum_integrator.cpp cosmology/oneloop_momentum_integrator.h
   cosmology/concepts/transfer_function.cpp cosmology/concepts/transfer_function.h
-  cosmology/oneloop_integrator.cpp cosmology/oneloop_integrator.h
-  cosmology/constants.h
-  cosmology/concepts/tree_power_spectrum.cpp cosmology/concepts/tree_power_spectrum.h)
+  cosmology/concepts/tree_power_spectrum.cpp cosmology/concepts/tree_power_spectrum.h
+  cosmology/concepts/loop_integral.cpp cosmology/concepts/loop_integral.h
+  cosmology/transfer_integrator.cpp cosmology/transfer_integrator.h
+  cosmology/oneloop_growth_integrator.cpp cosmology/oneloop_growth_integrator.h
+  cosmology/constants.h)
 
 set(UNITS_SOURCE_FILES
-  units/eV_units.h)
+  units/Mpc_units.h)
 
 set(DATABASE_SOURCE_FILES
-  database/data_manager.cpp database/data_manager.h
+  database/data_manager.cpp database/data_manager.h database/data_manager_impl.h
   database/tokens.cpp database/tokens.h
   database/transaction_manager.cpp database/transaction_manager.h
-  database/wavenumber_database.cpp database/wavenumber_database.h
-  database/redshift_database.cpp database/redshift_database.h
+  database/wavenumber_database.h
+  database/z_database.cpp database/z_database.h
   database/generic_record_iterator.h database/generic_value_iterator.h
-  database/powerspectrum_database.cpp database/powerspectrum_database.h)
+  database/powerspectrum_database.cpp database/powerspectrum_database.h
+  database/z_record.cpp database/z_record.h
+  database/wavenumber_record.h
+  database/powerspectrum_record.cpp database/powerspectrum_record.h
+  database/k_database.h database/IR_database.h database/UV_database.h)
 
 set(SQLITE3_DETAIL_SOURCE_FILES
   sqlite3_detail/operations.h
@@ -103,7 +115,7 @@ set(SQLITE3_DETAIL_SOURCE_FILES
   sqlite3_detail/FRW_model.cpp sqlite3_detail/FRW_model.h
   sqlite3_detail/sqlite3_policy.cpp sqlite3_detail/sqlite3_policy.h
   sqlite3_detail/redshift.cpp sqlite3_detail/redshift.h
-  sqlite3_detail/wavenumber.cpp sqlite3_detail/wavenumber.h
+  sqlite3_detail/wavenumber.h
   sqlite3_detail/temporary_tables.cpp sqlite3_detail/temporary_tables.h
   sqlite3_detail/missing_elements.cpp sqlite3_detail/missing_elements.h
   sqlite3_detail/store.cpp sqlite3_detail/store.h)
@@ -135,21 +147,24 @@ add_executable(lsseft
   utilities/formatter.cpp
   cosmology/FRW_model.cpp
   cosmology/concepts/transfer_function.cpp
-  cosmology/concepts/oneloop.cpp
+  cosmology/concepts/oneloop_growth.cpp
+  cosmology/concepts/loop_integral.cpp
   cosmology/concepts/tree_power_spectrum.cpp
   cosmology/transfer_integrator.cpp
-  cosmology/oneloop_integrator.cpp
+  cosmology/oneloop_growth_integrator.cpp
+  cosmology/oneloop_momentum_integrator.cpp
   database/data_manager.cpp
   database/tokens.cpp
   database/transaction_manager.cpp
-  database/wavenumber_database.cpp
-  database/redshift_database.cpp
+  database/z_database.cpp
   database/powerspectrum_database.cpp
+  database/z_record.cpp
+  database/powerspectrum_record.cpp
+  MPI_detail/mpi_payloads.cpp
   sqlite3_detail/utilities.cpp
   sqlite3_detail/create.cpp
   sqlite3_detail/FRW_model.cpp
   sqlite3_detail/redshift.cpp
-  sqlite3_detail/wavenumber.cpp
   sqlite3_detail/temporary_tables.cpp
   sqlite3_detail/missing_elements.cpp
   sqlite3_detail/store.cpp

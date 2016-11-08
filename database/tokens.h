@@ -7,6 +7,8 @@
 #define LSSEFT_TOKENS_H
 
 
+#include "sqlite3_detail/sqlite3_policy.h"
+
 #include "boost/serialization/serialization.hpp"
 #include "boost/serialization/base_object.hpp"
 #include "boost/serialization/assume_abstract.hpp"
@@ -18,6 +20,10 @@ class generic_token;
 
 bool operator<(const generic_token& a, const generic_token& b);
 bool operator==(const generic_token& a, const generic_token& b);
+
+
+template <typename Token>
+const std::string& tokenization_table(const sqlite3_policy& policy);
 
 
 //! base class: a generic token
@@ -93,7 +99,6 @@ class FRW_model_token: public generic_token
 
   private:
 
-
     // enable boost::serialization support, and hence automated packing for transmission over MPI
     friend class boost::serialization::access;
 
@@ -107,7 +112,7 @@ class FRW_model_token: public generic_token
 
 
 //! token representing a redshift
-class redshift_token: public generic_token
+class z_token: public generic_token
   {
 
     // CONSTRUCTOR, DESTRUCTOR
@@ -115,14 +120,13 @@ class redshift_token: public generic_token
   public:
 
     //! constructor
-    redshift_token(unsigned int i);
+    z_token(unsigned int i);
 
     //! destructor is default
-    virtual ~redshift_token() = default;
+    virtual ~z_token() = default;
 
 
   private:
-
 
     // enable boost::serialization support, and hence automated packing for transmission over MPI
     friend class boost::serialization::access;
@@ -136,8 +140,16 @@ class redshift_token: public generic_token
   };
 
 
-//! token representing a wavenumber
-class wavenumber_token: public generic_token
+// specialize tokenization for this
+template <>
+inline const std::string& tokenization_table<z_token>(const sqlite3_policy& policy)
+  {
+    return(policy.redshift_config_table());
+  }
+
+
+//! token representing a k-value at which we sample the power spectrum
+class k_token: public generic_token
   {
 
     // CONSTRUCTOR, DESTRUCTOR
@@ -145,14 +157,13 @@ class wavenumber_token: public generic_token
   public:
 
     //! constructor
-    wavenumber_token(unsigned int i);
+    k_token(unsigned int i);
 
     //! destructor is default
-    virtual ~wavenumber_token() = default;
+    virtual ~k_token() = default;
 
 
   private:
-
 
     // enable boost::serialization support, and hence automated packing for transmission over MPI
     friend class boost::serialization::access;
@@ -164,6 +175,89 @@ class wavenumber_token: public generic_token
       }
 
   };
+
+
+// specialize tokenization for this
+template <>
+inline const std::string& tokenization_table<k_token>(const sqlite3_policy& policy)
+  {
+    return(policy.wavenumber_config_table());
+  }
+
+
+
+//! token representing a k-value corresponding to an IR cutoff
+class IR_token: public generic_token
+  {
+
+    // CONSTRUCTOR, DESTRUCTOR
+
+  public:
+
+    //! constructor
+    IR_token(unsigned int i);
+
+    //! destructor is default
+    virtual ~IR_token() = default;
+
+
+  private:
+
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & boost::serialization::base_object<generic_token>(*this);
+      }
+
+  };
+
+
+// specialize tokenization for this
+template <>
+inline const std::string& tokenization_table<IR_token>(const sqlite3_policy& policy)
+  {
+    return(policy.IR_config_table());
+  }
+
+
+//! token representing a k-value corresponding to a UV cutoff
+class UV_token: public generic_token
+  {
+
+    // CONSTRUCTOR, DESTRUCTOR
+
+  public:
+
+    //! constructor
+    UV_token(unsigned int i);
+
+    //! destructor is default
+    virtual ~UV_token() = default;
+
+
+  private:
+
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & boost::serialization::base_object<generic_token>(*this);
+      }
+
+  };
+
+
+// specialize tokenization for this
+template <>
+inline const std::string& tokenization_table<UV_token>(const sqlite3_policy& policy)
+  {
+    return(policy.UV_config_table());
+  }
 
 
 

@@ -10,7 +10,8 @@
 #include "database/transaction_manager.h"
 
 #include "cosmology/concepts/transfer_function.h"
-#include "cosmology/concepts/oneloop.h"
+#include "cosmology/concepts/oneloop_growth.h"
+#include "cosmology/concepts/loop_integral.h"
 
 #include "sqlite3_policy.h"
 
@@ -24,7 +25,10 @@ namespace sqlite3_operations
     void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model, const transfer_function& sample);
 
     //! store a one-loop growth factor sample
-    void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model, const oneloop& sample);
+    void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model, const oneloop_growth& sample);
+
+    //! store a loop momentum integral sample
+    void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model, const loop_integral& sample);
 
   }   // namespace sqlite3_operations
 

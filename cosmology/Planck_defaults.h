@@ -7,19 +7,20 @@
 #define LSSEFT_PLANCK_DEFAULTS_H
 
 
-#include "units/eV_units.h"
+#include "units/Mpc_units.h"
 
 
 // Planck 2013+WP 'best fit' parameters from Table 2 on p.11 of arXiv:1303.5076
 namespace Planck2013
   {
 
-    constexpr double           omega_cc = 0.6817;
-    constexpr double           omega_m  = 1.0 - omega_cc;
-    constexpr double           h        = 0.6704;
-    constexpr double           f_baryon = 0.15;   // Planck+WP best fit values is 0.154706
-    constexpr eV_units::energy H0       = 100 * h * eV_units::Kilometre / (eV_units::Second * eV_units::Mpc);
-    constexpr eV_units::energy T_CMB    = 2.725 * eV_units::Kelvin;
+    constexpr double            omega_cc = 0.6817;
+    constexpr double            omega_m  = 1.0 - omega_cc;
+    constexpr double            h        = 0.6704;
+    constexpr double            f_baryon = 0.15;   // Planck+WP best fit value is 0.154706
+    constexpr Mpc_units::energy H0       = 100 * h * Mpc_units::Kilometre / (Mpc_units::Second * Mpc_units::Mpc);
+    constexpr Mpc_units::energy T_CMB    = 2.7255 * Mpc_units::Kelvin;
+    constexpr double            Neff     = 3.046;   // Standard Model value
 
     // fluctuation two-point function
     constexpr double Acurv  = 2.2150E-9;

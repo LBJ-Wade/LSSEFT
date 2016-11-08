@@ -12,9 +12,9 @@
 #include "FRW_model.h"
 #include "concepts/transfer_function.h"
 
-#include "units/eV_units.h"
+#include "units/Mpc_units.h"
 #include "database/tokens.h"
-#include "database/redshift_database.h"
+#include "database/z_database.h"
 
 #include "defaults.h"
 
@@ -30,7 +30,7 @@ class transfer_integrator
   public:
 
     //! constructor
-    transfer_integrator(double a=LSSEFT_DEFAULT_ABS_ERR, double r=LSSEFT_DEFAULT_REL_ERR);
+    transfer_integrator(double a= LSSEFT_DEFAULT_ODE_ABS_ERR, double r= LSSEFT_DEFAULT_ODE_REL_ERR);
 
     //! destructor is default
     ~transfer_integrator() = default;
@@ -41,8 +41,8 @@ class transfer_integrator
   public:
 
     //! integrate transfer function for a given k-mode and set of redshift samples
-    transfer_function integrate(const FRW_model& model, const eV_units::energy& k, const wavenumber_token& tok,
-                                std::shared_ptr<redshift_database>& z_db);
+    transfer_function integrate(const FRW_model& model, const Mpc_units::energy& k, const k_token& tok,
+                                std::shared_ptr<z_database>& z_db);
 
 
     // INTERNAL DATA

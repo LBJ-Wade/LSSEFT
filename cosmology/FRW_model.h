@@ -22,7 +22,7 @@ class FRW_model
     //! constructor
     //! cosmological parameters refer to their values today; if none are provided, then we use
     //! Planck values as sensible defaults
-    FRW_model(double om= Planck2013::omega_m, double occ= Planck2013::omega_cc, double h_= Planck2013::h, eV_units::energy tc= Planck2013::T_CMB);
+    FRW_model(double om= Planck2013::omega_m, double occ= Planck2013::omega_cc, double h_= Planck2013::h, Mpc_units::energy tc= Planck2013::T_CMB, double ne= Planck2013::Neff);
 
     //! destructor is default
     ~FRW_model() = default;
@@ -42,7 +42,10 @@ class FRW_model
     double get_h() const { return(this->h); }
 
     //! get value of T_CMB
-    eV_units::energy get_T_CMB() const { return(this->T_CMB); }
+    Mpc_units::energy get_T_CMB() const { return(this->T_CMB); }
+
+    //! get value of Neff
+    double get_Neff() const { return(this->Neff); }
 
 
     // INTERNAL DATA
@@ -59,7 +62,10 @@ class FRW_model
     double h;
 
     //! CMB temperature T_CMB, measured today
-    eV_units::energy T_CMB;
+    Mpc_units::energy T_CMB;
+
+    //! number of effective relativistic degrees of freedom
+    double Neff;
 
 
     // enable boost::serialization support, and hence automated packing for transmission over MPI
@@ -72,6 +78,7 @@ class FRW_model
         ar & omega_cc;
         ar & h;
         ar & T_CMB;
+        ar & Neff;
       }
 
   };

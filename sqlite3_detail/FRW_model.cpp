@@ -21,12 +21,13 @@ namespace sqlite3_operations
       {
         assert(db != nullptr);
 
-        double           omega_m  = obj.get_omega_m();
-        double           omega_cc = obj.get_omega_cc();
-        double           h        = obj.get_h();
-        eV_units::energy T_CMB    = obj.get_T_CMB();
+        double            omega_m  = obj.get_omega_m();
+        double            omega_cc = obj.get_omega_cc();
+        double            h        = obj.get_h();
+        Mpc_units::energy T_CMB    = obj.get_T_CMB();
+        double            Neff     = obj.get_Neff();
 
-        double T_CMB_in_Kelvin = T_CMB/eV_units::Kelvin;
+        double T_CMB_in_Kelvin = T_CMB / Mpc_units::Kelvin;
 
         std::ostringstream select_stmt;
         select_stmt
@@ -34,7 +35,8 @@ namespace sqlite3_operations
           << "ABS((omega_m-@om)/omega_m)<@tol "
           << "AND ABS((omega_cc-@occ)/omega_cc)<@tol "
           << "AND ABS((h-@h)/h)<@tol "
-          << "AND ABS((T_CMB-@Tcmb)/T_CMB)<@tol;";
+          << "AND ABS((T_CMB-@Tcmb)/T_CMB)<@tol "
+          << "AND ABS((Neff-@Neff)/Neff)<@tol;";
 
         // prepare SQL statement
         sqlite3_stmt* stmt;
@@ -46,6 +48,7 @@ namespace sqlite3_operations
         check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@occ"), omega_cc));
         check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@h"), h));
         check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Tcmb"), T_CMB_in_Kelvin));
+        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Neff"), Neff));
 
         // execute statement and step through results
         int status = 0;
@@ -74,16 +77,17 @@ namespace sqlite3_operations
         // get number of rows in table; this will be the identifier for the new model
         unsigned int new_id = count(db, policy.FRW_model_table());
 
-        double           omega_m  = obj.get_omega_m();
-        double           omega_cc = obj.get_omega_cc();
-        double           h        = obj.get_h();
-        eV_units::energy T_CMB    = obj.get_T_CMB();
+        double            omega_m  = obj.get_omega_m();
+        double            omega_cc = obj.get_omega_cc();
+        double            h        = obj.get_h();
+        Mpc_units::energy T_CMB    = obj.get_T_CMB();
+        double            Neff     = obj.get_Neff();
 
-        double T_CMB_in_Kelvin = T_CMB/eV_units::Kelvin;
+        double T_CMB_in_Kelvin = T_CMB / Mpc_units::Kelvin;
 
         std::ostringstream insert_stmt;
         insert_stmt
-          << "INSERT INTO " << policy.FRW_model_table() << " VALUES (@id, @omega_m, @omega_cc, @h, @T_CMB);";
+          << "INSERT INTO " << policy.FRW_model_table() << " VALUES (@id, @omega_m, @omega_cc, @h, @T_CMB, @Neff);";
 
         // prepare SQL statement
         sqlite3_stmt* stmt;
@@ -95,6 +99,7 @@ namespace sqlite3_operations
         check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@omega_cc"), omega_cc));
         check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@h"), h));
         check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@T_CMB"), T_CMB_in_Kelvin));
+        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Neff"), Neff));
 
         // perform insertion
         check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_FRW_MODEL_FAIL, SQLITE_DONE);

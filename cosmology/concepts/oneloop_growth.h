@@ -11,12 +11,12 @@
 #include <vector>
 
 #include "database/tokens.h"
-#include "database/redshift_database.h"
+#include "database/z_database.h"
 
 #include "boost/timer/timer.hpp"
 
 
-struct oneloop_record
+struct oneloop_growth_record
   {
     double g;
     double A;
@@ -25,14 +25,14 @@ struct oneloop_record
     double E;
     double F;
     double G;
-    double oneloop;
+    double J;
   };
 
 
-typedef std::pair< const redshift_token&, oneloop_record > oneloop_value;
+typedef std::pair< const z_token&, oneloop_growth_record> oneloop_value;
 
 
-namespace oneloop_impl
+namespace oneloop_growth_impl
   {
 
     template <typename RecordIterator, typename ConstRecordIterator, typename ValueIterator, typename ConstValueIterator, bool is_const_iterator=true>
@@ -58,7 +58,7 @@ namespace oneloop_impl
         //! value constructor; points to a given element in the transfer function sample
         generic_token_iterator(record_iterator r,
                                value_iterator g, value_iterator A, value_iterator B, value_iterator D, value_iterator E,
-                               value_iterator F, value_iterator G, value_iterator t)
+                               value_iterator F, value_iterator G, value_iterator J)
           : record_iter(r),
             g_iter(g),
             A_iter(A),
@@ -67,7 +67,7 @@ namespace oneloop_impl
             E_iter(E),
             F_iter(F),
             G_iter(G),
-            oneloop_iter(t)
+            J_iter(J)
           {
           }
 
@@ -81,7 +81,7 @@ namespace oneloop_impl
             E_iter(obj.E_iter),
             F_iter(obj.F_iter),
             G_iter(obj.G_iter),
-            oneloop_iter(obj.oneloop_iter)
+            J_iter(obj.J_iter)
           {
           }
 
@@ -112,7 +112,7 @@ namespace oneloop_impl
         //! dereference iterator to get value
         oneloop_value operator*() const
           {
-            oneloop_record rec;
+            oneloop_growth_record rec;
             rec.g = *this->g_iter;
             rec.A = *this->A_iter;
             rec.B = *this->B_iter;
@@ -120,7 +120,7 @@ namespace oneloop_impl
             rec.E = *this->E_iter;
             rec.F = *this->F_iter;
             rec.G = *this->G_iter;
-            rec.oneloop = *this->oneloop_iter;
+            rec.J = *this->J_iter;
 
             return oneloop_value(this->record_iter->get_token(), rec);
           }
@@ -140,7 +140,7 @@ namespace oneloop_impl
             --this->E_iter;
             --this->F_iter;
             --this->G_iter;
-            --this->oneloop_iter;
+            --this->J_iter;
             --this->record_iter;
             return(*this);
           }
@@ -163,7 +163,7 @@ namespace oneloop_impl
             ++this->E_iter;
             ++this->F_iter;
             ++this->G_iter;
-            ++this->oneloop_iter;
+            ++this->J_iter;
             ++this->record_iter;
             return(*this);
           }
@@ -209,16 +209,16 @@ namespace oneloop_impl
         //! iterator into G sample
         value_iterator G_iter;
 
-        //! iterator into total one-loop growth factor sample
-        value_iterator oneloop_iter;
+        //! iterator into J sample
+        value_iterator J_iter;
 
       };
 
 
-  }   // namespace oneloop_impl
+  }   // namespace oneloop_growth_impl
 
 
-class oneloop
+class oneloop_growth
   {
 
     // CONSTRUCTOR, DESTRUCTOR
@@ -226,10 +226,10 @@ class oneloop
   public:
 
     //! constructor
-    oneloop(redshift_database& z);
+    oneloop_growth(z_database& z);
 
     //! destructor is default
-    ~oneloop() = default;
+    ~oneloop_growth() = default;
 
 
     // ITERATORS
@@ -237,41 +237,41 @@ class oneloop
   public:
 
     //! type alias for non-const iterator
-    typedef oneloop_impl::generic_token_iterator<redshift_database::reverse_record_iterator, redshift_database::const_reverse_record_iterator,
-                                                 std::vector<double>::iterator, std::vector<double>::const_iterator, false> token_iterator;
+    typedef oneloop_growth_impl::generic_token_iterator<z_database::reverse_record_iterator, z_database::const_reverse_record_iterator,
+                                                        std::vector<double>::iterator, std::vector<double>::const_iterator, false> token_iterator;
 
     //! type alias for const iterator
-    typedef oneloop_impl::generic_token_iterator<redshift_database::reverse_record_iterator, redshift_database::const_reverse_record_iterator,
-                                                 std::vector<double>::iterator, std::vector<double>::const_iterator, true> const_token_iterator;
+    typedef oneloop_growth_impl::generic_token_iterator<z_database::reverse_record_iterator, z_database::const_reverse_record_iterator,
+                                                        std::vector<double>::iterator, std::vector<double>::const_iterator, true> const_token_iterator;
 
     token_iterator token_begin()
       {
-        return(token_iterator(this->z_db.record_rbegin(), this->g_linear->begin(), this->A->begin(), this->B->begin(), this->D->begin(), this->E->begin(), this->F->begin(), this->G->begin(), this->g_oneloop->begin()));
+        return(token_iterator(this->z_db.record_rbegin(), this->g_linear->begin(), this->A->begin(), this->B->begin(), this->D->begin(), this->E->begin(), this->F->begin(), this->G->begin(), this->J->begin()));
       }
 
     token_iterator token_end()
       {
-        return(token_iterator(this->z_db.record_rend(), this->g_linear->end(), this->A->end(), this->B->end(), this->D->end(), this->E->end(), this->F->end(), this->G->end(), this->g_oneloop->end()));
+        return(token_iterator(this->z_db.record_rend(), this->g_linear->end(), this->A->end(), this->B->end(), this->D->end(), this->E->end(), this->F->end(), this->G->end(), this->J->end()));
       }
 
     const_token_iterator token_begin() const
       {
-        return(const_token_iterator(this->z_db.record_crbegin(), this->g_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->g_oneloop->cbegin()));
+        return(const_token_iterator(this->z_db.record_crbegin(), this->g_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->J->cbegin()));
       }
 
     const_token_iterator token_end() const
       {
-        return(const_token_iterator(this->z_db.record_crend(), this->g_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->g_oneloop->cend()));
+        return(const_token_iterator(this->z_db.record_crend(), this->g_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->J->cend()));
       }
 
     const_token_iterator token_cbegin() const
       {
-        return(const_token_iterator(this->z_db.record_crbegin(), this->g_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->g_oneloop->cbegin()));
+        return(const_token_iterator(this->z_db.record_crbegin(), this->g_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->J->cbegin()));
       }
 
     const_token_iterator token_cend() const
       {
-        return(const_token_iterator(this->z_db.record_crend(), this->g_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->g_oneloop->cend()));
+        return(const_token_iterator(this->z_db.record_crend(), this->g_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->J->cend()));
       }
 
 
@@ -280,7 +280,7 @@ class oneloop
   public:
 
     //! store components
-    void push_back(double g, double A, double B, double D, double E, double F, double G);
+    void push_back(double g, double A, double B, double D, double E, double F, double G, double J);
 
 
     // METADATA
@@ -304,7 +304,7 @@ class oneloop
     // CONFIGURATION DATA
 
     //! reference to redshift database
-    redshift_database& z_db;
+    z_database& z_db;
 
 
     // ONE-LOOP FUNCITONS
@@ -314,26 +314,26 @@ class oneloop
     //! linear growth factor
     std::unique_ptr< std::vector<double> > g_linear;
 
-    //! A kernel
+    //! A growth factor
     std::unique_ptr< std::vector<double> > A;
 
-    //! B kernel
+    //! B growth factor
     std::unique_ptr< std::vector<double> > B;
 
-    //! D kernel
+    //! D growth factor
     std::unique_ptr< std::vector<double> > D;
 
-    //! E kernel
+    //! E growth factor
     std::unique_ptr< std::vector<double> > E;
 
-    //! F kernel
+    //! F growth factor
     std::unique_ptr< std::vector<double> > F;
 
-    //! G kernel
+    //! G growth factor
     std::unique_ptr< std::vector<double> > G;
 
-    //! total one-loop kernel
-    std::unique_ptr< std::vector<double> > g_oneloop;
+    //! J growth factor
+    std::unique_ptr< std::vector<double> > J;
 
 
     // METADATA

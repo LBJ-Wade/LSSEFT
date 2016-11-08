@@ -8,6 +8,8 @@
 
 #include "redshift.h"
 
+#include "database/tokens.h"
+
 #include "utilities.h"
 
 #include "exceptions.h"
@@ -24,7 +26,7 @@ namespace sqlite3_operations
 
         std::ostringstream select_stmt;
         select_stmt
-          << "SELECT id FROM " << policy.redshift_config_table() << " WHERE "
+          << "SELECT id FROM " << tokenization_table<z_token>(policy) << " WHERE "
           << "ABS((z-@z)/z)<@tol;";
 
         // prepare SQL statement
@@ -61,11 +63,11 @@ namespace sqlite3_operations
         assert(db != nullptr);
 
         // get number of rows in table; this will be the identifier for the new redshift
-        unsigned int new_id = count(db, policy.redshift_config_table());
+        unsigned int new_id = count(db, tokenization_table<z_token>(policy));
 
         std::ostringstream insert_stmt;
         insert_stmt
-          << "INSERT INTO " << policy.redshift_config_table() << " VALUES (@id, @z);";
+          << "INSERT INTO " << tokenization_table<z_token>(policy) << " VALUES (@id, @z);";
 
         // prepare SQL statement
         sqlite3_stmt* stmt;
