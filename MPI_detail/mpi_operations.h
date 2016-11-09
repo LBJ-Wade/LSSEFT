@@ -307,7 +307,8 @@ namespace MPI_detail
         loop_momentum_integration_ready()
           : data(Mpc_units::energy(0), k_token(0), Mpc_units::energy(0), UV_token(0), Mpc_units::energy(0), IR_token(0),
                  false, inverse_energy3_kernel(), inverse_energy3_kernel(), inverse_energy3_kernel(),
-                 dimless_kernel(), dimless_kernel(), dimless_kernel(), dimless_kernel(), dimless_kernel())
+                 dimless_kernel(), dimless_kernel(), dimless_kernel(), dimless_kernel(),
+                 dimless_kernel(), dimless_kernel())
           {
           }
 

@@ -7,6 +7,8 @@
 #define LSSEFT_TOKENS_H
 
 
+#include <functional>
+
 #include "sqlite3_detail/sqlite3_policy.h"
 
 #include "boost/serialization/serialization.hpp"
@@ -80,6 +82,41 @@ class generic_token
 
 
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(generic_token)
+
+
+namespace std
+  {
+    
+    template<>
+    class hash<generic_token>
+      {
+        
+        // CONSTRUCTOR, DESTRUCTOR
+        
+      public:
+        
+        //! constructor is default
+        hash() = default;
+        
+        //! destructor is default
+        ~hash() = default;
+        
+        
+        // IMPLEMENTATION
+        
+      public:
+        
+        //! hash function
+        size_t operator()(const generic_token& tok) const
+          {
+            std::hash<unsigned int> hasher;
+
+            return hasher(tok.get_id());
+          }
+        
+      };
+    
+  }
 
 
 //! token representing an FRW model
@@ -258,6 +295,156 @@ inline const std::string& tokenization_table<UV_token>(const sqlite3_policy& pol
   {
     return(policy.UV_config_table());
   }
+
+
+namespace std
+  {
+    
+    template<>
+    class hash<FRW_model_token>
+      {
+        
+        // CONSTRUCTOR, DESTRUCTOR
+        
+      public:
+        
+        //! constructor is default
+        hash() = default;
+        
+        //! destrucotr is default
+        ~hash() = default;
+        
+        
+        // IMPLEMENTATION
+        
+      public:
+        
+        //! hash function
+        size_t operator()(const FRW_model_token& tok)
+          {
+            std::hash<generic_token> hasher;
+            return hasher(tok);
+          }
+        
+      };
+    
+    
+    template<>
+    class hash<z_token>
+      {
+        
+        // CONSTRUCTOR, DESTRUCTOR
+      
+      public:
+        
+        //! constructor is default
+        hash() = default;
+        
+        //! destrucotr is default
+        ~hash() = default;
+        
+        
+        // IMPLEMENTATION
+      
+      public:
+        
+        //! hash function
+        size_t operator()(const z_token& tok) const
+          {
+            std::hash<generic_token> hasher;
+            return hasher(tok);
+          }
+        
+      };
+    
+    
+    template<>
+    class hash<k_token>
+      {
+        
+        // CONSTRUCTOR, DESTRUCTOR
+      
+      public:
+        
+        //! constructor is default
+        hash() = default;
+        
+        //! destrucotr is default
+        ~hash() = default;
+        
+        
+        // IMPLEMENTATION
+      
+      public:
+        
+        //! hash function
+        size_t operator()(const k_token& tok) const
+          {
+            std::hash<generic_token> hasher;
+            return hasher(tok);
+          }
+        
+      };
+    
+    
+    template<>
+    class hash<IR_token>
+      {
+        
+        // CONSTRUCTOR, DESTRUCTOR
+      
+      public:
+        
+        //! constructor is default
+        hash() = default;
+        
+        //! destrucotr is default
+        ~hash() = default;
+        
+        
+        // IMPLEMENTATION
+      
+      public:
+        
+        //! hash function
+        size_t operator()(const IR_token& tok) const
+          {
+            std::hash<generic_token> hasher;
+            return hasher(tok);
+          }
+        
+      };
+    
+    
+    template<>
+    class hash<UV_token>
+      {
+        
+        // CONSTRUCTOR, DESTRUCTOR
+      
+      public:
+        
+        //! constructor is default
+        hash() = default;
+        
+        //! destrucotr is default
+        ~hash() = default;
+        
+        
+        // IMPLEMENTATION
+      
+      public:
+        
+        //! hash function
+        size_t operator()(const UV_token& tok) const
+          {
+            std::hash<generic_token> hasher;
+            return hasher(tok);
+          }
+        
+      };
+    
+  }   // namespace std
 
 
 

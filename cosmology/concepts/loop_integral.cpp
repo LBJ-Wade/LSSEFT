@@ -6,11 +6,12 @@
 #include "loop_integral.h"
 
 
-loop_integral::loop_integral(const Mpc_units::energy& _k, const k_token& kt, const Mpc_units::energy& UV,
-                             const UV_token& UVt, const Mpc_units::energy& IR, const IR_token& IRt,
-                             bool f, const inverse_energy3_kernel& _AA, const inverse_energy3_kernel& _AB, const inverse_energy3_kernel& _BB,
-                             const dimless_kernel& _D, const dimless_kernel& _E, const dimless_kernel& _F,
-                             const dimless_kernel& _G, const dimless_kernel& _J)
+loop_integral::loop_integral(const Mpc_units::energy& _k, const k_token& kt,
+                             const Mpc_units::energy& UV,  const UV_token& UVt,
+                             const Mpc_units::energy& IR, const IR_token& IRt, bool f,
+                             const inverse_energy3_kernel& _AA, const inverse_energy3_kernel& _AB, const inverse_energy3_kernel& _BB,
+                             const dimless_kernel& _D, const dimless_kernel& _E, const dimless_kernel& _F, const dimless_kernel& _G,
+                             const dimless_kernel& _J1, const dimless_kernel& _J2)
   : k(_k),
     k_tok(kt),
     UV_cutoff(UV),
@@ -25,6 +26,7 @@ loop_integral::loop_integral(const Mpc_units::energy& _k, const k_token& kt, con
     E(_E),
     F(_F),
     G(_G),
-    J(_J)
+    J1(_J1),
+    J2(_J2)
   {
   }

@@ -8,6 +8,9 @@
 #include <sstream>
 #include <assert.h>
 
+#include <set>
+#include <unordered_set>
+
 #include "data_manager.h"
 #include "data_manager_impl.h"
 
@@ -335,7 +338,10 @@ std::unique_ptr<z_database> data_manager::build_oneloop_work_list(FRW_model_toke
     // set up temporary table of desired z identifier
     std::string z_table = sqlite3_operations::z_table(this->handle, *transaction, this->policy, z_db);
 
-    std::unique_ptr<z_database> work_list = sqlite3_operations::missing_oneloop_redshifts(this->handle, *transaction, this->policy, model, z_db, z_table);
+    std::unique_ptr<z_database> work_list = sqlite3_operations::missing_oneloop_growth_redshifts(this->handle,
+                                                                                                 *transaction,
+                                                                                                 this->policy, model,
+                                                                                                 z_db, z_table);
 
     // drop unneeded temporary tables
     sqlite3_operations::drop_temp(this->handle, *transaction, z_table);
@@ -365,7 +371,7 @@ std::unique_ptr<loop_momentum_work_list> data_manager::build_loop_momentum_work_
 
     // tensor together the desired k-values with the IR and UV cutoffs to obtain a set of
     // desired combinations
-    std::list< data_manager_impl::loop_momentum_configuration > combinations;
+    loop_configs required_configs;
 
     for(k_database::const_record_iterator t = k_db.record_begin(); t != k_db.record_end(); ++t)
       {
@@ -373,19 +379,21 @@ std::unique_ptr<loop_momentum_work_list> data_manager::build_loop_momentum_work_
           {
             for(IR_database::const_record_iterator v = IR_db.record_begin(); v != IR_db.record_end(); ++v)
               {
-                combinations.emplace_back(t, u, v);
+                required_configs.emplace(t, u, v);
               }
           }
       }
+    
+    // obtain set of configurations that actually need to be computed, ie. are not already present
+    // in the database
+    loop_configs missing_configs =
+      sqlite3_operations::missing_loop_integral_configurations(this->handle, *transaction, this->policy,
+                                                               model, required_configs);
 
-    sqlite3_operations::missing_loop_momentum(this->handle, *transaction, this->policy, model, k_db, combinations);
-
-    for(const data_manager_impl::loop_momentum_configuration& record : combinations)
+    // add these missing configurations to the work list
+    for(const loop_configs::value_type& record : missing_configs)
       {
-        if(record.include)
-          {
-            work_list->emplace_back(*(*record.k), record.k->get_token(), *(*record.UV), record.UV->get_token(), *(*record.IR), record.IR->get_token(), Pk);
-          }
+        work_list->emplace_back(*(*record.k), record.k->get_token(), *(*record.UV), record.UV->get_token(), *(*record.IR), record.IR->get_token(), Pk);
       }
 
     // close transaction

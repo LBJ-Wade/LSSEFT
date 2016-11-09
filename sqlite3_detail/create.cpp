@@ -11,6 +11,34 @@
 
 namespace sqlite3_operations
   {
+    
+    namespace create_impl
+      {
+    
+        void oneloop_momentum_integral_table(sqlite3* db, const std::string& table_name, const sqlite3_policy& policy)
+          {
+            std::ostringstream stmt;
+            stmt
+              << "CREATE TABLE " << table_name << "("
+              << "mid INTEGER, "
+              << "kid INTEGER, "
+              << "IR_id INTEGER, "
+              << "UV_id INTEGER, "
+              << "value DOUBLE, "
+              << "regions DOUBLE, "
+              << "evals DOUBLE, "
+              << "err DOUBLE, "
+              << "time DOUBLE, "
+              << "PRIMARY KEY (mid, kid, IR_id, UV_id), "
+              << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
+              << "FOREIGN KEY (kid) REFERENCES " << policy.wavenumber_config_table() << "(id), "
+              << "FOREIGN KEY (IR_id) REFERENCES " << policy.IR_config_table() << "(id), "
+              << "FOREIGN KEY (UV_id) REFERENCES " << policy.UV_config_table() << "(id));";
+
+            exec(db, stmt.str());
+          }
+    
+      }
 
     void create_tables(sqlite3* db, const sqlite3_policy& policy)
       {
@@ -95,61 +123,16 @@ namespace sqlite3_operations
           << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id));";
 
         exec(db, oneloop_growth_stmt.str());
-
-        std::ostringstream oneloop_momentum_stmt;
-        oneloop_momentum_stmt
-          << "CREATE TABLE " << policy.loop_momentum_table() << "("
-          << "mid INTEGER, "
-          << "kid INTEGER, "
-          << "IR_id INTEGER, "
-          << "UV_id INTEGER, "
-          << "AA DOUBLE, "
-          << "AB DOUBLE, "
-          << "BB DOUBLE, "
-          << "D DOUBLE, "
-          << "E DOUBLE, "
-          << "F DOUBLE, "
-          << "G DOUBLE, "
-          << "J DOUBLE, "
-          << "AA_regions INTEGER, "
-          << "AB_regions INTEGER, "
-          << "BB_regions INTEGER, "
-          << "D_regions INTEGER, "
-          << "E_regions INTEGER, "
-          << "F_regions INTEGER, "
-          << "G_regions INTEGER, "
-          << "J_regions INTEGER, "
-          << "AA_evals INTEGER, "
-          << "AB_evals INTEGER, "
-          << "BB_evals INTEGER, "
-          << "D_evals INTEGER, "
-          << "E_evals INTEGER, "
-          << "F_evals INTEGER, "
-          << "G_evals INTEGER, "
-          << "J_evals INTEGER, "
-          << "AA_err DOUBLE, "
-          << "AB_err DOUBLE, "
-          << "BB_err DOUBLE, "
-          << "D_err DOUBLE, "
-          << "E_err DOUBLE, "
-          << "F_err DOUBLE, "
-          << "G_err DOUBLE, "
-          << "J_err DOUBLE, "
-          << "AA_time INTEGER, "
-          << "AB_time INTEGER, "
-          << "BB_time INTEGER, "
-          << "D_time INTEGER, "
-          << "E_time INTEGER, "
-          << "F_time INTEGER, "
-          << "G_time INTEGER, "
-          << "J_time INTEGER, "
-          << "PRIMARY KEY (mid, kid, IR_id, UV_id), "
-          << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
-          << "FOREIGN KEY (kid) REFERENCES " << policy.wavenumber_config_table() << "(id), "
-          << "FOREIGN KEY (IR_id) REFERENCES " << policy.IR_config_table() << "(id), "
-          << "FOREIGN KEY (UV_id) REFERENCES " << policy.UV_config_table() << "(id));";
-
-        exec(db, oneloop_momentum_stmt.str());
+        
+        create_impl::oneloop_momentum_integral_table(db, policy.AA_table(), policy);
+        create_impl::oneloop_momentum_integral_table(db, policy.AB_table(), policy);
+        create_impl::oneloop_momentum_integral_table(db, policy.BB_table(), policy);
+        create_impl::oneloop_momentum_integral_table(db, policy.D_table(), policy);
+        create_impl::oneloop_momentum_integral_table(db, policy.E_table(), policy);
+        create_impl::oneloop_momentum_integral_table(db, policy.F_table(), policy);
+        create_impl::oneloop_momentum_integral_table(db, policy.G_table(), policy);
+        create_impl::oneloop_momentum_integral_table(db, policy.J1_table(), policy);
+        create_impl::oneloop_momentum_integral_table(db, policy.J2_table(), policy);
       }
 
   }   // namespace sqlite3_operations

@@ -7,16 +7,24 @@
 #define LSSEFT_SQLITE3_DEFAULTS_H
 
 
-#define SQLITE3_DEFAULT_FRW_TABLE_NAME                 "models"
-#define SQLITE3_DEFAULT_REDSHIFT_CONFIGURATION_TABLE   "z_config"
-#define SQLITE3_DEFAULT_WAVENUMBER_CONFIGURATION_TABLE "wavenumber_config"
-#define SQLITE3_DEFAULT_IR_CONFIGURATION_TABLE         "IR_cutoff"
-#define SQLITE3_DEFAULT_UV_CONFIGURATION_TABLE         "UV_cutoff"
-#define SQLITE3_DEFAULT_TRANSFER_TABLE                 "transfer"
-#define SQLITE3_DEFAULT_LOOP_GROWTH_TABLE              "one_loop_growth"
-#define SQLITE3_DEFAULT_LOOP_MOMENTUM_TABLE            "one_loop_momentum"
+constexpr auto SQLITE3_DEFAULT_FRW_TABLE_NAME                 = "models";
+constexpr auto SQLITE3_DEFAULT_REDSHIFT_CONFIGURATION_TABLE   = "z_config";
+constexpr auto SQLITE3_DEFAULT_WAVENUMBER_CONFIGURATION_TABLE = "wavenumber_config";
+constexpr auto SQLITE3_DEFAULT_IR_CONFIGURATION_TABLE         = "IR_cutoff";
+constexpr auto SQLITE3_DEFAULT_UV_CONFIGURATION_TABLE         = "UV_cutoff";
+constexpr auto SQLITE3_DEFAULT_TRANSFER_TABLE                 = "transfer";
+constexpr auto SQLITE3_DEFAULT_LOOP_GROWTH_TABLE              = "one_loop_growth";
+constexpr auto SQLITE3_DEFAULT_LOOP_AA_TABLE                  = "AA";
+constexpr auto SQLITE3_DEFAULT_LOOP_AB_TABLE                  = "AB";
+constexpr auto SQLITE3_DEFAULT_LOOP_BB_TABLE                  = "BB";
+constexpr auto SQLITE3_DEFAULT_LOOP_D_TABLE                   = "D";
+constexpr auto SQLITE3_DEFAULT_LOOP_E_TABLE                   = "E";
+constexpr auto SQLITE3_DEFAULT_LOOP_F_TABLE                   = "F";
+constexpr auto SQLITE3_DEFAULT_LOOP_G_TABLE                   = "G";
+constexpr auto SQLITE3_DEFAULT_LOOP_J1_TABLE                  = "J1";
+constexpr auto SQLITE3_DEFAULT_LOOP_J2_TABLE                  = "J2";
 
-#define SQLITE3_DEFAULT_TEMPORARY_TABLE                "temp"
+constexpr auto SQLITE3_DEFAULT_TEMPORARY_TABLE                = "temp";
 
 
 #endif //LSSEFT_SQLITE3_DEFAULTS_H
