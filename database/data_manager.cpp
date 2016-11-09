@@ -335,7 +335,7 @@ std::unique_ptr<z_database> data_manager::build_oneloop_work_list(FRW_model_toke
     // open a transaction on the database
     std::shared_ptr<transaction_manager> transaction = this->open_transaction();
 
-    // set up temporary table of desired z identifier
+    // set up temporary table of desired z identifiers
     std::string z_table = sqlite3_operations::z_table(this->handle, *transaction, this->policy, z_db);
 
     std::unique_ptr<z_database> work_list = sqlite3_operations::missing_oneloop_growth_redshifts(this->handle,
@@ -350,7 +350,7 @@ std::unique_ptr<z_database> data_manager::build_oneloop_work_list(FRW_model_toke
     transaction->commit();
 
     timer.stop();
-    std::cout << "lsseft: constructed one-loop work list in time " << format_time(timer.elapsed().wall) << '\n';
+    std::cout << "lsseft: constructed one-loop growth factor work list in time " << format_time(timer.elapsed().wall) << '\n';
 
     return(work_list);
   }

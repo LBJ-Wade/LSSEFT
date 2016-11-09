@@ -107,7 +107,7 @@ namespace sqlite3_operations
 
         std::ostringstream oneloop_growth_stmt;
         oneloop_growth_stmt
-          << "CREATE TABLE " << policy.oneloop_table() << "("
+          << "CREATE TABLE " << policy.growth_factor_table() << "("
           << "mid INTEGER, "
           << "zid INTEGER, "
           << "g_linear DOUBLE, "
@@ -123,6 +123,25 @@ namespace sqlite3_operations
           << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id));";
 
         exec(db, oneloop_growth_stmt.str());
+    
+        std::ostringstream oneloop_rate_stmt;
+        oneloop_rate_stmt
+          << "CREATE TABLE " << policy.growth_rate_table() << "("
+          << "mid INTEGER, "
+          << "zid INTEGER, "
+          << "f_linear DOUBLE, "
+          << "fA DOUBLE, "
+          << "fB DOUBLE, "
+          << "fD DOUBLE, "
+          << "fE DOUBLE, "
+          << "fF DOUBLE, "
+          << "fG DOUBLE, "
+          << "fJ DOUBLE, "
+          << "PRIMARY KEY (mid, zid), "
+          << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
+          << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id));";
+    
+        exec(db, oneloop_rate_stmt.str());
         
         create_impl::oneloop_momentum_integral_table(db, policy.AA_table(), policy);
         create_impl::oneloop_momentum_integral_table(db, policy.AB_table(), policy);

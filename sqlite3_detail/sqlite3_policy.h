@@ -45,7 +45,10 @@ class sqlite3_policy
     const std::string& transfer_table() const { return(this->transfer); }
 
     //! 1-loop growth factors table
-    const std::string& oneloop_table() const { return(this->oneloop); }
+    const std::string& growth_factor_table() const { return(this->growth_factor); }
+    
+    //! 1-loop growth rate table
+    const std::string& growth_rate_table() const { return(this->growth_rate); }
 
     //! 1-loop AA integral table
     const std::string& AA_table() const { return(this->AA); }
@@ -85,55 +88,58 @@ class sqlite3_policy
     // TABLE NAMES
 
     //! FRW model table
-    std::string FRW_model;
+    const std::string FRW_model;
 
     //! redshift configuration table
-    std::string redshift_config;
+    const std::string redshift_config;
 
     //! wavenumber configuration table
-    std::string wavenumber_config;
+    const std::string wavenumber_config;
 
     //! IR cutoff configuration table
-    std::string IR_config;
+    const std::string IR_config;
 
     //! UV cutoff configuration table
-    std::string UV_config;
+    const std::string UV_config;
 
     //! transfer function table
-    std::string transfer;
+    const std::string transfer;
 
     //! 1-loop growth factors table
-    std::string oneloop;
+    const std::string growth_factor;
+    
+    //! 1-loop growth rate table
+    const std::string growth_rate;
 
     //! 1-loop momentum integrals - AA
-    std::string AA;
+    const std::string AA;
     
     //! 1-loop momentum integrals - AB
-    std::string AB;
+    const std::string AB;
     
     //! 1-loop momentum integrals - BB
-    std::string BB;
+    const std::string BB;
     
     //! 1-loop momentum integrals - D
-    std::string D;
+    const std::string D;
     
     //! 1-loop momentum integrals - E
-    std::string E;
+    const std::string E;
     
     //! 1-loop momentum integrals - F
-    std::string F;
+    const std::string F;
     
     //! 1-loop momentum integrals - G
-    std::string G;
+    const std::string G;
     
     //! 1-loop momentum integrals - J1
-    std::string J1;
+    const std::string J1;
     
     //! 1-loop momentum integrals - J2
-    std::string J2;
+    const std::string J2;
 
     //! temporary table name
-    std::string temp;
+    const std::string temp;
 
   };
 

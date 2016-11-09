@@ -175,6 +175,54 @@ namespace sqlite3_operations
 
         return(missing_db);
       }
+    
+    
+    std::set<unsigned int> update_missing_oneloop_growth_redshifts(sqlite3* db, const FRW_model_token& model,
+                                                                   const std::string& table, const std::string& z_table,
+                                                                   std::set<unsigned int>& total_missing)
+      {
+        std::set<unsigned int> missing = missing_redshifts_for_table(db, model, table, z_table);
+        
+        total_missing.insert(missing.begin(), missing.end());
+        
+        return missing;
+      }
+    
+    
+    void drop_inconsistent_redshifts(sqlite3* db, const FRW_model_token& model, const std::string& table,
+                                     const std::set<unsigned int>& missing, const std::set<unsigned int>& total_missing)
+      {
+        std::set<unsigned int> inconsistent_set;
+        
+        std::set_difference(total_missing.begin(), total_missing.end(),
+                            missing.begin(), missing.end(), std::inserter(inconsistent_set, inconsistent_set.begin()));
+        
+        if(inconsistent_set.size() > 0)
+          {
+            std::ostringstream drop_stmt;
+            drop_stmt
+              << "DELETE FROM " << table << " WHERE mid=@mid AND zid=@zid;";
+    
+            // prepare statement
+            sqlite3_stmt* stmt;
+            check_stmt(db, sqlite3_prepare_v2(db, drop_stmt.str().c_str(), drop_stmt.str().length()+1, &stmt, nullptr));
+            
+            for(unsigned int t : inconsistent_set)
+              {
+                check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@mid"), model.get_id()));
+                check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@zid"), t));
+                
+                check_stmt(db, sqlite3_step(stmt));
+    
+                // release bindings and reset statement
+                check_stmt(db, sqlite3_clear_bindings(stmt));
+                check_stmt(db, sqlite3_reset(stmt));
+              }
+    
+            // finalize statement to release resources
+            check_stmt(db, sqlite3_finalize(stmt));
+          }
+      }
 
 
     //! find missing redshifts for a one-loop growth function sample
@@ -190,15 +238,21 @@ namespace sqlite3_operations
         // set up null pointer; will be attached to an empty database later if needed
         std::unique_ptr<z_database> missing_db;
 
-        // get list of missing z-values
-        std::set<unsigned int> missing_list = missing_redshifts_for_table(db, model, policy.oneloop_table(), z_table);
+        // get list of missing z-values from each table
+        std::set<unsigned int> missing;
+        std::set<unsigned int> missing_g = update_missing_oneloop_growth_redshifts(db, model, policy.growth_factor_table(), z_table, missing);
+        std::set<unsigned int> missing_f = update_missing_oneloop_growth_redshifts(db, model, policy.growth_rate_table(), z_table, missing);
+        
+        // drop any inconsistent redshifts -- ie. those present in some tables but not others
+        drop_inconsistent_redshifts(db, model, policy.growth_factor_table(), missing_g, missing);
+        drop_inconsistent_redshifts(db, model, policy.growth_rate_table(), missing_f, missing);
 
         // if any elements are missing, push them into a database
-        if(missing_list.size() > 0)
+        if(missing.size() > 0)
           {
             missing_db = std::make_unique<z_database>();
 
-            for(unsigned int t : missing_list)
+            for(unsigned int t : missing)
               {
                 // lookup record for this identifier
                 z_database::const_record_iterator rec = z_db.lookup(z_token(t));
