@@ -44,11 +44,14 @@ class sqlite3_policy
     //! transfer function table
     const std::string& transfer_table() const { return(this->transfer); }
 
-    //! 1-loop growth factors table
-    const std::string& growth_factor_table() const { return(this->growth_factor); }
+    //! 1-loop growth g-factor table
+    const std::string& g_factor_table() const { return(this->growth_g_factor); }
     
-    //! 1-loop growth rate table
-    const std::string& growth_rate_table() const { return(this->growth_rate); }
+    //! 1-loop growth f-factor table
+    const std::string& f_factor_table() const { return(this->growth_f_factor); }
+    
+    //! 1-loop growth metadata table
+    const std::string& gf_metadata_table() const { return(this->growth_fg_metadata); }
 
     //! 1-loop AA integral table
     const std::string& AA_table() const { return(this->AA); }
@@ -105,11 +108,14 @@ class sqlite3_policy
     //! transfer function table
     const std::string transfer;
 
-    //! 1-loop growth factors table
-    const std::string growth_factor;
+    //! 1-loop growth g-factor table
+    const std::string growth_g_factor;
     
-    //! 1-loop growth rate table
-    const std::string growth_rate;
+    //! 1-loop growth f-factor table
+    const std::string growth_f_factor;
+    
+    //! 1-loop growth metadata table
+    const std::string growth_fg_metadata;
 
     //! 1-loop momentum integrals - AA
     const std::string AA;

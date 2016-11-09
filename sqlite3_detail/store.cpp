@@ -86,10 +86,8 @@ namespace sqlite3_operations
         const k_token& k_token = sample.get_k_token();
 
         // loop through sample, writing its values into the database
-        for(transfer_function::const_token_iterator t = sample.token_begin(); t != sample.token_end(); ++t)
+        for(const transfer_value& val : sample)
           {
-            transfer_value val = *t;
-
             // bind values to the statement
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@mid"), model.get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@kid"), k_token.get_id()));
@@ -120,11 +118,15 @@ namespace sqlite3_operations
         // construct SQL insert statements
         std::ostringstream insert_g_stmt;
         insert_g_stmt
-          << "INSERT INTO " << policy.growth_factor_table() << " VALUES (@mid, @zid, @g_linear, @A, @B, @D, @E, @F, @G, @J);";
+          << "INSERT INTO " << policy.g_factor_table() << " VALUES (@mid, @zid, @g_linear, @A, @B, @D, @E, @F, @G, @J);";
         
         std::ostringstream insert_f_stmt;
         insert_f_stmt
-          << "INSERT INTO " << policy.growth_rate_table() << " VALUES (@mid, @zid, @f_linear, @fA, @fB, @fD, @fE, @fF, @fG, @fJ);";
+          << "INSERT INTO " << policy.f_factor_table() << " VALUES (@mid, @zid, @f_linear, @fA, @fB, @fD, @fE, @fF, @fG, @fJ);";
+        
+        std::ostringstream insert_meta_stmt;
+        insert_meta_stmt
+          << "INSERT INTO " << policy.gf_metadata_table() << " VALUES (@mid, @time, @steps);";
 
         // prepare statements
         sqlite3_stmt* g_stmt;
@@ -132,12 +134,19 @@ namespace sqlite3_operations
     
         sqlite3_stmt* f_stmt;
         check_stmt(db, sqlite3_prepare_v2(db, insert_f_stmt.str().c_str(), insert_f_stmt.str().length()+1, &f_stmt, nullptr));
+        
+        sqlite3_stmt* meta_stmt;
+        check_stmt(db, sqlite3_prepare_v2(db, insert_meta_stmt.str().c_str(), insert_meta_stmt.str().length()+1, &meta_stmt, nullptr));
+        
+        check_stmt(db, sqlite3_bind_int(meta_stmt, sqlite3_bind_parameter_index(meta_stmt, "@mid"), model.get_id()));
+        check_stmt(db, sqlite3_bind_int64(meta_stmt, sqlite3_bind_parameter_index(meta_stmt, "@time"), sample.get_integration_time()));
+        check_stmt(db, sqlite3_bind_int(meta_stmt, sqlite3_bind_parameter_index(meta_stmt, "@steps"), static_cast<int>(sample.get_integration_steps())));
+        
+        check_stmt(db, sqlite3_step(meta_stmt), ERROR_SQLITE3_INSERT_GROWTH_META_FAIL, SQLITE_DONE);
     
         // loop through sample, writing its values into the database
-        for(oneloop_growth::const_token_iterator t = sample.token_begin(); t != sample.token_end(); ++t)
+        for(const oneloop_value& val : sample)
           {
-            oneloop_value val = *t;
-
             // bind values to the g statement
             check_stmt(db, sqlite3_bind_int(g_stmt, sqlite3_bind_parameter_index(g_stmt, "@mid"), model.get_id()));
             check_stmt(db, sqlite3_bind_int(g_stmt, sqlite3_bind_parameter_index(g_stmt, "@zid"), val.first.get_id()));
@@ -151,7 +160,7 @@ namespace sqlite3_operations
             check_stmt(db, sqlite3_bind_double(g_stmt, sqlite3_bind_parameter_index(g_stmt, "@J"), val.second.J));
 
             // perform g insertion
-            check_stmt(db, sqlite3_step(g_stmt), ERROR_SQLITE3_INSERT_ONELOOP_G_FAIL, SQLITE_DONE);
+            check_stmt(db, sqlite3_step(g_stmt), ERROR_SQLITE3_INSERT_GROWTH_G_FAIL, SQLITE_DONE);
     
             // bind values to the f statement
             check_stmt(db, sqlite3_bind_int(f_stmt, sqlite3_bind_parameter_index(f_stmt, "@mid"), model.get_id()));
@@ -166,7 +175,7 @@ namespace sqlite3_operations
             check_stmt(db, sqlite3_bind_double(f_stmt, sqlite3_bind_parameter_index(f_stmt, "@fJ"), val.second.fJ));
     
             // perform f insertion
-            check_stmt(db, sqlite3_step(f_stmt), ERROR_SQLITE3_INSERT_ONELOOP_F_FAIL, SQLITE_DONE);
+            check_stmt(db, sqlite3_step(f_stmt), ERROR_SQLITE3_INSERT_GROWTH_F_FAIL, SQLITE_DONE);
 
             // clear bindings and reset statement
             check_stmt(db, sqlite3_clear_bindings(g_stmt));
@@ -177,6 +186,8 @@ namespace sqlite3_operations
 
         // finalize statement and release resources
         check_stmt(db, sqlite3_finalize(g_stmt));
+        check_stmt(db, sqlite3_finalize(f_stmt));
+        check_stmt(db, sqlite3_finalize(meta_stmt));
       }
 
 

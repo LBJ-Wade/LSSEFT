@@ -105,9 +105,9 @@ namespace sqlite3_operations
 
         exec(db, transfer_stmt.str());
 
-        std::ostringstream oneloop_growth_stmt;
-        oneloop_growth_stmt
-          << "CREATE TABLE " << policy.growth_factor_table() << "("
+        std::ostringstream oneloop_g_stmt;
+        oneloop_g_stmt
+          << "CREATE TABLE " << policy.g_factor_table() << "("
           << "mid INTEGER, "
           << "zid INTEGER, "
           << "g_linear DOUBLE, "
@@ -122,11 +122,11 @@ namespace sqlite3_operations
           << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
           << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id));";
 
-        exec(db, oneloop_growth_stmt.str());
+        exec(db, oneloop_g_stmt.str());
     
-        std::ostringstream oneloop_rate_stmt;
-        oneloop_rate_stmt
-          << "CREATE TABLE " << policy.growth_rate_table() << "("
+        std::ostringstream oneloop_f_stmt;
+        oneloop_f_stmt
+          << "CREATE TABLE " << policy.f_factor_table() << "("
           << "mid INTEGER, "
           << "zid INTEGER, "
           << "f_linear DOUBLE, "
@@ -141,7 +141,17 @@ namespace sqlite3_operations
           << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
           << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id));";
     
-        exec(db, oneloop_rate_stmt.str());
+        exec(db, oneloop_f_stmt.str());
+    
+        std::ostringstream oneloop_fgmeta_stmt;
+        oneloop_fgmeta_stmt
+          << "CREATE TABLE " << policy.gf_metadata_table() << " ("
+          << "mid INTEGER PRIMARY KEY, "
+          << "time INTEGER, "
+          << "steps INTEGER, "
+          << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id));";
+        
+        exec(db, oneloop_fgmeta_stmt.str());
         
         create_impl::oneloop_momentum_integral_table(db, policy.AA_table(), policy);
         create_impl::oneloop_momentum_integral_table(db, policy.AB_table(), policy);

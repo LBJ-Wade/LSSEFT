@@ -240,12 +240,12 @@ namespace sqlite3_operations
 
         // get list of missing z-values from each table
         std::set<unsigned int> missing;
-        std::set<unsigned int> missing_g = update_missing_oneloop_growth_redshifts(db, model, policy.growth_factor_table(), z_table, missing);
-        std::set<unsigned int> missing_f = update_missing_oneloop_growth_redshifts(db, model, policy.growth_rate_table(), z_table, missing);
+        std::set<unsigned int> missing_g = update_missing_oneloop_growth_redshifts(db, model, policy.g_factor_table(), z_table, missing);
+        std::set<unsigned int> missing_f = update_missing_oneloop_growth_redshifts(db, model, policy.f_factor_table(), z_table, missing);
         
         // drop any inconsistent redshifts -- ie. those present in some tables but not others
-        drop_inconsistent_redshifts(db, model, policy.growth_factor_table(), missing_g, missing);
-        drop_inconsistent_redshifts(db, model, policy.growth_rate_table(), missing_f, missing);
+        drop_inconsistent_redshifts(db, model, policy.g_factor_table(), missing_g, missing);
+        drop_inconsistent_redshifts(db, model, policy.f_factor_table(), missing_f, missing);
 
         // if any elements are missing, push them into a database
         if(missing.size() > 0)

@@ -45,7 +45,7 @@ namespace oneloop_growth_impl
   {
 
     template <typename RecordIterator, typename ConstRecordIterator, typename ValueIterator, typename ConstValueIterator, bool is_const_iterator=true>
-    class generic_token_iterator: public std::iterator< std::bidirectional_iterator_tag, oneloop_value >
+    class generic_tokenized_database_iterator: public std::iterator< std::bidirectional_iterator_tag, oneloop_value >
       {
 
       private:
@@ -62,14 +62,14 @@ namespace oneloop_growth_impl
       public:
 
         //! default constructor: points to nothing when it is constructed
-        generic_token_iterator() = default;
+        generic_tokenized_database_iterator() = default;
 
         //! value constructor; points to a given element in the transfer function sample
-        generic_token_iterator(record_iterator r,
-                               value_iterator g, value_iterator A, value_iterator B, value_iterator D, value_iterator E,
-                               value_iterator F, value_iterator G, value_iterator J,
-                               value_iterator f, value_iterator fA, value_iterator fB, value_iterator fD, value_iterator fE,
-                               value_iterator fF, value_iterator fG, value_iterator fJ)
+        generic_tokenized_database_iterator(record_iterator r,
+                                            value_iterator g, value_iterator A, value_iterator B, value_iterator D,
+                                            value_iterator E, value_iterator F, value_iterator G, value_iterator J,
+                                            value_iterator f, value_iterator fA, value_iterator fB, value_iterator fD,
+                                            value_iterator fE, value_iterator fF, value_iterator fG, value_iterator fJ)
           : record_iter(r),
             g_iter(g),
             A_iter(A),
@@ -91,7 +91,7 @@ namespace oneloop_growth_impl
           }
 
         //! copy constructor; allows implicit conversion from a regular iterator to a const iterator
-        generic_token_iterator(const generic_token_iterator<RecordIterator, ConstRecordIterator, ValueIterator, ConstValueIterator, false>& obj)
+        generic_tokenized_database_iterator(const generic_tokenized_database_iterator<RecordIterator, ConstRecordIterator, ValueIterator, ConstValueIterator, false>& obj)
           : record_iter(obj.record_iter),
             g_iter(obj.g_iter),
             A_iter(obj.A_iter),
@@ -118,14 +118,14 @@ namespace oneloop_growth_impl
       public:
 
         //! equality comparison
-        bool operator==(const generic_token_iterator& obj) const
+        bool operator==(const generic_tokenized_database_iterator& obj) const
           {
             // all should be in step, so need only compare one of them
             return(this->record_iter == obj.record_iter);
           }
 
         //! inequality comparison
-        bool operator!=(const generic_token_iterator& obj) const
+        bool operator!=(const generic_tokenized_database_iterator& obj) const
           {
             // all iterators should be in step, so need only compare one of them
             return(this->record_iter != obj.record_iter);
@@ -168,7 +168,7 @@ namespace oneloop_growth_impl
       public:
 
         //! prefix decrement
-        generic_token_iterator& operator--()
+        generic_tokenized_database_iterator& operator--()
           {
             --this->g_iter;
             --this->A_iter;
@@ -183,15 +183,15 @@ namespace oneloop_growth_impl
           }
 
         //! postfix decrement
-        generic_token_iterator& operator--(int)
+        generic_tokenized_database_iterator& operator--(int)
           {
-            const generic_token_iterator old(*this);
+            const generic_tokenized_database_iterator old(*this);
             --(*this);
             return(old);
           }
 
         //! prefix increment
-        generic_token_iterator& operator++()
+        generic_tokenized_database_iterator& operator++()
           {
             ++this->g_iter;
             ++this->A_iter;
@@ -217,16 +217,16 @@ namespace oneloop_growth_impl
           }
 
         //! postfix increment
-        generic_token_iterator& operator++(int)
+        generic_tokenized_database_iterator& operator++(int)
           {
-            const generic_token_iterator old(*this);
+            const generic_tokenized_database_iterator old(*this);
             ++(*this);
             return(old);
           }
 
         // make the const version a friend of the non-const version,
         // so the copy constructor can access its private members during implicit conversion
-        friend class generic_token_iterator<RecordIterator, ConstRecordIterator, ValueIterator, ConstValueIterator, true>;
+        friend class generic_tokenized_database_iterator<RecordIterator, ConstRecordIterator, ValueIterator, ConstValueIterator, true>;
 
 
         // INTERNAL DATA
@@ -309,53 +309,53 @@ class oneloop_growth
   public:
 
     //! type alias for non-const iterator
-    typedef oneloop_growth_impl::generic_token_iterator<z_database::reverse_record_iterator, z_database::const_reverse_record_iterator,
-                                                        std::vector<double>::iterator, std::vector<double>::const_iterator, false> token_iterator;
+    typedef oneloop_growth_impl::generic_tokenized_database_iterator<z_database::reverse_record_iterator, z_database::const_reverse_record_iterator,
+                                                                     std::vector<double>::iterator, std::vector<double>::const_iterator, false> iterator;
 
     //! type alias for const iterator
-    typedef oneloop_growth_impl::generic_token_iterator<z_database::reverse_record_iterator, z_database::const_reverse_record_iterator,
-                                                        std::vector<double>::iterator, std::vector<double>::const_iterator, true> const_token_iterator;
+    typedef oneloop_growth_impl::generic_tokenized_database_iterator<z_database::reverse_record_iterator, z_database::const_reverse_record_iterator,
+                                                                     std::vector<double>::iterator, std::vector<double>::const_iterator, true> const_iterator;
 
-    token_iterator token_begin()
+    iterator begin()
       {
-        return(token_iterator(this->z_db.record_rbegin(),
-                              this->g_linear->begin(), this->A->begin(), this->B->begin(), this->D->begin(), this->E->begin(), this->F->begin(), this->G->begin(), this->J->begin(),
-                              this->f_linear->begin(), this->fA->begin(), this->fB->begin(), this->fD->begin(), this->fE->begin(), this->fF->begin(), this->fG->begin(), this->fJ->begin()));
+        return(iterator(this->z_db.record_rbegin(),
+                        this->g_linear->begin(), this->A->begin(), this->B->begin(), this->D->begin(), this->E->begin(), this->F->begin(), this->G->begin(), this->J->begin(),
+                        this->f_linear->begin(), this->fA->begin(), this->fB->begin(), this->fD->begin(), this->fE->begin(), this->fF->begin(), this->fG->begin(), this->fJ->begin()));
       }
 
-    token_iterator token_end()
+    iterator end()
       {
-        return(token_iterator(this->z_db.record_rend(),
-                              this->g_linear->end(), this->A->end(), this->B->end(), this->D->end(), this->E->end(), this->F->end(), this->G->end(), this->J->end(),
-                              this->f_linear->end(), this->fA->end(), this->fB->end(), this->fD->end(), this->fE->end(), this->fF->end(), this->fG->end(), this->fJ->end()));
+        return(iterator(this->z_db.record_rend(),
+                        this->g_linear->end(), this->A->end(), this->B->end(), this->D->end(), this->E->end(), this->F->end(), this->G->end(), this->J->end(),
+                        this->f_linear->end(), this->fA->end(), this->fB->end(), this->fD->end(), this->fE->end(), this->fF->end(), this->fG->end(), this->fJ->end()));
       }
 
-    const_token_iterator token_begin() const
+    const_iterator begin() const
       {
-        return(const_token_iterator(this->z_db.record_crbegin(),
-                                    this->g_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->J->cbegin(),
-                                    this->f_linear->cbegin(), this->fA->cbegin(), this->fB->cbegin(), this->fD->cbegin(), this->fE->cbegin(), this->fF->cbegin(), this->fG->cbegin(), this->fJ->cbegin()));
+        return(const_iterator(this->z_db.record_crbegin(),
+                              this->g_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->J->cbegin(),
+                              this->f_linear->cbegin(), this->fA->cbegin(), this->fB->cbegin(), this->fD->cbegin(), this->fE->cbegin(), this->fF->cbegin(), this->fG->cbegin(), this->fJ->cbegin()));
       }
 
-    const_token_iterator token_end() const
+    const_iterator end() const
       {
-        return(const_token_iterator(this->z_db.record_crend(),
-                                    this->g_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->J->cend(),
-                                    this->f_linear->cend(), this->fA->cend(), this->fB->cend(), this->fD->cend(), this->fE->cend(), this->fF->cend(), this->fG->cend(), this->fJ->cend()));
+        return(const_iterator(this->z_db.record_crend(),
+                              this->g_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->J->cend(),
+                              this->f_linear->cend(), this->fA->cend(), this->fB->cend(), this->fD->cend(), this->fE->cend(), this->fF->cend(), this->fG->cend(), this->fJ->cend()));
       }
 
-    const_token_iterator token_cbegin() const
+    const_iterator cbegin() const
       {
-        return(const_token_iterator(this->z_db.record_crbegin(),
-                                    this->g_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->J->cbegin(),
-                                    this->f_linear->cbegin(), this->fA->cbegin(), this->fB->cbegin(), this->fD->cbegin(), this->fE->cbegin(), this->fF->cbegin(), this->fG->cbegin(), this->fJ->cbegin()));
+        return(const_iterator(this->z_db.record_crbegin(),
+                              this->g_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->J->cbegin(),
+                              this->f_linear->cbegin(), this->fA->cbegin(), this->fB->cbegin(), this->fD->cbegin(), this->fE->cbegin(), this->fF->cbegin(), this->fG->cbegin(), this->fJ->cbegin()));
       }
 
-    const_token_iterator token_cend() const
+    const_iterator cend() const
       {
-        return(const_token_iterator(this->z_db.record_crend(),
-                                    this->g_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->J->cend(),
-                                    this->f_linear->cend(), this->fA->cend(), this->fB->cend(), this->fD->cend(), this->fE->cend(), this->fF->cend(), this->fG->cend(), this->fJ->cend()));
+        return(const_iterator(this->z_db.record_crend(),
+                              this->g_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->J->cend(),
+                              this->f_linear->cend(), this->fA->cend(), this->fB->cend(), this->fD->cend(), this->fE->cend(), this->fF->cend(), this->fG->cend(), this->fJ->cend()));
       }
 
 
@@ -392,7 +392,7 @@ class oneloop_growth
     z_database& z_db;
 
 
-    // ONE-LOOP FUNCITONS
+    // ONE-LOOP FUNCTIONS
 
     // these are managed using std::unique_ptr<>s to control their lifetime
 
