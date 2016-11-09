@@ -13,8 +13,9 @@
 #include "boost/filesystem/operations.hpp"
 #include "boost/serialization/serialization.hpp"
 
-#include "datatable.h"
-#include "bsplineapproximant.h"
+#include "SPLINTER/datatable.h"
+#include "SPLINTER/bspline.h"
+#include "SPLINTER/bsplinebuilder.h"
 
 
 class tree_power_spectrum
@@ -66,7 +67,7 @@ class tree_power_spectrum
     //! splines representing power spectrum
     std::unique_ptr<SPLINTER::DataTable> table;
 
-    std::unique_ptr<SPLINTER::BSplineApproximant> spline;
+    std::unique_ptr<SPLINTER::BSpline> spline;
 
 
     // enable boost::serialization support and hence automated packing for transmission over MPI

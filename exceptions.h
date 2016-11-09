@@ -16,7 +16,8 @@ enum class exception_type
     database_error,
     sqlite3_error,
     transaction_error,
-    runtime_error
+    runtime_error,
+    spline_error
   };
 
 

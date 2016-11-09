@@ -1,37 +1,33 @@
-cmake_minimum_required(VERSION 3.2)
-project(LSSEFT)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
+PROJECT(LSSEFT)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Ofast")
+LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/)
+INCLUDE(BuildDeps)
 
-SET ( SPLINTER_LIBRARY "splinter-static-2-0" )
-
-find_package(MPI REQUIRED)
-find_package(Boost REQUIRED COMPONENTS system filesystem timer date_time mpi program_options serialization)
+FIND_PACKAGE(MPI REQUIRED)
+FIND_PACKAGE(Boost REQUIRED COMPONENTS system filesystem timer date_time mpi program_options serialization)
 
 # pull in bundled SPLINTER sources; on most platforms will need to switch default build to 64-bit
-set ( ARCH "x86-64" )
-ADD_SUBDIRECTORY ( "thirdparty/splinter" "splinter-build" )
+SET(ARCH "x86-64")
+
+ADD_CUSTOM_TARGET(DEPS ALL)
+SET(EXTERNAL_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/thirdparty/dist")
+
+BUILD_SPLINTER(${CMAKE_BINARY_DIR}/thirdparty/SPLINTER ${EXTERNAL_INSTALL_PREFIX})
 
 # use version of Eigen3 bundled with SPLINTER
-SET ( EIGEN3_INCLUDE_DIR  "thirdparty/splinter/thirdparty/Eigen" )
+SET(EIGEN3_INCLUDE_DIR "thirdparty/splinter/thirdparty/Eigen")
 
 # Cuba libraries and include files
-SET ( CUBA_INCLUDE_DIR "/Users/ds283/Documents/Code/Cuba/Cuba-4.2" "/Users/david/Documents/Code/Cuba/Cuba-4.2" "/usr/local/include" )
-SET ( CUBA_LIBRARY_DIR "/Users/ds283/Documents/Code/Cuba/Cuba-4.2" "/Users/david/Documents/Code/Cuba/Cuba-4.2" "/usr/local/lib" )
+SET(CUBA_INCLUDE_DIR "/Users/ds283/Documents/Code/Cuba/Cuba-4.2" "/Users/david/Documents/Code/Cuba/Cuba-4.2" "/usr/local/include")
+SET(CUBA_LIBRARY_DIR "/Users/ds283/Documents/Code/Cuba/Cuba-4.2" "/Users/david/Documents/Code/Cuba/Cuba-4.2" "/usr/local/lib")
 
-include_directories(./
-  thirdparty/splinter/include
-  ${EIGEN3_INCLUDE_DIR}
-  ${Boost_INCLUDE_DIRS}
-  ${MPI_CXX_INCLUDE_PATH}
-  ${CUBA_INCLUDE_DIR})
-
-set(LOCALIZATION
+SET(LOCALIZATION
   localizations/messages.h)
 
-link_directories(${CUBA_LIBRARY_DIR})
+LINK_DIRECTORIES(${CUBA_LIBRARY_DIR})
 
-set(LOCALIZATION_EN_GB
+SET(LOCALIZATION_EN_GB
   localizations/en_GB/en_GB.h
   localizations/en_GB/command_line.h
   localizations/en_GB/error_handler.h
@@ -44,13 +40,13 @@ set(LOCALIZATION_EN_GB
   localizations/en_GB/master_controller.h
   localizations/en_GB/tree_power_spectrum.h)
 
-set(TOP_LEVEL_SOURCE_FILES
+SET(TOP_LEVEL_SOURCE_FILES
   main.cpp
   core.h
   defaults.h
   exceptions.h)
 
-set(CONTROLLER_SOURCE_FILES
+SET(CONTROLLER_SOURCE_FILES
   controller/argument_cache.cpp controller/argument_cache.h
   controller/task_manager.cpp controller/task_manager.h
   controller/master_controller.cpp controller/master_controller.h
@@ -58,22 +54,22 @@ set(CONTROLLER_SOURCE_FILES
   controller/local_environment.cpp controller/local_environment.h
   controller/scheduler.cpp controller/scheduler.h)
 
-set(UTILITY_SOURCE_FILES
+SET(UTILITY_SOURCE_FILES
   utilities/python_finder.cpp utilities/python_finder.h
   utilities/formatter.cpp utilities/formatter.h)
 
-set(ERROR_SOURCE_FILES
+SET(ERROR_SOURCE_FILES
   error/error_handler.cpp error/error_handler.h)
 
-set(MISC_SOURCE_FILES
+SET(MISC_SOURCE_FILES
   misc/ansi_colour_codes.h)
 
-set(MPI_SOURCE_FILES
+SET(MPI_SOURCE_FILES
   MPI_detail/mpi_operations.h
   MPI_detail/mpi_traits.h
   MPI_detail/mpi_payloads.cpp MPI_detail/mpi_payloads.h)
 
-set(COSMOLOGY_SOURCE_FILES
+SET(COSMOLOGY_SOURCE_FILES
   cosmology/FRW_model.cpp cosmology/FRW_model.h
   cosmology/Planck_defaults.h
   cosmology/types.h
@@ -91,10 +87,10 @@ set(COSMOLOGY_SOURCE_FILES
   cosmology/oneloop_growth_integrator.cpp cosmology/oneloop_growth_integrator.h
   cosmology/constants.h)
 
-set(UNITS_SOURCE_FILES
+SET(UNITS_SOURCE_FILES
   units/Mpc_units.h)
 
-set(DATABASE_SOURCE_FILES
+SET(DATABASE_SOURCE_FILES
   database/data_manager.cpp database/data_manager.h database/data_manager_impl.h
   database/tokens.cpp database/tokens.h
   database/transaction_manager.cpp database/transaction_manager.h
@@ -107,7 +103,7 @@ set(DATABASE_SOURCE_FILES
   database/powerspectrum_record.cpp database/powerspectrum_record.h
   database/k_database.h database/IR_database.h database/UV_database.h)
 
-set(SQLITE3_DETAIL_SOURCE_FILES
+SET(SQLITE3_DETAIL_SOURCE_FILES
   sqlite3_detail/operations.h
   sqlite3_detail/sqlite3_defaults.h
   sqlite3_detail/create.cpp sqlite3_detail/create.h
@@ -120,7 +116,7 @@ set(SQLITE3_DETAIL_SOURCE_FILES
   sqlite3_detail/missing_elements.cpp sqlite3_detail/missing_elements.h
   sqlite3_detail/store.cpp sqlite3_detail/store.h)
 
-set(SOURCE_FILES
+SET(SOURCE_FILES
   ${TOP_LEVEL_SOURCE_FILES}
   ${CONTROLLER_SOURCE_FILES}
   ${UTILITY_SOURCE_FILES}
@@ -134,7 +130,7 @@ set(SOURCE_FILES
   ${LOCALIZATION}
   ${LOCALIZATION_EN_GB})
 
-add_executable(lsseft
+ADD_EXECUTABLE(lsseft
   main.cpp
   controller/argument_cache.cpp
   controller/local_environment.cpp
@@ -170,6 +166,18 @@ add_executable(lsseft
   sqlite3_detail/store.cpp
   sqlite3_detail/sqlite3_policy.cpp)
 
-target_link_libraries(lsseft sqlite3 cuba ${Boost_LIBRARIES} ${MPI_LIBRARIES} ${SPLINTER_LIBRARY})
+ADD_DEPENDENCIES(lsseft DEPS)
 
-add_executable(dummy_clion_target EXCLUDE_FROM_ALL ${SOURCE_FILES})
+TARGET_LINK_LIBRARIES(lsseft sqlite3 cuba ${Boost_LIBRARIES} ${MPI_LIBRARIES} ${SPLINTER_LIBRARIES})
+
+TARGET_COMPILE_OPTIONS(lsseft PRIVATE -std=c++14)
+
+TARGET_INCLUDE_DIRECTORIES(lsseft PRIVATE
+  ./
+  ${CMAKE_CURRENT_BINARY_DIR}
+  ${SPLINTER_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
+  ${MPI_CXX_INCLUDE_PATH}
+  ${CUBA_INCLUDE_DIR})
+
+ADD_EXECUTABLE(dummy_clion_target EXCLUDE_FROM_ALL ${SOURCE_FILES})
