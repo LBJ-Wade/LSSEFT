@@ -60,9 +60,9 @@ namespace oneloop_momentum_impl
             UV_cutoff(UV),
             IR_cutoff(IR),
             Pk(_Pk),
-            jacobian(2.0*M_PI*(UV_cutoff-IR_cutoff)),    // Jacobian in angular directions in 2 * pi = 2pi;
-                                                         // the integral over phi isn't done (the integrand doesn't depend on it), but this accounts for its contribution;
-                                                         // the theta integral has been switched to d(cos theta)
+            jacobian(2.0 * 2.0*M_PI * (UV_cutoff-IR_cutoff)), // Jacobian in angular directions is 2 * 2 * pi = 4pi;
+                                                              // the integral over phi isn't done (the integrand doesn't depend on it), but this accounts for its contribution;
+                                                              // the theta integral has been switched to d(cos theta) which runs from -1 to +2 and contributes a factor 2
             q_range(UV_cutoff - IR_cutoff),
             k_sq(k*k)
           {
