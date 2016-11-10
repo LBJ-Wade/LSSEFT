@@ -318,37 +318,27 @@ loop_integral oneloop_momentum_integrator::integrate(const FRW_model& model, con
                                                      const UV_token& UV_tok, const Mpc_units::energy& IR_cutoff,
                                                      const IR_token& IR_tok, std::shared_ptr<tree_power_spectrum>& Pk)
   {
-    inverse_energy3_kernel AA;
-    inverse_energy3_kernel AB;
-    inverse_energy3_kernel BB;
-    dimless_kernel         D;
-    dimless_kernel         E;
-    dimless_kernel         F;
-    dimless_kernel         G;
-    dimless_kernel         J1;
-    dimless_kernel         J2;
+    delta_13_integrals delta13;
+    delta_22_integrals delta22;
+    rsd_13_integrals rsd13;
+    rsd_22_integrals rsd22;
 
-    bool failAA = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::AA_integrand, AA);
-    bool failAB = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::AB_integrand, AB);
-    bool failBB = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::BB_integrand, BB);
-    bool failD  = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::D_integrand, D);
-    bool failE  = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::E_integrand, E);
-    bool failF  = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::F_integrand, F);
-    bool failG  = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::G_integrand, G);
-    bool failJ1 = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::J1_integrand, J1);
-    bool failJ2 = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::J2_integrand, J2);
+    bool failAA = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::AA_integrand, delta22.get_AA());
+    bool failAB = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::AB_integrand, delta22.get_AB());
+    bool failBB = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::BB_integrand, delta22.get_BB());
+    
+    if(failAA || failAB || failBB) delta22.mark_failed();
 
-    bool fail = failAA || failAB || failBB || failD || failE || failF || failG || failJ1 || failJ2;
-
-    if(fail)
-      {
-        std::cout << "Integration failed: AA = " << !failAA << ", AB = " << !failAB << ", BB = " << !failBB << ", D = "
-                  << !failD << ", E = " << !failE << ", F = " << !failF << ", G = " << !failG
-                  << ", J1 = " << !failJ1 << ", J2 = " << !failJ2
-                  << '\n';
-      }
-
-    loop_integral container(k, k_tok, UV_cutoff, UV_tok, IR_cutoff, IR_tok, fail, AA, AB, BB, D, E, F, G, J1, J2);
+    bool failD  = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::D_integrand, delta13.get_D());
+    bool failE  = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::E_integrand, delta13.get_E());
+    bool failF  = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::F_integrand, delta13.get_F());
+    bool failG  = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::G_integrand, delta13.get_G());
+    bool failJ1 = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::J1_integrand, delta13.get_J1());
+    bool failJ2 = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::J2_integrand, delta13.get_J2());
+    
+    if(failD || failE || failF || failG || failJ1 || failJ2) delta13.mark_failed();
+    
+    loop_integral container(k, k_tok, UV_cutoff, UV_tok, IR_cutoff, IR_tok, delta22, delta13, rsd22, rsd13);
 
     return container;
   }

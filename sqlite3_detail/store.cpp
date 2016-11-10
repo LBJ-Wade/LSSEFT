@@ -195,17 +195,23 @@ namespace sqlite3_operations
       {
         assert(db != nullptr);
 
-        if(!sample.get_fail())
+        const delta_22_integrals& delta22 = sample.get_delta22();
+        const delta_13_integrals& delta13 = sample.get_delta13();
+        const rsd_22_integrals& rsd22     = sample.get_rsd22();
+        const rsd_13_integrals& rsd13     = sample.get_rsd13();
+
+        if(!delta22.get_fail() && !delta13.get_fail() && !rsd22.get_fail() && !rsd13.get_fail())
           {
-            store_impl::store_loop_integral(db, policy.AA_table(), sample.get_AA(), model, sample);
-            store_impl::store_loop_integral(db, policy.AB_table(), sample.get_AB(), model, sample);
-            store_impl::store_loop_integral(db, policy.BB_table(), sample.get_BB(), model, sample);
-            store_impl::store_loop_integral(db, policy.D_table(), sample.get_D(), model, sample);
-            store_impl::store_loop_integral(db, policy.E_table(), sample.get_E(), model, sample);
-            store_impl::store_loop_integral(db, policy.F_table(), sample.get_F(), model, sample);
-            store_impl::store_loop_integral(db, policy.G_table(), sample.get_G(), model, sample);
-            store_impl::store_loop_integral(db, policy.J1_table(), sample.get_J1(), model, sample);
-            store_impl::store_loop_integral(db, policy.J2_table(), sample.get_J2(), model, sample);
+            store_impl::store_loop_integral(db, policy.AA_table(), delta22.get_AA(), model, sample);
+            store_impl::store_loop_integral(db, policy.AB_table(), delta22.get_AB(), model, sample);
+            store_impl::store_loop_integral(db, policy.BB_table(), delta22.get_BB(), model, sample);
+
+            store_impl::store_loop_integral(db, policy.D_table(), delta13.get_D(), model, sample);
+            store_impl::store_loop_integral(db, policy.E_table(), delta13.get_E(), model, sample);
+            store_impl::store_loop_integral(db, policy.F_table(), delta13.get_F(), model, sample);
+            store_impl::store_loop_integral(db, policy.G_table(), delta13.get_G(), model, sample);
+            store_impl::store_loop_integral(db, policy.J1_table(), delta13.get_J1(), model, sample);
+            store_impl::store_loop_integral(db, policy.J2_table(), delta13.get_J2(), model, sample);
           }
       }
 
