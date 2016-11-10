@@ -110,11 +110,12 @@ class data_manager
     std::unique_ptr<Token> tokenize(const Mpc_units::energy& k);
 
 
-    // DATA HANDLING
+    // DATA STORAGE
 
   public:
 
-    //! store a sample
+    //! store a sample of some kind (the exact behaviour is determined by template specialization)
+    //! generates a new transaction on the database; will fail if a transaction is in progress
     template <typename SampleType>
     void store(const FRW_model_token& model_token, const SampleType& sample);
 
