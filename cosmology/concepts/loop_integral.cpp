@@ -62,17 +62,12 @@ rsd_13_integrals::rsd_13_integrals()
   }
 
   
-loop_integral::loop_integral(const Mpc_units::energy& _k, const k_token& kt,
-                             const Mpc_units::energy& UV,  const UV_token& UVt,
-                             const Mpc_units::energy& IR, const IR_token& IRt,
+loop_integral::loop_integral(const k_token& kt, const UV_token& UVt, const IR_token& IRt,
                              const delta_22_integrals& d22, const delta_13_integrals& d13,
                              const rsd_22_integrals& r22, const rsd_13_integrals& r13)
-  : k(_k),
-    k_tok(kt),
-    UV_cutoff(UV),
-    UV_tok(UVt),
-    IR_cutoff(IR),
-    IR_tok(IRt),
+  : k(kt),
+    UV_cutoff(UVt),
+    IR_cutoff(IRt),
     delta22(d22),
     delta13(d13),
     rsd22(r22),
@@ -82,12 +77,9 @@ loop_integral::loop_integral(const Mpc_units::energy& _k, const k_token& kt,
 
 
 loop_integral::loop_integral()
-  : k(Mpc_units::energy(0)),
-    k_tok(0),
-    UV_cutoff(Mpc_units::energy(0)),
-    UV_tok(0),
-    IR_cutoff(Mpc_units::energy(0)),
-    IR_tok(0),
+  : k(0),
+    UV_cutoff(0),
+    IR_cutoff(0),
     delta22(),
     delta13(),
     rsd22(),

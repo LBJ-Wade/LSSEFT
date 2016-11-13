@@ -57,3 +57,44 @@ void oneloop_growth::set_integration_metadata(boost::timer::nanosecond_type t, s
     this->integration_time = t;
     this->steps = s;
   }
+
+
+oneloop_growth::oneloop_growth(oneloop_growth&& obj)
+  : z_db(obj.z_db),
+    g_linear(std::move(obj.g_linear)),
+    A(std::move(obj.A)),
+    B(std::move(obj.B)),
+    D(std::move(obj.D)),
+    E(std::move(obj.E)),
+    F(std::move(obj.F)),
+    G(std::move(obj.G)),
+    J(std::move(obj.J)),
+    f_linear(std::move(obj.f_linear)),
+    fA(std::move(obj.fA)),
+    fB(std::move(obj.fB)),
+    fD(std::move(obj.fD)),
+    fE(std::move(obj.fE)),
+    fF(std::move(obj.fF)),
+    fG(std::move(obj.fG)),
+    fJ(std::move(obj.fJ)),
+    integration_time(obj.integration_time),
+    steps(obj.steps)
+  {
+    obj.g_linear = std::make_unique< std::vector<double> >();
+    obj.A = std::make_unique< std::vector<double> >();
+    obj.B = std::make_unique< std::vector<double> >();
+    obj.D = std::make_unique< std::vector<double> >();
+    obj.E = std::make_unique< std::vector<double> >();
+    obj.F = std::make_unique< std::vector<double> >();
+    obj.G = std::make_unique< std::vector<double> >();
+    obj.J = std::make_unique< std::vector<double> >();
+    
+    obj.f_linear = std::make_unique< std::vector<double> >();
+    obj.fA = std::make_unique< std::vector<double> >();
+    obj.fB = std::make_unique< std::vector<double> >();
+    obj.fD = std::make_unique< std::vector<double> >();
+    obj.fE = std::make_unique< std::vector<double> >();
+    obj.fF = std::make_unique< std::vector<double> >();
+    obj.fG = std::make_unique< std::vector<double> >();
+    obj.fJ = std::make_unique< std::vector<double> >();
+  }

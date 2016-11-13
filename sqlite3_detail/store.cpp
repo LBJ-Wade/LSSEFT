@@ -16,30 +16,12 @@
 namespace sqlite3_operations
   {
     
-    
-    template <typename DimensionfulType>
-    DimensionfulType dimensionful_unit();
-
-    
-    template <>
-    double dimensionful_unit<double>()
-      {
-        return 1.0;
-      }
-    
-    template <>
-    Mpc_units::inverse_energy3 dimensionful_unit<Mpc_units::inverse_energy3>()
-      {
-        return Mpc_units::Mpc3;
-      }
-    
-    
     namespace store_impl
       {
     
         template <typename KernelType>
-        void store_loop_integral(sqlite3* db, const std::string table_name, const KernelType& kernel,
-                                 const FRW_model_token& model, const loop_integral& sample)
+        void store_loop_kernel(sqlite3* db, const std::string table_name, const KernelType& kernel,
+                               const FRW_model_token& model, const loop_integral& sample)
           {
             std::ostringstream insert_stmt;
             insert_stmt << "INSERT INTO " << table_name << " VALUES (@mid, @kid, @IR_id, @UV_id, @value, @regions, @evals, @err, @time);";
@@ -48,6 +30,7 @@ namespace sqlite3_operations
             sqlite3_stmt* stmt;
             check_stmt(db, sqlite3_prepare_v2(db, insert_stmt.str().c_str(), insert_stmt.str().length()+1, &stmt, nullptr));
             
+            // bind parameter values
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@mid"), model.get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@kid"), sample.get_k_token().get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_id"), sample.get_IR_token().get_id()));
@@ -55,8 +38,8 @@ namespace sqlite3_operations
             check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@value"), kernel.value / dimensionful_unit<typename KernelType::value_type>()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@regions"), kernel.regions));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@evals"), kernel.evaluations));
-            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@err"), kernel.error));
-            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@time"), kernel.time));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@err"), kernel.error));
+            check_stmt(db, sqlite3_bind_int64(stmt, sqlite3_bind_parameter_index(stmt, "@time"), kernel.time));
     
             // perform insertion
             check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_LOOP_MOMENTUM_FAIL, SQLITE_DONE);
@@ -202,16 +185,16 @@ namespace sqlite3_operations
 
         if(!delta22.get_fail() && !delta13.get_fail() && !rsd22.get_fail() && !rsd13.get_fail())
           {
-            store_impl::store_loop_integral(db, policy.AA_table(), delta22.get_AA(), model, sample);
-            store_impl::store_loop_integral(db, policy.AB_table(), delta22.get_AB(), model, sample);
-            store_impl::store_loop_integral(db, policy.BB_table(), delta22.get_BB(), model, sample);
-
-            store_impl::store_loop_integral(db, policy.D_table(), delta13.get_D(), model, sample);
-            store_impl::store_loop_integral(db, policy.E_table(), delta13.get_E(), model, sample);
-            store_impl::store_loop_integral(db, policy.F_table(), delta13.get_F(), model, sample);
-            store_impl::store_loop_integral(db, policy.G_table(), delta13.get_G(), model, sample);
-            store_impl::store_loop_integral(db, policy.J1_table(), delta13.get_J1(), model, sample);
-            store_impl::store_loop_integral(db, policy.J2_table(), delta13.get_J2(), model, sample);
+            store_impl::store_loop_kernel(db, policy.AA_table(), delta22.get_AA(), model, sample);
+            store_impl::store_loop_kernel(db, policy.AB_table(), delta22.get_AB(), model, sample);
+            store_impl::store_loop_kernel(db, policy.BB_table(), delta22.get_BB(), model, sample);
+    
+            store_impl::store_loop_kernel(db, policy.D_table(), delta13.get_D(), model, sample);
+            store_impl::store_loop_kernel(db, policy.E_table(), delta13.get_E(), model, sample);
+            store_impl::store_loop_kernel(db, policy.F_table(), delta13.get_F(), model, sample);
+            store_impl::store_loop_kernel(db, policy.G_table(), delta13.get_G(), model, sample);
+            store_impl::store_loop_kernel(db, policy.J1_table(), delta13.get_J1(), model, sample);
+            store_impl::store_loop_kernel(db, policy.J2_table(), delta13.get_J2(), model, sample);
           }
       }
 

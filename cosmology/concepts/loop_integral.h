@@ -94,6 +94,23 @@ class dimless_kernel
   };
 
 
+template <typename DimensionfulType>
+inline DimensionfulType dimensionful_unit();
+
+
+template <>
+inline double dimensionful_unit<double>()
+  {
+    return 1.0;
+  }
+
+template <>
+inline Mpc_units::inverse_energy3 dimensionful_unit<Mpc_units::inverse_energy3>()
+  {
+    return Mpc_units::Mpc3;
+  }
+
+
 class delta_22_integrals
   {
     
@@ -374,9 +391,7 @@ class loop_integral
   public:
 
     //! value constructor
-    loop_integral(const Mpc_units::energy& _k, const k_token& kt,
-                  const Mpc_units::energy& UV, const UV_token& UVt,
-                  const Mpc_units::energy& IR, const IR_token& IRt,
+    loop_integral(const k_token& kt, const UV_token& UVt, const IR_token& IRt,
                   const delta_22_integrals& d22, const delta_13_integrals& d13,
                   const rsd_22_integrals& r22, const rsd_13_integrals& r13);
     
@@ -392,13 +407,13 @@ class loop_integral
   public:
 
     //! get wavenumber token
-    const k_token& get_k_token() const { return this->k_tok; }
+    const k_token& get_k_token() const { return this->k; }
 
     //! get UV cutoff token
-    const UV_token& get_UV_token() const { return this->UV_tok; }
+    const UV_token& get_UV_token() const { return this->UV_cutoff; }
 
     //! get IR cutoff token
-    const IR_token& get_IR_token() const { return this->IR_tok; }
+    const IR_token& get_IR_token() const { return this->IR_cutoff; }
     
     
     
@@ -421,23 +436,14 @@ class loop_integral
 
     // CONFIGURATION DATA
 
-    //! wavenumber
-    Mpc_units::energy k;
-
     //! wavenumber token
-    k_token k_tok;
-
-    //! UV cutoff
-    Mpc_units::energy UV_cutoff;
+    k_token k;
 
     //! UV cutoff token
-    UV_token UV_tok;
-
-    //! IR cutoff
-    Mpc_units::energy IR_cutoff;
+    UV_token UV_cutoff;
 
     //! IR cutoff token
-    IR_token IR_tok;
+    IR_token IR_cutoff;
 
 
     // VALUES
@@ -462,11 +468,8 @@ class loop_integral
     void serialize(Archive& ar, unsigned int version)
       {
         ar & k;
-        ar & k_tok;
         ar & UV_cutoff;
-        ar & UV_tok;
         ar & IR_cutoff;
-        ar & IR_tok;
         ar & delta13;
         ar & delta22;
         ar & rsd13;

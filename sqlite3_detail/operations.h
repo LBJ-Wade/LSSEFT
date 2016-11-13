@@ -14,6 +14,7 @@
 #include "temporary_tables.h"
 #include "missing_elements.h"
 #include "store.h"
+#include "find.h"
 
 
 #endif //LSSEFT_SQLITE3_OPERATIONS_H

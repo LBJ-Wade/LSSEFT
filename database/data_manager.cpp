@@ -212,7 +212,7 @@ unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, double z)
 template <typename Token>
 unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const Mpc_units::energy& k)
   {
-    boost::optional<unsigned int> id = sqlite3_operations::lookup_wavenumber<Token>(this->handle, mgr, k, this->policy, this->z_tol);
+    boost::optional<unsigned int> id = sqlite3_operations::lookup_wavenumber<Token>(this->handle, mgr, k, this->policy, this->k_tol);
     if(id) return(*id);
 
     return sqlite3_operations::insert_wavenumber<Token>(this->handle, mgr, k, this->policy);
@@ -337,11 +337,10 @@ std::unique_ptr<z_database> data_manager::build_oneloop_work_list(FRW_model_toke
 
     // set up temporary table of desired z identifiers
     std::string z_table = sqlite3_operations::z_table(this->handle, *transaction, this->policy, z_db);
-
-    std::unique_ptr<z_database> work_list = sqlite3_operations::missing_oneloop_growth_redshifts(this->handle,
-                                                                                                 *transaction,
-                                                                                                 this->policy, model,
-                                                                                                 z_db, z_table);
+    
+    std::unique_ptr<z_database> work_list =
+      sqlite3_operations::missing_oneloop_growth_redshifts(this->handle, *transaction, this->policy, model, z_db,
+                                                           z_table);
 
     // drop unneeded temporary tables
     sqlite3_operations::drop_temp(this->handle, *transaction, z_table);
@@ -406,4 +405,37 @@ std::unique_ptr<loop_momentum_work_list> data_manager::build_loop_momentum_work_
     if(work_list->size() == 0) work_list.release();
 
     return(work_list);
+  }
+
+
+template <>
+oneloop_growth data_manager::find<oneloop_growth>(const FRW_model_token& model, z_database& z_db)
+  {
+    // open a transaction on the database
+    std::shared_ptr<transaction_manager> transaction = this->open_transaction();
+    
+    // construct payload and ask SQLite backend to populate it
+    oneloop_growth payload(std::move(sqlite3_operations::find(this->handle, *transaction, this->policy, model, z_db)));
+    
+    // close transaction
+    transaction->commit();
+    
+    return std::move(payload);
+  }
+
+
+template <>
+loop_integral data_manager::find<loop_integral>(const FRW_model_token& model, const k_token& k,
+                                                const UV_token& UV_cutoff, const IR_token& IR_cutoff)
+  {
+    // open a transaction on the database
+    std::shared_ptr<transaction_manager> transaction = this->open_transaction();
+    
+    // construct payload nad ask SQLite backend to populate it
+    loop_integral payload(std::move(sqlite3_operations::find(this->handle, *transaction, this->policy, model, k, UV_cutoff, IR_cutoff)));
+    
+    // close transaction
+    transaction->commit();
+    
+    return std::move(payload);
   }

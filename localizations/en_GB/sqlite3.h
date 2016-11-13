@@ -30,5 +30,10 @@ constexpr auto ERROR_SQLITE3_INSERT_GROWTH_F_FAIL      = "failed to insert one-l
 constexpr auto ERROR_SQLITE3_INSERT_GROWTH_META_FAIL   = "failed to insert one-loop growth metadata record [backend code=";
 constexpr auto ERROR_SQLITE3_INSERT_LOOP_MOMENTUM_FAIL = "failed to insert one-loop momentum integral record [backend code=";
 
+constexpr auto ERROR_SQLITE3_FG_GROWTH_TABLE_READ_FAIL = "failed to read from g- and f-factor growth tables [backend code=";
+constexpr auto ERROR_SQLITE3_FG_GROWTH_META_READ_FAIL  = "failed to read g- and f-factor metadata [backend code=";
+constexpr auto ERROR_SQLITE3_FG_GROWTH_MISREAD         = "read unexpected number of results from g- and f-factor growth table";
+constexpr auto ERROR_SQLITE3_READ_LOOP_MOMENTUM_FAIL   = "failed to read from loop momentum table [backend code=";
+constexpr auto ERROR_SQLITE3_LOOP_MOMENTUM_MISREAD     = "read unexpected number of results from loop momentum table [backend code=";
 
 #endif //LSSEFT_SQLITE3_EN_GB_H

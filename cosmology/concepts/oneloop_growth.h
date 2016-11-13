@@ -302,6 +302,12 @@ class oneloop_growth
 
     //! destructor is default
     ~oneloop_growth() = default;
+    
+    //! copy constructor is deleted
+    oneloop_growth(const oneloop_growth& obj) = delete;
+    
+    //! move constructor
+    oneloop_growth(oneloop_growth&& obj);
 
 
     // ITERATORS

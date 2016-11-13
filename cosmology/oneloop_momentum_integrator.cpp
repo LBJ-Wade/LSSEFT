@@ -338,7 +338,7 @@ loop_integral oneloop_momentum_integrator::integrate(const FRW_model& model, con
     
     if(failD || failE || failF || failG || failJ1 || failJ2) delta13.mark_failed();
     
-    loop_integral container(k, k_tok, UV_cutoff, UV_tok, IR_cutoff, IR_tok, delta22, delta13, rsd22, rsd13);
+    loop_integral container(k_tok, UV_tok, IR_tok, delta22, delta13, rsd22, rsd13);
 
     return container;
   }

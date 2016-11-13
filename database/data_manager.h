@@ -97,15 +97,15 @@ class data_manager
   public:
 
     //! tokenize an FRW model
-    //! generates a new transation on the database; will fail if a transaction is in progress
+    //! generates a new transaction on the database; will fail if a transaction is in progress
     std::unique_ptr<FRW_model_token> tokenize(const FRW_model& obj);
 
     //! tokenize a redshift
-    //! generates a new transation on the database; will fail if a transaction is in progress
+    //! generates a new transaction on the database; will fail if a transaction is in progress
     std::unique_ptr<z_token> tokenize(double z);
 
     //! tokenize a wavenumber of the type specified in the template
-    //! generates a new transation on the database; will fail if a transaction is in progress
+    //! generates a new transaction on the database; will fail if a transaction is in progress
     template <typename Token>
     std::unique_ptr<Token> tokenize(const Mpc_units::energy& k);
 
@@ -117,8 +117,23 @@ class data_manager
     //! store a sample of some kind (the exact behaviour is determined by template specialization)
     //! generates a new transaction on the database; will fail if a transaction is in progress
     template <typename SampleType>
-    void store(const FRW_model_token& model_token, const SampleType& sample);
-
+    void store(const FRW_model_token& model, const SampleType& sample);
+    
+    
+    // DATA EXTRACTION
+    
+  public:
+    
+    //! extract a sample of a z-dependent but not k-dependent quantity, of the type specified by
+    //! the payload; generates a new transaction on the database, so will fail if one is already in progress
+    template <typename PayloadType>
+    PayloadType find(const FRW_model_token& model, z_database& z_db);
+    
+    //! extract a sample of a loop integral-like quantity that is k-dependent, UV and IR cutoff-dependent
+    //! but not z-dependent
+    template <typename PayloadType>
+    PayloadType find(const FRW_model_token& model, const k_token& k,
+                     const UV_token& UV_cutoff, const IR_token& IR_cutoff);
 
     // TRANSACTIONS
 
@@ -195,12 +210,12 @@ class data_manager
 
 
 template <typename SampleType>
-void data_manager::store(const FRW_model_token& model_token, const SampleType& sample)
+void data_manager::store(const FRW_model_token& model, const SampleType& sample)
   {
     // open a transaction on the database
     std::shared_ptr<transaction_manager> transaction = this->open_transaction();
 
-    sqlite3_operations::store(this->handle, *transaction, this->policy, model_token, sample);
+    sqlite3_operations::store(this->handle, *transaction, this->policy, model, sample);
 
     // commit the transaction
     transaction->commit();
