@@ -12,6 +12,8 @@
 #include "database/tokens.h"
 #include "database/z_database.h"
 #include "cosmology/concepts/tree_power_spectrum.h"
+#include "cosmology/concepts/oneloop_growth.h"
+#include "cosmology/concepts/loop_integral.h"
 
 #include "units/Mpc_units.h"
 
@@ -84,7 +86,7 @@ class loop_momentum_work_record
     loop_momentum_work_record(const Mpc_units::energy& _k, const k_token& kt,
                               const Mpc_units::energy& _UV, const UV_token& UVt,
                               const Mpc_units::energy& _IR, const IR_token& IRt,
-                              std::shared_ptr<tree_power_spectrum>& _Pk)
+                              const std::shared_ptr<tree_power_spectrum>& _Pk)
       : k(_k),
         UV_cutoff(_UV),
         IR_cutoff(_IR),
@@ -154,6 +156,67 @@ class loop_momentum_work_record
 
 //! list of work for loop integral calculation
 typedef std::list<loop_momentum_work_record> loop_momentum_work_list;
+
+
+//! work record for a one-loop power spectrum calculation
+class one_loop_Pk_work_record
+  {
+
+    // CONSTRUCTOR, DESTRUCTOR
+
+  public:
+
+    //! constructor
+    one_loop_Pk_work_record(const Mpc_units::energy _k,
+                            const std::shared_ptr<oneloop_growth>& gf, const std::shared_ptr<loop_integral>& k,
+                            const std::shared_ptr<tree_power_spectrum>& _Pk)
+      : k(_k),
+        gf_factors(gf),
+        loop_data(k),
+        Pk(_Pk)
+      {
+      }
+    
+    
+    // INTERFACE
+    
+  public:
+    
+    //! get wavenubmer
+    const Mpc_units::energy& operator*() const { return this->k; }
+    
+    //! get growth factor database
+    const std::shared_ptr<oneloop_growth>& get_gf_factors() const { return this->gf_factors; }
+    
+    //! get loop kernels
+    const std::shared_ptr<loop_integral>& get_loop_data() const { return this->loop_data; }
+    
+    //! get tree-level power spectrum
+    const std::shared_ptr<tree_power_spectrum>& get_Pk_db() const { return this->Pk; }
+    
+    
+    // INTERNAL DATA
+  
+  private:
+    
+    // Payload data
+    
+    //! physical scale k
+    Mpc_units::energy k;
+    
+    //! growth factors
+    std::shared_ptr<oneloop_growth> gf_factors;
+    
+    //! loop momentum kernels for this (k, IR, UV) combination
+    std::shared_ptr<loop_integral> loop_data;
+    
+    //! tree-level power spectrum
+    std::shared_ptr<tree_power_spectrum> Pk;
+
+  };
+
+//! list of work for power spectrum calculation
+typedef std::list<one_loop_Pk_work_record> one_loop_Pk_work_list;
 
 
 #endif //LSSEFT_TYPES_H

@@ -43,11 +43,20 @@ namespace sqlite3_operations
 
 
     //! process a list of configurations for loop momentum integrals;
-    //! we detect which ones are already present in the database and mark them not to be computed
+    //! we detect which ones are already present in the database and avoid computing them
     std::unordered_set<data_manager_impl::loop_momentum_configuration>
     missing_loop_integral_configurations(sqlite3* db, transaction_manager& mgr,
                                          const sqlite3_policy& policy, const FRW_model_token& model,
                                          const loop_configs& required_configs);
+    
+    
+    //! process a list of configurations for one-loop P(k) calculations;
+    //! we detect which ones are already present in the database and avoid computing them
+    std::unique_ptr<z_database> missing_one_loop_Pk_redshifts(sqlite3* db, transaction_manager& mgr,
+                                                              const sqlite3_policy& policy,
+                                                              const FRW_model_token& model, const std::string& z_table,
+                                                              const z_database& z_db,
+                                                              const loop_configs::value_type& record);
 
   }   // namespace sqlite3_operations
 

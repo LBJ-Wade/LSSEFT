@@ -81,6 +81,9 @@ class slave_controller
 
     //! integrate a given loop
     void process_item(MPI_detail::new_loop_momentum_integration& payload);
+    
+    //! combine loop integral and growth-factor data to produce a 1-loop power spectrum
+    void process_item(MPI_detail::new_one_loop_Pk& payload);
 
 
     // INTERNAL DATA

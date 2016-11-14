@@ -72,23 +72,35 @@ class data_manager
 
   public:
 
-    //! build a work list representing z-values which are missing from the SQLite backing store
+    //! build a work list representing z-values that are missing from the SQLite backing store
     //! for each k-value in a wavenumber database representing transfer functions.
     //! generates a new transaction on the database; will fail if a transaction is in progress
     std::unique_ptr<transfer_work_list> build_transfer_work_list(FRW_model_token& model, k_database& k_db,
                                                                  z_database& z_db);
 
-    //! build a work list representing z-values which are missing from the SQLite backing store
+    //! build a work list representing z-values that are missing from the SQLite backing store
     //! for each z-value needed for the one-loop growth factors.
     //! generates a new transaction on the database; will fail if a transaction is in progress
     std::unique_ptr<z_database> build_oneloop_work_list(FRW_model_token& model, z_database& z_db);
 
-    //! build a work list representing k-values which are missing from the SQLite backing store
+    //! build a work list representing k-values that are missing from the SQLite backing store
     //! for each k-value in a wavenumber database representing the momentum loop integral.
     //! generates a new transaction on the database; will fail if a transaction is in progress
     std::unique_ptr<loop_momentum_work_list> build_loop_momentum_work_list(FRW_model_token& model, k_database& k_db,
                                                                            IR_database& IR_db, UV_database& UV_db,
                                                                            std::shared_ptr<tree_power_spectrum>& Pk);
+    
+    //! build a work list representing (k, z) combinations that are missing from the SQLite backing store
+    //! generates a new transaction on the database; will fail if a transaction is in progress
+    std::unique_ptr<one_loop_Pk_work_list> build_one_loop_Pk_work_list(FRW_model_token& model,
+                                                                       z_database& z_db, k_database& k_db,
+                                                                       IR_database& IR_db, UV_database& UV_db,
+                                                                       std::shared_ptr<tree_power_spectrum>& Pk);
+    
+  protected:
+    
+    //! tensor together (k, IR cutoff, UV cutoff) combinations for loop integrals
+    loop_configs tensor_product(k_database& k_db, IR_database& IR_db, UV_database& UV_db);
 
 
     // TOKENS
@@ -125,15 +137,15 @@ class data_manager
   public:
     
     //! extract a sample of a z-dependent but not k-dependent quantity, of the type specified by
-    //! the payload; generates a new transaction on the database, so will fail if one is already in progress
+    //! the payload
     template <typename PayloadType>
-    PayloadType find(const FRW_model_token& model, z_database& z_db);
+    PayloadType find(transaction_manager& mgr, const FRW_model_token& model, z_database& z_db);
     
     //! extract a sample of a loop integral-like quantity that is k-dependent, UV and IR cutoff-dependent
     //! but not z-dependent
     template <typename PayloadType>
-    PayloadType find(const FRW_model_token& model, const k_token& k,
-                     const UV_token& UV_cutoff, const IR_token& IR_cutoff);
+    PayloadType find(transaction_manager& mgr, const FRW_model_token& model, const k_token& k,
+                     const IR_token& IR_cutoff, const UV_token& UV_cutoff);
 
     // TRANSACTIONS
 

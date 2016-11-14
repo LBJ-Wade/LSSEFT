@@ -170,6 +170,12 @@ void master_controller::execute()
 
         // distribute this work list among the worker processes
         if(loop_momentum_work) this->scatter(cosmology_model, *model, *loop_momentum_work, dmgr);
+        
+        // build a work list for the individual power spectrum components
+        std::unique_ptr<one_loop_Pk_work_list> Pk_work = dmgr.build_one_loop_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_db, *UV_db, Pk);
+
+        // distribute this work list among the worker processes
+        if(Pk_work) this->scatter(cosmology_model, *model, *Pk_work, dmgr);
       }
 
     // instruct slave processes to terminate
@@ -243,7 +249,9 @@ void master_controller::scatter(const FRW_model& model, const FRW_model_token& t
                   }
 
                 default:
-                  assert(false);
+                  {
+                    assert(false);
+                  }
               }
 
             stat = this->mpi_world.iprobe();

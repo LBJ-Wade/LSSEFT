@@ -308,10 +308,10 @@ transfer_integrator::transfer_integrator(double a, double r)
 
 
 transfer_function transfer_integrator::integrate(const FRW_model& model, const Mpc_units::energy& k,
-                                                 const k_token& tok, std::shared_ptr<z_database>& z_db)
+                                                 const k_token& tok, const z_database& z_db)
   {
     // set up an empty transfer_function container
-    transfer_function ctr(k, tok, z_db);
+    transfer_function ctr(k, tok, std::make_shared<z_database>(z_db));
 
     // set up a functor for the ODE system
     transfer_functor rhs(model, k);
@@ -326,7 +326,7 @@ transfer_function transfer_integrator::integrate(const FRW_model& model, const M
     // is sufficiently superhorizon
 
     // first, get earliest time required
-    z_database::reverse_value_iterator max_z = z_db->value_rbegin();
+    z_database::const_reverse_value_iterator max_z = z_db.value_crbegin();
     double largest_z = *max_z;
     double init_z    = rhs.find_init_z();
 
@@ -335,7 +335,7 @@ transfer_function transfer_integrator::integrate(const FRW_model& model, const M
 
     // set up vector of sample times
     std::vector<double> z_sample{ std::max(largest_z, init_z) };
-    std::copy(z_db->value_rbegin(), z_db->value_rend(), std::back_inserter(z_sample));
+    std::copy(z_db.value_crbegin(), z_db.value_crend(), std::back_inserter(z_sample));
 
     auto stepper = boost::numeric::odeint::make_dense_output< boost::numeric::odeint::runge_kutta_dopri5<state_vector> >(this->abs_err, this->rel_err);
 

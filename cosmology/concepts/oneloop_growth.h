@@ -15,6 +15,10 @@
 
 #include "boost/timer/timer.hpp"
 
+#include "boost/serialization/serialization.hpp"
+#include "boost/serialization/shared_ptr.hpp"
+#include "boost/serialization/unique_ptr.hpp"
+
 
 struct oneloop_growth_record
   {
@@ -297,8 +301,11 @@ class oneloop_growth
 
   public:
 
-    //! constructor
+    //! value constructor
     oneloop_growth(z_database& z);
+    
+    //! empty constructor used for receiving an MPI payload
+    oneloop_growth();
 
     //! destructor is default
     ~oneloop_growth() = default;
@@ -324,42 +331,42 @@ class oneloop_growth
 
     iterator begin()
       {
-        return(iterator(this->z_db.record_rbegin(),
+        return(iterator(this->z_db->record_rbegin(),
                         this->g_linear->begin(), this->A->begin(), this->B->begin(), this->D->begin(), this->E->begin(), this->F->begin(), this->G->begin(), this->J->begin(),
                         this->f_linear->begin(), this->fA->begin(), this->fB->begin(), this->fD->begin(), this->fE->begin(), this->fF->begin(), this->fG->begin(), this->fJ->begin()));
       }
 
     iterator end()
       {
-        return(iterator(this->z_db.record_rend(),
+        return(iterator(this->z_db->record_rend(),
                         this->g_linear->end(), this->A->end(), this->B->end(), this->D->end(), this->E->end(), this->F->end(), this->G->end(), this->J->end(),
                         this->f_linear->end(), this->fA->end(), this->fB->end(), this->fD->end(), this->fE->end(), this->fF->end(), this->fG->end(), this->fJ->end()));
       }
 
     const_iterator begin() const
       {
-        return(const_iterator(this->z_db.record_crbegin(),
+        return(const_iterator(this->z_db->record_crbegin(),
                               this->g_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->J->cbegin(),
                               this->f_linear->cbegin(), this->fA->cbegin(), this->fB->cbegin(), this->fD->cbegin(), this->fE->cbegin(), this->fF->cbegin(), this->fG->cbegin(), this->fJ->cbegin()));
       }
 
     const_iterator end() const
       {
-        return(const_iterator(this->z_db.record_crend(),
+        return(const_iterator(this->z_db->record_crend(),
                               this->g_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->J->cend(),
                               this->f_linear->cend(), this->fA->cend(), this->fB->cend(), this->fD->cend(), this->fE->cend(), this->fF->cend(), this->fG->cend(), this->fJ->cend()));
       }
 
     const_iterator cbegin() const
       {
-        return(const_iterator(this->z_db.record_crbegin(),
+        return(const_iterator(this->z_db->record_crbegin(),
                               this->g_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->J->cbegin(),
                               this->f_linear->cbegin(), this->fA->cbegin(), this->fB->cbegin(), this->fD->cbegin(), this->fE->cbegin(), this->fF->cbegin(), this->fG->cbegin(), this->fJ->cbegin()));
       }
 
     const_iterator cend() const
       {
-        return(const_iterator(this->z_db.record_crend(),
+        return(const_iterator(this->z_db->record_crend(),
                               this->g_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->J->cend(),
                               this->f_linear->cend(), this->fA->cend(), this->fB->cend(), this->fD->cend(), this->fE->cend(), this->fF->cend(), this->fG->cend(), this->fJ->cend()));
       }
@@ -369,6 +376,8 @@ class oneloop_growth
 
   public:
 
+    size_t size() const { return this->z_db->size(); }
+    
     //! store components
     void push_back(double g, double A, double B, double D, double E, double F, double G, double J,
                    double f, double fA, double fB, double fD, double fE, double fF, double fG, double fJ);
@@ -394,8 +403,8 @@ class oneloop_growth
 
     // CONFIGURATION DATA
 
-    //! reference to redshift database
-    z_database& z_db;
+    //! copy of redshift database
+    std::unique_ptr<z_database> z_db;
 
 
     // ONE-LOOP FUNCTIONS
@@ -459,6 +468,34 @@ class oneloop_growth
 
     //! number of steps used by integrator
     size_t steps;
+    
+    
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+    
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & z_db;
+        ar & g_linear;
+        ar & A;
+        ar & B;
+        ar & D;
+        ar & E;
+        ar & F;
+        ar & G;
+        ar & J;
+        ar & f_linear;
+        ar & fA;
+        ar & fB;
+        ar & fD;
+        ar & fE;
+        ar & fF;
+        ar & fG;
+        ar & fJ;
+        ar & integration_time;
+        ar & steps;
+      }
 
   };
 

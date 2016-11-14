@@ -22,6 +22,9 @@ namespace MPI_detail
 
     //! build payload for loop integration
     new_loop_momentum_integration build_payload(const FRW_model& model, std::list<loop_momentum_work_record>::const_iterator& t);
+    
+    //! build payload for one-loop P(k) calculation
+    new_one_loop_Pk build_payload(const FRW_model&, std::list<one_loop_Pk_work_record>::const_iterator& t);
 
 
   }   // namespace MPI_detail

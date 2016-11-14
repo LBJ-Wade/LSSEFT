@@ -23,7 +23,7 @@ namespace sqlite3_operations
                               KernelType& kernel)
           {
             std::ostringstream read_stmt;
-            read_stmt << "SELECT (value, regions, evals, err, time) FROM " << table << " WHERE mid=@mid AND kid=@kid AND UV_id=@UV_id AND IR_id=@IR_id;";
+            read_stmt << "SELECT value, regions, evals, err, time FROM " << table << " WHERE mid=@mid AND kid=@kid AND UV_id=@UV_id AND IR_id=@IR_id;";
             
             // prepare statement
             sqlite3_stmt* stmt;
@@ -78,7 +78,7 @@ namespace sqlite3_operations
 
         std::ostringstream g_select_stmt;
         g_select_stmt
-          << "SELECT ("
+          << "SELECT "
           << "g_sample.g_linear, "
           << "g_sample.A, "
           << "g_sample.B, "
@@ -86,15 +86,15 @@ namespace sqlite3_operations
           << "g_sample.E, "
           << "g_sample.F, "
           << "g_sample.G, "
-          << "g_sample.J"
-          << ") FROM " << ztab << " "
+          << "g_sample.J "
+          << "FROM " << ztab << " "
           << "INNER JOIN (SELECT * FROM " << policy.g_factor_table() << " WHERE mid=@mid) g_sample "
           << "ON " << ztab << ".id = g_sample.zid "
           << "ORDER BY " << ztab << ".ROWID;";
         
         std::ostringstream f_select_stmt;
         f_select_stmt
-          << "SELECT ("
+          << "SELECT "
           << "f_sample.f_linear, "
           << "f_sample.fA, "
           << "f_sample.fB, "
@@ -102,15 +102,15 @@ namespace sqlite3_operations
           << "f_sample.fE, "
           << "f_sample.fF, "
           << "f_sample.fG, "
-          << "f_sample.fJ"
-          << ") FROM " << ztab << " "
+          << "f_sample.fJ "
+          << "FROM " << ztab << " "
           << "INNER JOIN (SELECT * FROM " << policy.f_factor_table() << " WHERE mid=@mid) f_sample "
           << "ON " << ztab << ".id = f_sample.zid "
           << "ORDER BY " << ztab << ".ROWID;";
         
         std::ostringstream meta_select_stmt;
         meta_select_stmt
-          << "SELECT (time, steps) FROM " << policy.gf_metadata_table() << " WHERE mid=@mid;";
+          << "SELECT time, steps FROM " << policy.gf_metadata_table() << " WHERE mid=@mid;";
         
         // prepare statements
         sqlite3_stmt* g_stmt;
@@ -203,7 +203,7 @@ namespace sqlite3_operations
     
     loop_integral find(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
                        const FRW_model_token& model, const k_token& k,
-                       const UV_token& UV_cutoff, const IR_token& IR_cutoff)
+                       const IR_token& IR_cutoff, const UV_token& UV_cutoff)
       {
         delta_22_integrals delta22;
         delta_13_integrals delta13;

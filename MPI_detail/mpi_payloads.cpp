@@ -23,4 +23,11 @@ namespace MPI_detail
                                              t->get_IR_cutoff(), t->get_IR_token(),
                                              t->get_Pk_db());
       }
+    
+    
+    new_one_loop_Pk build_payload(const FRW_model&, std::list<one_loop_Pk_work_record>::const_iterator& t)
+      {
+        return new_one_loop_Pk(*(*t), t->get_gf_factors(), t->get_loop_data(), t->get_Pk_db());
+      }
+
   }

@@ -110,6 +110,12 @@ inline Mpc_units::inverse_energy3 dimensionful_unit<Mpc_units::inverse_energy3>(
     return Mpc_units::Mpc3;
   }
 
+template <>
+inline Mpc_units::inverse_energy dimensionful_unit<Mpc_units::inverse_energy>()
+  {
+    return Mpc_units::Mpc;
+  }
+
 
 class delta_22_integrals
   {

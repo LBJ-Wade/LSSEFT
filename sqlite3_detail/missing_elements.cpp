@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <set>
 #include <unordered_set>
+#include <cosmology/types.h>
 
 #include "utilities.h"
 #include "missing_elements.h"
@@ -63,7 +64,7 @@ namespace sqlite3_operations
 
     //! find missing redshifts for a named k-independent table, returned as a std::set<> of ids
     std::set<unsigned int> missing_redshifts_for_table(sqlite3* db, const FRW_model_token& model,
-                                                       const std::string table, const std::string z_table)
+                                                       const std::string& table, const std::string& z_table)
       {
         assert(db != nullptr);
 
@@ -74,7 +75,7 @@ namespace sqlite3_operations
         select_stmt
           << "SELECT id FROM " << z_table << " "
           << "WHERE id NOT IN "
-          << "(SELECT zid FROM " << table << " WHERE " << table << ".mid=@mid) "
+          << "(SELECT zid FROM " << table << " WHERE mid=@mid) "
           << "ORDER BY id;";
 
         // prepare statement
@@ -101,11 +102,54 @@ namespace sqlite3_operations
 
         return(results);
       }
+    
+    
+    //! find missing redshifts for a named loop-k-dependent table, returned as a std::set<> of ints
+    std::set<unsigned int> missing_redshifts_for_table(sqlite3* db, const FRW_model_token& model,
+                                                       const std::string& table, const std::string& z_table,
+                                                       const loop_configs::value_type& record)
+      {
+        assert(db != nullptr);
+        
+        std::ostringstream select_stmt;
+        select_stmt
+          << "SELECT id FROM " << z_table << " "
+          << "WHERE id NOT IN "
+          << "(SELECT zid FROM " << table << " WHERE mid=@mid AND kid=@kid AND IR_id=@IR_id AND UV_id=@UV_id) "
+          << "ORDER BY id;";
+        
+        // prepare statement
+        sqlite3_stmt* stmt;
+        check_stmt(db, sqlite3_prepare_v2(db, select_stmt.str().c_str(), select_stmt.str().length()+1, &stmt, nullptr));
+    
+        // bind parameter values
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@mid"), model.get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@kid"), record.k->get_token().get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_id"), record.IR->get_token().get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@UV_id"), record.UV->get_token().get_id()));
+        
+        std::set<unsigned int> results;
+    
+        int status = 0;
+        while((status = sqlite3_step(stmt)) != SQLITE_DONE)
+          {
+            if(status == SQLITE_ROW)
+              {
+                results.insert(static_cast<unsigned int>(sqlite3_column_int(stmt, 0)));
+              }
+          }
+    
+        // finalize statement and release resources
+        check_stmt(db, sqlite3_clear_bindings(stmt));
+        check_stmt(db, sqlite3_finalize(stmt));
+    
+        return(results);
+      }
 
 
     //! find missing wavenumbers in a named table, returned as a std::set<> of ids
     std::set<unsigned int> missing_wavenumbers_for_table(sqlite3* db, const FRW_model_token& model,
-                                                         const std::string table, const std::string k_table)
+                                                         const std::string& table, const std::string& k_table)
       {
         assert(db != nullptr);
 
@@ -189,6 +233,19 @@ namespace sqlite3_operations
       }
     
     
+    std::set<unsigned int> update_missing_one_loop_Pk(sqlite3* db, const FRW_model_token& model,
+                                                      const std::string& table, const std::string& z_table,
+                                                      const loop_configs::value_type& record,
+                                                      std::set<unsigned int>& total_missing)
+      {
+        std::set<unsigned int> missing = missing_redshifts_for_table(db, model, table, z_table, record);
+        
+        total_missing.insert(missing.begin(), missing.end());
+        
+        return missing;
+      }
+    
+    
     void drop_inconsistent_redshifts(sqlite3* db, const FRW_model_token& model, const std::string& table,
                                      const std::set<unsigned int>& missing, const std::set<unsigned int>& total_missing)
       {
@@ -223,7 +280,46 @@ namespace sqlite3_operations
             check_stmt(db, sqlite3_finalize(stmt));
           }
       }
-
+    
+    
+    void drop_inconsistent_redshifts(sqlite3* db, const FRW_model_token& model, const std::string& table,
+                                     const loop_configs::value_type& record, const std::set<unsigned int>& missing,
+                                     const std::set<unsigned int>& total_missing)
+      {
+        std::set<unsigned int> inconsistent_set;
+    
+        std::set_difference(total_missing.begin(), total_missing.end(),
+                            missing.begin(), missing.end(), std::inserter(inconsistent_set, inconsistent_set.begin()));
+    
+        if(inconsistent_set.size() > 0)
+          {
+            std::ostringstream drop_stmt;
+            drop_stmt
+              << "DELETE FROM " << table << " WHERE mid=@mid AND zid=@zid AND kid=@kid AND IR_id=@IR_id AND UV_id=@UV_id;";
+        
+            // prepare statement
+            sqlite3_stmt* stmt;
+            check_stmt(db, sqlite3_prepare_v2(db, drop_stmt.str().c_str(), drop_stmt.str().length()+1, &stmt, nullptr));
+        
+            for(unsigned int t : inconsistent_set)
+              {
+                check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@mid"), model.get_id()));
+                check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@zid"), t));
+                check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@kid"), record.k->get_token().get_id()));
+                check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@UV_id"), record.UV->get_token().get_id()));
+                check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_id"), record.IR->get_token().get_id()));
+            
+                check_stmt(db, sqlite3_step(stmt));
+            
+                // release bindings and reset statement
+                check_stmt(db, sqlite3_clear_bindings(stmt));
+                check_stmt(db, sqlite3_reset(stmt));
+              }
+        
+            // finalize statement to release resources
+            check_stmt(db, sqlite3_finalize(stmt));
+          }
+      }
 
     //! find missing redshifts for a one-loop growth function sample
     //! the required redshifts are passed in as the z_database z_db
@@ -238,7 +334,7 @@ namespace sqlite3_operations
         // set up null pointer; will be attached to an empty database later if needed
         std::unique_ptr<z_database> missing_db;
 
-        // get list of missing z-values from each table
+        // get list of missing z-values from each relevant table
         std::set<unsigned int> missing;
         std::set<unsigned int> missing_g = update_missing_oneloop_growth_redshifts(db, model, policy.g_factor_table(), z_table, missing);
         std::set<unsigned int> missing_f = update_missing_oneloop_growth_redshifts(db, model, policy.f_factor_table(), z_table, missing);
@@ -248,7 +344,7 @@ namespace sqlite3_operations
         drop_inconsistent_redshifts(db, model, policy.f_factor_table(), missing_f, missing);
 
         // if any elements are missing, push them into a database
-        if(missing.size() > 0)
+        if(!missing.empty())
           {
             missing_db = std::make_unique<z_database>();
 
@@ -397,9 +493,49 @@ namespace sqlite3_operations
         drop_inconsistent_configurations(db, model, policy.G_table(), missing_G, total_missing);
         drop_inconsistent_configurations(db, model, policy.J1_table(), missing_J1, total_missing);
         drop_inconsistent_configurations(db, model, policy.J2_table(), missing_J2, total_missing);
-
+        
         return total_missing;
       }
-
-
+    
+    
+    std::unique_ptr<z_database>
+    missing_one_loop_Pk_redshifts(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
+                                  const FRW_model_token& model, const std::string& z_table, const z_database& z_db,
+                                  const loop_configs::value_type& record)
+      {
+        assert(db != nullptr);
+        
+        // set up a null pointer for the returned database; will be attached to an empty instance later if needed
+        std::unique_ptr<z_database> missing_db;
+        
+        // get list of missing z-values from each relevant table
+        std::set<unsigned int> missing;
+        std::set<unsigned int> missing_delta = update_missing_one_loop_Pk(db, model, policy.dd_Pk_table(),
+                                                                          z_table, record, missing);
+        std::set<unsigned int> missing_rsd = update_missing_one_loop_Pk(db, model, policy.dd_rsd_mu0_Pk_table(),
+                                                                        z_table, record, missing);
+        
+        // drop any inconsistent redshifts that are present in one table but not the others
+        drop_inconsistent_redshifts(db, model, policy.dd_Pk_table(), record, missing_delta, missing);
+        drop_inconsistent_redshifts(db, model, policy.dd_rsd_mu0_Pk_table(), record, missing_rsd, missing);
+        
+        // push any missing elements into the result database
+        if(!missing.empty())
+          {
+            missing_db = std::make_unique<z_database>();
+            
+            for(unsigned int t : missing)
+              {
+                // lookup record for this identifier
+                z_database::const_record_iterator rec = z_db.lookup(z_token(t));
+                
+                // add a corresponding record to the missing database
+                missing_db->add_record(*(*rec), rec->get_token());
+              }
+          }
+        
+        return missing_db;
+      }
+    
+    
   }   // namespace sqlite3_operations

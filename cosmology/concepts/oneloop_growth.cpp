@@ -7,7 +7,7 @@
 
 
 oneloop_growth::oneloop_growth(z_database& z)
-  : z_db(z)
+  : z_db(std::make_unique<z_database>(z))
   {
     g_linear = std::make_unique< std::vector<double> >();
     A = std::make_unique< std::vector<double> >();
@@ -26,6 +26,11 @@ oneloop_growth::oneloop_growth(z_database& z)
     fF = std::make_unique< std::vector<double> >();
     fG = std::make_unique< std::vector<double> >();
     fJ = std::make_unique< std::vector<double> >();
+  }
+
+
+oneloop_growth::oneloop_growth()
+  {
   }
 
 
@@ -60,7 +65,7 @@ void oneloop_growth::set_integration_metadata(boost::timer::nanosecond_type t, s
 
 
 oneloop_growth::oneloop_growth(oneloop_growth&& obj)
-  : z_db(obj.z_db),
+  : z_db(std::make_unique<z_database>(*obj.z_db)),
     g_linear(std::move(obj.g_linear)),
     A(std::move(obj.A)),
     B(std::move(obj.B)),

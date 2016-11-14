@@ -44,12 +44,12 @@ class oneloop_momentum_integrator
     loop_integral integrate(const FRW_model& model, const Mpc_units::energy& k, const k_token& k_tok,
                             const Mpc_units::energy& UV_cutoff, const UV_token& UV_tok,
                             const Mpc_units::energy& IR_cutoff, const IR_token& IR_tok,
-                            std::shared_ptr<tree_power_spectrum>& Pk);
+                            const tree_power_spectrum& Pk);
 
     //! output integrands for inspection
     void write_integrands(const FRW_model& model, const Mpc_units::energy& k,
                           const Mpc_units::energy& UV_cutoff, const Mpc_units::energy& IR_cutoff,
-                          std::shared_ptr<tree_power_spectrum>& Pk, unsigned int Npoints);
+                          const tree_power_spectrum& Pk, unsigned int Npoints);
 
     // INTERNAL API
 
@@ -59,7 +59,7 @@ class oneloop_momentum_integrator
     template <typename KernelRecord>
     bool kernel_integral(const FRW_model& model, const Mpc_units::energy& k,
                          const Mpc_units::energy& UV_cutoff, const Mpc_units::energy& IR_cutoff,
-                         std::shared_ptr<tree_power_spectrum>& Pk,
+                         const tree_power_spectrum& Pk,
                          integrand_t interand, KernelRecord& result);
 
 

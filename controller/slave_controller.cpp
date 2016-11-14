@@ -11,6 +11,7 @@
 
 #include "cosmology/transfer_integrator.h"
 #include "cosmology/oneloop_momentum_integrator.h"
+#include "cosmology/one_loop_Pk_calculator.h"
 #include "cosmology/types.h"
 
 
@@ -49,6 +50,13 @@ void slave_controller::execute()
                 this->process_task<loop_momentum_work_record>();
                 break;
               }
+            
+            case MPI_detail::MESSAGE_NEW_ONE_LOOP_PK_TASK:
+              {
+                this->mpi_world.recv(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_NEW_ONE_LOOP_PK_TASK);
+                this->process_task<one_loop_Pk_work_record>();
+                break;
+              }
 
             case MPI_detail::MESSAGE_TERMINATE:
               {
@@ -58,7 +66,9 @@ void slave_controller::execute()
               }
 
             default:
-              assert(false);
+              {
+                assert(false);
+              }
           }
       }
   }
@@ -98,7 +108,9 @@ void slave_controller::process_task()
               }
 
             default:
-              assert(false);
+              {
+                assert(false);
+              }
           }
       }
   }
@@ -106,12 +118,13 @@ void slave_controller::process_task()
 
 void slave_controller::process_item(MPI_detail::new_transfer_integration& payload)
   {
-    FRW_model model = payload.get_model();
-    Mpc_units::energy k = payload.get_k();
-    k_token tok = payload.get_token();
-    std::shared_ptr<z_database> z_db = payload.get_z_db();
-
-    std::cout << "Worker " << this->worker_number() << " processing transfer item: id = " << tok.get_id() << " for k = " << k * Mpc_units::Mpc << " h/Mpc = " << k / Mpc_units::eV << " eV" << '\n';
+    const FRW_model& model = payload.get_model();
+    const Mpc_units::energy& k = payload.get_k();
+    const k_token& tok = payload.get_token();
+    const z_database& z_db = payload.get_z_db();
+    
+    std::cout << "Worker " << this->worker_number() << " processing transfer item: id = " << tok.get_id() << " for k = "
+              << k * Mpc_units::Mpc << " h/Mpc = " << k / Mpc_units::eV << " eV" << '\n';
 
     transfer_integrator integrator;
     transfer_function sample = integrator.integrate(model, k, tok, z_db);
@@ -119,21 +132,24 @@ void slave_controller::process_item(MPI_detail::new_transfer_integration& payloa
     // inform master process that we have completed work on this integration
     MPI_detail::transfer_integration_ready return_payload(sample);
     boost::mpi::request ack = this->mpi_world.isend(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_WORK_PRODUCT_READY, return_payload);
+    ack.wait();
   }
 
 
 void slave_controller::process_item(MPI_detail::new_loop_momentum_integration& payload)
   {
-    FRW_model model = payload.get_model();
-    Mpc_units::energy k = payload.get_k();
-    Mpc_units::energy UV_cutoff = payload.get_UV_cutoff();
-    Mpc_units::energy IR_cutoff = payload.get_IR_cutoff();
-    k_token k_tok = payload.get_k_token();
-    UV_token UV_tok = payload.get_UV_token();
-    IR_token IR_tok = payload.get_IR_token();
-    std::shared_ptr<tree_power_spectrum> Pk = payload.get_tree_power_spectrum();
-
-    std::cout << "Worker " << this->worker_number() << " processing loop integral item: id = " << k_tok.get_id() << " for k = " << k * Mpc_units::Mpc << " h/Mpc, IR cutoff = " << IR_cutoff * Mpc_units::Mpc << " h/Mpc, UV cutoff = " << UV_cutoff * Mpc_units::Mpc << " h/Mpc" << '\n';
+    const FRW_model& model = payload.get_model();
+    const Mpc_units::energy& k = payload.get_k();
+    const Mpc_units::energy& UV_cutoff = payload.get_UV_cutoff();
+    const Mpc_units::energy& IR_cutoff = payload.get_IR_cutoff();
+    const k_token& k_tok = payload.get_k_token();
+    const UV_token& UV_tok = payload.get_UV_token();
+    const IR_token& IR_tok = payload.get_IR_token();
+    const tree_power_spectrum& Pk = payload.get_tree_power_spectrum();
+    
+    std::cout << "Worker " << this->worker_number() << " processing loop integral item: k-id = " << k_tok.get_id()
+              << " for k = " << k * Mpc_units::Mpc << " h/Mpc, IR cutoff = " << IR_cutoff * Mpc_units::Mpc
+              << " h/Mpc, UV cutoff = " << UV_cutoff * Mpc_units::Mpc << " h/Mpc" << '\n';
 
     oneloop_momentum_integrator integrator;
     loop_integral sample = integrator.integrate(model, k, k_tok, UV_cutoff, UV_tok, IR_cutoff, IR_tok, Pk);
@@ -141,4 +157,34 @@ void slave_controller::process_item(MPI_detail::new_loop_momentum_integration& p
     // inform master process that we have completed work on this integration
     MPI_detail::loop_momentum_integration_ready return_payload(sample);
     boost::mpi::request ack = this->mpi_world.isend(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_WORK_PRODUCT_READY, return_payload);
+    ack.wait();
+  }
+
+
+void slave_controller::process_item(MPI_detail::new_one_loop_Pk& payload)
+  {
+    const Mpc_units::energy& k = payload.get_k();
+    const oneloop_growth& gf_factors = payload.get_gf_factors();
+    const loop_integral& loop_data = payload.get_loop_data();
+    const tree_power_spectrum& Pk = payload.get_tree_power_spectrum();
+    
+    const k_token& k_tok = loop_data.get_k_token();
+    const IR_token& IR_tok = loop_data.get_IR_token();
+    const UV_token& UV_tok = loop_data.get_UV_token();
+    
+    std::cout << "Worker " << this->worker_number() << " processing 1-loop P(k) for"
+              << " k-id = " << k_tok.get_id() << ", IR-id = " << IR_tok.get_id() << ", UV-id = " << UV_tok.get_id()
+              << "; " << gf_factors.size() << " redshifts to process" << '\n';
+    
+    one_loop_Pk_calculator calculator;
+    std::list<one_loop_Pk> sample = calculator.calculate(k, k_tok, IR_tok, UV_tok, gf_factors, loop_data, Pk);
+    
+    // inform master process that the calculation is finished
+    std::list<boost::mpi::request> acks;
+    for(one_loop_Pk& record : sample)
+      {
+        MPI_detail::one_loop_Pk_ready return_payload(record);
+        acks.push_back(this->mpi_world.isend(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_WORK_PRODUCT_READY, return_payload));
+      }
+    boost::mpi::wait_all(acks.begin(), acks.end());
   }

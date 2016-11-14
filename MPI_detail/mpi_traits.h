@@ -34,6 +34,15 @@ namespace MPI_detail
         static constexpr unsigned int new_task_message() { return(MESSAGE_NEW_LOOP_INTEGRAL_TASK); }
         static constexpr unsigned int new_item_message() { return(MESSAGE_NEW_LOOP_INTEGRATION); }
       };
+    
+    template <> struct work_item_traits<one_loop_Pk_work_record>
+      {
+        typedef new_one_loop_Pk   outgoing_payload_type;
+        typedef one_loop_Pk_ready incoming_payload_type;
+        
+        static constexpr unsigned int new_task_message() { return(MESSAGE_NEW_ONE_LOOP_PK_TASK); }
+        static constexpr unsigned int new_item_message() { return(MESSAGE_NEW_ONE_LOOP_PK); }
+      };
 
   }   // namespace MPI_detail
 

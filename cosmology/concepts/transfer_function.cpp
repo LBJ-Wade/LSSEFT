@@ -9,7 +9,7 @@
 transfer_function::transfer_function(const Mpc_units::energy& _k, const k_token& t, std::shared_ptr<z_database> z)
   : k(_k),
     token(t),
-    z_db(z)
+    z_db(std::move(z))
   {
     // if we were passed a non-null redshift database, set up containers
     // (perhaps should disallow construction with a null database?)

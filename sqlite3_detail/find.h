@@ -29,7 +29,7 @@ namespace sqlite3_operations
     
     //! extract loop integrals for a given wavenumber, UV-cutoff and IR-cutoff combination
     loop_integral find(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
-                       const FRW_model_token& model, const k_token& k, const UV_token& UV_cutoff, const IR_token& IR_cutoff);
+                       const FRW_model_token& model, const k_token& k, const IR_token& IR_cutoff, const UV_token& UV_cutoff);
     
   }   // namespace sqlite3_operations
 
