@@ -193,12 +193,22 @@ namespace sqlite3_operations
         create_impl::oneloop_momentum_integral_table(db, policy.AA_table(), policy);
         create_impl::oneloop_momentum_integral_table(db, policy.AB_table(), policy);
         create_impl::oneloop_momentum_integral_table(db, policy.BB_table(), policy);
+
         create_impl::oneloop_momentum_integral_table(db, policy.D_table(), policy);
         create_impl::oneloop_momentum_integral_table(db, policy.E_table(), policy);
         create_impl::oneloop_momentum_integral_table(db, policy.F_table(), policy);
         create_impl::oneloop_momentum_integral_table(db, policy.G_table(), policy);
         create_impl::oneloop_momentum_integral_table(db, policy.J1_table(), policy);
         create_impl::oneloop_momentum_integral_table(db, policy.J2_table(), policy);
+        
+        create_impl::oneloop_momentum_integral_table(db, policy.RSD13_a_table(), policy);
+        create_impl::oneloop_momentum_integral_table(db, policy.RSD13_b_table(), policy);
+        create_impl::oneloop_momentum_integral_table(db, policy.RSD13_c_table(), policy);
+        create_impl::oneloop_momentum_integral_table(db, policy.RSD13_d_table(), policy);
+        create_impl::oneloop_momentum_integral_table(db, policy.RSD13_e_table(), policy);
+        create_impl::oneloop_momentum_integral_table(db, policy.RSD13_f_table(), policy);
+        create_impl::oneloop_momentum_integral_table(db, policy.RSD13_g_table(), policy);
+        create_impl::oneloop_momentum_integral_table(db, policy.RSD13_h_table(), policy);
         
         std::ostringstream dd_stmt;
         dd_stmt

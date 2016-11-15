@@ -58,6 +58,16 @@ loop_integral oneloop_momentum_integrator::integrate(const FRW_model& model, con
     if(failD || failE || failF || failG || failJ1 || failJ2) delta13.mark_failed();
     
     // rsd 13 kernels
+    bool fail_RSD13_a = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::RSD13_a_integrand, rsd13.get_a(), loop_integral_type::P13);
+    bool fail_RSD13_b = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::RSD13_b_integrand, rsd13.get_b(), loop_integral_type::P13);
+    bool fail_RSD13_c = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::RSD13_c_integrand, rsd13.get_c(), loop_integral_type::P13);
+    bool fail_RSD13_d = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::RSD13_d_integrand, rsd13.get_d(), loop_integral_type::P13);
+    bool fail_RSD13_e = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::RSD13_e_integrand, rsd13.get_e(), loop_integral_type::P13);
+    bool fail_RSD13_f = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::RSD13_f_integrand, rsd13.get_f(), loop_integral_type::P13);
+    bool fail_RSD13_g = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::RSD13_g_integrand, rsd13.get_g(), loop_integral_type::P13);
+    bool fail_RSD13_h = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::RSD13_h_integrand, rsd13.get_h(), loop_integral_type::P13);
+    
+    if(fail_RSD13_a | fail_RSD13_b | fail_RSD13_c | fail_RSD13_d | fail_RSD13_e | fail_RSD13_f | fail_RSD13_g | fail_RSD13_h) rsd13.mark_failed();
     
     loop_integral container(k_tok, UV_tok, IR_tok, delta22, delta13, rsd22, rsd13);
 
@@ -121,8 +131,8 @@ bool oneloop_momentum_integrator::kernel_integral(const FRW_model& model, const 
     if(fail != 0) std::cerr << "Integration failure: regions = " << regions << ", evaluations = " << evaluations << ", fail = " << fail << ", value = " << integral[0] << ", error = " << error[0] << ", probability = " << prob[0] << '\n';
 //    else          std::cerr << "Integration success: regions = " << regions << ", evaluations = " << evaluations << ", fail = " << fail << ", value = " << integral[0] << ", error = " << error[0] << ", probability = " << prob[0] << '\n';
 
-    // an overall factor 1 / (2pi)^3 is taken out of the integrand, so remember to put it back here
-    result.value       = typename KernelRecord::value_type(integral[0] / (8.0 * M_PI * M_PI * M_PI));
+    // an overall factor 1/8pi^2 is taken out of the integrand, so remember to put it back here
+    result.value       = typename KernelRecord::value_type(integral[0] / (8.0*M_PI*M_PI));
     result.regions     = regions;
     result.evaluations = evaluations;
     result.error       = error[0];

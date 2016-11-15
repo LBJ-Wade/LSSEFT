@@ -7,6 +7,8 @@
 #define LSSEFT_SHARED_H
 
 
+#include <cmath>
+
 #include "cosmology/FRW_model.h"
 #include "units/Mpc_units.h"
 
@@ -57,9 +59,14 @@ namespace oneloop_momentum_impl
             UV_cutoff(UV),
             IR_cutoff(IR),
             Pk(_Pk),
-            jacobian(2.0 * 2.0*M_PI * (UV_cutoff-IR_cutoff)), // Jacobian in angular directions is 2 * 2 * pi = 4pi;
-          // the integral over phi isn't done (the integrand doesn't depend on it), but this accounts for its contribution;
-          // the theta integral has been switched to d(cos theta) which runs from -1 to +2 and contributes a factor 2
+            // Jacobian for 2D integrals (over q and x)
+            // Jacobian for angular directions is 2 * 2pi = 4pi;
+            // the integral over phi isn't done (the integrand doesn't depend on it), but the 2pi accounts for its contribution;
+            // the theta integral has been switched to d(cos theta) which runs from -1 to +2 and contributes a factor 2
+            // in practice we remove the pi to get a common factor of 1/8pi^2 in all integrals
+            jacobian_2d(2.0 * 2.0 * (UV_cutoff-IR_cutoff)),
+            // Jacobian for 1D integrals (over q alone) has no angular directions
+            jacobian_1d(UV_cutoff - IR_cutoff),
             q_range(UV_cutoff - IR_cutoff),
             k_sq(k*k)
           {
@@ -71,7 +78,8 @@ namespace oneloop_momentum_impl
         const Mpc_units::energy& IR_cutoff;
         const tree_power_spectrum& Pk;
         
-        Mpc_units::energy  jacobian;
+        Mpc_units::energy  jacobian_2d;
+        Mpc_units::energy  jacobian_1d;
         Mpc_units::energy  q_range;
         Mpc_units::energy2 k_sq;
       };

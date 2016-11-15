@@ -80,6 +80,30 @@ class sqlite3_policy
     //! 1-loop AA integral table
     const std::string& J2_table() const { return(this->J2); }
     
+    //! 1-loop RSD13_a integral table
+    const std::string& RSD13_a_table() const { return this->RSD13_a; }
+    
+    //! 1-loop RSD13_b integral table
+    const std::string& RSD13_b_table() const { return this->RSD13_b; }
+    
+    //! 1-loop RSD13_c integral table
+    const std::string& RSD13_c_table() const { return this->RSD13_c; }
+    
+    //! 1-loop RSD13_d integral table
+    const std::string& RSD13_d_table() const { return this->RSD13_d; }
+    
+    //! 1-loop RSD13_e integral table
+    const std::string& RSD13_e_table() const { return this->RSD13_e; }
+    
+    //! 1-loop RSD13_f integral table
+    const std::string& RSD13_f_table() const { return this->RSD13_f; }
+    
+    //! 1-loop RSD13_g integral table
+    const std::string& RSD13_g_table() const { return this->RSD13_g; }
+    
+    //! 1-loop RSD13_h integral table
+    const std::string& RSD13_h_table() const { return this->RSD13_h; }
+    
     //! 1-loop delta-delta power spectrum table
     const std::string dd_Pk_table() const { return(this->dd_Pk); }
     
@@ -161,6 +185,30 @@ class sqlite3_policy
     
     //! 1-loop momentum integrals - J2
     const std::string J2;
+    
+    //! 1-loop momentum integrals - RSD13_a
+    const std::string RSD13_a;
+    
+    //! 1-loop momentum integrals - RSD13_b
+    const std::string RSD13_b;
+    
+    //! 1-loop momentum integrals - RSD13_c
+    const std::string RSD13_c;
+    
+    //! 1-loop momentum integrals - RSD13_d
+    const std::string RSD13_d;
+    
+    //! 1-loop momentum integrals - RSD13_e
+    const std::string RSD13_e;
+    
+    //! 1-loop momentum integrals - RSD13_f
+    const std::string RSD13_f;
+    
+    //! 1-loop momentum integrals - RSD13_g
+    const std::string RSD13_g;
+    
+    //! 1-loop momentum integrals - RSD13_h
+    const std::string RSD13_h;
     
     //! 1-loop delta delta power spectrum table
     const std::string dd_Pk;

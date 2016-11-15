@@ -307,6 +307,15 @@ namespace sqlite3_operations
             store_impl::store_loop_kernel(db, policy.G_table(), delta13.get_G(), model, sample);
             store_impl::store_loop_kernel(db, policy.J1_table(), delta13.get_J1(), model, sample);
             store_impl::store_loop_kernel(db, policy.J2_table(), delta13.get_J2(), model, sample);
+            
+            store_impl::store_loop_kernel(db, policy.RSD13_a_table(), rsd13.get_a(), model, sample);
+            store_impl::store_loop_kernel(db, policy.RSD13_b_table(), rsd13.get_b(), model, sample);
+            store_impl::store_loop_kernel(db, policy.RSD13_c_table(), rsd13.get_c(), model, sample);
+            store_impl::store_loop_kernel(db, policy.RSD13_d_table(), rsd13.get_d(), model, sample);
+            store_impl::store_loop_kernel(db, policy.RSD13_e_table(), rsd13.get_e(), model, sample);
+            store_impl::store_loop_kernel(db, policy.RSD13_f_table(), rsd13.get_f(), model, sample);
+            store_impl::store_loop_kernel(db, policy.RSD13_g_table(), rsd13.get_g(), model, sample);
+            store_impl::store_loop_kernel(db, policy.RSD13_h_table(), rsd13.get_h(), model, sample);
           }
       }
     

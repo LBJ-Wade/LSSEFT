@@ -476,24 +476,44 @@ namespace sqlite3_operations
         loop_configs missing_AA = update_missing_loop_integral_configurations(db, model, policy.AA_table(), required_configs, total_missing);
         loop_configs missing_AB = update_missing_loop_integral_configurations(db, model, policy.AB_table(), required_configs, total_missing);
         loop_configs missing_BB = update_missing_loop_integral_configurations(db, model, policy.BB_table(), required_configs, total_missing);
+
         loop_configs missing_D = update_missing_loop_integral_configurations(db, model, policy.D_table(), required_configs, total_missing);
         loop_configs missing_E = update_missing_loop_integral_configurations(db, model, policy.E_table(), required_configs, total_missing);
         loop_configs missing_F = update_missing_loop_integral_configurations(db, model, policy.F_table(), required_configs, total_missing);
         loop_configs missing_G = update_missing_loop_integral_configurations(db, model, policy.G_table(), required_configs, total_missing);
         loop_configs missing_J1 = update_missing_loop_integral_configurations(db, model, policy.J1_table(), required_configs, total_missing);
         loop_configs missing_J2 = update_missing_loop_integral_configurations(db, model, policy.J2_table(), required_configs, total_missing);
+
+        loop_configs missing_RSD13_a = update_missing_loop_integral_configurations(db, model, policy.RSD13_a_table(), required_configs, total_missing);
+        loop_configs missing_RSD13_b = update_missing_loop_integral_configurations(db, model, policy.RSD13_b_table(), required_configs, total_missing);
+        loop_configs missing_RSD13_c = update_missing_loop_integral_configurations(db, model, policy.RSD13_c_table(), required_configs, total_missing);
+        loop_configs missing_RSD13_d = update_missing_loop_integral_configurations(db, model, policy.RSD13_d_table(), required_configs, total_missing);
+        loop_configs missing_RSD13_e = update_missing_loop_integral_configurations(db, model, policy.RSD13_e_table(), required_configs, total_missing);
+        loop_configs missing_RSD13_f = update_missing_loop_integral_configurations(db, model, policy.RSD13_f_table(), required_configs, total_missing);
+        loop_configs missing_RSD13_g = update_missing_loop_integral_configurations(db, model, policy.RSD13_g_table(), required_configs, total_missing);
+        loop_configs missing_RSD13_h = update_missing_loop_integral_configurations(db, model, policy.RSD13_h_table(), required_configs, total_missing);
         
         // drop any inconsistent configurations -- ie. those present in some tables, but not others
         drop_inconsistent_configurations(db, model, policy.AA_table(), missing_AA, total_missing);
         drop_inconsistent_configurations(db, model, policy.AB_table(), missing_AB, total_missing);
         drop_inconsistent_configurations(db, model, policy.BB_table(), missing_BB, total_missing);
+
         drop_inconsistent_configurations(db, model, policy.D_table(), missing_D, total_missing);
         drop_inconsistent_configurations(db, model, policy.E_table(), missing_E, total_missing);
         drop_inconsistent_configurations(db, model, policy.F_table(), missing_F, total_missing);
         drop_inconsistent_configurations(db, model, policy.G_table(), missing_G, total_missing);
         drop_inconsistent_configurations(db, model, policy.J1_table(), missing_J1, total_missing);
         drop_inconsistent_configurations(db, model, policy.J2_table(), missing_J2, total_missing);
-        
+    
+        drop_inconsistent_configurations(db, model, policy.RSD13_a_table(), missing_RSD13_a, total_missing);
+        drop_inconsistent_configurations(db, model, policy.RSD13_b_table(), missing_RSD13_b, total_missing);
+        drop_inconsistent_configurations(db, model, policy.RSD13_c_table(), missing_RSD13_c, total_missing);
+        drop_inconsistent_configurations(db, model, policy.RSD13_d_table(), missing_RSD13_d, total_missing);
+        drop_inconsistent_configurations(db, model, policy.RSD13_e_table(), missing_RSD13_e, total_missing);
+        drop_inconsistent_configurations(db, model, policy.RSD13_f_table(), missing_RSD13_f, total_missing);
+        drop_inconsistent_configurations(db, model, policy.RSD13_g_table(), missing_RSD13_g, total_missing);
+        drop_inconsistent_configurations(db, model, policy.RSD13_h_table(), missing_RSD13_h, total_missing);
+    
         return total_missing;
       }
     

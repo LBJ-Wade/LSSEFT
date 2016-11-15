@@ -34,7 +34,7 @@ namespace oneloop_momentum_impl
         
         double alpha1 = (k_minus_q_sq*k_dot_q + q*q*data->k_sq - q*q*k_dot_q) / (2.0 * q*q * k_minus_q_sq);
         
-        f[0] = (2.0 * data->jacobian * PP_prod * alpha1*alpha1) / Mpc_units::Mpc3;
+        f[0] = (2.0 * data->jacobian_2d * PP_prod * alpha1*alpha1) / Mpc_units::Mpc3;
         
         return(0);  // return value irrelevant unless = -999, which means stop integration
       }
@@ -63,7 +63,7 @@ namespace oneloop_momentum_impl
         double alpha1 = (k_minus_q_sq*k_dot_q + q*q*data->k_sq - q*q*k_dot_q) / (2.0 * q*q * k_minus_q_sq);
         double gamma1 = (k_minus_q_sq*k_dot_q - q*q*k_dot_q + data->k_sq*k_dot_q) / (2.0 * q*q * k_minus_q_sq);
         
-        f[0] = (4.0 * data->jacobian * PP_prod * alpha1*gamma1) / Mpc_units::Mpc3;
+        f[0] = (4.0 * data->jacobian_2d * PP_prod * alpha1*gamma1) / Mpc_units::Mpc3;
         
         return(0);  // return value irrelevant unless = -999, which means stop integration
       }
@@ -91,7 +91,7 @@ namespace oneloop_momentum_impl
         
         double gamma1 = (k_minus_q_sq*k_dot_q - q*q*k_dot_q + data->k_sq*k_dot_q) / (2.0 * q*q * k_minus_q_sq);
         
-        f[0] = (2.0 * data->jacobian * PP_prod * gamma1*gamma1) / Mpc_units::Mpc3;
+        f[0] = (2.0 * data->jacobian_2d * PP_prod * gamma1*gamma1) / Mpc_units::Mpc3;
         
         return(0);  // return value irrelevant unless = -999, which means stop integration
       }

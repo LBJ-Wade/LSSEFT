@@ -296,7 +296,7 @@ class rsd_22_integrals
     //! failure state
     bool fail;
   
-    
+  
   private:
     
     // enable boost::serialization support, and hence automated packing for transmission over MPI
@@ -340,12 +340,70 @@ class rsd_13_integrals
     void mark_failed() { this->fail = true; }
     
     
+    //! get a-value
+    dimless_integral& get_a() { return(this->a); }
+    const dimless_integral& get_a() const { return(this->a); }
+    
+    //! get b-value
+    dimless_integral& get_b() { return(this->b); }
+    const dimless_integral& get_b() const { return(this->b); }
+    
+    //! get c-value
+    dimless_integral& get_c() { return(this->c); }
+    const dimless_integral& get_c() const { return(this->c); }
+    
+    //! get d-value
+    dimless_integral& get_d() { return(this->d); }
+    const dimless_integral& get_d() const { return(this->d); }
+    
+    //! get e-value
+    dimless_integral& get_e() { return(this->e); }
+    const dimless_integral& get_e() const { return(this->e); }
+    
+    //! get f-value
+    dimless_integral& get_f() { return(this->f); }
+    const dimless_integral& get_f() const { return(this->f); }
+    
+    //! get g-value
+    dimless_integral& get_g() { return(this->g); }
+    const dimless_integral& get_g() const { return(this->g); }
+    
+    //! get h-value
+    dimless_integral& get_h() { return(this->h); }
+    const dimless_integral& get_h() const { return(this->h); }
+    
+    
     // INTERNAL DATA
     
     //! failure state
     bool fail;
-  
     
+    
+    //! a-type integral P_13
+    dimless_integral a;
+    
+    //! b-type integral P_13
+    dimless_integral b;
+    
+    //! c-type integral P_13
+    dimless_integral c;
+    
+    //! d-type integral P_13
+    dimless_integral d;
+    
+    //! e-type integral P_13
+    dimless_integral e;
+    
+    //! f-type integral P_13
+    dimless_integral f;
+    
+    //! g-type integral P_13
+    dimless_integral g;
+    
+    //! h-type integral P_13
+    dimless_integral h;
+  
+  
   private:
     
     // enable boost::serialization support, and hence automated packing for transmission over MPI
@@ -356,6 +414,14 @@ class rsd_13_integrals
     void serialize(Archive& ar, unsigned int version)
       {
         ar & fail;
+        ar & a;
+        ar & b;
+        ar & c;
+        ar & d;
+        ar & e;
+        ar & f;
+        ar & g;
+        ar & h;
       }
     
   };
