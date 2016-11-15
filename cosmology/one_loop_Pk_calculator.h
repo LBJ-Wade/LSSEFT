@@ -46,27 +46,32 @@ class one_loop_Pk_calculator
   private:
     
     //! compute delta-delta power spectrum and counterterm
-    dd_Pk compute_dd(const Mpc_units::energy& k, const oneloop_value& val, const loop_integral& loop_data,
+    dd_Pk compute_dd(const Mpc_units::energy& k, const oneloop_growth_record& val, const loop_integral& loop_data,
                      const tree_power_spectrum& Ptree);
     
     //! compute mu^0 coefficient of rsd delta-delta power spectrum and counterterms
-    rsd_dd_Pk compute_rsd_dd_mu0(const Mpc_units::energy& k, const oneloop_value& val, const loop_integral& loop_data,
+    rsd_dd_Pk compute_rsd_dd_mu0(const Mpc_units::energy& k, const oneloop_growth_record& val,
+                                 const loop_integral& loop_data,
                                  const tree_power_spectrum& Ptree);
     
     //! compute mu^2 coefficient of rsd delta-delta power spectrum and counterterms
-    rsd_dd_Pk compute_rsd_dd_mu2(const Mpc_units::energy& k, const oneloop_value& val, const loop_integral& loop_data,
+    rsd_dd_Pk compute_rsd_dd_mu2(const Mpc_units::energy& k, const oneloop_growth_record& val,
+                                 const loop_integral& loop_data,
                                  const tree_power_spectrum& Ptree);
     
     //! compute mu^4 coefficient of rsd delta-delta power spectrum and counterterms
-    rsd_dd_Pk compute_rsd_dd_mu4(const Mpc_units::energy& k, const oneloop_value& val, const loop_integral& loop_data,
+    rsd_dd_Pk compute_rsd_dd_mu4(const Mpc_units::energy& k, const oneloop_growth_record& val,
+                                 const loop_integral& loop_data,
                                  const tree_power_spectrum& Ptree);
     
     //! compute mu^6 coefficient of rsd delta-delta power spectrum and counterterms
-    rsd_dd_Pk compute_rsd_dd_mu6(const Mpc_units::energy& k, const oneloop_value& val, const loop_integral& loop_data,
+    rsd_dd_Pk compute_rsd_dd_mu6(const Mpc_units::energy& k, const oneloop_growth_record& val,
+                                 const loop_integral& loop_data,
                                  const tree_power_spectrum& Ptree);
     
     //! compute mu^8 coefficient of rsd delta-delta power spectrum and counterterms
-    rsd_dd_Pk compute_rsd_dd_mu8(const Mpc_units::energy& k, const oneloop_value& val, const loop_integral& loop_data,
+    rsd_dd_Pk compute_rsd_dd_mu8(const Mpc_units::energy& k, const oneloop_growth_record& val,
+                                 const loop_integral& loop_data,
                                  const tree_power_spectrum& Ptree);
     
   };

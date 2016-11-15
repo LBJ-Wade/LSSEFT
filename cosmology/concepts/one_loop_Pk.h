@@ -21,11 +21,20 @@ class Pk_value
     
     typedef Mpc_units::inverse_energy3 value_type;
     
+    //! value constructor
+    Pk_value(value_type v)
+      : value(std::move(v))
+      {
+      }
+    
+    //! empty constructor
     Pk_value()
       : value(value_type(0.0))
       {
       }
     
+    
+    operator value_type() const { return this->value; }
     
     value_type value;
     
@@ -50,11 +59,20 @@ class k2_Pk_value
     
     typedef Mpc_units::inverse_energy value_type;
     
+    //! value constructor
+    k2_Pk_value(value_type v)
+      : value(std::move(v))
+      {
+      }
+    
+    //! empty constructor
     k2_Pk_value()
       : value(value_type(0.0))
       {
       }
     
+    
+    operator value_type() const { return this->value; }
     
     value_type value;
   

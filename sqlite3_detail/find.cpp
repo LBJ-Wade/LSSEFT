@@ -76,6 +76,11 @@ namespace sqlite3_operations
         
         oneloop_growth payload(z_db);
 
+        // note use of ORDER BY ... DESC which is needed to get the g, f values
+        // the correct order
+        // z_table() will produce a table of tokens in ascending redshift order,
+        // ie. ordered into the past
+        
         std::ostringstream g_select_stmt;
         g_select_stmt
           << "SELECT "
@@ -90,7 +95,7 @@ namespace sqlite3_operations
           << "FROM " << ztab << " "
           << "INNER JOIN (SELECT * FROM " << policy.g_factor_table() << " WHERE mid=@mid) g_sample "
           << "ON " << ztab << ".id = g_sample.zid "
-          << "ORDER BY " << ztab << ".ROWID;";
+          << "ORDER BY " << ztab << ".ROWID DESC;";
         
         std::ostringstream f_select_stmt;
         f_select_stmt
@@ -106,7 +111,7 @@ namespace sqlite3_operations
           << "FROM " << ztab << " "
           << "INNER JOIN (SELECT * FROM " << policy.f_factor_table() << " WHERE mid=@mid) f_sample "
           << "ON " << ztab << ".id = f_sample.zid "
-          << "ORDER BY " << ztab << ".ROWID;";
+          << "ORDER BY " << ztab << ".ROWID DESC;";
         
         std::ostringstream meta_select_stmt;
         meta_select_stmt

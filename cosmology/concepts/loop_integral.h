@@ -29,6 +29,9 @@ class inverse_energy3_kernel
         time(0)
       {
       }
+    
+    
+    operator value_type() const { return this->value; }
 
     value_type                    value;
     unsigned int                  regions;
@@ -69,6 +72,9 @@ class dimless_kernel
         time(0)
       {
       }
+    
+    
+    operator value_type() const { return this->value; }
 
     value_type                    value;
     unsigned int                  regions;
@@ -114,6 +120,24 @@ template <>
 inline Mpc_units::inverse_energy dimensionful_unit<Mpc_units::inverse_energy>()
   {
     return Mpc_units::Mpc;
+  }
+
+
+inline dimless_kernel operator*(double A, const dimless_kernel& B)
+  {
+    dimless_kernel val = B;
+    val.value = val.value * A;
+    
+    return val;
+  }
+
+
+inline inverse_energy3_kernel operator*(double A, const inverse_energy3_kernel& B)
+  {
+    inverse_energy3_kernel val = B;
+    val.value = val.value * A;
+    
+    return val;
   }
 
 
