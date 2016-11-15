@@ -3,14 +3,14 @@
 // Copyright (c) 2016 University of Sussex. All rights reserved.
 //
 
-#include "one_loop_Pk_calculator.h"
+#include "oneloop_Pk_calculator.h"
 
 
-std::list<one_loop_Pk> one_loop_Pk_calculator::calculate(const Mpc_units::energy& k, const k_token& k_tok, const IR_token& IR_tok,
-                                                         const UV_token& UV_tok, const oneloop_growth& gf_factors,
-                                                         const loop_integral& loop_data, const tree_power_spectrum& Ptree)
+std::list<oneloop_Pk> oneloop_Pk_calculator::calculate(const Mpc_units::energy& k, const k_token& k_tok, const IR_token& IR_tok,
+                                                       const UV_token& UV_tok, const oneloop_growth& gf_factors,
+                                                       const loop_integral& loop_data, const tree_power_spectrum& Ptree)
   {
-    std::list<one_loop_Pk> container;
+    std::list<oneloop_Pk> container;
     
     for(const oneloop_value& val : gf_factors)
       {
@@ -31,8 +31,8 @@ std::list<one_loop_Pk> one_loop_Pk_calculator::calculate(const Mpc_units::energy
 
 
 dd_Pk
-one_loop_Pk_calculator::compute_dd(const Mpc_units::energy& k, const oneloop_growth_record& val,
-                                   const loop_integral& loop_data, const tree_power_spectrum& Ptree)
+oneloop_Pk_calculator::compute_dd(const Mpc_units::energy& k, const oneloop_growth_record& val,
+                                  const loop_integral& loop_data, const tree_power_spectrum& Ptree)
   {
     delta_22_integrals d22 = loop_data.get_delta22();
     delta_13_integrals d13 = loop_data.get_delta13();
@@ -57,36 +57,36 @@ one_loop_Pk_calculator::compute_dd(const Mpc_units::energy& k, const oneloop_gro
   }
 
 
-rsd_dd_Pk one_loop_Pk_calculator::compute_rsd_dd_mu0(const Mpc_units::energy& k, const oneloop_growth_record& val,
-                                                     const loop_integral& loop_data, const tree_power_spectrum& Ptree)
+rsd_dd_Pk oneloop_Pk_calculator::compute_rsd_dd_mu0(const Mpc_units::energy& k, const oneloop_growth_record& val,
+                                                    const loop_integral& loop_data, const tree_power_spectrum& Ptree)
   {
     return rsd_dd_Pk();
   }
 
 
-rsd_dd_Pk one_loop_Pk_calculator::compute_rsd_dd_mu2(const Mpc_units::energy& k, const oneloop_growth_record& val,
-                                                     const loop_integral& loop_data, const tree_power_spectrum& Ptree)
+rsd_dd_Pk oneloop_Pk_calculator::compute_rsd_dd_mu2(const Mpc_units::energy& k, const oneloop_growth_record& val,
+                                                    const loop_integral& loop_data, const tree_power_spectrum& Ptree)
   {
     return rsd_dd_Pk();
   }
 
 
-rsd_dd_Pk one_loop_Pk_calculator::compute_rsd_dd_mu4(const Mpc_units::energy& k, const oneloop_growth_record& val,
-                                                     const loop_integral& loop_data, const tree_power_spectrum& Ptree)
+rsd_dd_Pk oneloop_Pk_calculator::compute_rsd_dd_mu4(const Mpc_units::energy& k, const oneloop_growth_record& val,
+                                                    const loop_integral& loop_data, const tree_power_spectrum& Ptree)
   {
     return rsd_dd_Pk();
   }
 
 
-rsd_dd_Pk one_loop_Pk_calculator::compute_rsd_dd_mu6(const Mpc_units::energy& k, const oneloop_growth_record& val,
-                                                     const loop_integral& loop_data, const tree_power_spectrum& Ptree)
+rsd_dd_Pk oneloop_Pk_calculator::compute_rsd_dd_mu6(const Mpc_units::energy& k, const oneloop_growth_record& val,
+                                                    const loop_integral& loop_data, const tree_power_spectrum& Ptree)
   {
     return rsd_dd_Pk();
   }
 
 
-rsd_dd_Pk one_loop_Pk_calculator::compute_rsd_dd_mu8(const Mpc_units::energy& k, const oneloop_growth_record& val,
-                                                     const loop_integral& loop_data, const tree_power_spectrum& Ptree)
+rsd_dd_Pk oneloop_Pk_calculator::compute_rsd_dd_mu8(const Mpc_units::energy& k, const oneloop_growth_record& val,
+                                                    const loop_integral& loop_data, const tree_power_spectrum& Ptree)
   {
     return rsd_dd_Pk();
   }

@@ -10,7 +10,7 @@
 #include <list>
 
 #include "FRW_model.h"
-#include "concepts/one_loop_Pk.h"
+#include "cosmology/concepts/oneloop_Pk.h"
 #include "concepts/oneloop_growth.h"
 #include "concepts/loop_integral.h"
 #include "concepts/tree_power_spectrum.h"
@@ -20,7 +20,7 @@
 #include "defaults.h"
 
 
-class one_loop_Pk_calculator
+class oneloop_Pk_calculator
   {
     
     // CONSTRUCTOR, DESTRUCTOR
@@ -28,10 +28,10 @@ class one_loop_Pk_calculator
   public:
     
     //! constructor is default
-    one_loop_Pk_calculator() = default;
+    oneloop_Pk_calculator() = default;
     
     //! destructor is default
-    ~one_loop_Pk_calculator() = default;
+    ~oneloop_Pk_calculator() = default;
     
     
     // INTERFACE
@@ -39,7 +39,7 @@ class one_loop_Pk_calculator
   public:
     
     //! calculate power spectra
-    std::list<one_loop_Pk>
+    std::list<oneloop_Pk>
     calculate(const Mpc_units::energy& k, const k_token& k_tok, const IR_token& IR_tok, const UV_token& UV_tok,
               const oneloop_growth& gf_factors, const loop_integral& loop_data, const tree_power_spectrum& Ptree);
     

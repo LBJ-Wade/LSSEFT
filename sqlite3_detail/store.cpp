@@ -66,7 +66,7 @@ namespace sqlite3_operations
     
         template <typename PkType>
         void store_one_loop_Pk(sqlite3* db, const std::string& table_name, const PkType& value,
-                               const FRW_model_token& model, const one_loop_Pk& sample)
+                               const FRW_model_token& model, const oneloop_Pk& sample)
           {
             std::ostringstream insert_stmt;
             insert_stmt << "INSERT INTO " << table_name << " VALUES (@mid, @zid, @kid, @IR_id, @UV_id, @Ptree, @err_tree, @P13, @err_13, @P22, @err_22, @P1loopSPT, @err_1loopSPT, @Z2_delta);";
@@ -108,7 +108,7 @@ namespace sqlite3_operations
         
         template <typename PkType>
         void store_one_loop_rsd_Pk(sqlite3* db, const std::string& table_name, const PkType& value,
-                                   const FRW_model_token& model, const one_loop_Pk& sample)
+                                   const FRW_model_token& model, const oneloop_Pk& sample)
           {
             std::ostringstream insert_stmt;
             insert_stmt << "INSERT INTO " << table_name << " VALUES (@mid, @zid, @kid, @IR_id, @UV_id, @Ptree, @err_tree, @P13, @err_13, @P22, @err_22, @P1loopSPT, @err_1loopSPT, @Z2_delta, @Z0_v, @Z2_v, @Z0_vdelta, @Z2_vdelta, @Z2_vv, @Z2_vvdelta, @Z2_vvv);";
@@ -312,7 +312,7 @@ namespace sqlite3_operations
     
     
     void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model,
-               const one_loop_Pk& sample)
+               const oneloop_Pk& sample)
       {
         assert(db != nullptr);
         

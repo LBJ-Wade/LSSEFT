@@ -11,7 +11,7 @@
 
 #include "cosmology/transfer_integrator.h"
 #include "cosmology/oneloop_momentum_integrator.h"
-#include "cosmology/one_loop_Pk_calculator.h"
+#include "cosmology/oneloop_Pk_calculator.h"
 #include "cosmology/types.h"
 
 
@@ -176,12 +176,12 @@ void slave_controller::process_item(MPI_detail::new_one_loop_Pk& payload)
               << " k-id = " << k_tok.get_id() << ", IR-id = " << IR_tok.get_id() << ", UV-id = " << UV_tok.get_id()
               << "; " << gf_factors.size() << " redshifts to process" << '\n';
     
-    one_loop_Pk_calculator calculator;
-    std::list<one_loop_Pk> sample = calculator.calculate(k, k_tok, IR_tok, UV_tok, gf_factors, loop_data, Pk);
+    oneloop_Pk_calculator calculator;
+    std::list<oneloop_Pk> sample = calculator.calculate(k, k_tok, IR_tok, UV_tok, gf_factors, loop_data, Pk);
     
     // inform master process that the calculation is finished
     std::list<boost::mpi::request> acks;
-    for(one_loop_Pk& record : sample)
+    for(oneloop_Pk& record : sample)
       {
         MPI_detail::one_loop_Pk_ready return_payload(record);
         acks.push_back(this->mpi_world.isend(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_WORK_PRODUCT_READY, return_payload));

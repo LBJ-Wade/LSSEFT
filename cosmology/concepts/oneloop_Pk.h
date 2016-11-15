@@ -450,7 +450,7 @@ class rsd_dd_Pk
   };
 
 
-class one_loop_Pk
+class oneloop_Pk
   {
     
     // CONSTRUCTOR, DESTRUCTOR
@@ -458,15 +458,15 @@ class one_loop_Pk
   public:
     
     //! value constructor
-    one_loop_Pk(const k_token& kt, const UV_token& UVt, const IR_token& IRt, const z_token& zt,
-                const dd_Pk& _dd, const rsd_dd_Pk& _rsd_mu0, const rsd_dd_Pk& _rsd_mu2,
-                const rsd_dd_Pk& _rsd_mu4, const rsd_dd_Pk& _rsd_mu6, const rsd_dd_Pk& _rsd_mu8);
+    oneloop_Pk(const k_token& kt, const UV_token& UVt, const IR_token& IRt, const z_token& zt,
+               const dd_Pk& _dd, const rsd_dd_Pk& _rsd_mu0, const rsd_dd_Pk& _rsd_mu2,
+               const rsd_dd_Pk& _rsd_mu4, const rsd_dd_Pk& _rsd_mu6, const rsd_dd_Pk& _rsd_mu8);
     
     //! empty constructor, used when receiving an MPI payload
-    one_loop_Pk();
+    oneloop_Pk();
     
     //! destructor is default
-    ~one_loop_Pk() = default;
+    ~oneloop_Pk() = default;
     
     
     // INTERFACE

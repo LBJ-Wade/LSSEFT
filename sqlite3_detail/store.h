@@ -12,7 +12,7 @@
 #include "cosmology/concepts/transfer_function.h"
 #include "cosmology/concepts/oneloop_growth.h"
 #include "cosmology/concepts/loop_integral.h"
-#include "cosmology/concepts/one_loop_Pk.h"
+#include "cosmology/concepts/oneloop_Pk.h"
 
 #include "sqlite3_policy.h"
 
@@ -32,7 +32,7 @@ namespace sqlite3_operations
     void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model, const loop_integral& sample);
     
     //! store a one-loop Pk sample
-    void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model, const one_loop_Pk& sample);
+    void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model, const oneloop_Pk& sample);
 
   }   // namespace sqlite3_operations
 

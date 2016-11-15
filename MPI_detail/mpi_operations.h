@@ -12,7 +12,7 @@
 #include "cosmology/FRW_model.h"
 #include "cosmology/concepts/transfer_function.h"
 #include "cosmology/concepts/loop_integral.h"
-#include "cosmology/concepts/one_loop_Pk.h"
+#include "cosmology/concepts/oneloop_Pk.h"
 #include "units/Mpc_units.h"
 #include "database/z_database.h"
 
@@ -447,7 +447,7 @@ namespace MPI_detail
           }
         
         //! value constructor: used to construct and send a payload
-        one_loop_Pk_ready(const one_loop_Pk& Pk)
+        one_loop_Pk_ready(const oneloop_Pk& Pk)
           : data(Pk)
           {
           }
@@ -460,7 +460,7 @@ namespace MPI_detail
         
       public:
         
-        const one_loop_Pk& get_data() const { return this->data; }
+        const oneloop_Pk& get_data() const { return this->data; }
         
         
         // INTERNAL DATA
@@ -468,7 +468,7 @@ namespace MPI_detail
       private:
         
         //! one-loop Pk container
-        one_loop_Pk data;
+        oneloop_Pk data;
     
     
         // enable boost::serialization support, and hence automated packing for transmission over MPI
