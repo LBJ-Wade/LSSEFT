@@ -103,6 +103,7 @@ namespace Mpc_units
 
 
     // overload arithmetic operators to allow dimensionful to be combined, compared
+    
 
     template <typename Unit>
     constexpr value<Unit> operator+(const value<Unit>& a, const value<Unit>& b)
@@ -324,7 +325,20 @@ namespace Mpc_units
 
     constexpr double          c            = 299792458 * Metre / Second;
 
-  }
+  }   // namespace Mpc_units
+
+
+// set up absolute value function
+namespace std
+  {
+    
+    template <typename Unit>
+    constexpr Mpc_units::value<Unit> abs(const Mpc_units::value<Unit>& x)
+      {
+        return Mpc_units::value<Unit>(std::abs(x.val));
+      }
+    
+  }   // namespace std
 
 
 

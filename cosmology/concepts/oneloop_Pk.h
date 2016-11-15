@@ -100,7 +100,7 @@ dimensionful_Pk_component<ValueType> operator*(double A, const dimensionful_Pk_c
     dimensionful_Pk_component<ValueType> res;
     
     res.value = A * B.value;
-    res.error = A * B.error;
+    res.error = std::abs(A) * B.error;
     
     return std::move(res);
   }
@@ -111,7 +111,7 @@ dimensionful_Pk_component<ValueType> operator*(const dimensionful_Pk_component<V
     dimensionful_Pk_component<ValueType> res;
     
     res.value = B * A.value;
-    res.error = B * A.error;
+    res.error = std::abs(B) * A.error;
     
     return std::move(res);
   }
@@ -124,7 +124,7 @@ dimensionful_Pk_component<ValueType> operator*(double A, const loop_integral_out
     dimensionful_Pk_component<ValueType> res;
     
     res.value = A * B.value;
-    res.error = A * B.error;
+    res.error = std::abs(A) * B.error;
     
     return std::move(res);
   }
@@ -135,7 +135,7 @@ dimensionful_Pk_component<ValueType> operator*(const loop_integral_output<ValueT
     dimensionful_Pk_component<ValueType> res;
     
     res.value = B * A.value;
-    res.error = B * A.error;
+    res.error = std::abs(B) * A.error;
     
     return std::move(res);
   }
@@ -220,7 +220,7 @@ inline operator*(const Mpc_units::inverse_energy3& A, const dimensionful_Pk_comp
     dimensionful_Pk_component<Mpc_units::inverse_energy3> res;
     
     res.value = A * B.value;
-    res.error = A * B.error;
+    res.error = std::abs(A) * B.error;
     
     return std::move(res);
   }
@@ -231,7 +231,7 @@ inline operator*(const dimensionful_Pk_component<double>& A, const Mpc_units::in
     dimensionful_Pk_component<Mpc_units::inverse_energy3> res;
     
     res.value = B * A.value;
-    res.error = B * A.error;
+    res.error = std::abs(B) * A.error;
     
     return std::move(res);
   }
