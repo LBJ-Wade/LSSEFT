@@ -8,300 +8,15 @@
 #include <fstream>
 
 #include "oneloop_momentum_integrator.h"
+#include "oneloop_integrands/delta_13.h"
+#include "oneloop_integrands/delta_22.h"
+#include "oneloop_integrands/delta_rsd_13.h"
+#include "oneloop_integrands/delta_rsd_22.h"
 
 #include "cuba.h"
 
 #include "boost/timer/timer.hpp"
 
-
-namespace oneloop_momentum_impl
-  {
-
-    constexpr unsigned int dimensions            = 2;   // no point doing integrals over phi, because the integrands don't depend on it
-    constexpr unsigned int components            = 1;
-    constexpr unsigned int points_per_invocation = 1;
-
-    constexpr unsigned int verbosity_none        = 0;
-    constexpr unsigned int verbosity_reasonable  = 1;
-    constexpr unsigned int verbosity_progress    = 2;
-    constexpr unsigned int verbosity_subregions  = 3;
-
-    constexpr unsigned int samples_all           = 0;
-    constexpr unsigned int samples_last          = 4;
-
-    constexpr unsigned int min_eval              = 0;
-    constexpr unsigned int max_eval              = 20000000;
-
-    constexpr unsigned int ngiven                = 0;
-    constexpr unsigned int ldxgiven              = 0;
-    constexpr unsigned int nextra                = 0;
-
-    constexpr unsigned int pcores                = 10000;   // matches default Cuba value
-
-    constexpr unsigned int cuhre_key             = 13;      // degree-13 only available in 2-dimensions
-    constexpr unsigned int divonne_key1          = 47;
-    constexpr unsigned int divonne_key2          = 13;      // degree-13 only available in 2-dimensions
-    constexpr unsigned int divonne_key3          = 1;
-    constexpr unsigned int divonne_maxpass       = 5;
-    constexpr unsigned int divonne_border        = 0;
-    constexpr double       divonne_maxchisq      = 10.0;
-    constexpr double       divonne_minchisq      = 0.25;
-
-
-    class integrand_data
-      {
-
-      public:
-
-        integrand_data(const FRW_model& m, const Mpc_units::energy& _k, const Mpc_units::energy& UV, const Mpc_units::energy& IR,
-                       const tree_power_spectrum& _Pk)
-          : model(m),
-            k(_k),
-            UV_cutoff(UV),
-            IR_cutoff(IR),
-            Pk(_Pk),
-            jacobian(2.0 * 2.0*M_PI * (UV_cutoff-IR_cutoff)), // Jacobian in angular directions is 2 * 2 * pi = 4pi;
-                                                              // the integral over phi isn't done (the integrand doesn't depend on it), but this accounts for its contribution;
-                                                              // the theta integral has been switched to d(cos theta) which runs from -1 to +2 and contributes a factor 2
-            q_range(UV_cutoff - IR_cutoff),
-            k_sq(k*k)
-          {
-          }
-
-        const FRW_model& model;
-        const Mpc_units::energy& k;
-        const Mpc_units::energy& UV_cutoff;
-        const Mpc_units::energy& IR_cutoff;
-        const tree_power_spectrum& Pk;
-
-        Mpc_units::energy  jacobian;
-        Mpc_units::energy  q_range;
-        Mpc_units::energy2 k_sq;
-      };
-
-
-    static int AA_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
-      {
-        oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
-
-        Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
-        double z            = 2.0*x[1] - 1.0;
-
-        Mpc_units::energy2 k_dot_q       = z * data->k * q;
-        Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
-
-        Mpc_units::energy  k_minus_q     = std::sqrt(k_minus_q_sq * Mpc_units::Mpc2) / Mpc_units::Mpc;
-
-        // integral is P(q) P(k-q) alpha(q,k-q)^2
-        Mpc_units::inverse_energy3 Pq         = data->Pk(q);
-        Mpc_units::inverse_energy3 Pk_minus_q = k_minus_q > data->IR_cutoff && k_minus_q < data->UV_cutoff ? data->Pk(k_minus_q) : Mpc_units::inverse_energy3(0);
-
-        Mpc_units::inverse_energy  qqPq       = q*q * Pq;
-        Mpc_units::inverse_energy4 PP_prod    = qqPq * Pk_minus_q;
-
-        double alpha1 = (k_minus_q_sq*k_dot_q + q*q*data->k_sq - q*q*k_dot_q) / (2.0 * q*q * k_minus_q_sq);
-
-        f[0] = (2.0 * data->jacobian * PP_prod * alpha1*alpha1) / Mpc_units::Mpc3;
-
-        return(0);  // return value irrelevant unless = -999, which means stop integration
-      }
-
-
-    static int AB_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
-      {
-        oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
-
-        Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
-        double z            = 2.0*x[1] - 1.0;
-
-        Mpc_units::energy2 k_dot_q       = z * data->k * q;
-        Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
-
-        Mpc_units::energy  k_minus_q     = std::sqrt(k_minus_q_sq * Mpc_units::Mpc2) / Mpc_units::Mpc;
-
-        // integral is P(q) P(k-q) alpha(q,k-q) gamma(q,k-q)
-        Mpc_units::inverse_energy3 Pq         = data->Pk(q);
-        Mpc_units::inverse_energy3 Pk_minus_q = k_minus_q > data->IR_cutoff && k_minus_q < data->UV_cutoff ? data->Pk(k_minus_q) : Mpc_units::inverse_energy3(0);
-
-        // integral is P(q) P(k-q) alpha(q,k-q) gamma(q,k-q)
-        Mpc_units::inverse_energy  qqPq       = q*q * Pq;
-        Mpc_units::inverse_energy4 PP_prod    = qqPq * Pk_minus_q;
-
-        double alpha1 = (k_minus_q_sq*k_dot_q + q*q*data->k_sq - q*q*k_dot_q) / (2.0 * q*q * k_minus_q_sq);
-        double gamma1 = (k_minus_q_sq*k_dot_q - q*q*k_dot_q + data->k_sq*k_dot_q) / (2.0 * q*q * k_minus_q_sq);
-
-        f[0] = (4.0 * data->jacobian * PP_prod * alpha1*gamma1) / Mpc_units::Mpc3;
-
-        return(0);  // return value irrelevant unless = -999, which means stop integration
-      }
-
-
-    static int BB_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
-      {
-        oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
-
-        Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
-        double z            = 2.0*x[1] - 1.0;
-
-        Mpc_units::energy2 k_dot_q       = z * data->k * q;
-        Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
-
-        Mpc_units::energy  k_minus_q     = std::sqrt(k_minus_q_sq * Mpc_units::Mpc2) / Mpc_units::Mpc;
-
-        // integral is P(q) P(k-q) gamma(q,k-q)^2
-        Mpc_units::inverse_energy3 Pq         = data->Pk(q);
-        Mpc_units::inverse_energy3 Pk_minus_q = k_minus_q > data->IR_cutoff && k_minus_q < data->UV_cutoff ? data->Pk(k_minus_q) : Mpc_units::inverse_energy3(0);
-
-        // integral is P(q) P(k-q) gamma(q,k-q)^2
-        Mpc_units::inverse_energy  qqPq       = q*q * Pq;
-        Mpc_units::inverse_energy4 PP_prod    = qqPq * Pk_minus_q;
-
-        double gamma1 = (k_minus_q_sq*k_dot_q - q*q*k_dot_q + data->k_sq*k_dot_q) / (2.0 * q*q * k_minus_q_sq);
-
-        f[0] = (2.0 * data->jacobian * PP_prod * gamma1*gamma1) / Mpc_units::Mpc3;
-
-        return(0);  // return value irrelevant unless = -999, which means stop integration
-      }
-
-
-    static int D_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
-      {
-        oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
-
-        Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
-        double z            = 2.0*x[1] - 1.0;
-
-        Mpc_units::energy2 k_dot_q       = z * data->k * q;
-        Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
-
-        Mpc_units::inverse_energy3 Pq   = data->Pk(q);
-        Mpc_units::inverse_energy  qqPq = q*q * Pq;
-
-        // integral is P(q) gamma(k-r,r) alpha(k,-r)
-        double gamma1 = (k_minus_q_sq*k_dot_q - q*q*k_dot_q + data->k_sq*k_dot_q) / (2.0 * q*q * k_minus_q_sq);
-        double alpha2 = (2.0*data->k_sq*q*q - k_dot_q*(data->k_sq + q*q)) / (2.0 * q*q * data->k_sq);
-
-        f[0] = 8.0 * data->jacobian * qqPq * gamma1*alpha2;
-
-        return(0);  // return value irrelevant unless = -999, which means stop integration
-      }
-
-
-    static int E_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
-      {
-        oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
-
-        Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
-        double z            = 2.0*x[1] - 1.0;
-
-        Mpc_units::energy2 k_dot_q       = z * data->k * q;
-        Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
-
-        Mpc_units::inverse_energy3 Pq   = data->Pk(q);
-        Mpc_units::inverse_energy  qqPq = q*q * Pq;
-
-        // integral is P(q) gamma(k-r,r) gamma(k,-r)
-        double gamma1 = (k_minus_q_sq*k_dot_q - q*q*k_dot_q + data->k_sq*k_dot_q) / (2.0 * q*q * k_minus_q_sq);
-        double gamma2 = (2.0*data->k_sq*q*q - k_dot_q*(2.0*data->k_sq + 2.0*q*q - 2.0*k_dot_q)) / (2.0 * q*q * data->k_sq);
-
-        f[0] = 8.0 * data->jacobian * qqPq * gamma1*gamma2;
-
-        return(0);  // return value irrelevant unless = -999, which means stop integration
-      }
-
-
-    static int F_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
-      {
-        oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
-
-        Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
-        double z            = 2.0*x[1] - 1.0;
-
-        Mpc_units::energy2 k_dot_q       = z * data->k * q;
-        Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
-
-        Mpc_units::inverse_energy3 Pq   = data->Pk(q);
-        Mpc_units::inverse_energy  qqPq = q*q * Pq;
-
-        // integral is P(q) alpha(k-r,r) alpha(k,-r)
-        double alpha1 = (k_minus_q_sq*k_dot_q + q*q*data->k_sq - q*q*k_dot_q) / (2.0 * q*q * k_minus_q_sq);
-        double alpha2 = (2.0*data->k_sq*q*q - k_dot_q*(data->k_sq + q*q)) / (2.0 * q*q * data->k_sq);
-
-        f[0] = 8.0 * data->jacobian * qqPq * alpha1*alpha2;
-
-        return(0);  // return value irrelevant unless = -999, which means stop integration
-      }
-
-
-    static int G_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
-      {
-        oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
-
-        Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
-        double z            = 2.0*x[1] - 1.0;
-
-        Mpc_units::energy2 k_dot_q       = z * data->k * q;
-        Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
-
-        Mpc_units::inverse_energy3 Pq   = data->Pk(q);
-        Mpc_units::inverse_energy  qqPq = q*q * Pq;
-
-        // integral is P(q) alpha(k-r,r) gamma(k,-r)
-        double alpha1 = (k_minus_q_sq*k_dot_q + q*q*data->k_sq - q*q*k_dot_q) / (2.0 * q*q * k_minus_q_sq);
-        double gamma2 = (2.0*data->k_sq*q*q - k_dot_q*(2.0*data->k_sq + 2.0*q*q - 2.0*k_dot_q)) / (2.0 * q*q * data->k_sq);
-
-        f[0] = 8.0 * data->jacobian * qqPq * alpha1*gamma2;
-
-        return(0);  // return value irrelevant unless = -999, which means stop integration
-      }
-
-
-    static int J1_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
-      {
-        oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
-
-        Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
-        double z            = 2.0*x[1] - 1.0;
-
-        Mpc_units::energy2 k_dot_q       = z * data->k * q;
-        Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
-
-        Mpc_units::inverse_energy3 Pq   = data->Pk(q);
-        Mpc_units::inverse_energy  qqPq = q*q * Pq;
-
-        // integral is P(q) alpha_asym(k-r,r) alpha(k,-r)
-        double alpha_asym = (data->k_sq - k_dot_q) / k_minus_q_sq;
-        double alpha2 = (2.0*data->k_sq*q*q - k_dot_q*(data->k_sq + q*q)) / (2.0 * q*q * data->k_sq);
-        
-        f[0] = 8.0 * data->jacobian * qqPq * alpha_asym * alpha2;
-
-        return(0);  // return value irrelevant unless = -999, which means stop integration
-      }
-    
-    
-    static int J2_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
-      {
-        oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
-        
-        Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
-        double z            = 2.0*x[1] - 1.0;
-        
-        Mpc_units::energy2 k_dot_q       = z * data->k * q;
-        Mpc_units::energy2 k_minus_q_sq  = q*q + data->k_sq - 2.0*k_dot_q;
-        
-        Mpc_units::inverse_energy3 Pq   = data->Pk(q);
-        Mpc_units::inverse_energy  qqPq = q*q * Pq;
-        
-        // integral is P(q) alpha_asym(k-r,r) gamma(k,-r)
-        double alpha_asym = (data->k_sq - k_dot_q) / k_minus_q_sq;
-        double gamma2 = (2.0*data->k_sq*q*q - k_dot_q*(2.0*data->k_sq + 2.0*q*q - 2.0*k_dot_q)) / (2.0 * q*q * data->k_sq);
-        
-        f[0] = 8.0 * data->jacobian * qqPq * alpha_asym * gamma2;
-        
-        return(0);  // return value irrelevant unless = -999, which means stop integration
-      }
-
-  }
 
 
 oneloop_momentum_integrator::oneloop_momentum_integrator(double a_13, double r_13, double a_22, double r_22)
@@ -325,12 +40,14 @@ loop_integral oneloop_momentum_integrator::integrate(const FRW_model& model, con
     rsd_13_integrals rsd13;
     rsd_22_integrals rsd22;
 
+    // delta 22 kernels
     bool failAA = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::AA_integrand, delta22.get_AA(), loop_integral_type::P22);
     bool failAB = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::AB_integrand, delta22.get_AB(), loop_integral_type::P22);
     bool failBB = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::BB_integrand, delta22.get_BB(), loop_integral_type::P22);
     
     if(failAA || failAB || failBB) delta22.mark_failed();
 
+    // delta 13 kernels
     bool failD  = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::D_integrand, delta13.get_D(), loop_integral_type::P13);
     bool failE  = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::E_integrand, delta13.get_E(), loop_integral_type::P13);
     bool failF  = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::F_integrand, delta13.get_F(), loop_integral_type::P13);
@@ -339,6 +56,8 @@ loop_integral oneloop_momentum_integrator::integrate(const FRW_model& model, con
     bool failJ2 = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::J2_integrand, delta13.get_J2(), loop_integral_type::P13);
     
     if(failD || failE || failF || failG || failJ1 || failJ2) delta13.mark_failed();
+    
+    // rsd 13 kernels
     
     loop_integral container(k_tok, UV_tok, IR_tok, delta22, delta13, rsd22, rsd13);
 

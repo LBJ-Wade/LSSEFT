@@ -80,6 +80,11 @@ SET(COSMOLOGY_SOURCE_FILES
   cosmology/concepts/range_detail/common.h
   cosmology/concepts/range_detail/aggregation.h
   cosmology/concepts/oneloop_growth.cpp cosmology/concepts/oneloop_growth.h
+  cosmology/oneloop_integrands/shared.h
+  cosmology/oneloop_integrands/delta_13.h
+  cosmology/oneloop_integrands/delta_22.h
+  cosmology/oneloop_integrands/delta_rsd_13.h
+  cosmology/oneloop_integrands/delta_rsd_22.h
   cosmology/oneloop_momentum_integrator.cpp cosmology/oneloop_momentum_integrator.h
   cosmology/concepts/transfer_function.cpp cosmology/concepts/transfer_function.h
   cosmology/concepts/tree_power_spectrum.cpp cosmology/concepts/tree_power_spectrum.h
