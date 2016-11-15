@@ -304,9 +304,11 @@ namespace oneloop_momentum_impl
   }
 
 
-oneloop_momentum_integrator::oneloop_momentum_integrator(double a, double r)
-  : abs_err(std::fabs(a)),
-    rel_err(std::fabs(r))
+oneloop_momentum_integrator::oneloop_momentum_integrator(double a_13, double r_13, double a_22, double r_22)
+  : abs_err_13(std::abs(a_13)),
+    rel_err_13(std::abs(r_13)),
+    abs_err_22(std::abs(a_22)),
+    rel_err_22(std::abs(r_22))
   {
     // seed random number generator
     mersenne_twister.seed(random_device());
@@ -323,18 +325,18 @@ loop_integral oneloop_momentum_integrator::integrate(const FRW_model& model, con
     rsd_13_integrals rsd13;
     rsd_22_integrals rsd22;
 
-    bool failAA = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::AA_integrand, delta22.get_AA());
-    bool failAB = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::AB_integrand, delta22.get_AB());
-    bool failBB = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::BB_integrand, delta22.get_BB());
+    bool failAA = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::AA_integrand, delta22.get_AA(), loop_integral_type::P22);
+    bool failAB = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::AB_integrand, delta22.get_AB(), loop_integral_type::P22);
+    bool failBB = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::BB_integrand, delta22.get_BB(), loop_integral_type::P22);
     
     if(failAA || failAB || failBB) delta22.mark_failed();
 
-    bool failD  = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::D_integrand, delta13.get_D());
-    bool failE  = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::E_integrand, delta13.get_E());
-    bool failF  = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::F_integrand, delta13.get_F());
-    bool failG  = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::G_integrand, delta13.get_G());
-    bool failJ1 = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::J1_integrand, delta13.get_J1());
-    bool failJ2 = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::J2_integrand, delta13.get_J2());
+    bool failD  = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::D_integrand, delta13.get_D(), loop_integral_type::P13);
+    bool failE  = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::E_integrand, delta13.get_E(), loop_integral_type::P13);
+    bool failF  = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::F_integrand, delta13.get_F(), loop_integral_type::P13);
+    bool failG  = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::G_integrand, delta13.get_G(), loop_integral_type::P13);
+    bool failJ1 = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::J1_integrand, delta13.get_J1(), loop_integral_type::P13);
+    bool failJ2 = this->kernel_integral(model, k, UV_cutoff, IR_cutoff, Pk, &oneloop_momentum_impl::J2_integrand, delta13.get_J2(), loop_integral_type::P13);
     
     if(failD || failE || failF || failG || failJ1 || failJ2) delta13.mark_failed();
     
@@ -345,9 +347,9 @@ loop_integral oneloop_momentum_integrator::integrate(const FRW_model& model, con
 
 
 template <typename KernelRecord>
-bool oneloop_momentum_integrator::kernel_integral(const FRW_model& model, const Mpc_units::energy& k,
-                                                  const Mpc_units::energy& UV_cutoff, const Mpc_units::energy& IR_cutoff,
-                                                  const tree_power_spectrum& Pk, integrand_t integrand, KernelRecord& result)
+bool oneloop_momentum_integrator::kernel_integral(const FRW_model& model, const Mpc_units::energy& k, const Mpc_units::energy& UV_cutoff,
+                                                  const Mpc_units::energy& IR_cutoff, const tree_power_spectrum& Pk, integrand_t integrand,
+                                                  KernelRecord& result, loop_integral_type type)
   {
     boost::timer::cpu_timer timer;
 
@@ -386,7 +388,8 @@ bool oneloop_momentum_integrator::kernel_integral(const FRW_model& model, const 
     Cuhre(oneloop_momentum_impl::dimensions, oneloop_momentum_impl::components,
           integrand, data.get(),
           oneloop_momentum_impl::points_per_invocation,
-          this->rel_err, this->abs_err,
+          (type == loop_integral_type::P13 ? this->rel_err_13 : this->rel_err_22),
+          (type == loop_integral_type::P13 ? this->abs_err_13 : this->abs_err_22),
           oneloop_momentum_impl::verbosity_none | oneloop_momentum_impl::samples_last,
           oneloop_momentum_impl::min_eval, oneloop_momentum_impl::max_eval,
           oneloop_momentum_impl::cuhre_key,
