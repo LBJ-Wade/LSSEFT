@@ -37,17 +37,16 @@ one_loop_Pk_calculator::compute_dd(const Mpc_units::energy& k, const oneloop_gro
     delta_22_integrals d22 = loop_data.get_delta22();
     delta_13_integrals d13 = loop_data.get_delta13();
     
-    Pk_value tree(val.g*val.g*Ptree(k));
-
-    Pk_value P13(Ptree(k) * val.g * ((val.D - val.J) * d13.get_D() + val.E * d13.get_E()
-                                     + (val.F + val.J) * d13.get_F() + val.G * d13.get_G()
-                                     + (val.J / 2.0) * (d13.get_J2() - 2.0 * d13.get_J1())));
+    Pk_value tree = val.g * val.g * Ptree(k);
     
-    Pk_value P22(val.A * val.A * static_cast<Mpc_units::inverse_energy3>(d22.get_AA())
-                 + val.A * val.B * static_cast<Mpc_units::inverse_energy3>(d22.get_AB())
-                 + val.B * val.B * static_cast<Mpc_units::inverse_energy3>(d22.get_BB()));
-
-    k2_Pk_value Z2_delta(-2.0 * (-18.0*val.D - 28.0*val.E + 7.0*val.F + 2.0*val.G + 13.0*val.J) * val.g * k*k * Ptree(k));
+    Pk_value P13 = Ptree(k) * val.g * ((val.D - val.J) * d13.get_D() + val.E * d13.get_E()
+                                       + (val.F + val.J) * d13.get_F() + val.G * d13.get_G()
+                                       + (val.J / 2.0) * (d13.get_J2() - 2.0 * d13.get_J1()));
+    
+    Pk_value P22 = val.A * val.A * d22.get_AA() + val.A * val.B * d22.get_AB() + val.B * val.B * d22.get_BB();
+    
+    k2_Pk_value Z2_delta =
+      -2.0 * (-18.0 * val.D - 28.0 * val.E + 7.0 * val.F + 2.0 * val.G + 13.0 * val.J) * val.g * k * k * Ptree(k);
     
     return std::move(dd_Pk(tree, P13, P22, Z2_delta));
   }

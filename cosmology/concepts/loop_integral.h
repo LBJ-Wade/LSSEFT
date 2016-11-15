@@ -14,79 +14,41 @@
 #include "boost/serialization/serialization.hpp"
 
 
-class inverse_energy3_kernel
+template <typename ValueType>
+class loop_integral_output
   {
-
+  
   public:
     
-    typedef Mpc_units::inverse_energy3 value_type;
+    typedef ValueType value_type;
     
-    inverse_energy3_kernel()
+    //! constructor initializes zero values, which should be overwritten later
+    loop_integral_output()
       : value(value_type(0.0)),
+        error(value_type(0.0)),
         regions(0),
         evaluations(0),
-        error(0.0),
         time(0)
       {
       }
+
     
+    // DATA
     
-    operator value_type() const { return this->value; }
-
-    value_type                    value;
-    unsigned int                  regions;
-    unsigned int                  evaluations;
-    double                        error;
-    boost::timer::nanosecond_type time;
-
-  private:
-
-    // enable boost::serialization support, and hence automated packing for transmission over MPI
-    friend class boost::serialization::access;
-
-    template <typename Archive>
-    void serialize(Archive& ar, unsigned int version)
-      {
-        ar & value;
-        ar & regions;
-        ar & evaluations;
-        ar & error;
-        ar & time;
-      }
-
-  };
-
-
-class dimless_kernel
-  {
-
   public:
-
-    typedef double value_type;
     
-    dimless_kernel()
-      : value(0.0),
-        regions(0),
-        evaluations(0),
-        error(0.0),
-        time(0)
-      {
-      }
-    
-    
-    operator value_type() const { return this->value; }
-
     value_type                    value;
+    value_type                    error;
+    
     unsigned int                  regions;
     unsigned int                  evaluations;
-    double                        error;
     boost::timer::nanosecond_type time;
-
+  
   private:
-
+    
     // enable boost::serialization support, and hence automated packing for transmission over MPI
     friend class boost::serialization::access;
-
+    
     template <typename Archive>
     void serialize(Archive& ar, unsigned int version)
       {
@@ -96,8 +58,12 @@ class dimless_kernel
         ar & error;
         ar & time;
       }
-
+    
   };
+
+
+typedef loop_integral_output<Mpc_units::inverse_energy3> inverse_energy3_integral;
+typedef loop_integral_output<double>                     dimless_integral;
 
 
 template <typename DimensionfulType>
@@ -123,24 +89,6 @@ inline Mpc_units::inverse_energy dimensionful_unit<Mpc_units::inverse_energy>()
   }
 
 
-inline dimless_kernel operator*(double A, const dimless_kernel& B)
-  {
-    dimless_kernel val = B;
-    val.value = val.value * A;
-    
-    return val;
-  }
-
-
-inline inverse_energy3_kernel operator*(double A, const inverse_energy3_kernel& B)
-  {
-    inverse_energy3_kernel val = B;
-    val.value = val.value * A;
-    
-    return val;
-  }
-
-
 class delta_22_integrals
   {
     
@@ -149,8 +97,8 @@ class delta_22_integrals
   public:
     
     //! value constructor
-    delta_22_integrals(const inverse_energy3_kernel& _AA, const inverse_energy3_kernel& _AB,
-                       const inverse_energy3_kernel& _BB);
+    delta_22_integrals(const inverse_energy3_integral& _AA, const inverse_energy3_integral& _AB,
+                       const inverse_energy3_integral& _BB);
     
     //! empty constructor for use when overwriting with MPI payloads
     delta_22_integrals();
@@ -171,16 +119,16 @@ class delta_22_integrals
     
     
     //! get AA-value
-    inverse_energy3_kernel& get_AA() { return (this->AA); }
-    const inverse_energy3_kernel& get_AA() const { return (this->AA); }
+    inverse_energy3_integral& get_AA() { return (this->AA); }
+    const inverse_energy3_integral& get_AA() const { return (this->AA); }
     
     //! get AB-value
-    inverse_energy3_kernel& get_AB() { return (this->AB); }
-    const inverse_energy3_kernel& get_AB() const { return (this->AB); }
+    inverse_energy3_integral& get_AB() { return (this->AB); }
+    const inverse_energy3_integral& get_AB() const { return (this->AB); }
     
     //! get BB-value
-    inverse_energy3_kernel& get_BB() { return (this->BB); }
-    const inverse_energy3_kernel& get_BB() const { return (this->BB); }
+    inverse_energy3_integral& get_BB() { return (this->BB); }
+    const inverse_energy3_integral& get_BB() const { return (this->BB); }
     
     
     // INTERNAL DATA
@@ -191,13 +139,13 @@ class delta_22_integrals
     bool fail;
     
     //! AA-type integral P_22
-    inverse_energy3_kernel AA;
+    inverse_energy3_integral AA;
     
     //! AB-type integral P_22
-    inverse_energy3_kernel AB;
+    inverse_energy3_integral AB;
     
     //! BB-type integral P_22
-    inverse_energy3_kernel BB;
+    inverse_energy3_integral BB;
     
     
     // enable boost::serialization support, and hence automated packing for transmission over MPI
@@ -224,8 +172,8 @@ class delta_13_integrals
   public:
     
     //! value constructor
-    delta_13_integrals(const dimless_kernel& _D, const dimless_kernel& _E, const dimless_kernel& _F, const dimless_kernel& _G,
-                       const dimless_kernel& _J1, const dimless_kernel& _J2);
+    delta_13_integrals(const dimless_integral& _D, const dimless_integral& _E, const dimless_integral& _F, const dimless_integral& _G,
+                       const dimless_integral& _J1, const dimless_integral& _J2);
     
     //! empty constructor for use when overwriting with MPI payloads
     delta_13_integrals();
@@ -246,28 +194,28 @@ class delta_13_integrals
     
     
     //! get D-value
-    dimless_kernel& get_D() { return(this->D); }
-    const dimless_kernel& get_D() const { return(this->D); }
+    dimless_integral& get_D() { return(this->D); }
+    const dimless_integral& get_D() const { return(this->D); }
     
     //! get E-value
-    dimless_kernel& get_E() { return(this->E); }
-    const dimless_kernel& get_E() const { return(this->E); }
+    dimless_integral& get_E() { return(this->E); }
+    const dimless_integral& get_E() const { return(this->E); }
     
     //! get F-value
-    dimless_kernel& get_F() { return(this->F); }
-    const dimless_kernel& get_F() const { return(this->F); }
+    dimless_integral& get_F() { return(this->F); }
+    const dimless_integral& get_F() const { return(this->F); }
     
     //! get G-value
-    dimless_kernel& get_G() { return(this->G); }
-    const dimless_kernel& get_G() const { return(this->G); }
+    dimless_integral& get_G() { return(this->G); }
+    const dimless_integral& get_G() const { return(this->G); }
     
     //! get J1-value
-    dimless_kernel& get_J1() { return(this->J1); }
-    const dimless_kernel& get_J1() const { return(this->J1); }
+    dimless_integral& get_J1() { return(this->J1); }
+    const dimless_integral& get_J1() const { return(this->J1); }
     
     //! get J1-value
-    dimless_kernel& get_J2() { return(this->J2); }
-    const dimless_kernel& get_J2() const { return(this->J2); }
+    dimless_integral& get_J2() { return(this->J2); }
+    const dimless_integral& get_J2() const { return(this->J2); }
 
     
     // INTERNAL DATA
@@ -278,22 +226,22 @@ class delta_13_integrals
     bool fail;
     
     //! D-type integral P_13
-    dimless_kernel D;
+    dimless_integral D;
     
     //! E-type integral P_13
-    dimless_kernel E;
+    dimless_integral E;
     
     //! F-type integral P_13
-    dimless_kernel F;
+    dimless_integral F;
     
     //! G-type integral P_13
-    dimless_kernel G;
+    dimless_integral G;
     
     //! J1-type kernel P_13
-    dimless_kernel J1;
+    dimless_integral J1;
     
     //! J2-type kernel P_13
-    dimless_kernel J2;
+    dimless_integral J2;
     
     
     // enable boost::serialization support, and hence automated packing for transmission over MPI

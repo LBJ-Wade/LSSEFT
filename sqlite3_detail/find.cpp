@@ -45,7 +45,7 @@ namespace sqlite3_operations
                     kernel.value = sqlite3_column_double(stmt, 0) * dimensionful_unit<typename KernelType::value_type>();
                     kernel.regions = sqlite3_column_int(stmt, 1);
                     kernel.evaluations = sqlite3_column_int(stmt, 2);
-                    kernel.error = sqlite3_column_double(stmt, 3);
+                    kernel.error = sqlite3_column_double(stmt, 3) * dimensionful_unit<typename KernelType::value_type>();
                     kernel.time = sqlite3_column_int64(stmt, 4);
                     
                     ++count;

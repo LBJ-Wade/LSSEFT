@@ -6,8 +6,8 @@
 #include "loop_integral.h"
 
 
-delta_22_integrals::delta_22_integrals(const inverse_energy3_kernel& _AA, const inverse_energy3_kernel& _AB,
-                                       const inverse_energy3_kernel& _BB)
+delta_22_integrals::delta_22_integrals(const inverse_energy3_integral& _AA, const inverse_energy3_integral& _AB,
+                                       const inverse_energy3_integral& _BB)
   : fail(false),
     AA(_AA),
     AB(_AB),
@@ -25,8 +25,8 @@ delta_22_integrals::delta_22_integrals()
   }
 
 
-delta_13_integrals::delta_13_integrals(const dimless_kernel& _D, const dimless_kernel& _E, const dimless_kernel& _F, const dimless_kernel& _G,
-                                       const dimless_kernel& _J1, const dimless_kernel& _J2)
+delta_13_integrals::delta_13_integrals(const dimless_integral& _D, const dimless_integral& _E, const dimless_integral& _F, const dimless_integral& _G,
+                                       const dimless_integral& _J1, const dimless_integral& _J2)
   : fail(false),
     D(_D),
     E(_E),

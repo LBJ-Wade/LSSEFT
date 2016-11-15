@@ -19,13 +19,19 @@ namespace sqlite3_operations
     namespace store_impl
       {
         
-        
         template <typename ValueContainer>
-        double dimensionless(const ValueContainer& container)
+        double dimensionless_value(const ValueContainer& container)
           {
             return container.value / dimensionful_unit<typename ValueContainer::value_type>();
           }
-        
+    
+    
+        template <typename ValueContainer>
+        double dimensionless_error(const ValueContainer& container)
+          {
+            return container.error / dimensionful_unit<typename ValueContainer::value_type>();
+          }
+    
     
         template <typename KernelType>
         void store_loop_kernel(sqlite3* db, const std::string& table_name, const KernelType& kernel,
@@ -43,10 +49,10 @@ namespace sqlite3_operations
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@kid"), sample.get_k_token().get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_id"), sample.get_IR_token().get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@UV_id"), sample.get_UV_token().get_id()));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@value"), dimensionless(kernel)));
-            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@regions"), kernel.regions));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@value"), dimensionless_value(kernel)));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@regions"),kernel.regions));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@evals"), kernel.evaluations));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@err"), kernel.error));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@err"), dimensionless_error(kernel)));
             check_stmt(db, sqlite3_bind_int64(stmt, sqlite3_bind_parameter_index(stmt, "@time"), kernel.time));
     
             // perform insertion
@@ -63,7 +69,7 @@ namespace sqlite3_operations
                                const FRW_model_token& model, const one_loop_Pk& sample)
           {
             std::ostringstream insert_stmt;
-            insert_stmt << "INSERT INTO " << table_name << " VALUES (@mid, @zid, @kid, @IR_id, @UV_id, @Ptree, @P13, @P22, @P1loopSPT, @Z2_delta);";
+            insert_stmt << "INSERT INTO " << table_name << " VALUES (@mid, @zid, @kid, @IR_id, @UV_id, @Ptree, @err_tree, @P13, @err_13, @P22, @err_22, @P1loopSPT, @err_1loopSPT, @Z2_delta);";
     
             // prepare statement
             sqlite3_stmt* stmt;
@@ -81,11 +87,15 @@ namespace sqlite3_operations
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@kid"), sample.get_k_token().get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_id"), sample.get_IR_token().get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@UV_id"), sample.get_UV_token().get_id()));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Ptree"), dimensionless(tree)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@P13"), dimensionless(P13)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@P22"), dimensionless(P22)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@P1loopSPT"), dimensionless(P1loopSPT)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Z2_delta"), dimensionless(Z2_delta)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Ptree"), dimensionless_value(tree)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@err_tree"), dimensionless_error(tree)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@P13"), dimensionless_value(P13)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@err_13"), dimensionless_error(P13)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@P22"), dimensionless_value(P22)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@err_22"), dimensionless_error(P22)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@P1loopSPT"), dimensionless_value(P1loopSPT)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@err_1loopSPT"), dimensionless_error(P1loopSPT)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Z2_delta"), dimensionless_value(Z2_delta)));
     
             // perform insertion
             check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_LOOP_MOMENTUM_FAIL, SQLITE_DONE);
@@ -101,7 +111,7 @@ namespace sqlite3_operations
                                    const FRW_model_token& model, const one_loop_Pk& sample)
           {
             std::ostringstream insert_stmt;
-            insert_stmt << "INSERT INTO " << table_name << " VALUES (@mid, @zid, @kid, @IR_id, @UV_id, @Ptree, @P13, @P22, @P1loopSPT, @Z2_delta, @Z0_v, @Z2_v, @Z0_vdelta, @Z2_vdelta, @Z2_vv, @Z2_vvdelta, @Z2_vvv);";
+            insert_stmt << "INSERT INTO " << table_name << " VALUES (@mid, @zid, @kid, @IR_id, @UV_id, @Ptree, @err_tree, @P13, @err_13, @P22, @err_22, @P1loopSPT, @err_1loopSPT, @Z2_delta, @Z0_v, @Z2_v, @Z0_vdelta, @Z2_vdelta, @Z2_vv, @Z2_vvdelta, @Z2_vvv);";
         
             // prepare statement
             sqlite3_stmt* stmt;
@@ -126,18 +136,22 @@ namespace sqlite3_operations
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@kid"), sample.get_k_token().get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_id"), sample.get_IR_token().get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@UV_id"), sample.get_UV_token().get_id()));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Ptree"), dimensionless(tree)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@P13"), dimensionless(P13)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@P22"), dimensionless(P22)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@P1loopSPT"), dimensionless(P1loopSPT)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Z2_delta"), dimensionless(Z2_delta)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Z0_v"), dimensionless(Z0_v)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Z2_v"), dimensionless(Z2_v)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Z0_vdelta"), dimensionless(Z0_vdelta)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Z2_vdelta"), dimensionless(Z2_vdelta)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Z2_vv"), dimensionless(Z2_vv)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Z2_vvdelta"), dimensionless(Z2_vvdelta)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Z2_vvv"), dimensionless(Z2_vvv)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Ptree"), dimensionless_value(tree)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@err_tree"), dimensionless_error(tree)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@P13"), dimensionless_value(P13)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@err_13"), dimensionless_error(P13)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@P22"), dimensionless_value(P22)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@err_22"), dimensionless_error(P22)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@P1loopSPT"), dimensionless_value(P1loopSPT)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@err_1loopSPT"), dimensionless_error(P1loopSPT)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Z2_delta"), dimensionless_value(Z2_delta)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Z0_v"), dimensionless_value(Z0_v)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Z2_v"), dimensionless_value(Z2_v)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Z0_vdelta"), dimensionless_value(Z0_vdelta)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Z2_vdelta"), dimensionless_value(Z2_vdelta)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Z2_vv"), dimensionless_value(Z2_vv)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Z2_vvdelta"), dimensionless_value(Z2_vvdelta)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Z2_vvv"), dimensionless_value(Z2_vvv)));
         
             // perform insertion
             check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_LOOP_MOMENTUM_FAIL, SQLITE_DONE);

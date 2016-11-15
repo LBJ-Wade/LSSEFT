@@ -7,6 +7,8 @@
 #define LSSEFT_ONE_LOOP_PK_H
 
 
+#include "loop_integral.h"
+
 #include "database/tokens.h"
 #include "units/Mpc_units.h"
 
@@ -14,29 +16,50 @@
 #include "boost/serialization/serialization.hpp"
 
 
-class Pk_value
+template <typename ValueType>
+class dimensionful_Pk_component
   {
     
   public:
     
-    typedef Mpc_units::inverse_energy3 value_type;
+    typedef ValueType value_type;
     
-    //! value constructor
-    Pk_value(value_type v)
-      : value(std::move(v))
+    //! value constructor; error is zero if not specified which allows
+    //! assignment-on-construction to a specified value_type expression
+    dimensionful_Pk_component(value_type v, value_type e=value_type(0.0))
+      : value(std::move(v)),
+        error(std::move(e))
       {
       }
     
     //! empty constructor
-    Pk_value()
-      : value(value_type(0.0))
+    dimensionful_Pk_component()
+      : value(value_type(0.0)),
+        error(value_type(0.0))
       {
       }
     
     
-    operator value_type() const { return this->value; }
+    // CONVERSIONS
+    
+  public:
+    
+    //! allow direct assignment from a value_type object, in which case there is no error
+    dimensionful_Pk_component<ValueType>& operator=(value_type v)
+      {
+        this->value = std::move(v);
+        this->error = value_type(0.0);
+        return *this;
+      }
+    
+    
+    // DATA
+    
+  public:
     
     value_type value;
+    value_type error;
+    
     
   private:
     
@@ -47,66 +70,168 @@ class Pk_value
     void serialize(Archive& ar, unsigned int version)
       {
         ar & value;
+        ar & error;
       }
     
   };
 
 
-class k2_Pk_value
-  {
-  
-  public:
-    
-    typedef Mpc_units::inverse_energy value_type;
-    
-    //! value constructor
-    k2_Pk_value(value_type v)
-      : value(std::move(v))
-      {
-      }
-    
-    //! empty constructor
-    k2_Pk_value()
-      : value(value_type(0.0))
-      {
-      }
-    
-    
-    operator value_type() const { return this->value; }
-    
-    value_type value;
-  
-  private:
-    
-    // enable boost::serialization support
-    friend class boost::serialization::access;
-    
-    template <typename Archive>
-    void serialize(Archive& ar, unsigned int version)
-      {
-        ar & value;
-      }
-    
-  };
+typedef dimensionful_Pk_component<Mpc_units::inverse_energy3> Pk_value;
+typedef dimensionful_Pk_component<Mpc_units::inverse_energy>  k2_Pk_value;
 
 
 //! overload + so that power spectrum and counterterm values can be added
-inline Pk_value operator+(const Pk_value& A, const Pk_value& B)
+template <typename ValueType>
+dimensionful_Pk_component<ValueType> operator+(const dimensionful_Pk_component<ValueType>& A, const dimensionful_Pk_component<ValueType>& B)
   {
-    Pk_value res;
+    dimensionful_Pk_component<ValueType> res;
     
     res.value = A.value + B.value;
+    res.error = std::sqrt(static_cast<double>(A.error)*static_cast<double>(A.error) + static_cast<double>(B.error)*static_cast<double>(B.error));
     
     return std::move(res);
   }
 
 
-//! overload + so that power spectrum and counterterm values can be added
-inline k2_Pk_value operator+(const k2_Pk_value& A, const k2_Pk_value& B)
+//! overload scalar multiplication
+template <typename ValueType>
+dimensionful_Pk_component<ValueType> operator*(double A, const dimensionful_Pk_component<ValueType>& B)
   {
-    k2_Pk_value res;
+    dimensionful_Pk_component<ValueType> res;
+    
+    res.value = A * B.value;
+    res.error = A * B.error;
+    
+    return std::move(res);
+  }
+
+template <typename ValueType>
+dimensionful_Pk_component<ValueType> operator*(const dimensionful_Pk_component<ValueType>& A, double B)
+  {
+    dimensionful_Pk_component<ValueType> res;
+    
+    res.value = B * A.value;
+    res.error = B * A.error;
+    
+    return std::move(res);
+  }
+
+
+// overload multiplication of a loop integral result to give a Pk component
+template <typename ValueType>
+dimensionful_Pk_component<ValueType> operator*(double A, const loop_integral_output<ValueType>& B)
+  {
+    dimensionful_Pk_component<ValueType> res;
+    
+    res.value = A * B.value;
+    res.error = A * B.error;
+    
+    return std::move(res);
+  }
+
+template <typename ValueType>
+dimensionful_Pk_component<ValueType> operator*(const loop_integral_output<ValueType>& A, double B)
+  {
+    dimensionful_Pk_component<ValueType> res;
+    
+    res.value = B * A.value;
+    res.error = B * A.error;
+    
+    return std::move(res);
+  }
+
+
+// overload addition/subtraction of loop integral results to give a Pk component
+template <typename ValueType>
+dimensionful_Pk_component<ValueType> operator+(const loop_integral_output<ValueType>& A, const loop_integral_output<ValueType>& B)
+  {
+    dimensionful_Pk_component<ValueType> res;
     
     res.value = A.value + B.value;
+    res.error = std::sqrt(static_cast<double>(A.error)*static_cast<double>(A.error) + static_cast<double>(B.error)*static_cast<double>(B.error));
+    
+    return std::move(res);
+  }
+
+template <typename ValueType>
+dimensionful_Pk_component<ValueType> operator-(const loop_integral_output<ValueType>& A, const loop_integral_output<ValueType>& B)
+  {
+    dimensionful_Pk_component<ValueType> res;
+    
+    res.value = A.value - B.value;
+    res.error = std::sqrt(static_cast<double>(A.error)*static_cast<double>(A.error) + static_cast<double>(B.error)*static_cast<double>(B.error));
+    
+    return std::move(res);
+  }
+
+
+// overload addition of loop integral and Pk components to give another Pk component
+template <typename ValueType>
+dimensionful_Pk_component<ValueType> operator+(const dimensionful_Pk_component<ValueType>& A, const loop_integral_output<ValueType>& B)
+  {
+    dimensionful_Pk_component<ValueType> res;
+    
+    res.value = A.value + B.value;
+    res.error = std::sqrt(static_cast<double>(A.error)*static_cast<double>(A.error) + static_cast<double>(B.error)*static_cast<double>(B.error));
+    
+    return std::move(res);
+  }
+
+template <typename ValueType>
+dimensionful_Pk_component<ValueType> operator+(const loop_integral_output<ValueType>& A, const dimensionful_Pk_component<ValueType>& B)
+  {
+    dimensionful_Pk_component<ValueType> res;
+    
+    res.value = A.value + B.value;
+    res.error = std::sqrt(static_cast<double>(A.error)*static_cast<double>(A.error) + static_cast<double>(B.error)*static_cast<double>(B.error));
+    
+    return std::move(res);
+  }
+
+
+// overload subtraction of loop integral and Pk components to give another Pk component
+template <typename ValueType>
+dimensionful_Pk_component<ValueType> operator-(const dimensionful_Pk_component<ValueType>& A, const loop_integral_output<ValueType>& B)
+  {
+    dimensionful_Pk_component<ValueType> res;
+    
+    res.value = A.value - B.value;
+    res.error = std::sqrt(static_cast<double>(A.error)*static_cast<double>(A.error) + static_cast<double>(B.error)*static_cast<double>(B.error));
+    
+    return std::move(res);
+  }
+
+template <typename ValueType>
+dimensionful_Pk_component<ValueType> operator-(const loop_integral_output<ValueType>& A, const dimensionful_Pk_component<ValueType>& B)
+  {
+    dimensionful_Pk_component<ValueType> res;
+    
+    res.value = A.value - B.value;
+    res.error = std::sqrt(static_cast<double>(A.error)*static_cast<double>(A.error) + static_cast<double>(B.error)*static_cast<double>(B.error));
+    
+    return std::move(res);
+  }
+
+
+// overload multiplication of dimensionless Pk components with 1/Mpc^3 dimensionful quantities
+dimensionful_Pk_component<Mpc_units::inverse_energy3>
+inline operator*(const Mpc_units::inverse_energy3& A, const dimensionful_Pk_component<double>& B)
+  {
+    dimensionful_Pk_component<Mpc_units::inverse_energy3> res;
+    
+    res.value = A * B.value;
+    res.error = A * B.error;
+    
+    return std::move(res);
+  }
+
+dimensionful_Pk_component<Mpc_units::inverse_energy3>
+inline operator*(const dimensionful_Pk_component<double>& A, const Mpc_units::inverse_energy3& B)
+  {
+    dimensionful_Pk_component<Mpc_units::inverse_energy3> res;
+    
+    res.value = B * A.value;
+    res.error = B * A.error;
     
     return std::move(res);
   }
