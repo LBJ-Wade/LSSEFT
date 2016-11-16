@@ -25,7 +25,7 @@ class dimensionful_Pk_component
     typedef ValueType value_type;
     
     //! value constructor; error is zero if not specified which allows
-    //! assignment-on-construction to a specified value_type expression
+    //! assignment-on-construction to a fixed number
     dimensionful_Pk_component(value_type v, value_type e=value_type(0.0))
       : value(std::move(v)),
         error(std::move(e))
@@ -44,7 +44,7 @@ class dimensionful_Pk_component
     
   public:
     
-    //! allow direct assignment from a value_type object, in which case there is no error
+    //! allow direct assignment from a value_type object, in which case there is zero error
     dimensionful_Pk_component<ValueType>& operator=(value_type v)
       {
         this->value = std::move(v);
@@ -112,6 +112,18 @@ dimensionful_Pk_component<ValueType> operator*(const dimensionful_Pk_component<V
     
     res.value = B * A.value;
     res.error = std::abs(B) * A.error;
+    
+    return std::move(res);
+  }
+
+//! overload scalar division
+template <typename ValueType>
+dimensionful_Pk_component<ValueType> operator/(const dimensionful_Pk_component<ValueType>& A, double B)
+  {
+    dimensionful_Pk_component<ValueType> res;
+    
+    res.value = A.value / B;
+    res.error = A.error / std::abs(B);
     
     return std::move(res);
   }
