@@ -212,6 +212,7 @@ namespace sqlite3_operations
         create_impl::oneloop_momentum_integral_table(db, policy.RSD22_A1_table(), policy);
         create_impl::oneloop_momentum_integral_table(db, policy.RSD22_A2_table(), policy);
         create_impl::oneloop_momentum_integral_table(db, policy.RSD22_A3_table(), policy);
+        create_impl::oneloop_momentum_integral_table(db, policy.RSD22_A4_table(), policy);
         create_impl::oneloop_momentum_integral_table(db, policy.RSD22_A5_table(), policy);
         create_impl::oneloop_momentum_integral_table(db, policy.RSD22_B2_table(), policy);
         create_impl::oneloop_momentum_integral_table(db, policy.RSD22_B3_table(), policy);

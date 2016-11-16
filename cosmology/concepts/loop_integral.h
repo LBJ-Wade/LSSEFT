@@ -303,6 +303,10 @@ class rsd_22_integrals
     dimless_integral& get_A3() { return(this->A3); }
     const dimless_integral& get_A3() const { return(this->A3); }
     
+    //! get A4-value
+    dimless_integral& get_A4() { return(this->A4); }
+    const dimless_integral& get_A4() const { return(this->A4); }
+    
     //! get A5-value
     dimless_integral& get_A5() { return(this->A5); }
     const dimless_integral& get_A5() const { return(this->A5); }
@@ -359,6 +363,9 @@ class rsd_22_integrals
     //! A3-type integral P_22
     dimless_integral A3;
     
+    //! A4-type integral P_22
+    dimless_integral A4;
+    
     //! A5-type integral P_22
     dimless_integral A5;
     
@@ -403,6 +410,7 @@ class rsd_22_integrals
         ar & A1;
         ar & A2;
         ar & A3;
+        ar & A4;
         ar & A5;
         ar & B2;
         ar & B3;

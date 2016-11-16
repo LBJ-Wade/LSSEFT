@@ -495,6 +495,7 @@ namespace sqlite3_operations
         loop_configs missing_RSD22_A1 = update_missing_loop_integral_configurations(db, model, policy.RSD22_A1_table(), required_configs, total_missing);
         loop_configs missing_RSD22_A2 = update_missing_loop_integral_configurations(db, model, policy.RSD22_A2_table(), required_configs, total_missing);
         loop_configs missing_RSD22_A3 = update_missing_loop_integral_configurations(db, model, policy.RSD22_A3_table(), required_configs, total_missing);
+        loop_configs missing_RSD22_A4 = update_missing_loop_integral_configurations(db, model, policy.RSD22_A4_table(), required_configs, total_missing);
         loop_configs missing_RSD22_A5 = update_missing_loop_integral_configurations(db, model, policy.RSD22_A5_table(), required_configs, total_missing);
         loop_configs missing_RSD22_B2 = update_missing_loop_integral_configurations(db, model, policy.RSD22_B2_table(), required_configs, total_missing);
         loop_configs missing_RSD22_B3 = update_missing_loop_integral_configurations(db, model, policy.RSD22_B3_table(), required_configs, total_missing);
@@ -529,6 +530,7 @@ namespace sqlite3_operations
         drop_inconsistent_configurations(db, model, policy.RSD22_A1_table(), missing_RSD22_A1, total_missing);
         drop_inconsistent_configurations(db, model, policy.RSD22_A2_table(), missing_RSD22_A2, total_missing);
         drop_inconsistent_configurations(db, model, policy.RSD22_A3_table(), missing_RSD22_A3, total_missing);
+        drop_inconsistent_configurations(db, model, policy.RSD22_A4_table(), missing_RSD22_A4, total_missing);
         drop_inconsistent_configurations(db, model, policy.RSD22_A5_table(), missing_RSD22_A5, total_missing);
         drop_inconsistent_configurations(db, model, policy.RSD22_B2_table(), missing_RSD22_B2, total_missing);
         drop_inconsistent_configurations(db, model, policy.RSD22_B3_table(), missing_RSD22_B3, total_missing);

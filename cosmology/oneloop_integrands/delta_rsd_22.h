@@ -26,7 +26,7 @@ namespace oneloop_momentum_impl
         Mpc_units::inverse_energy3 Pq = data->Pk(q);
         Mpc_units::inverse_energy3 Ps = s > data->IR_cutoff && s < data->UV_cutoff ? data->Pk(s) : Mpc_units::inverse_energy3(0);
         
-        Mpc_units::energy2 intg = (data->k*data->k*data->k*data->k/(s_sq*s_sq)) * (data->k - 2.0*q*z) * (data->k - 2.0*q*z) * (z*z - 1.0);
+        Mpc_units::energy2 intg = (data->k*data->k*data->k*data->k/(s_sq*s_sq)) * (data->k - 2.0*q*z)*(data->k - 2.0*q*z) * (z*z - 1.0);
         
         f[0] = (data->jacobian_2d * intg * Pq * Ps) / Mpc_units::Mpc3;
 
@@ -56,6 +56,27 @@ namespace oneloop_momentum_impl
     
     
     static int RSD22_A3_integrand(const int* ndim, const cubareal x[], const int* ncomp, cubareal f[], void* userdata)
+      {
+        oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
+        
+        Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
+        double z            = 2.0*x[1] - 1.0;
+        
+        Mpc_units::energy2 s_sq = data->k*data->k + q*q - 2*data->k*q*z;
+        Mpc_units::energy  s    = std::sqrt(s_sq * Mpc_units::Mpc2) / Mpc_units::Mpc;
+        
+        Mpc_units::inverse_energy3 Pq = data->Pk(q);
+        Mpc_units::inverse_energy3 Ps = s > data->IR_cutoff && s < data->UV_cutoff ? data->Pk(s) : Mpc_units::inverse_energy3(0);
+        
+        Mpc_units::energy2 intg = (data->k*data->k*data->k*data->k/(s_sq*s_sq)) * (q + data->k*z - 2.0*q*z*z)*(q + data->k*z - 2.0*q*z*z);
+        
+        f[0] = (data->jacobian_2d * intg * Pq * Ps) / Mpc_units::Mpc3;
+        
+        return 0;
+      }
+    
+    
+    static int RSD22_A4_integrand(const int* ndim, const cubareal x[], const int* ncomp, cubareal f[], void* userdata)
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
         
@@ -110,7 +131,7 @@ namespace oneloop_momentum_impl
         Mpc_units::inverse_energy3 Pq = data->Pk(q);
         Mpc_units::inverse_energy3 Ps = s > data->IR_cutoff && s < data->UV_cutoff ? data->Pk(s) : Mpc_units::inverse_energy3(0);
         
-        Mpc_units::energy2 intg = (data->k*data->k*data->k*data->k/(s_sq*s_sq)) * q * q * (z*z - 1.0);
+        Mpc_units::energy2 intg = (data->k*data->k*data->k*data->k/(s_sq*s_sq)) * q*q * (z*z - 1.0);
         
         f[0] = (data->jacobian_2d * intg * Pq * Ps) / Mpc_units::Mpc3;
         

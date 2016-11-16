@@ -237,6 +237,7 @@ namespace sqlite3_operations
         find_impl::read_loop_kernel(db, policy.RSD22_A1_table(), model, k, UV_cutoff, IR_cutoff, rsd22.get_A1());
         find_impl::read_loop_kernel(db, policy.RSD22_A2_table(), model, k, UV_cutoff, IR_cutoff, rsd22.get_A2());
         find_impl::read_loop_kernel(db, policy.RSD22_A3_table(), model, k, UV_cutoff, IR_cutoff, rsd22.get_A3());
+        find_impl::read_loop_kernel(db, policy.RSD22_A4_table(), model, k, UV_cutoff, IR_cutoff, rsd22.get_A4());
         find_impl::read_loop_kernel(db, policy.RSD22_A5_table(), model, k, UV_cutoff, IR_cutoff, rsd22.get_A5());
         find_impl::read_loop_kernel(db, policy.RSD22_B2_table(), model, k, UV_cutoff, IR_cutoff, rsd22.get_B2());
         find_impl::read_loop_kernel(db, policy.RSD22_B3_table(), model, k, UV_cutoff, IR_cutoff, rsd22.get_B3());

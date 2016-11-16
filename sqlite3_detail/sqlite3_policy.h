@@ -110,6 +110,9 @@ class sqlite3_policy
     //! 1-loop RSD22_A3 integral table
     const std::string& RSD22_A3_table() const { return this->RSD22_A3; }
     
+    //! 1-loop RSD22_A3 integral table
+    const std::string& RSD22_A4_table() const { return this->RSD22_A4; }
+    
     //! 1-loop RSD22_A5 integral table
     const std::string& RSD22_A5_table() const { return this->RSD22_A5; }
     
@@ -251,6 +254,9 @@ class sqlite3_policy
     
     //! 1-loop momentum integrals - RSD22_A3
     const std::string RSD22_A3;
+    
+    //! 1-loop momentum integrals - RSD22_A4
+    const std::string RSD22_A4;
     
     //! 1-loop momentum integrals - RSD22_A5
     const std::string RSD22_A5;
