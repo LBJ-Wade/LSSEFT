@@ -208,7 +208,6 @@ namespace sqlite3_operations
         create_impl::oneloop_momentum_integral_table(db, policy.RSD13_e_table(), policy);
         create_impl::oneloop_momentum_integral_table(db, policy.RSD13_f_table(), policy);
         create_impl::oneloop_momentum_integral_table(db, policy.RSD13_g_table(), policy);
-        create_impl::oneloop_momentum_integral_table(db, policy.RSD13_h_table(), policy);
         
         std::ostringstream dd_stmt;
         dd_stmt

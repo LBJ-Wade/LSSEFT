@@ -233,7 +233,6 @@ namespace sqlite3_operations
         find_impl::read_loop_kernel(db, policy.RSD13_e_table(), model, k, UV_cutoff, IR_cutoff, rsd13.get_e());
         find_impl::read_loop_kernel(db, policy.RSD13_f_table(), model, k, UV_cutoff, IR_cutoff, rsd13.get_f());
         find_impl::read_loop_kernel(db, policy.RSD13_g_table(), model, k, UV_cutoff, IR_cutoff, rsd13.get_g());
-        find_impl::read_loop_kernel(db, policy.RSD13_h_table(), model, k, UV_cutoff, IR_cutoff, rsd13.get_h());
         
         loop_integral payload(k, UV_cutoff, IR_cutoff, delta22, delta13, rsd22, rsd13);
         

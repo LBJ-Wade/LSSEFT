@@ -101,9 +101,6 @@ class sqlite3_policy
     //! 1-loop RSD13_g integral table
     const std::string& RSD13_g_table() const { return this->RSD13_g; }
     
-    //! 1-loop RSD13_h integral table
-    const std::string& RSD13_h_table() const { return this->RSD13_h; }
-    
     //! 1-loop delta-delta power spectrum table
     const std::string dd_Pk_table() const { return(this->dd_Pk); }
     
@@ -206,9 +203,6 @@ class sqlite3_policy
     
     //! 1-loop momentum integrals - RSD13_g
     const std::string RSD13_g;
-    
-    //! 1-loop momentum integrals - RSD13_h
-    const std::string RSD13_h;
     
     //! 1-loop delta delta power spectrum table
     const std::string dd_Pk;

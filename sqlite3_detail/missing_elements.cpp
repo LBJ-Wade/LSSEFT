@@ -491,7 +491,6 @@ namespace sqlite3_operations
         loop_configs missing_RSD13_e = update_missing_loop_integral_configurations(db, model, policy.RSD13_e_table(), required_configs, total_missing);
         loop_configs missing_RSD13_f = update_missing_loop_integral_configurations(db, model, policy.RSD13_f_table(), required_configs, total_missing);
         loop_configs missing_RSD13_g = update_missing_loop_integral_configurations(db, model, policy.RSD13_g_table(), required_configs, total_missing);
-        loop_configs missing_RSD13_h = update_missing_loop_integral_configurations(db, model, policy.RSD13_h_table(), required_configs, total_missing);
         
         // drop any inconsistent configurations -- ie. those present in some tables, but not others
         drop_inconsistent_configurations(db, model, policy.AA_table(), missing_AA, total_missing);
@@ -512,7 +511,6 @@ namespace sqlite3_operations
         drop_inconsistent_configurations(db, model, policy.RSD13_e_table(), missing_RSD13_e, total_missing);
         drop_inconsistent_configurations(db, model, policy.RSD13_f_table(), missing_RSD13_f, total_missing);
         drop_inconsistent_configurations(db, model, policy.RSD13_g_table(), missing_RSD13_g, total_missing);
-        drop_inconsistent_configurations(db, model, policy.RSD13_h_table(), missing_RSD13_h, total_missing);
     
         return total_missing;
       }

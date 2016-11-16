@@ -80,13 +80,24 @@ typedef dimensionful_Pk_component<Mpc_units::inverse_energy3> Pk_value;
 typedef dimensionful_Pk_component<Mpc_units::inverse_energy>  k2_Pk_value;
 
 
-//! overload + so that power spectrum and counterterm values can be added
+//! overload + and - so that power spectrum and counterterm values can be added
 template <typename ValueType>
 dimensionful_Pk_component<ValueType> operator+(const dimensionful_Pk_component<ValueType>& A, const dimensionful_Pk_component<ValueType>& B)
   {
     dimensionful_Pk_component<ValueType> res;
     
     res.value = A.value + B.value;
+    res.error = std::sqrt(static_cast<double>(A.error)*static_cast<double>(A.error) + static_cast<double>(B.error)*static_cast<double>(B.error));
+    
+    return std::move(res);
+  }
+
+template <typename ValueType>
+dimensionful_Pk_component<ValueType> operator-(const dimensionful_Pk_component<ValueType>& A, const dimensionful_Pk_component<ValueType>& B)
+  {
+    dimensionful_Pk_component<ValueType> res;
+    
+    res.value = A.value - B.value;
     res.error = std::sqrt(static_cast<double>(A.error)*static_cast<double>(A.error) + static_cast<double>(B.error)*static_cast<double>(B.error));
     
     return std::move(res);
@@ -145,6 +156,28 @@ template <typename ValueType>
 dimensionful_Pk_component<ValueType> operator*(const loop_integral_output<ValueType>& A, double B)
   {
     dimensionful_Pk_component<ValueType> res;
+    
+    res.value = B * A.value;
+    res.error = std::abs(B) * A.error;
+    
+    return std::move(res);
+  }
+
+inline dimensionful_Pk_component<Mpc_units::inverse_energy3>
+operator*(const Mpc_units::inverse_energy3& A, const loop_integral_output<double>& B)
+  {
+    dimensionful_Pk_component<Mpc_units::inverse_energy3> res;
+    
+    res.value = A * B.value;
+    res.error = std::abs(A) * B.error;
+    
+    return std::move(res);
+  }
+
+inline dimensionful_Pk_component<Mpc_units::inverse_energy3>
+operator*(const loop_integral_output<double>& A, const Mpc_units::inverse_energy3& B)
+  {
+    dimensionful_Pk_component<Mpc_units::inverse_energy3> res;
     
     res.value = B * A.value;
     res.error = std::abs(B) * A.error;

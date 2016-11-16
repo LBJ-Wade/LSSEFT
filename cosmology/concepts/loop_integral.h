@@ -368,12 +368,10 @@ class rsd_13_integrals
     dimless_integral& get_g() { return(this->g); }
     const dimless_integral& get_g() const { return(this->g); }
     
-    //! get h-value
-    dimless_integral& get_h() { return(this->h); }
-    const dimless_integral& get_h() const { return(this->h); }
-    
     
     // INTERNAL DATA
+    
+  private:
     
     //! failure state
     bool fail;
@@ -399,9 +397,6 @@ class rsd_13_integrals
     
     //! g-type integral P_13
     dimless_integral g;
-    
-    //! h-type integral P_13
-    dimless_integral h;
   
   
   private:
@@ -421,7 +416,6 @@ class rsd_13_integrals
         ar & e;
         ar & f;
         ar & g;
-        ar & h;
       }
     
   };
