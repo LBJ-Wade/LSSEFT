@@ -13,7 +13,7 @@
 namespace oneloop_momentum_impl
   {
     
-    static int AA_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
+    static int AA_integrand(const int* ndim, const cubareal x[], const int* ncomp, cubareal f[], void* userdata)
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
         
@@ -40,7 +40,7 @@ namespace oneloop_momentum_impl
       }
     
     
-    static int AB_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
+    static int AB_integrand(const int* ndim, const cubareal x[], const int* ncomp, cubareal f[], void* userdata)
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
         
@@ -69,7 +69,7 @@ namespace oneloop_momentum_impl
       }
     
     
-    static int BB_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
+    static int BB_integrand(const int* ndim, const cubareal x[], const int* ncomp, cubareal f[], void* userdata)
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
         

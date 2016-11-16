@@ -12,8 +12,12 @@
 
 namespace oneloop_momentum_impl
   {
-
-    static int RSD13_a_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
+    
+    // all of these kernels are just 1D integrals, but we treat them as 2d integrals with a trivial
+    // z direction. The Cuhre integrator does not seem to work for just 1 dimension, as can
+    // be confirmed eg. by using the Mathematica interface
+    
+    static int RSD13_a_integrand(const int* ndim, const cubareal x[], const int* ncomp, cubareal f[], void* userdata)
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
     
@@ -28,7 +32,7 @@ namespace oneloop_momentum_impl
       }
     
     
-    static int RSD13_b_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
+    static int RSD13_b_integrand(const int* ndim, const cubareal x[], const int* ncomp, cubareal f[], void* userdata)
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
         
@@ -41,9 +45,9 @@ namespace oneloop_momentum_impl
         
         return 0;
       }
-
-
-    static int RSD13_c_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
+    
+    
+    static int RSD13_c_integrand(const int* ndim, const cubareal x[], const int* ncomp, cubareal f[], void* userdata)
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
         
@@ -57,7 +61,7 @@ namespace oneloop_momentum_impl
       }
     
     
-    static int RSD13_d_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
+    static int RSD13_d_integrand(const int* ndim, const cubareal x[], const int* ncomp, cubareal f[], void* userdata)
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
         
@@ -72,7 +76,7 @@ namespace oneloop_momentum_impl
       }
     
     
-    static int RSD13_e_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
+    static int RSD13_e_integrand(const int* ndim, const cubareal x[], const int* ncomp, cubareal f[], void* userdata)
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
         
@@ -86,7 +90,7 @@ namespace oneloop_momentum_impl
       }
     
     
-    static int RSD13_f_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
+    static int RSD13_f_integrand(const int* ndim, const cubareal x[], const int* ncomp, cubareal f[], void* userdata)
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
         
@@ -101,7 +105,7 @@ namespace oneloop_momentum_impl
       }
     
     
-    static int RSD13_g_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
+    static int RSD13_g_integrand(const int* ndim, const cubareal x[], const int* ncomp, cubareal f[], void* userdata)
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
         

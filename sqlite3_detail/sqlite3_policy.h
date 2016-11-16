@@ -101,6 +101,45 @@ class sqlite3_policy
     //! 1-loop RSD13_g integral table
     const std::string& RSD13_g_table() const { return this->RSD13_g; }
     
+    //! 1-loop RSD22_A1 integral table
+    const std::string& RSD22_A1_table() const { return this->RSD22_A1; }
+    
+    //! 1-loop RSD22_A2 integral table
+    const std::string& RSD22_A2_table() const { return this->RSD22_A2; }
+    
+    //! 1-loop RSD22_A3 integral table
+    const std::string& RSD22_A3_table() const { return this->RSD22_A3; }
+    
+    //! 1-loop RSD22_A5 integral table
+    const std::string& RSD22_A5_table() const { return this->RSD22_A5; }
+    
+    //! 1-loop RSD22_B2 integral table
+    const std::string& RSD22_B2_table() const { return this->RSD22_B2; }
+    
+    //! 1-loop RSD22_B3 integral table
+    const std::string& RSD22_B3_table() const { return this->RSD22_B3; }
+    
+    //! 1-loop RSD22_B6 integral table
+    const std::string& RSD22_B6_table() const { return this->RSD22_B6; }
+    
+    //! 1-loop RSD22_B8 integral table
+    const std::string& RSD22_B8_table() const { return this->RSD22_B8; }
+    
+    //! 1-loop RSD22_B9 integral table
+    const std::string& RSD22_B9_table() const { return this->RSD22_B9; }
+    
+    //! 1-loop RSD22_C1 integral table
+    const std::string& RSD22_C1_table() const { return this->RSD22_C1; }
+    
+    //! 1-loop RSD22_C2 integral table
+    const std::string& RSD22_C2_table() const { return this->RSD22_C2; }
+    
+    //! 1-loop RSD22_C4 integral table
+    const std::string& RSD22_C4_table() const { return this->RSD22_C4; }
+    
+    //! 1-loop RSD22_D1 integral table
+    const std::string& RSD22_D1_table() const { return this->RSD22_D1; }
+    
     //! 1-loop delta-delta power spectrum table
     const std::string dd_Pk_table() const { return(this->dd_Pk); }
     
@@ -203,6 +242,45 @@ class sqlite3_policy
     
     //! 1-loop momentum integrals - RSD13_g
     const std::string RSD13_g;
+    
+    //! 1-loop momentum integrals - RSD22_A1
+    const std::string RSD22_A1;
+    
+    //! 1-loop momentum integrals - RSD22_A2
+    const std::string RSD22_A2;
+    
+    //! 1-loop momentum integrals - RSD22_A3
+    const std::string RSD22_A3;
+    
+    //! 1-loop momentum integrals - RSD22_A5
+    const std::string RSD22_A5;
+    
+    //! 1-loop momentum integrals - RSD22_B2
+    const std::string RSD22_B2;
+    
+    //! 1-loop momentum integrals - RSD22_B3
+    const std::string RSD22_B3;
+    
+    //! 1-loop momentum integrals - RSD22_B6
+    const std::string RSD22_B6;
+    
+    //! 1-loop momentum integrals - RSD22_B8
+    const std::string RSD22_B8;
+    
+    //! 1-loop momentum integrals - RSD22_B9
+    const std::string RSD22_B9;
+    
+    //! 1-loop momentum integrals - RSD22_C1
+    const std::string RSD22_C1;
+    
+    //! 1-loop momentum integrals - RSD22_C2
+    const std::string RSD22_C2;
+    
+    //! 1-loop momentum integrals - RSD22_C4
+    const std::string RSD22_C4;
+    
+    //! 1-loop momentum integrals - RSD22_D1
+    const std::string RSD22_D1;
     
     //! 1-loop delta delta power spectrum table
     const std::string dd_Pk;

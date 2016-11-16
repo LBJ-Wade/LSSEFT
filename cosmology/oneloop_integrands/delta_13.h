@@ -13,7 +13,7 @@
 namespace oneloop_momentum_impl
   {
     
-    static int D_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
+    static int D_integrand(const int* ndim, const cubareal x[], const int* ncomp, cubareal f[], void* userdata)
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
         
@@ -36,7 +36,7 @@ namespace oneloop_momentum_impl
       }
     
     
-    static int E_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
+    static int E_integrand(const int* ndim, const cubareal x[], const int* ncomp, cubareal f[], void* userdata)
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
         
@@ -59,7 +59,7 @@ namespace oneloop_momentum_impl
       }
     
     
-    static int F_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
+    static int F_integrand(const int* ndim, const cubareal x[], const int* ncomp, cubareal f[], void* userdata)
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
         
@@ -82,7 +82,7 @@ namespace oneloop_momentum_impl
       }
     
     
-    static int G_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
+    static int G_integrand(const int* ndim, const cubareal x[], const int* ncomp, cubareal f[], void* userdata)
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
         
@@ -105,7 +105,7 @@ namespace oneloop_momentum_impl
       }
     
     
-    static int J1_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
+    static int J1_integrand(const int* ndim, const cubareal x[], const int* ncomp, cubareal f[], void* userdata)
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
         
@@ -128,7 +128,7 @@ namespace oneloop_momentum_impl
       }
     
     
-    static int J2_integrand(const int *ndim, const cubareal x[], const int *ncomp, cubareal f[], void *userdata)
+    static int J2_integrand(const int* ndim, const cubareal x[], const int* ncomp, cubareal f[], void* userdata)
       {
         oneloop_momentum_impl::integrand_data* data = static_cast<integrand_data*>(userdata);
         

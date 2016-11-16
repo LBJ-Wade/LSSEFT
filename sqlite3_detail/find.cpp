@@ -233,7 +233,21 @@ namespace sqlite3_operations
         find_impl::read_loop_kernel(db, policy.RSD13_e_table(), model, k, UV_cutoff, IR_cutoff, rsd13.get_e());
         find_impl::read_loop_kernel(db, policy.RSD13_f_table(), model, k, UV_cutoff, IR_cutoff, rsd13.get_f());
         find_impl::read_loop_kernel(db, policy.RSD13_g_table(), model, k, UV_cutoff, IR_cutoff, rsd13.get_g());
-        
+    
+        find_impl::read_loop_kernel(db, policy.RSD22_A1_table(), model, k, UV_cutoff, IR_cutoff, rsd22.get_A1());
+        find_impl::read_loop_kernel(db, policy.RSD22_A2_table(), model, k, UV_cutoff, IR_cutoff, rsd22.get_A2());
+        find_impl::read_loop_kernel(db, policy.RSD22_A3_table(), model, k, UV_cutoff, IR_cutoff, rsd22.get_A3());
+        find_impl::read_loop_kernel(db, policy.RSD22_A5_table(), model, k, UV_cutoff, IR_cutoff, rsd22.get_A5());
+        find_impl::read_loop_kernel(db, policy.RSD22_B2_table(), model, k, UV_cutoff, IR_cutoff, rsd22.get_B2());
+        find_impl::read_loop_kernel(db, policy.RSD22_B3_table(), model, k, UV_cutoff, IR_cutoff, rsd22.get_B3());
+        find_impl::read_loop_kernel(db, policy.RSD22_B6_table(), model, k, UV_cutoff, IR_cutoff, rsd22.get_B6());
+        find_impl::read_loop_kernel(db, policy.RSD22_B8_table(), model, k, UV_cutoff, IR_cutoff, rsd22.get_B8());
+        find_impl::read_loop_kernel(db, policy.RSD22_B9_table(), model, k, UV_cutoff, IR_cutoff, rsd22.get_B9());
+        find_impl::read_loop_kernel(db, policy.RSD22_C1_table(), model, k, UV_cutoff, IR_cutoff, rsd22.get_C1());
+        find_impl::read_loop_kernel(db, policy.RSD22_C2_table(), model, k, UV_cutoff, IR_cutoff, rsd22.get_C2());
+        find_impl::read_loop_kernel(db, policy.RSD22_C4_table(), model, k, UV_cutoff, IR_cutoff, rsd22.get_C4());
+        find_impl::read_loop_kernel(db, policy.RSD22_D1_table(), model, k, UV_cutoff, IR_cutoff, rsd22.get_D1());
+    
         loop_integral payload(k, UV_cutoff, IR_cutoff, delta22, delta13, rsd22, rsd13);
         
         return std::move(payload);

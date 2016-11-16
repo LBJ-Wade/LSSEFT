@@ -315,6 +315,20 @@ namespace sqlite3_operations
             store_impl::store_loop_kernel(db, policy.RSD13_e_table(), rsd13.get_e(), model, sample);
             store_impl::store_loop_kernel(db, policy.RSD13_f_table(), rsd13.get_f(), model, sample);
             store_impl::store_loop_kernel(db, policy.RSD13_g_table(), rsd13.get_g(), model, sample);
+    
+            store_impl::store_loop_kernel(db, policy.RSD22_A1_table(), rsd22.get_A1(), model, sample);
+            store_impl::store_loop_kernel(db, policy.RSD22_A2_table(), rsd22.get_A2(), model, sample);
+            store_impl::store_loop_kernel(db, policy.RSD22_A3_table(), rsd22.get_A3(), model, sample);
+            store_impl::store_loop_kernel(db, policy.RSD22_A5_table(), rsd22.get_A5(), model, sample);
+            store_impl::store_loop_kernel(db, policy.RSD22_B2_table(), rsd22.get_B2(), model, sample);
+            store_impl::store_loop_kernel(db, policy.RSD22_B3_table(), rsd22.get_B3(), model, sample);
+            store_impl::store_loop_kernel(db, policy.RSD22_B6_table(), rsd22.get_B6(), model, sample);
+            store_impl::store_loop_kernel(db, policy.RSD22_B8_table(), rsd22.get_B8(), model, sample);
+            store_impl::store_loop_kernel(db, policy.RSD22_B9_table(), rsd22.get_B9(), model, sample);
+            store_impl::store_loop_kernel(db, policy.RSD22_C1_table(), rsd22.get_C1(), model, sample);
+            store_impl::store_loop_kernel(db, policy.RSD22_C2_table(), rsd22.get_C2(), model, sample);
+            store_impl::store_loop_kernel(db, policy.RSD22_C4_table(), rsd22.get_C4(), model, sample);
+            store_impl::store_loop_kernel(db, policy.RSD22_D1_table(), rsd22.get_D1(), model, sample);
           }
       }
     

@@ -208,7 +208,21 @@ namespace sqlite3_operations
         create_impl::oneloop_momentum_integral_table(db, policy.RSD13_e_table(), policy);
         create_impl::oneloop_momentum_integral_table(db, policy.RSD13_f_table(), policy);
         create_impl::oneloop_momentum_integral_table(db, policy.RSD13_g_table(), policy);
-        
+    
+        create_impl::oneloop_momentum_integral_table(db, policy.RSD22_A1_table(), policy);
+        create_impl::oneloop_momentum_integral_table(db, policy.RSD22_A2_table(), policy);
+        create_impl::oneloop_momentum_integral_table(db, policy.RSD22_A3_table(), policy);
+        create_impl::oneloop_momentum_integral_table(db, policy.RSD22_A5_table(), policy);
+        create_impl::oneloop_momentum_integral_table(db, policy.RSD22_B2_table(), policy);
+        create_impl::oneloop_momentum_integral_table(db, policy.RSD22_B3_table(), policy);
+        create_impl::oneloop_momentum_integral_table(db, policy.RSD22_B6_table(), policy);
+        create_impl::oneloop_momentum_integral_table(db, policy.RSD22_B8_table(), policy);
+        create_impl::oneloop_momentum_integral_table(db, policy.RSD22_B9_table(), policy);
+        create_impl::oneloop_momentum_integral_table(db, policy.RSD22_C1_table(), policy);
+        create_impl::oneloop_momentum_integral_table(db, policy.RSD22_C2_table(), policy);
+        create_impl::oneloop_momentum_integral_table(db, policy.RSD22_C4_table(), policy);
+        create_impl::oneloop_momentum_integral_table(db, policy.RSD22_D1_table(), policy);
+    
         std::ostringstream dd_stmt;
         dd_stmt
           << "CREATE TABLE " << policy.dd_Pk_table() << "("

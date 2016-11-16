@@ -61,9 +61,10 @@ class oneloop_momentum_integrator
 
     //! perform a kernel integral
     template <typename KernelRecord>
-    bool kernel_integral(const FRW_model& model, const Mpc_units::energy& k, const Mpc_units::energy& UV_cutoff,
-                         const Mpc_units::energy& IR_cutoff, const tree_power_spectrum& Pk, integrand_t interand,
-                         KernelRecord& result, loop_integral_type type);
+    bool kernel_integral(const FRW_model& model, const Mpc_units::energy& k,
+                         const Mpc_units::energy& UV_cutoff,
+                         const Mpc_units::energy& IR_cutoff, const tree_power_spectrum& Pk,
+                         integrand_t interand, KernelRecord& result, loop_integral_type type);
 
 
     // INTERNAL DATA
