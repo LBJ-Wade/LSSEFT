@@ -490,6 +490,14 @@ class rsd_dd_Pk
         ar & P13;
         ar & P22;
         ar & P1loopSPT;
+        ar & Z2_delta;
+        ar & Z0_v;
+        ar & Z2_v;
+        ar & Z0_vdelta;
+        ar & Z2_vdelta;
+        ar & Z2_vv;
+        ar & Z2_vvdelta;
+        ar & Z2_vvv;
       }
     
   };
