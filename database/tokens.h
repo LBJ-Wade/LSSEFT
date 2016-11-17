@@ -481,6 +481,35 @@ namespace std
         
       };
     
+    
+    template<>
+    class hash<IR_resum_token>
+      {
+        
+        // CONSTRUCTOR, DESTRUCTOR
+      
+      public:
+        
+        //! constructor is default
+        hash() = default;
+        
+        //! destrucotr is default
+        ~hash() = default;
+        
+        
+        // IMPLEMENTATION
+      
+      public:
+        
+        //! hash function
+        size_t operator()(const IR_resum_token& tok) const
+          {
+            std::hash<generic_token> hasher;
+            return hasher(tok);
+          }
+        
+      };
+    
   }   // namespace std
 
 

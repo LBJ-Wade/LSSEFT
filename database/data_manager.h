@@ -94,17 +94,32 @@ class data_manager
                                                                            IR_cutoff_database& IR_db, UV_cutoff_database& UV_db,
                                                                            std::shared_ptr<tree_power_spectrum>& Pk);
     
-    //! build a work list representing (k, z) combinations that are missing from the SQLite backing store
+    //! build a work list representing (k, z, IR, UV) combinations of the one-loop power spectra
+    //! that are missing from the SQLite backing store.
     //! generates a new transaction on the database; will fail if a transaction is in progress
     std::unique_ptr<one_loop_Pk_work_list> build_one_loop_Pk_work_list(FRW_model_token& model,
                                                                        z_database& z_db, k_database& k_db,
                                                                        IR_cutoff_database& IR_db, UV_cutoff_database& UV_db,
                                                                        std::shared_ptr<tree_power_spectrum>& Pk);
     
+    //! build a work list representing (k, z, IR_cutoff, UV_cutoff, IR_resum) combinations of the one-loop
+    //! multipole power spectra that are missing from the SQLite backing store.
+    //! generates a new transaction on the database; will fail if a transaction is in progress
+    std::unique_ptr<multipole_Pk_work_list> build_multipole_Pk_work_list(FRW_model_token& model,
+                                                                         z_database& z_db, k_database& k_db,
+                                                                         IR_cutoff_database& IR_cutoff_db,
+                                                                         UV_cutoff_database& UV_cutoff_db,
+                                                                         IR_resum_database& IR_resum_db,
+                                                                         std::shared_ptr<tree_power_spectrum>& Pk);
+    
   protected:
     
     //! tensor together (k, IR cutoff, UV cutoff) combinations for loop integrals
     loop_configs tensor_product(k_database& k_db, IR_cutoff_database& IR_db, UV_cutoff_database& UV_db);
+    
+    //! tensor together (k, IR cutoff, UV cutoff, IR resummation scale) combinations for loop integrals
+    resum_configs tensor_product(k_database& k_db, IR_cutoff_database& IR_cutoff_db, UV_cutoff_database& UV_cutoff_db,
+                                 IR_resum_database& IR_resum_db);
 
 
     // TOKENS

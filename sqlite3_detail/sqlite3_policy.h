@@ -147,22 +147,31 @@ class sqlite3_policy
     const std::string& RSD22_D1_table() const { return this->RSD22_D1; }
     
     //! 1-loop delta-delta power spectrum table
-    const std::string dd_Pk_table() const { return(this->dd_Pk); }
+    const std::string& dd_Pk_table() const { return(this->dd_Pk); }
     
     //! 1-loop delta-delta rsd power spectrum mu^0 table
-    const std::string dd_rsd_mu0_Pk_table() const { return(this->dd_rsd_mu0_Pk); }
+    const std::string& dd_rsd_mu0_Pk_table() const { return(this->dd_rsd_mu0_Pk); }
     
     //! 1-loop delta-delta rsd power spectrum mu^2 table
-    const std::string dd_rsd_mu2_Pk_table() const { return(this->dd_rsd_mu2_Pk); }
+    const std::string& dd_rsd_mu2_Pk_table() const { return(this->dd_rsd_mu2_Pk); }
     
     //! 1-loop delta-delta rsd power spectrum mu^4 table
-    const std::string dd_rsd_mu4_Pk_table() const { return(this->dd_rsd_mu4_Pk); }
+    const std::string& dd_rsd_mu4_Pk_table() const { return(this->dd_rsd_mu4_Pk); }
     
     //! 1-loop delta-delta rsd power spectrum mu^6 table
-    const std::string dd_rsd_mu6_Pk_table() const { return(this->dd_rsd_mu6_Pk); }
+    const std::string& dd_rsd_mu6_Pk_table() const { return(this->dd_rsd_mu6_Pk); }
     
     //! 1-loop delta-delta rsd power spectrum mu^8 table
-    const std::string dd_rsd_mu8_Pk_table() const { return(this->dd_rsd_mu8_Pk); }
+    const std::string& dd_rsd_mu8_Pk_table() const { return(this->dd_rsd_mu8_Pk); }
+    
+    //! 1-loop multipole P0 table
+    const std::string& P0_table() const { return this->P0; }
+    
+    //! 1-loop multipole P2 table
+    const std::string& P2_table() const { return this->P2; }
+    
+    //! 1-loop multipole P4 table
+    const std::string& P4_table() const { return this->P4; }
 
     //! temporary table
     const std::string& temp_table() const { return(this->temp); }
@@ -311,6 +320,15 @@ class sqlite3_policy
     
     //! 1-loop delta_s delta_s power spectrum table, mu^8 coefficient
     const std::string dd_rsd_mu8_Pk;
+    
+    //! 1-loop multipole P0 table
+    const std::string P0;
+    
+    //! 1-loop multipole P2 table
+    const std::string P2;
+    
+    //! 1-loop multipole P4 table
+    const std::string P4;
 
     //! temporary table name
     const std::string temp;
