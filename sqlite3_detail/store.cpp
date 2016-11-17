@@ -38,7 +38,9 @@ namespace sqlite3_operations
                                const FRW_model_token& model, const loop_integral& sample)
           {
             std::ostringstream insert_stmt;
-            insert_stmt << "INSERT INTO " << table_name << " VALUES (@mid, @kid, @IR_id, @UV_id, @value, @regions, @evals, @err, @time);";
+            insert_stmt
+              << "INSERT INTO " << table_name << " VALUES (@mid, @kid, @IR_id, @UV_id, @value, "
+              << "@regions, @evals, @err, @time);";
             
             // prepare statement
             sqlite3_stmt* stmt;
@@ -69,7 +71,9 @@ namespace sqlite3_operations
                                const FRW_model_token& model, const oneloop_Pk& sample)
           {
             std::ostringstream insert_stmt;
-            insert_stmt << "INSERT INTO " << table_name << " VALUES (@mid, @zid, @kid, @IR_id, @UV_id, @Ptree, @err_tree, @P13, @err_13, @P22, @err_22, @P1loopSPT, @err_1loopSPT, @Z2_delta);";
+            insert_stmt
+              << "INSERT INTO " << table_name << " VALUES (@mid, @zid, @kid, @IR_id, @UV_id, @Ptree, @err_tree, "
+              << "@P13, @err_13, @P22, @err_22, @P1loopSPT, @err_1loopSPT, @Z2_delta);";
     
             // prepare statement
             sqlite3_stmt* stmt;
@@ -111,7 +115,10 @@ namespace sqlite3_operations
                                    const FRW_model_token& model, const oneloop_Pk& sample)
           {
             std::ostringstream insert_stmt;
-            insert_stmt << "INSERT INTO " << table_name << " VALUES (@mid, @zid, @kid, @IR_id, @UV_id, @Ptree, @err_tree, @P13, @err_13, @P22, @err_22, @P1loopSPT, @err_1loopSPT, @Z2_delta, @Z0_v, @Z2_v, @Z0_vdelta, @Z2_vdelta, @Z2_vv, @Z2_vvdelta, @Z2_vvv);";
+            insert_stmt
+              << "INSERT INTO " << table_name << " VALUES (@mid, @zid, @kid, @IR_id, @UV_id, @Ptree, @err_tree, "
+              << "@P13, @err_13, @P22, @err_22, @P1loopSPT, @err_1loopSPT, @Z2_delta, @Z0_v, @Z2_v, @Z0_vdelta, "
+              << "@Z2_vdelta, @Z2_vv, @Z2_vvdelta, @Z2_vvv);";
         
             // prepare statement
             sqlite3_stmt* stmt;

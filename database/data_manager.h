@@ -150,6 +150,13 @@ class data_manager
     template <typename PayloadType>
     PayloadType find(transaction_manager& mgr, const FRW_model_token& model, const k_token& k,
                      const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
+    
+    //! extract a sample of a P(k)-like quantity that is k-dependent, z-dependent,
+    //! and IR/UV-cutoff dependent
+    template <typename PayloadType>
+    PayloadType find(transaction_manager& mgr, const FRW_model_token& model,
+                     const k_token& k, const z_token& z,
+                     const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
 
     // TRANSACTIONS
 

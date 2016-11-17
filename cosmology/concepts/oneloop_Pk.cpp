@@ -6,9 +6,9 @@
 #include "oneloop_Pk.h"
 
 
-oneloop_Pk::oneloop_Pk(const k_token& kt, const UV_cutoff_token& UVt, const IR_cutoff_token& IRt, const z_token& zt,
-                       const dd_Pk& _dd, const rsd_dd_Pk& _rsd_mu0, const rsd_dd_Pk& _rsd_mu2,
-                       const rsd_dd_Pk& _rsd_mu4, const rsd_dd_Pk& _rsd_mu6, const rsd_dd_Pk& _rsd_mu8)
+oneloop_Pk::oneloop_Pk(const k_token& kt, const IR_cutoff_token& IRt, const UV_cutoff_token& UVt, const z_token& zt,
+                       const dd_Pk& _dd, const rsd_dd_Pk& _rsd_mu0, const rsd_dd_Pk& _rsd_mu2, const rsd_dd_Pk& _rsd_mu4,
+                       const rsd_dd_Pk& _rsd_mu6, const rsd_dd_Pk& _rsd_mu8)
   : k(kt),
     UV_cutoff(UVt),
     IR_cutoff(IRt),

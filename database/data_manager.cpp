@@ -437,11 +437,22 @@ loop_integral
 data_manager::find<loop_integral>(transaction_manager& mgr, const FRW_model_token& model, const k_token& k,
                                   const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff)
   {
-    // construct payload nad ask SQLite backend to populate it
+    // construct payload and ask SQLite backend to populate it
     loop_integral payload(std::move(
       sqlite3_operations::find(this->handle, mgr, this->policy, model, k, IR_cutoff, UV_cutoff)));
     
     return std::move(payload);
+  }
+
+
+template <>
+oneloop_Pk
+data_manager::find<oneloop_Pk>(transaction_manager& mgr, const FRW_model_token& model, const k_token& k, const z_token& z,
+                               const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff)
+  {
+    // construct payload and ask SQLite backend to populate it
+    oneloop_Pk payload(std::move(
+      sqlite3_operations::find(this->handle, mgr, this->policy, model, k, z, IR_cutoff, UV_cutoff)));
   }
 
 
