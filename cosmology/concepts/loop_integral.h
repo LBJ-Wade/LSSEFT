@@ -292,60 +292,60 @@ class rsd_22_integrals
     
     
     //! get A1-value
-    dimless_integral& get_A1() { return(this->A1); }
-    const dimless_integral& get_A1() const { return(this->A1); }
+    inverse_energy3_integral& get_A1() { return(this->A1); }
+    const inverse_energy3_integral& get_A1() const { return(this->A1); }
     
     //! get A2-value
-    dimless_integral& get_A2() { return(this->A2); }
-    const dimless_integral& get_A2() const { return(this->A2); }
+    inverse_energy3_integral& get_A2() { return(this->A2); }
+    const inverse_energy3_integral& get_A2() const { return(this->A2); }
     
     //! get A3-value
-    dimless_integral& get_A3() { return(this->A3); }
-    const dimless_integral& get_A3() const { return(this->A3); }
+    inverse_energy3_integral& get_A3() { return(this->A3); }
+    const inverse_energy3_integral& get_A3() const { return(this->A3); }
     
     //! get A4-value
-    dimless_integral& get_A4() { return(this->A4); }
-    const dimless_integral& get_A4() const { return(this->A4); }
+    inverse_energy3_integral& get_A4() { return(this->A4); }
+    const inverse_energy3_integral& get_A4() const { return(this->A4); }
     
     //! get A5-value
-    dimless_integral& get_A5() { return(this->A5); }
-    const dimless_integral& get_A5() const { return(this->A5); }
+    inverse_energy3_integral& get_A5() { return(this->A5); }
+    const inverse_energy3_integral& get_A5() const { return(this->A5); }
     
     //! get B2-value
-    dimless_integral& get_B2() { return(this->B2); }
-    const dimless_integral& get_B2() const { return(this->B2); }
+    inverse_energy3_integral& get_B2() { return(this->B2); }
+    const inverse_energy3_integral& get_B2() const { return(this->B2); }
     
     //! get B3-value
-    dimless_integral& get_B3() { return(this->B3); }
-    const dimless_integral& get_B3() const { return(this->B3); }
+    inverse_energy3_integral& get_B3() { return(this->B3); }
+    const inverse_energy3_integral& get_B3() const { return(this->B3); }
     
     //! get B6-value
-    dimless_integral& get_B6() { return(this->B6); }
-    const dimless_integral& get_B6() const { return(this->B6); }
+    inverse_energy3_integral& get_B6() { return(this->B6); }
+    const inverse_energy3_integral& get_B6() const { return(this->B6); }
     
     //! get B8-value
-    dimless_integral& get_B8() { return(this->B8); }
-    const dimless_integral& get_B8() const { return(this->B8); }
+    inverse_energy3_integral& get_B8() { return(this->B8); }
+    const inverse_energy3_integral& get_B8() const { return(this->B8); }
     
     //! get B9-value
-    dimless_integral& get_B9() { return(this->B9); }
-    const dimless_integral& get_B9() const { return(this->B9); }
+    inverse_energy3_integral& get_B9() { return(this->B9); }
+    const inverse_energy3_integral& get_B9() const { return(this->B9); }
     
     //! get C1-value
-    dimless_integral& get_C1() { return(this->C1); }
-    const dimless_integral& get_C1() const { return(this->C1); }
+    inverse_energy3_integral& get_C1() { return(this->C1); }
+    const inverse_energy3_integral& get_C1() const { return(this->C1); }
     
     //! get C2-value
-    dimless_integral& get_C2() { return(this->C2); }
-    const dimless_integral& get_C2() const { return(this->C2); }
+    inverse_energy3_integral& get_C2() { return(this->C2); }
+    const inverse_energy3_integral& get_C2() const { return(this->C2); }
     
     //! get C4-value
-    dimless_integral& get_C4() { return(this->C4); }
-    const dimless_integral& get_C4() const { return(this->C4); }
+    inverse_energy3_integral& get_C4() { return(this->C4); }
+    const inverse_energy3_integral& get_C4() const { return(this->C4); }
     
     //! get D1-value
-    dimless_integral& get_D1() { return(this->D1); }
-    const dimless_integral& get_D1() const { return(this->D1); }
+    inverse_energy3_integral& get_D1() { return(this->D1); }
+    const inverse_energy3_integral& get_D1() const { return(this->D1); }
     
     
     // INTERNAL DATA
@@ -355,46 +355,46 @@ class rsd_22_integrals
     
     
     //! A1-type integral P_22
-    dimless_integral A1;
+    inverse_energy3_integral A1;
     
     //! A2-type integral P_22
-    dimless_integral A2;
+    inverse_energy3_integral A2;
     
     //! A3-type integral P_22
-    dimless_integral A3;
+    inverse_energy3_integral A3;
     
     //! A4-type integral P_22
-    dimless_integral A4;
+    inverse_energy3_integral A4;
     
     //! A5-type integral P_22
-    dimless_integral A5;
+    inverse_energy3_integral A5;
     
     //! B2-type integral P_22
-    dimless_integral B2;
+    inverse_energy3_integral B2;
     
     //! B3-type integral P_22
-    dimless_integral B3;
+    inverse_energy3_integral B3;
     
     //! B6-type integral P_22
-    dimless_integral B6;
+    inverse_energy3_integral B6;
     
     //! B8-type integral P_22
-    dimless_integral B8;
+    inverse_energy3_integral B8;
     
     //! B9-type integral P_22
-    dimless_integral B9;
+    inverse_energy3_integral B9;
     
     //! C1-type integral P_22
-    dimless_integral C1;
+    inverse_energy3_integral C1;
     
     //! C2-type integral P_22
-    dimless_integral C2;
+    inverse_energy3_integral C2;
     
     //! C4-type integral P_22
-    dimless_integral C4;
+    inverse_energy3_integral C4;
     
     //! D1-type integral P_22
-    dimless_integral D1;
+    inverse_energy3_integral D1;
 
     
   private:

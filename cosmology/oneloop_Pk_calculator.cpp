@@ -108,21 +108,21 @@ rsd_dd_Pk oneloop_Pk_calculator::compute_rsd_dd_mu0(const Mpc_units::energy& k, 
     
     // COUNTERTERMS
     
-    k2_Pk_value Z2_delta;
+    k2_Pk_value Z2_delta = 2.0 * val.g * (18.0*val.D + 28.0*val.E - 7.0*val.F - 2.0*val.G - 13.0*val.J) * k*k * Ptr;
 
-    Pk_value Z0_v;
+    Pk_value Z0_v;    // no contribution at mu^0
     
-    k2_Pk_value Z2_v;
+    k2_Pk_value Z2_v;   // no contribution at mu^0
     
-    Pk_value Z0_vdelta;
+    Pk_value Z0_vdelta;   // no contribution at mu^0
     
-    k2_Pk_value Z2_vdelta;
+    k2_Pk_value Z2_vdelta;    // no contribution at mu^0
     
-    k2_Pk_value Z2_vv;
+    k2_Pk_value Z2_vv;    // no contribution at mu^0
     
-    k2_Pk_value Z2_vvdelta;
+    k2_Pk_value Z2_vvdelta;   // no contribution at mu^0
     
-    k2_Pk_value Z2_vvv;
+    k2_Pk_value Z2_vvv;   // no contribution at mu^0
     
     return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv);
   }
@@ -170,27 +170,31 @@ rsd_dd_Pk oneloop_Pk_calculator::compute_rsd_dd_mu2(const Mpc_units::energy& k, 
                           + (val.A*val.B*(val.fA + val.fB) - val.f*val.g*val.g*val.B) * d22.get_AB()
                           + 2.0*val.B*val.B*val.fB                                    * d22.get_BB();
     
-    Pk_value P22_tensor;
+    Pk_value P22_tensor_1 = (-1.0/2.0) * val.f*val.f * val.g*val.g*val.g*val.g * rsd22.get_A1();
+    Pk_value P22_tensor_2 = 1.0 * val.A * val.f*val.f * val.g*val.g * rsd22.get_A2();
+    Pk_value P22_tensor_3 = 2.0 * val.A * val.f * val.g*val.g * rsd22.get_A3();
+    Pk_value P22_tensor_4 = 2.0 * val.B * val.f*val.f * val.g*val.g * rsd22.get_A4();
+    Pk_value P22_tensor_5 = 4.0 * val.B * val.f * val.g*val.g * rsd22.get_A5();
     
-    Pk_value P22 = P22_simple + P22_tensor;
+    Pk_value P22 = P22_simple + P22_tensor_1 + P22_tensor_2 + P22_tensor_3 + P22_tensor_4 + P22_tensor_5;
     
     // COUNTERTERMS
     
-    k2_Pk_value Z2_delta;
+    k2_Pk_value Z2_delta = 2.0 * val.g * (18.0*val.D*(val.fD + val.f) + 28.0*val.E*(val.fE + val.f) - 7.0*(val.fF +val.f)*val.F - 2.0*(val.fG + val.f)*val.G - 13.0*(val.fJ + val.f)*val.J) * k*k * Ptr;
     
-    Pk_value Z0_v;
+    Pk_value Z0_v = -2.0 * val.g*val.g * (-2.0*val.B*val.fB + 2.0*val.B*val.f + val.A*(-val.fA + val.f) + val.f*val.g*val.g) * Ptr;
     
-    k2_Pk_value Z2_v;
+    k2_Pk_value Z2_v = 2.0 * val.g*val.g * (-12.0*val.A*val.fA - 12.0*val.B*val.fB + 5.0*val.A*val.f + 10.0*val.B*val.f + 12.0*val.f*val.g*val.g) * k*k * Ptr;
     
-    Pk_value Z0_vdelta;
+    Pk_value Z0_vdelta = -2.0 * val.g*val.g * (-2.0*val.B*val.fB + 2.0*val.B*val.f + val.A*(-val.fA + val.f) + val.f*val.g*val.g) * Ptr;
     
-    k2_Pk_value Z2_vdelta;
+    k2_Pk_value Z2_vdelta = 2.0 * val.g*val.g * (-12.0*val.A*val.fA - 12.0*val.B*val.fB + 5.0*val.A*val.f + 10.0*val.B*val.f + 12.0*val.f*val.g*val.g) * k*k * Ptr;
     
-    k2_Pk_value Z2_vv;
+    k2_Pk_value Z2_vv = -16.0 * val.f*val.g*val.g * (-val.A*val.fA - val.B*val.fB + val.f*val.g*val.g) * k*k * Ptr;
     
-    k2_Pk_value Z2_vvdelta;
+    k2_Pk_value Z2_vvdelta = 5.0 * val.f*val.f * val.g*val.g*val.g*val.g * k*k * Ptr;
     
-    k2_Pk_value Z2_vvv;
+    k2_Pk_value Z2_vvv;   // no contribution at mu^2
     
     return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv);
   }
@@ -239,27 +243,36 @@ rsd_dd_Pk oneloop_Pk_calculator::compute_rsd_dd_mu4(const Mpc_units::energy& k, 
                           + val.fB*val.B*(val.fA*val.A - val.f*val.g*val.g)                     * d22.get_AB()
                           + val.fB*val.fB*val.B*val.B                                           * d22.get_BB();
     
-    Pk_value P22_tensor;
+    Pk_value P22_tensor_1 = -1.0 * val.g*val.g*val.g*val.g * val.f*val.f*val.f * rsd22.get_A1();
+    Pk_value P22_tensor_2 = (3.0/8.0) * val.g*val.g*val.g*val.g * val.f*val.f*val.f*val.f * rsd22.get_B2();
+    Pk_value P22_tensor_3 = (-1.0/2.0) * val.g*val.g*val.g*val.g * val.f*val.f * rsd22.get_B3();
+    Pk_value P22_tensor_4 = 2.0 * val.g*val.g * val.A * val.fA * val.f * rsd22.get_A3();
+    Pk_value P22_tensor_5 = 1.0 * val.g*val.g * val.A * val.fA * val.f*val.f * rsd22.get_A2();
+    Pk_value P22_tensor_6 = 4.0 * val.g*val.g * val.B * val.fB * val.f * rsd22.get_B6();
+    Pk_value P22_tensor_7 = 2.0 * val.g*val.g * val.B * val.fB * val.f*val.f * rsd22.get_A4();
+    Pk_value P22_tensor_8 = 1.0 * val.g*val.g * val.A * val.f*val.f * rsd22.get_B8();
+    Pk_value P22_tensor_9 = 2.0 * val.g*val.g * val.B * val.f*val.f * rsd22.get_B9();
     
-    Pk_value P22 = P22_simple + P22_tensor;
+    Pk_value P22 = P22_simple + P22_tensor_1 + P22_tensor_2 + P22_tensor_3 + P22_tensor_4 + P22_tensor_5 + P22_tensor_6 + P22_tensor_7 + P22_tensor_8 + P22_tensor_9;
     
     // COUNTERTERMS
     
-    k2_Pk_value Z2_delta;
+    k2_Pk_value Z2_delta = 2.0 * val.f * val.g * (18.0*val.D*val.fD + 28.0*val.E*val.fE - 7.0*val.fF*val.F - 2.0*val.fG*val.G - 13.0*val.fJ*val.J) * k*k * Ptr;
     
-    Pk_value Z0_v;
+    Pk_value Z0_v = -2.0 * val.f * val.g*val.g * (-2.0*val.B*val.fB + 2.0*val.B*val.f + val.A*(-val.fA + val.f) + val.f*val.g*val.g) * Ptr;
     
-    k2_Pk_value Z2_v;
+    k2_Pk_value Z2_v = 2.0 * val.f * val.g*val.g * (-12.0*val.A*val.fA - 12.0*val.B*val.fB + 5.0*val.A*val.f + 10.0*val.B*val.f + 12.0*val.f*val.g*val.g) * k*k * Ptr;
     
-    Pk_value Z0_vdelta;
+    Pk_value Z0_vdelta = -2.0 * val.f * val.g*val.g * (-2.0*val.B*val.fB + 2.0*val.B*val.f + val.A*(-val.fA + val.f) + val.f*val.g*val.g) * Ptr;
     
-    k2_Pk_value Z2_vdelta;
+    k2_Pk_value Z2_vdelta = 2.0 * val.f * val.g*val.g * (-12.0*val.A*val.fA - 12.0*val.B*val.fB + 5.0*val.A*val.f + 10.0*val.B*val.f + 12.0*val.f*val.g*val.g) * k*k * Ptr;
     
-    k2_Pk_value Z2_vv;
+    k2_Pk_value Z2_vv = 2.0 * val.f * val.g*val.g * (2.0*val.B*val.fB*(3.0 + 4.0*val.f) + val.A*(val.fA + 8.0*val.fA*val.f)
+                                                     - val.f*(1.0 + 8.0*val.f)*val.g*val.g) * k*k * Ptr;
     
-    k2_Pk_value Z2_vvdelta;
+    k2_Pk_value Z2_vvdelta = 5.0 * val.f*val.f*val.f * val.g*val.g*val.g*val.g * k*k * Ptr;
     
-    k2_Pk_value Z2_vvv;
+    k2_Pk_value Z2_vvv = 5.0 * val.f*val.f*val.f * val.g*val.g*val.g*val.g * k*k * Ptr;
     
     return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv);
   }
@@ -298,25 +311,32 @@ rsd_dd_Pk oneloop_Pk_calculator::compute_rsd_dd_mu6(const Mpc_units::energy& k, 
     
     // 22 TERMS
     
-    Pk_value P22;
+    Pk_value P22_simple;  // no simple terms at mu^6
+    
+    Pk_value P22_tensor1 = 1.0 * val.A * val.fA * val.f*val.f * val.g*val.g * rsd22.get_C1();
+    Pk_value P22_tensor2 = 2.0 * val.B * val.fB * val.f*val.f * val.g*val.g * rsd22.get_C2();
+    Pk_value P22_tensor3 = 1.0 * val.f*val.f*val.f * val.g*val.g*val.g*val.g * rsd22.get_A1();
+    Pk_value P22_tensor4 = (-1.0/4.0) * val.f*val.f*val.f*val.f * val.g*val.g*val.g*val.g * rsd22.get_C4();
+    
+    Pk_value P22 = P22_simple + P22_tensor1 + P22_tensor2 + P22_tensor3 + P22_tensor4;
     
     // COUNTERTERMS
     
-    k2_Pk_value Z2_delta;
+    k2_Pk_value Z2_delta;   // no contribution at mu^6
     
-    Pk_value Z0_v;
+    Pk_value Z0_v;    // no contribution at mu^6
     
-    k2_Pk_value Z2_v;
+    k2_Pk_value Z2_v;   // no contribution at mu^6
     
-    Pk_value Z0_vdelta;
+    Pk_value Z0_vdelta;   // no contribution at mu^6
     
-    k2_Pk_value Z2_vdelta;
+    k2_Pk_value Z2_vdelta;    // no contribution at mu^6
     
-    k2_Pk_value Z2_vv;
+    k2_Pk_value Z2_vv = 2.0 * val.f*val.f * val.g*val.g * (val.A*val.fA + 6.0*val.B*val.fB - val.f*val.g*val.g) * k*k * Ptr;
     
-    k2_Pk_value Z2_vvdelta;
+    k2_Pk_value Z2_vvdelta;   // no contribution at mu^6
     
-    k2_Pk_value Z2_vvv;
+    k2_Pk_value Z2_vvv = 5.0 * val.f*val.f*val.f*val.f * val.g*val.g*val.g*val.g * k*k * Ptr;
     
     return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv);
   }
@@ -341,26 +361,29 @@ rsd_dd_Pk oneloop_Pk_calculator::compute_rsd_dd_mu8(const Mpc_units::energy& k, 
     
     // 22 TERMS
     
-    Pk_value P22;
+    Pk_value P22_simple;    // no simple terms at mu^8
+    
+    Pk_value P22_tensor = (1.0/8.0) * val.f*val.f*val.f*val.f * val.g*val.g*val.g*val.g * rsd22.get_D1();
+    
+    Pk_value P22 = P22_simple + P22_tensor;
     
     // COUNTERTERMS
     
-    k2_Pk_value Z2_delta;
+    k2_Pk_value Z2_delta;   // no contribution at mu^8
     
-    Pk_value Z0_v;
+    Pk_value Z0_v;    // no contribution at mu^8
     
-    k2_Pk_value Z2_v;
+    k2_Pk_value Z2_v;   // no contribution at mu^8
     
-    Pk_value Z0_vdelta;
+    Pk_value Z0_vdelta;   // no contribution at mu^8
     
-    k2_Pk_value Z2_vdelta;
+    k2_Pk_value Z2_vdelta;    // no contribution at mu^8
     
-    k2_Pk_value Z2_vv;
+    k2_Pk_value Z2_vv;    // no contribution at mu^8
     
-    k2_Pk_value Z2_vvdelta;
+    k2_Pk_value Z2_vvdelta;   // no contribution at mu^8
     
-    k2_Pk_value Z2_vvv;
+    k2_Pk_value Z2_vvv;   // no contribution at mu^8
     
     return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv);
   }
-
