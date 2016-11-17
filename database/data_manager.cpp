@@ -265,15 +265,21 @@ std::unique_ptr<k_database> data_manager::build_k_db(range<Mpc_units::energy>& s
   }
 
 
-std::unique_ptr<IR_database> data_manager::build_IR_db(range<Mpc_units::energy>& sample)
+std::unique_ptr<IR_cutoff_database> data_manager::build_IR_cutoff_db(range<Mpc_units::energy>& sample)
   {
-    return this->build_wavenumber_db<IR_token>(sample);
+    return this->build_wavenumber_db<IR_cutoff_token>(sample);
   }
 
 
-std::unique_ptr<UV_database> data_manager::build_UV_db(range<Mpc_units::energy>& sample)
+std::unique_ptr<UV_cutoff_database> data_manager::build_UV_cutoff_db(range<Mpc_units::energy>& sample)
   {
-    return this->build_wavenumber_db<UV_token>(sample);
+    return this->build_wavenumber_db<UV_cutoff_token>(sample);
+  }
+
+
+std::unique_ptr<IR_resum_database> data_manager::build_IR_resum_db(range<Mpc_units::energy>& sample)
+  {
+    return this->build_wavenumber_db<IR_resum_token>(sample);
   }
 
 
@@ -355,15 +361,15 @@ std::unique_ptr<z_database> data_manager::build_oneloop_work_list(FRW_model_toke
   }
 
 
-loop_configs data_manager::tensor_product(k_database& k_db, IR_database& IR_db, UV_database& UV_db)
+loop_configs data_manager::tensor_product(k_database& k_db, IR_cutoff_database& IR_db, UV_cutoff_database& UV_db)
   {
     loop_configs tensor_prod;
     
     for(k_database::const_record_iterator t = k_db.record_begin(); t != k_db.record_end(); ++t)
       {
-        for(UV_database::const_record_iterator u = UV_db.record_begin(); u != UV_db.record_end(); ++u)
+        for(UV_cutoff_database::const_record_iterator u = UV_db.record_begin(); u != UV_db.record_end(); ++u)
           {
-            for(IR_database::const_record_iterator v = IR_db.record_begin(); v != IR_db.record_end(); ++v)
+            for(IR_cutoff_database::const_record_iterator v = IR_db.record_begin(); v != IR_db.record_end(); ++v)
               {
                 tensor_prod.emplace(t, u, v);
               }
@@ -376,7 +382,7 @@ loop_configs data_manager::tensor_product(k_database& k_db, IR_database& IR_db, 
 
 std::unique_ptr<loop_momentum_work_list>
 data_manager::build_loop_momentum_work_list(FRW_model_token& model, k_database& k_db,
-                                            IR_database& IR_db, UV_database& UV_db,
+                                            IR_cutoff_database& IR_db, UV_cutoff_database& UV_db,
                                             std::shared_ptr<tree_power_spectrum>& Pk)
   {
     // start timer
@@ -429,7 +435,7 @@ oneloop_growth data_manager::find<oneloop_growth>(transaction_manager& mgr, cons
 template <>
 loop_integral
 data_manager::find<loop_integral>(transaction_manager& mgr, const FRW_model_token& model, const k_token& k,
-                                  const IR_token& IR_cutoff, const UV_token& UV_cutoff)
+                                  const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff)
   {
     // construct payload nad ask SQLite backend to populate it
     loop_integral payload(std::move(
@@ -441,7 +447,7 @@ data_manager::find<loop_integral>(transaction_manager& mgr, const FRW_model_toke
 
 std::unique_ptr<one_loop_Pk_work_list>
 data_manager::build_one_loop_Pk_work_list(FRW_model_token& model, z_database& z_db, k_database& k_db,
-                                          IR_database& IR_db, UV_database& UV_db,
+                                          IR_cutoff_database& IR_db, UV_cutoff_database& UV_db,
                                           std::shared_ptr<tree_power_spectrum>& Pk)
   {
     // start timer

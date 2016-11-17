@@ -35,12 +35,15 @@ class sqlite3_policy
     //! wavenumber configuration table
     const std::string& wavenumber_config_table() const { return(this->wavenumber_config); }
 
-    //! IR configuration table
+    //! IR-cutoff configuration table
     const std::string& IR_config_table() const { return(this->IR_config); }
 
-    //! UV configuration table
+    //! UV-cutoff configuration table
     const std::string& UV_config_table() const { return(this->UV_config); }
-
+    
+    //! IR-resummation configuration table
+    const std::string& IR_resum_table() const { return(this->IR_resum); }
+    
     //! transfer function table
     const std::string& transfer_table() const { return(this->transfer); }
 
@@ -185,6 +188,9 @@ class sqlite3_policy
 
     //! UV cutoff configuration table
     const std::string UV_config;
+    
+    //! IR-resummation configuration table
+    const std::string IR_resum;
 
     //! transfer function table
     const std::string transfer;

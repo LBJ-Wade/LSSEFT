@@ -108,7 +108,10 @@ SET(DATABASE_SOURCE_FILES
   database/z_record.cpp database/z_record.h
   database/wavenumber_record.h
   database/powerspectrum_record.cpp database/powerspectrum_record.h
-  database/k_database.h database/IR_database.h database/UV_database.h)
+  database/k_database.h
+  database/IR_cutoff_database.h
+  database/UV_cutoff_database.h
+  database/IR_resum_database.h)
 
 SET(SQLITE3_DETAIL_SOURCE_FILES
   sqlite3_detail/operations.h

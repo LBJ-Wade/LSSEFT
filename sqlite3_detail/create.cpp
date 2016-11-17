@@ -14,6 +14,16 @@ namespace sqlite3_operations
     
     namespace create_impl
       {
+        
+        void wavenubmer_config_table(sqlite3* db, const std::string& table_name, const sqlite3_policy& policy)
+          {
+            std::ostringstream config_stmt;
+            config_stmt
+              << "CREATE TABLE " << table_name << "("
+              << "id INTEGER PRIMARY KEY, "
+              << "k DOUBLE);";
+            exec(db, config_stmt.str());
+          }
     
         void oneloop_momentum_integral_table(sqlite3* db, const std::string& table_name, const sqlite3_policy& policy)
           {
@@ -91,7 +101,7 @@ namespace sqlite3_operations
           << ")";
 
         exec(db, models_stmt.str());
-
+        
         std::ostringstream z_config_stmt;
         z_config_stmt
           << "CREATE TABLE " << policy.redshift_config_table() << "("
@@ -99,30 +109,11 @@ namespace sqlite3_operations
           << "z DOUBLE);";
 
         exec(db, z_config_stmt.str());
-
-        std::ostringstream wavenumber_config_stmt;
-        wavenumber_config_stmt
-          << "CREATE TABLE " << policy.wavenumber_config_table() << "("
-          << "id INTEGER PRIMARY KEY, "
-          << "k DOUBLE);";
-
-        exec(db, wavenumber_config_stmt.str());
-
-        std::ostringstream IR_config_stmt;
-        IR_config_stmt
-          << "CREATE TABLE " << policy.IR_config_table() << "("
-          << "id INTEGER PRIMARY KEY, "
-          << "k DOUBLE);";
-
-        exec(db, IR_config_stmt.str());
-
-        std::ostringstream UV_config_stmt;
-        UV_config_stmt
-          << "CREATE TABLE " << policy.UV_config_table() << "("
-          << "id INTEGER PRIMARY KEY, "
-          << "k DOUBLE);";
-
-        exec(db, UV_config_stmt.str());
+    
+        create_impl::wavenubmer_config_table(db, policy.wavenumber_config_table(), policy);
+        create_impl::wavenubmer_config_table(db, policy.IR_config_table(), policy);
+        create_impl::wavenubmer_config_table(db, policy.UV_config_table(), policy);
+        create_impl::wavenubmer_config_table(db, policy.IR_resum_table(), policy);
 
         std::ostringstream transfer_stmt;
         transfer_stmt

@@ -19,7 +19,7 @@ namespace sqlite3_operations
     
         template <typename KernelType>
         void read_loop_kernel(sqlite3* db, const std::string& table, const FRW_model_token& model,
-                              const k_token& k, const UV_token& UV_cutoff, const IR_token& IR_cutoff,
+                              const k_token& k, const UV_cutoff_token& UV_cutoff, const IR_cutoff_token& IR_cutoff,
                               KernelType& kernel)
           {
             std::ostringstream read_stmt;
@@ -208,7 +208,7 @@ namespace sqlite3_operations
     
     loop_integral find(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
                        const FRW_model_token& model, const k_token& k,
-                       const IR_token& IR_cutoff, const UV_token& UV_cutoff)
+                       const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff)
       {
         delta_22_integrals delta22;
         delta_13_integrals delta13;

@@ -543,7 +543,7 @@ class loop_integral
   public:
 
     //! value constructor
-    loop_integral(const k_token& kt, const UV_token& UVt, const IR_token& IRt,
+    loop_integral(const k_token& kt, const UV_cutoff_token& UVt, const IR_cutoff_token& IRt,
                   const delta_22_integrals& d22, const delta_13_integrals& d13,
                   const rsd_22_integrals& r22, const rsd_13_integrals& r13);
     
@@ -562,10 +562,10 @@ class loop_integral
     const k_token& get_k_token() const { return this->k; }
 
     //! get UV cutoff token
-    const UV_token& get_UV_token() const { return this->UV_cutoff; }
+    const UV_cutoff_token& get_UV_token() const { return this->UV_cutoff; }
 
     //! get IR cutoff token
-    const IR_token& get_IR_token() const { return this->IR_cutoff; }
+    const IR_cutoff_token& get_IR_token() const { return this->IR_cutoff; }
     
     
     
@@ -592,10 +592,10 @@ class loop_integral
     k_token k;
 
     //! UV cutoff token
-    UV_token UV_cutoff;
+    UV_cutoff_token UV_cutoff;
 
     //! IR cutoff token
-    IR_token IR_cutoff;
+    IR_cutoff_token IR_cutoff;
 
 
     // VALUES

@@ -204,8 +204,8 @@ namespace MPI_detail
 
         //! value constructor: used to construct and send a payload
         new_loop_momentum_integration(const FRW_model& m, const Mpc_units::energy& _k, const k_token& kt,
-                                      const Mpc_units::energy& UV, const UV_token& UVt,
-                                      const Mpc_units::energy& IR, const IR_token& IRt,
+                                      const Mpc_units::energy& UV, const UV_cutoff_token& UVt,
+                                      const Mpc_units::energy& IR, const IR_cutoff_token& IRt,
                                       const std::shared_ptr<tree_power_spectrum>& _Pk)
           : model(m),
             k(_k),
@@ -239,13 +239,13 @@ namespace MPI_detail
         const Mpc_units::energy& get_UV_cutoff() const { return(this->UV_cutoff); }
 
         //! get UV cutoff token
-        const UV_token& get_UV_token() const { return(this->UV_tok); }
+        const UV_cutoff_token& get_UV_token() const { return(this->UV_tok); }
 
         //! get IR cutoff
         const Mpc_units::energy& get_IR_cutoff() const { return(this->IR_cutoff); }
 
         //! get IR cutoff token
-        const IR_token& get_IR_token() const { return(this->IR_tok); }
+        const IR_cutoff_token& get_IR_token() const { return(this->IR_tok); }
 
         //! get tree-level power spectrum
         const tree_power_spectrum& get_tree_power_spectrum() const { return *this->Pk; }
@@ -268,13 +268,13 @@ namespace MPI_detail
         Mpc_units::energy UV_cutoff;
 
         //! UV cutoff token
-        UV_token UV_tok;
+        UV_cutoff_token UV_tok;
 
         //! IR cutoff to USE
         Mpc_units::energy IR_cutoff;
 
         //! IR cutoff token
-        IR_token IR_tok;
+        IR_cutoff_token IR_tok;
 
         //! tree-level power spectrum
         std::shared_ptr<tree_power_spectrum> Pk;

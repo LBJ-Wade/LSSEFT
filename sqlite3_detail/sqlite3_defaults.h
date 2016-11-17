@@ -10,8 +10,9 @@
 constexpr auto SQLITE3_DEFAULT_FRW_TABLE_NAME                 = "models";
 constexpr auto SQLITE3_DEFAULT_REDSHIFT_CONFIGURATION_TABLE   = "z_config";
 constexpr auto SQLITE3_DEFAULT_WAVENUMBER_CONFIGURATION_TABLE = "k_config";
-constexpr auto SQLITE3_DEFAULT_IR_CONFIGURATION_TABLE         = "IR_cutoff";
-constexpr auto SQLITE3_DEFAULT_UV_CONFIGURATION_TABLE         = "UV_cutoff";
+constexpr auto SQLITE3_DEFAULT_IR_CUTOFF_CONFIGURATION_TABLE  = "IR_cutoff";
+constexpr auto SQLITE3_DEFAULT_UV_CUTOFF_CONFIGURATION_TABLE  = "UV_cutoff";
+constexpr auto SQLITE3_DEFAULT_IR_RESUM_CONFIGURATION_TABLE   = "IR_resum";
 constexpr auto SQLITE3_DEFAULT_TRANSFER_TABLE                 = "transfer";
 constexpr auto SQLITE3_DEFAULT_GROWTH_G_TABLE                 = "g_factors";
 constexpr auto SQLITE3_DEFAULT_GROWTH_F_TABLE                 = "f_factors";

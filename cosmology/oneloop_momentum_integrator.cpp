@@ -32,8 +32,8 @@ oneloop_momentum_integrator::oneloop_momentum_integrator(double a_13, double r_1
 
 loop_integral oneloop_momentum_integrator::integrate(const FRW_model& model, const Mpc_units::energy& k,
                                                      const k_token& k_tok, const Mpc_units::energy& UV_cutoff,
-                                                     const UV_token& UV_tok, const Mpc_units::energy& IR_cutoff,
-                                                     const IR_token& IR_tok, const tree_power_spectrum& Pk)
+                                                     const UV_cutoff_token& UV_tok, const Mpc_units::energy& IR_cutoff,
+                                                     const IR_cutoff_token& IR_tok, const tree_power_spectrum& Pk)
   {
     delta_13_integrals delta13;
     delta_22_integrals delta22;

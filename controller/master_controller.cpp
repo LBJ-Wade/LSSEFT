@@ -128,15 +128,19 @@ void master_controller::execute()
 
     // set up a list of k at which to compute the loop integrals
     stepping_range<Mpc_units::energy> loop_k_samples(0.005, 0.5, 200, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
+    
+    // set up a list of IR resummation scales, measured in h/Mpc
+    stepping_range<Mpc_units::energy> IR_resummation(0.1, 0.1, 0, 1.0 / Mpc_units::Mpc, spacing_type::linear);
 
     // exchange these sample ranges for iterable databases
-    std::unique_ptr<z_database> hi_z_db       = dmgr.build_redshift_db(hi_redshift_samples);
-    std::unique_ptr<z_database> lo_z_db       = dmgr.build_redshift_db(lo_redshift_samples);
-    std::unique_ptr<k_database> transfer_k_db = dmgr.build_k_db(transfer_k_samples);
+    std::unique_ptr<z_database> hi_z_db              = dmgr.build_redshift_db(hi_redshift_samples);
+    std::unique_ptr<z_database> lo_z_db              = dmgr.build_redshift_db(lo_redshift_samples);
+    std::unique_ptr<k_database> transfer_k_db        = dmgr.build_k_db(transfer_k_samples);
 
-    std::unique_ptr<UV_database> UV_db        = dmgr.build_UV_db(UV_cutoffs);
-    std::unique_ptr<IR_database> IR_db        = dmgr.build_IR_db(IR_cutoffs);
-    std::unique_ptr<k_database>  loop_k_db    = dmgr.build_k_db(loop_k_samples);
+    std::unique_ptr<UV_cutoff_database> UV_cutoff_db = dmgr.build_UV_cutoff_db(UV_cutoffs);
+    std::unique_ptr<IR_cutoff_database> IR_cutoff_db = dmgr.build_IR_cutoff_db(IR_cutoffs);
+    std::unique_ptr<IR_resum_database>  IR_resum_db  = dmgr.build_IR_resum_db(IR_resummation);
+    std::unique_ptr<k_database>  loop_k_db           = dmgr.build_k_db(loop_k_samples);
 
     
     // GENERATE TARGETS
@@ -166,16 +170,18 @@ void master_controller::execute()
         std::shared_ptr<tree_power_spectrum> Pk = std::make_shared<tree_power_spectrum>(this->arg_cache.get_powerspectrum_path());
 
         // build a work list for the loop integrals
-        std::unique_ptr<loop_momentum_work_list> loop_momentum_work = dmgr.build_loop_momentum_work_list(*model, *loop_k_db, *IR_db, *UV_db, Pk);
+        std::unique_ptr<loop_momentum_work_list> loop_momentum_work = dmgr.build_loop_momentum_work_list(*model, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, Pk);
 
         // distribute this work list among the worker processes
         if(loop_momentum_work) this->scatter(cosmology_model, *model, *loop_momentum_work, dmgr);
         
         // build a work list for the individual power spectrum components
-        std::unique_ptr<one_loop_Pk_work_list> Pk_work = dmgr.build_one_loop_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_db, *UV_db, Pk);
+        std::unique_ptr<one_loop_Pk_work_list> Pk_work = dmgr.build_one_loop_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, Pk);
 
         // distribute this work list among the worker processes
         if(Pk_work) this->scatter(cosmology_model, *model, *Pk_work, dmgr);
+        
+        
       }
 
     // instruct slave processes to terminate

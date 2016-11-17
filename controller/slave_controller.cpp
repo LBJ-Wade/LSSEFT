@@ -143,8 +143,8 @@ void slave_controller::process_item(MPI_detail::new_loop_momentum_integration& p
     const Mpc_units::energy& UV_cutoff = payload.get_UV_cutoff();
     const Mpc_units::energy& IR_cutoff = payload.get_IR_cutoff();
     const k_token& k_tok = payload.get_k_token();
-    const UV_token& UV_tok = payload.get_UV_token();
-    const IR_token& IR_tok = payload.get_IR_token();
+    const UV_cutoff_token& UV_tok = payload.get_UV_token();
+    const IR_cutoff_token& IR_tok = payload.get_IR_token();
     const tree_power_spectrum& Pk = payload.get_tree_power_spectrum();
     
     std::cout << "Worker " << this->worker_number() << " processing loop integral item: k-id = " << k_tok.get_id()
@@ -169,8 +169,8 @@ void slave_controller::process_item(MPI_detail::new_one_loop_Pk& payload)
     const tree_power_spectrum& Pk = payload.get_tree_power_spectrum();
     
     const k_token& k_tok = loop_data.get_k_token();
-    const IR_token& IR_tok = loop_data.get_IR_token();
-    const UV_token& UV_tok = loop_data.get_UV_token();
+    const IR_cutoff_token& IR_tok = loop_data.get_IR_token();
+    const UV_cutoff_token& UV_tok = loop_data.get_UV_token();
     
     std::cout << "Worker " << this->worker_number() << " processing 1-loop P(k) for"
               << " k-id = " << k_tok.get_id() << ", IR-id = " << IR_tok.get_id() << ", UV-id = " << UV_tok.get_id()

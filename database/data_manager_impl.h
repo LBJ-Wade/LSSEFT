@@ -8,8 +8,8 @@
 
 
 #include "k_database.h"
-#include "IR_database.h"
-#include "UV_database.h"
+#include "IR_cutoff_database.h"
+#include "UV_cutoff_database.h"
 
 
 namespace data_manager_impl
@@ -20,7 +20,7 @@ namespace data_manager_impl
 
       public:
 
-        loop_momentum_configuration(k_database::const_record_iterator& _k, UV_database::const_record_iterator& _UV, IR_database::const_record_iterator& _IR)
+        loop_momentum_configuration(k_database::const_record_iterator& _k, UV_cutoff_database::const_record_iterator& _UV, IR_cutoff_database::const_record_iterator& _IR)
           : k(_k),
             UV(_UV),
             IR(_IR),
@@ -31,8 +31,8 @@ namespace data_manager_impl
         ~loop_momentum_configuration() = default;
 
         k_database::const_record_iterator  k;
-        UV_database::const_record_iterator UV;
-        IR_database::const_record_iterator IR;
+        UV_cutoff_database::const_record_iterator UV;
+        IR_cutoff_database::const_record_iterator IR;
 
         bool include;
       };

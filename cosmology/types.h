@@ -84,8 +84,8 @@ class loop_momentum_work_record
 
     //! constructor
     loop_momentum_work_record(const Mpc_units::energy& _k, const k_token& kt,
-                              const Mpc_units::energy& _UV, const UV_token& UVt,
-                              const Mpc_units::energy& _IR, const IR_token& IRt,
+                              const Mpc_units::energy& _UV, const UV_cutoff_token& UVt,
+                              const Mpc_units::energy& _IR, const IR_cutoff_token& IRt,
                               const std::shared_ptr<tree_power_spectrum>& _Pk)
       : k(_k),
         UV_cutoff(_UV),
@@ -115,13 +115,13 @@ class loop_momentum_work_record
     const Mpc_units::energy& get_UV_cutoff() const { return(this->UV_cutoff); }
 
     //! get UV cutoff token
-    const UV_token& get_UV_token() const { return(this->UV_tok); }
+    const UV_cutoff_token& get_UV_token() const { return(this->UV_tok); }
 
     //! get IR cutoff
     const Mpc_units::energy& get_IR_cutoff() const { return(this->IR_cutoff); }
 
     //! get IR cutoff token
-    const IR_token& get_IR_token() const { return(this->IR_tok); }
+    const IR_cutoff_token& get_IR_token() const { return(this->IR_tok); }
 
     //! get tree-level power spectrum
     const std::shared_ptr<tree_power_spectrum>& get_Pk_db() const { return(this->Pk); }
@@ -144,10 +144,10 @@ class loop_momentum_work_record
     k_token k_tok;
 
     //! UV cutoff token
-    UV_token UV_tok;
+    UV_cutoff_token UV_tok;
 
     //! IR cutoff token
-    IR_token IR_tok;
+    IR_cutoff_token IR_tok;
 
     //! tree-level power spectrum
     std::shared_ptr<tree_power_spectrum> Pk;

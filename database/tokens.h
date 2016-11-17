@@ -224,7 +224,7 @@ inline const std::string& tokenization_table<k_token>(const sqlite3_policy& poli
 
 
 //! token representing a k-value corresponding to an IR cutoff
-class IR_token: public generic_token
+class IR_cutoff_token: public generic_token
   {
 
     // CONSTRUCTOR, DESTRUCTOR
@@ -232,10 +232,10 @@ class IR_token: public generic_token
   public:
 
     //! constructor
-    IR_token(unsigned int i);
+    IR_cutoff_token(unsigned int i);
 
     //! destructor is default
-    virtual ~IR_token() = default;
+    virtual ~IR_cutoff_token() = default;
 
 
   private:
@@ -254,14 +254,14 @@ class IR_token: public generic_token
 
 // specialize tokenization for this
 template <>
-inline const std::string& tokenization_table<IR_token>(const sqlite3_policy& policy)
+inline const std::string& tokenization_table<IR_cutoff_token>(const sqlite3_policy& policy)
   {
     return(policy.IR_config_table());
   }
 
 
 //! token representing a k-value corresponding to a UV cutoff
-class UV_token: public generic_token
+class UV_cutoff_token: public generic_token
   {
 
     // CONSTRUCTOR, DESTRUCTOR
@@ -269,10 +269,10 @@ class UV_token: public generic_token
   public:
 
     //! constructor
-    UV_token(unsigned int i);
+    UV_cutoff_token(unsigned int i);
 
     //! destructor is default
-    virtual ~UV_token() = default;
+    virtual ~UV_cutoff_token() = default;
 
 
   private:
@@ -291,9 +291,46 @@ class UV_token: public generic_token
 
 // specialize tokenization for this
 template <>
-inline const std::string& tokenization_table<UV_token>(const sqlite3_policy& policy)
+inline const std::string& tokenization_table<UV_cutoff_token>(const sqlite3_policy& policy)
   {
     return(policy.UV_config_table());
+  }
+
+
+//! token representing a k-value associated with an IR resummation scale
+class IR_resum_token: public generic_token
+  {
+    
+    // CONSTRUCTOR, DESTRUCTOR
+    
+  public:
+    
+    //! constructor
+    IR_resum_token(unsigned int i);
+    
+    //! destructor is default
+    virtual ~IR_resum_token() = default;
+    
+    
+  private:
+    
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+    
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & boost::serialization::base_object<generic_token>(*this);
+      }
+    
+  };
+
+
+// specialize tokenization for this
+template <>
+inline const std::string& tokenization_table<IR_resum_token>(const sqlite3_policy& policy)
+  {
+    return(policy.IR_resum_table());
   }
 
 
@@ -388,7 +425,7 @@ namespace std
     
     
     template<>
-    class hash<IR_token>
+    class hash<IR_cutoff_token>
       {
         
         // CONSTRUCTOR, DESTRUCTOR
@@ -407,7 +444,7 @@ namespace std
       public:
         
         //! hash function
-        size_t operator()(const IR_token& tok) const
+        size_t operator()(const IR_cutoff_token& tok) const
           {
             std::hash<generic_token> hasher;
             return hasher(tok);
@@ -417,7 +454,7 @@ namespace std
     
     
     template<>
-    class hash<UV_token>
+    class hash<UV_cutoff_token>
       {
         
         // CONSTRUCTOR, DESTRUCTOR
@@ -436,7 +473,7 @@ namespace std
       public:
         
         //! hash function
-        size_t operator()(const UV_token& tok) const
+        size_t operator()(const UV_cutoff_token& tok) const
           {
             std::hash<generic_token> hasher;
             return hasher(tok);
