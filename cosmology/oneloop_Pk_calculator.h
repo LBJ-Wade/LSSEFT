@@ -40,7 +40,7 @@ class oneloop_Pk_calculator
     
     //! calculate power spectra
     std::list<oneloop_Pk>
-    calculate(const Mpc_units::energy& k, const k_token& k_tok, const IR_token& IR_tok, const UV_token& UV_tok,
+    calculate(const Mpc_units::energy& k, const k_token& k_tok, const IR_cutoff_token& IR_tok, const UV_cutoff_token& UV_tok,
               const oneloop_growth& gf_factors, const loop_integral& loop_data, const tree_power_spectrum& Ptree);
     
   private:

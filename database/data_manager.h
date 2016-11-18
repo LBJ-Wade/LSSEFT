@@ -13,8 +13,9 @@
 #include "transaction_manager.h"
 #include "z_database.h"
 #include "k_database.h"
-#include "IR_database.h"
-#include "UV_database.h"
+#include "IR_cutoff_database.h"
+#include "UV_cutoff_database.h"
+#include "IR_resum_database.h"
 
 #include "cosmology/types.h"
 #include "cosmology/FRW_model.h"
@@ -57,10 +58,13 @@ class data_manager
     std::unique_ptr<k_database> build_k_db(range<Mpc_units::energy>& sample);
 
     //! generate IR cutoff database from a set of samples
-    std::unique_ptr<IR_database> build_IR_db(range<Mpc_units::energy>& sample);
+    std::unique_ptr<IR_cutoff_database> build_IR_cutoff_db(range<Mpc_units::energy>& sample);
 
     //! generate UV cutoff database from a set of samples
-    std::unique_ptr<UV_database> build_UV_db(range<Mpc_units::energy>& sample);
+    std::unique_ptr<UV_cutoff_database> build_UV_cutoff_db(range<Mpc_units::energy>& sample);
+    
+    //! generate IR resummation scale database from a set of samples
+    std::unique_ptr<IR_resum_database> build_IR_resum_db(range<Mpc_units::energy>& sample);
 
   protected:
 
@@ -87,20 +91,35 @@ class data_manager
     //! for each k-value in a wavenumber database representing the momentum loop integral.
     //! generates a new transaction on the database; will fail if a transaction is in progress
     std::unique_ptr<loop_momentum_work_list> build_loop_momentum_work_list(FRW_model_token& model, k_database& k_db,
-                                                                           IR_database& IR_db, UV_database& UV_db,
+                                                                           IR_cutoff_database& IR_db, UV_cutoff_database& UV_db,
                                                                            std::shared_ptr<tree_power_spectrum>& Pk);
     
-    //! build a work list representing (k, z) combinations that are missing from the SQLite backing store
+    //! build a work list representing (k, z, IR, UV) combinations of the one-loop power spectra
+    //! that are missing from the SQLite backing store.
     //! generates a new transaction on the database; will fail if a transaction is in progress
     std::unique_ptr<one_loop_Pk_work_list> build_one_loop_Pk_work_list(FRW_model_token& model,
                                                                        z_database& z_db, k_database& k_db,
-                                                                       IR_database& IR_db, UV_database& UV_db,
+                                                                       IR_cutoff_database& IR_db, UV_cutoff_database& UV_db,
                                                                        std::shared_ptr<tree_power_spectrum>& Pk);
+    
+    //! build a work list representing (k, z, IR_cutoff, UV_cutoff, IR_resum) combinations of the one-loop
+    //! multipole power spectra that are missing from the SQLite backing store.
+    //! generates a new transaction on the database; will fail if a transaction is in progress
+    std::unique_ptr<multipole_Pk_work_list> build_multipole_Pk_work_list(FRW_model_token& model,
+                                                                         z_database& z_db, k_database& k_db,
+                                                                         IR_cutoff_database& IR_cutoff_db,
+                                                                         UV_cutoff_database& UV_cutoff_db,
+                                                                         IR_resum_database& IR_resum_db,
+                                                                         std::shared_ptr<tree_power_spectrum>& Pk);
     
   protected:
     
     //! tensor together (k, IR cutoff, UV cutoff) combinations for loop integrals
-    loop_configs tensor_product(k_database& k_db, IR_database& IR_db, UV_database& UV_db);
+    loop_configs tensor_product(k_database& k_db, IR_cutoff_database& IR_db, UV_cutoff_database& UV_db);
+    
+    //! tensor together (k, IR cutoff, UV cutoff, IR resummation scale) combinations for loop integrals
+    resum_configs tensor_product(k_database& k_db, IR_cutoff_database& IR_cutoff_db, UV_cutoff_database& UV_cutoff_db,
+                                 IR_resum_database& IR_resum_db);
 
 
     // TOKENS
@@ -145,7 +164,14 @@ class data_manager
     //! but not z-dependent
     template <typename PayloadType>
     PayloadType find(transaction_manager& mgr, const FRW_model_token& model, const k_token& k,
-                     const IR_token& IR_cutoff, const UV_token& UV_cutoff);
+                     const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
+    
+    //! extract a sample of a P(k)-like quantity that is k-dependent, z-dependent,
+    //! and IR/UV-cutoff dependent
+    template <typename PayloadType>
+    PayloadType find(transaction_manager& mgr, const FRW_model_token& model,
+                     const k_token& k, const z_token& z,
+                     const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
 
     // TRANSACTIONS
 

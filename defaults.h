@@ -7,7 +7,12 @@
 #define LSSEFT_DEFAULTS_H
 
 
+// default Python location
+
 #define LSSEFT_DEFAULT_PYTHON_PATH "/usr/local/python"
+
+// enforce strict database consistency?
+#define LSSEFT_STRICT_DATABASE_CONSISTENCY
 
 // database search tolerances
 

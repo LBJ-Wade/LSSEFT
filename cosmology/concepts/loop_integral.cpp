@@ -62,7 +62,7 @@ rsd_13_integrals::rsd_13_integrals()
   }
 
   
-loop_integral::loop_integral(const k_token& kt, const UV_token& UVt, const IR_token& IRt,
+loop_integral::loop_integral(const k_token& kt, const UV_cutoff_token& UVt, const IR_cutoff_token& IRt,
                              const delta_22_integrals& d22, const delta_13_integrals& d13,
                              const rsd_22_integrals& r22, const rsd_13_integrals& r13)
   : k(kt),

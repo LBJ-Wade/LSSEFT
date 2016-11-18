@@ -22,24 +22,24 @@
 
 
 typedef std::unordered_set<data_manager_impl::loop_momentum_configuration> loop_configs;
+typedef std::unordered_set<data_manager_impl::resummed_Pk_configuration> resum_configs;
 
 namespace sqlite3_operations
   {
 
     //! construct a database of redshifts which need to be computed for the transfer function at a given wavenumber
     //! ownership of the resulting database is transferred via std::unique_ptr<>
-    std::unique_ptr<z_database> missing_transfer_redshifts(sqlite3* db, transaction_manager& mgr,
-                                                           const sqlite3_policy& policy, const FRW_model_token& model,
-                                                           const k_token& k, const z_database& z_db,
-                                                           const std::string& z_table);
+    std::unique_ptr<z_database>
+    missing_transfer_redshifts(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
+                               const FRW_model_token& model, const k_token& k, const z_database& z_db,
+                               const std::string& z_table);
 
 
     //! construct a database of redshifts which need to be computed for the one-loop growth functions
     //! ownership of the resulting database is transferred via std::unique_ptr<>
-    std::unique_ptr<z_database> missing_oneloop_growth_redshifts(sqlite3* db, transaction_manager& mgr,
-                                                                 const sqlite3_policy& policy,
-                                                                 const FRW_model_token& model,
-                                                                 const z_database& z_db, const std::string& z_table);
+    std::unique_ptr<z_database>
+    missing_oneloop_growth_redshifts(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
+                                     const FRW_model_token& model, const z_database& z_db, const std::string& z_table);
 
 
     //! process a list of configurations for loop momentum integrals;
@@ -52,11 +52,17 @@ namespace sqlite3_operations
     
     //! process a list of configurations for one-loop P(k) calculations;
     //! we detect which ones are already present in the database and avoid computing them
-    std::unique_ptr<z_database> missing_one_loop_Pk_redshifts(sqlite3* db, transaction_manager& mgr,
-                                                              const sqlite3_policy& policy,
-                                                              const FRW_model_token& model, const std::string& z_table,
-                                                              const z_database& z_db,
-                                                              const loop_configs::value_type& record);
+    std::unique_ptr<z_database>
+    missing_one_loop_Pk_redshifts(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
+                                  const FRW_model_token& model, const std::string& z_table, const z_database& z_db,
+                                  const loop_configs::value_type& record);
+    
+    //! process a list of configurations for one-loop multipole P(k) calculations;
+    //! we detect which ones are already present in the database and avoid computing them
+    std::unique_ptr<z_database>
+    missing_multipole_Pk_redshifts(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
+                                   const FRW_model_token& model, const std::string& z_table, const z_database& z_db,
+                                   const resum_configs::value_type& record);
 
   }   // namespace sqlite3_operations
 

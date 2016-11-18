@@ -6,8 +6,8 @@
 #include "oneloop_Pk_calculator.h"
 
 
-std::list<oneloop_Pk> oneloop_Pk_calculator::calculate(const Mpc_units::energy& k, const k_token& k_tok, const IR_token& IR_tok,
-                                                       const UV_token& UV_tok, const oneloop_growth& gf_factors,
+std::list<oneloop_Pk> oneloop_Pk_calculator::calculate(const Mpc_units::energy& k, const k_token& k_tok, const IR_cutoff_token& IR_tok,
+                                                       const UV_cutoff_token& UV_tok, const oneloop_growth& gf_factors,
                                                        const loop_integral& loop_data, const tree_power_spectrum& Ptree)
   {
     std::list<oneloop_Pk> container;
@@ -22,7 +22,7 @@ std::list<oneloop_Pk> oneloop_Pk_calculator::calculate(const Mpc_units::energy& 
         rsd_dd_Pk rsd_mu6 = this->compute_rsd_dd_mu6(k, val.second, loop_data, Ptree);
         rsd_dd_Pk rsd_mu8 = this->compute_rsd_dd_mu8(k, val.second, loop_data, Ptree);
     
-        container.emplace_back(k_tok, UV_tok, IR_tok, val.first.get_id(), dd,
+        container.emplace_back(k_tok, IR_tok, UV_tok, val.first.get_id(), dd,
                                rsd_mu0, rsd_mu2, rsd_mu4, rsd_mu6, rsd_mu8);
       }
     

@@ -84,6 +84,9 @@ class slave_controller
     
     //! combine loop integral and growth-factor data to produce a 1-loop power spectrum
     void process_item(MPI_detail::new_one_loop_Pk& payload);
+    
+    //! combine 1-loop power spectrum data to produce multipole power spectra
+    void process_item(MPI_detail::new_multipole_Pk& payload);
 
 
     // INTERNAL DATA

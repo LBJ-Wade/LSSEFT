@@ -265,15 +265,21 @@ std::unique_ptr<k_database> data_manager::build_k_db(range<Mpc_units::energy>& s
   }
 
 
-std::unique_ptr<IR_database> data_manager::build_IR_db(range<Mpc_units::energy>& sample)
+std::unique_ptr<IR_cutoff_database> data_manager::build_IR_cutoff_db(range<Mpc_units::energy>& sample)
   {
-    return this->build_wavenumber_db<IR_token>(sample);
+    return this->build_wavenumber_db<IR_cutoff_token>(sample);
   }
 
 
-std::unique_ptr<UV_database> data_manager::build_UV_db(range<Mpc_units::energy>& sample)
+std::unique_ptr<UV_cutoff_database> data_manager::build_UV_cutoff_db(range<Mpc_units::energy>& sample)
   {
-    return this->build_wavenumber_db<UV_token>(sample);
+    return this->build_wavenumber_db<UV_cutoff_token>(sample);
+  }
+
+
+std::unique_ptr<IR_resum_database> data_manager::build_IR_resum_db(range<Mpc_units::energy>& sample)
+  {
+    return this->build_wavenumber_db<IR_resum_token>(sample);
   }
 
 
@@ -355,15 +361,15 @@ std::unique_ptr<z_database> data_manager::build_oneloop_work_list(FRW_model_toke
   }
 
 
-loop_configs data_manager::tensor_product(k_database& k_db, IR_database& IR_db, UV_database& UV_db)
+loop_configs data_manager::tensor_product(k_database& k_db, IR_cutoff_database& IR_db, UV_cutoff_database& UV_db)
   {
     loop_configs tensor_prod;
     
-    for(k_database::const_record_iterator t = k_db.record_begin(); t != k_db.record_end(); ++t)
+    for(k_database::const_record_iterator t = k_db.record_cbegin(); t != k_db.record_cend(); ++t)
       {
-        for(UV_database::const_record_iterator u = UV_db.record_begin(); u != UV_db.record_end(); ++u)
+        for(UV_cutoff_database::const_record_iterator u = UV_db.record_cbegin(); u != UV_db.record_cend(); ++u)
           {
-            for(IR_database::const_record_iterator v = IR_db.record_begin(); v != IR_db.record_end(); ++v)
+            for(IR_cutoff_database::const_record_iterator v = IR_db.record_cbegin(); v != IR_db.record_cend(); ++v)
               {
                 tensor_prod.emplace(t, u, v);
               }
@@ -374,9 +380,32 @@ loop_configs data_manager::tensor_product(k_database& k_db, IR_database& IR_db, 
   }
 
 
+resum_configs data_manager::tensor_product(k_database& k_db, IR_cutoff_database& IR_cutoff_db,
+                                           UV_cutoff_database& UV_cutoff_db, IR_resum_database& IR_resum_db)
+  {
+    resum_configs tensor_prod;
+    
+    for(k_database::const_record_iterator t = k_db.record_cbegin(); t != k_db.record_cend(); ++t)
+      {
+        for(UV_cutoff_database::const_record_iterator u = UV_cutoff_db.record_cbegin(); u != UV_cutoff_db.record_cend(); ++u)
+          {
+            for(IR_cutoff_database::const_record_iterator v = IR_cutoff_db.record_cbegin(); v != IR_cutoff_db.record_cend(); ++v)
+              {
+                for(IR_resum_database::const_record_iterator w = IR_resum_db.record_cbegin(); w != IR_resum_db.record_cend(); ++w)
+                  {
+                    tensor_prod.emplace(t, u, v, w);
+                  }
+              }
+          }
+      }
+    
+    return tensor_prod;
+  }
+
+
 std::unique_ptr<loop_momentum_work_list>
 data_manager::build_loop_momentum_work_list(FRW_model_token& model, k_database& k_db,
-                                            IR_database& IR_db, UV_database& UV_db,
+                                            IR_cutoff_database& IR_db, UV_cutoff_database& UV_db,
                                             std::shared_ptr<tree_power_spectrum>& Pk)
   {
     // start timer
@@ -400,7 +429,7 @@ data_manager::build_loop_momentum_work_list(FRW_model_token& model, k_database& 
     // add these missing configurations to the work list
     for(const loop_configs::value_type& record : missing)
       {
-        work_list->emplace_back(*(*record.k), record.k->get_token(), *(*record.UV), record.UV->get_token(), *(*record.IR), record.IR->get_token(), Pk);
+        work_list->emplace_back(*(*record.k), record.k->get_token(), *(*record.UV_cutoff), record.UV_cutoff->get_token(), *(*record.IR_cutoff), record.IR_cutoff->get_token(), Pk);
       }
 
     // close transaction
@@ -429,9 +458,9 @@ oneloop_growth data_manager::find<oneloop_growth>(transaction_manager& mgr, cons
 template <>
 loop_integral
 data_manager::find<loop_integral>(transaction_manager& mgr, const FRW_model_token& model, const k_token& k,
-                                  const IR_token& IR_cutoff, const UV_token& UV_cutoff)
+                                  const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff)
   {
-    // construct payload nad ask SQLite backend to populate it
+    // construct payload and ask SQLite backend to populate it
     loop_integral payload(std::move(
       sqlite3_operations::find(this->handle, mgr, this->policy, model, k, IR_cutoff, UV_cutoff)));
     
@@ -439,9 +468,22 @@ data_manager::find<loop_integral>(transaction_manager& mgr, const FRW_model_toke
   }
 
 
+template <>
+oneloop_Pk
+data_manager::find<oneloop_Pk>(transaction_manager& mgr, const FRW_model_token& model, const k_token& k, const z_token& z,
+                               const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff)
+  {
+    // construct payload and ask SQLite backend to populate it
+    oneloop_Pk payload(std::move(
+      sqlite3_operations::find(this->handle, mgr, this->policy, model, k, z, IR_cutoff, UV_cutoff)));
+    
+    return std::move(payload);
+  }
+
+
 std::unique_ptr<one_loop_Pk_work_list>
 data_manager::build_one_loop_Pk_work_list(FRW_model_token& model, z_database& z_db, k_database& k_db,
-                                          IR_database& IR_db, UV_database& UV_db,
+                                          IR_cutoff_database& IR_db, UV_cutoff_database& UV_db,
                                           std::shared_ptr<tree_power_spectrum>& Pk)
   {
     // start timer
@@ -472,7 +514,7 @@ data_manager::build_one_loop_Pk_work_list(FRW_model_token& model, z_database& z_
             std::shared_ptr<oneloop_growth> g = std::make_shared<oneloop_growth>(
               this->find<oneloop_growth>(*mgr, model, z_db));
             std::shared_ptr<loop_integral> l = std::make_shared<loop_integral>(
-              this->find<loop_integral>(*mgr, model, record.k->get_token(), record.IR->get_token(), record.UV->get_token()));
+              this->find<loop_integral>(*mgr, model, record.k->get_token(), record.IR_cutoff->get_token(), record.UV_cutoff->get_token()));
 
             work_list->emplace_back(*(*record.k), g, l, Pk);
           }
@@ -483,6 +525,67 @@ data_manager::build_one_loop_Pk_work_list(FRW_model_token& model, z_database& z_
     
     timer.stop();
     std::cout << "lsseft: constructed one-loop P(k) work list in time " << format_time(timer.elapsed().wall) << '\n';
+    
+    // close transaction
+    mgr->commit();
+    
+    // release list if it contains no work
+    if(work_list->empty()) work_list.release();
+    
+    return work_list;
+  }
+
+
+std::unique_ptr<multipole_Pk_work_list>
+data_manager::build_multipole_Pk_work_list(FRW_model_token& model, z_database& z_db, k_database& k_db,
+                                           IR_cutoff_database& IR_cutoff_db, UV_cutoff_database& UV_cutoff_db,
+                                           IR_resum_database& IR_resum_db, std::shared_ptr<tree_power_spectrum>& Pk)
+  {
+    // start timer
+    boost::timer::cpu_timer timer;
+    
+    // construct an empty work list
+    std::unique_ptr<multipole_Pk_work_list> work_list = std::make_unique<multipole_Pk_work_list>();
+    
+    // open a transaction on the database
+    std::shared_ptr<transaction_manager> mgr = this->open_transaction();
+    
+    // set up temporary table of desired z identifiers
+    std::string z_table = sqlite3_operations::z_table(this->handle, *mgr, this->policy, z_db);
+    
+    // tensor together the desired k-values with the UV and IR cutoffs
+    resum_configs required_configs = this->tensor_product(k_db, IR_cutoff_db, UV_cutoff_db, IR_resum_db);
+    
+    for(const resum_configs::value_type& record : required_configs)
+      {
+        // find redshifts that are missing for this configuration, if any
+        std::unique_ptr<z_database> missing_zs =
+          sqlite3_operations::missing_multipole_Pk_redshifts(this->handle, *mgr, this->policy, model,
+                                                             z_table, z_db, record);
+        
+        // schedule a task to compute any missing redshifts
+        if(missing_zs)
+          {
+            oneloop_growth gf_data = this->find<oneloop_growth>(*mgr, model, *missing_zs);
+            
+            for(oneloop_growth::const_iterator t = gf_data.cbegin(); t != gf_data.cend(); ++t)
+              {
+                // lookup one-loop data for this redshift and loop configuration
+                std::shared_ptr<oneloop_Pk> loop_data = std::make_shared<oneloop_Pk>(
+                  this->find<oneloop_Pk>(*mgr, model, record.k->get_token(), (*t).first,
+                                         record.IR_cutoff->get_token(), record.UV_cutoff->get_token())
+                );
+    
+                work_list->emplace_back(*(*record.k), *(*record.IR_resum), record.IR_resum->get_token(), loop_data, (*t).second, Pk);
+              }
+          }
+      }
+    
+    // drop unneeded temporary tables
+    sqlite3_operations::drop_temp(this->handle, *mgr, z_table);
+    
+    timer.stop();
+    std::cout << "lsseft: constructed one-loop multipole P(k) work list in time " << format_time(timer.elapsed().wall) << '\n';
     
     // close transaction
     mgr->commit();
