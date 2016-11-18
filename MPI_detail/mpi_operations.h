@@ -13,6 +13,7 @@
 #include "cosmology/concepts/transfer_function.h"
 #include "cosmology/concepts/loop_integral.h"
 #include "cosmology/concepts/oneloop_Pk.h"
+#include "cosmology/concepts/multipole_Pk.h"
 #include "units/Mpc_units.h"
 #include "database/z_database.h"
 
@@ -36,6 +37,9 @@ namespace MPI_detail
     
     constexpr unsigned int MESSAGE_NEW_ONE_LOOP_PK_TASK       = 20;
     constexpr unsigned int MESSAGE_NEW_ONE_LOOP_PK            = 21;
+    
+    constexpr unsigned int MESSAGE_NEW_MULTIPOLE_PK_TASK      = 30;
+    constexpr unsigned int MESSAGE_NEW_MULTIPOLE_PK           = 31;
 
     constexpr unsigned int MESSAGE_WORKER_READY               = 90;
     constexpr unsigned int MESSAGE_WORK_PRODUCT_READY         = 91;
@@ -474,6 +478,157 @@ namespace MPI_detail
         // enable boost::serialization support, and hence automated packing for transmission over MPI
         friend class boost::serialization::access;
     
+        template <typename Archive>
+        void serialize(Archive& ar, unsigned int version)
+          {
+            ar & data;
+          }
+        
+      };
+    
+    
+    class new_multipole_Pk
+      {
+        
+        // CONSTRUCTOR, DESTRUCTOR
+        
+      public:
+        
+        //! empty constructor: used to receive a payload
+        new_multipole_Pk()
+          : k(0.0),
+            IR_resum(0.0),
+            IR_resum_tok(0),
+            data(),
+            gf_data(),
+            Pk()
+          {
+          }
+        
+        //! value constructor: used to construct and send a payload
+        new_multipole_Pk(const Mpc_units::energy& _k,
+                         const Mpc_units::energy& _IR, const IR_resum_token& _IRt,
+                         const std::shared_ptr<oneloop_Pk>& _data,
+                         const oneloop_growth_record& _gf_data,
+                         const std::shared_ptr<tree_power_spectrum>& _Pk)
+          : k(_k),
+            IR_resum(_IR),
+            IR_resum_tok(_IRt),
+            data(_data),
+            gf_data(_gf_data),
+            Pk(_Pk)
+          {
+          }
+        
+        //! destructor is default
+        ~new_multipole_Pk() = default;
+        
+        
+        // ACCESS PAYLOAD
+        
+      public:
+        
+        //! get wavenumber
+        const Mpc_units::energy& get_k() const { return this->k; }
+        
+        //! get IR resummation scale
+        const Mpc_units::energy& get_IR_resum() const { return this->IR_resum; }
+        
+        //! get IR resummation token
+        const IR_resum_token& get_IR_resum_token() const { return this->IR_resum_tok; }
+        
+        //! get one-loop data
+        const oneloop_Pk& get_oneloop_Pk_data() const { return *this->data; }
+        
+        //! get gf growth factors
+        const oneloop_growth_record& get_gf_data() const { return this->gf_data; }
+        
+        //! get tree-level power spectrum
+        const tree_power_spectrum& get_tree_power_spectrum() const { return *this->Pk; }
+    
+    
+        // INTERNAL DATA
+  
+      private:
+    
+        // Payload data
+    
+        //! physical scale k
+        Mpc_units::energy k;
+    
+        //! IR resummation scale
+        Mpc_units::energy IR_resum;
+    
+        //! IR resummation token
+        IR_resum_token IR_resum_tok;
+    
+        //! one-loop power spectrum data
+        std::shared_ptr<oneloop_Pk> data;
+        
+        //! gf growth factors
+        oneloop_growth_record gf_data;
+    
+        //! tree-level power spectrum
+        std::shared_ptr<tree_power_spectrum> Pk;
+    
+    
+        // enable boost::serialization support, and hence automated packing for transmission over MPI
+        friend class boost::serialization::access;
+    
+        template <typename Archive>
+        void serialize(Archive& ar, unsigned int version)
+          {
+            ar & k;
+            ar & IR_resum;
+            ar & IR_resum_tok;
+            ar & data;
+            ar & gf_data;
+            ar & Pk;
+          }
+        
+      };
+    
+    
+    class multipole_Pk_ready
+      {
+        
+        // CONSTRUCTOR, DESTRUCTOR
+        
+      public:
+        
+        //! empty constructor: used to receive a payload
+        multipole_Pk_ready()
+          {
+          }
+        
+        //! value constructor: used to construct and send a payload
+        multipole_Pk_ready(const multipole_Pk& Pk)
+          : data(Pk)
+          {
+          }
+    
+        //! destructor is default
+        ~multipole_Pk_ready() = default;
+        
+        
+        // INTERFACE
+        
+      public:
+        
+        const multipole_Pk& get_data() const { return this->data; }
+        
+        
+        // INTERNAL DATA
+        
+      private:
+        
+        //! multipole Pk container
+        multipole_Pk data;
+        
+
+        // enable boost::serialization support, and hence automated packing for transmission over MPI
+        friend class boost::serialization::access;
+        
         template <typename Archive>
         void serialize(Archive& ar, unsigned int version)
           {

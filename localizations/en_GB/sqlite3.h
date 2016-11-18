@@ -29,6 +29,9 @@ constexpr auto ERROR_SQLITE3_INSERT_GROWTH_G_FAIL      = "failed to insert one-l
 constexpr auto ERROR_SQLITE3_INSERT_GROWTH_F_FAIL      = "failed to insert one-loop growth g-factor record [backend code=";
 constexpr auto ERROR_SQLITE3_INSERT_GROWTH_META_FAIL   = "failed to insert one-loop growth metadata record [backend code=";
 constexpr auto ERROR_SQLITE3_INSERT_LOOP_MOMENTUM_FAIL = "failed to insert one-loop momentum integral record [backend code=";
+constexpr auto ERROR_SQLITE3_INSERT_ONELOOP_PK_FAIL    = "failed to insert one-loop P(k) record [backend code=";
+constexpr auto ERROR_SQLITE3_INSERT_ONELOOP_RSD_PK_FAIL = "failed to insert one-loop RSD P(k) record [backend code=";
+constexpr auto ERROR_SQLITE3_INSERT_MULTIPOLE_PK_FAIL  = "failed to insert multipole P(k) record [backend code=";
 
 constexpr auto ERROR_SQLITE3_FG_GROWTH_TABLE_READ_FAIL = "failed to read from g- and f-factor growth tables [backend code=";
 constexpr auto ERROR_SQLITE3_FG_GROWTH_META_READ_FAIL  = "failed to read g- and f-factor metadata [backend code=";

@@ -232,11 +232,13 @@ class multipole_Pk_work_record
     multipole_Pk_work_record(const Mpc_units::energy& _k,
                              const Mpc_units::energy& _IR, const IR_resum_token& _IRt,
                              const std::shared_ptr<oneloop_Pk>& _data,
+                             const oneloop_growth_record& _gf_data,
                              const std::shared_ptr<tree_power_spectrum>& _Pk)
       : k(_k),
         IR_resum(_IR),
         IR_resum_tok(_IRt),
         data(_data),
+        gf_data(_gf_data),
         Pk(_Pk)
       {
       }
@@ -257,6 +259,9 @@ class multipole_Pk_work_record
     
     //! get one-loop P(k) data
     const std::shared_ptr<oneloop_Pk>& get_Pk_data() const { return this->data; }
+    
+    //! get gf growth factors
+    const oneloop_growth_record& get_gf_data() const { return this->gf_data; }
     
     //! get tree-level power spectrum
     const std::shared_ptr<tree_power_spectrum>& get_tree_Pk_db() const { return this->Pk; }
@@ -279,6 +284,9 @@ class multipole_Pk_work_record
     
     //! one-loop power spectrum data
     std::shared_ptr<oneloop_Pk> data;
+    
+    //! gf growth factors
+    oneloop_growth_record gf_data;
     
     //! tree-level power spectrum
     std::shared_ptr<tree_power_spectrum> Pk;

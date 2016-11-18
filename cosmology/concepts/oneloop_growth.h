@@ -39,6 +39,32 @@ struct oneloop_growth_record
     double fF;
     double fG;
     double fJ;
+    
+    
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+    
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & g;
+        ar & A;
+        ar & B;
+        ar & D;
+        ar & E;
+        ar & F;
+        ar & G;
+        ar & J;
+
+        ar & f;
+        ar & fA;
+        ar & fB;
+        ar & fD;
+        ar & fE;
+        ar & fF;
+        ar & fG;
+        ar & fJ;
+      }
   };
 
 
@@ -477,6 +503,7 @@ class oneloop_growth
     void serialize(Archive& ar, unsigned int version)
       {
         ar & z_db;
+
         ar & g_linear;
         ar & A;
         ar & B;
@@ -485,6 +512,7 @@ class oneloop_growth
         ar & F;
         ar & G;
         ar & J;
+
         ar & f_linear;
         ar & fA;
         ar & fB;

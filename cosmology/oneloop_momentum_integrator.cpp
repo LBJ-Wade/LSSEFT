@@ -112,7 +112,8 @@ bool oneloop_momentum_integrator::kernel_integral(const FRW_model& model, const 
     int evaluations;
     int fail;
 
-    std::unique_ptr<oneloop_momentum_impl::integrand_data> data = std::make_unique<oneloop_momentum_impl::integrand_data>(model, k, UV_cutoff, IR_cutoff, Pk);
+    std::unique_ptr<oneloop_momentum_impl::integrand_data> data =
+      std::make_unique<oneloop_momentum_impl::integrand_data>(model, k, UV_cutoff, IR_cutoff, Pk);
 
     // disable CUBA's internal auto-parallelization
     // we're handling multiprocessor activity ourselves via the scheduler,

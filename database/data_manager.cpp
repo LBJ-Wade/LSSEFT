@@ -566,14 +566,17 @@ data_manager::build_multipole_Pk_work_list(FRW_model_token& model, z_database& z
         // schedule a task to compute any missing redshifts
         if(missing_zs)
           {
-            for(z_database::const_record_iterator t = missing_zs->record_cbegin(); t != missing_zs->record_cend(); ++t)
+            oneloop_growth gf_data = this->find<oneloop_growth>(*mgr, model, *missing_zs);
+            
+            for(oneloop_growth::const_iterator t = gf_data.cbegin(); t != gf_data.cend(); ++t)
               {
-                std::shared_ptr<oneloop_Pk> data = std::make_shared<oneloop_Pk>(
-                  this->find<oneloop_Pk>(*mgr, model, record.k->get_token(), t->get_token(),
+                // lookup one-loop data for this redshift and loop configuration
+                std::shared_ptr<oneloop_Pk> loop_data = std::make_shared<oneloop_Pk>(
+                  this->find<oneloop_Pk>(*mgr, model, record.k->get_token(), (*t).first,
                                          record.IR_cutoff->get_token(), record.UV_cutoff->get_token())
                 );
     
-                work_list->emplace_back(*(*record.k), *(*record.IR_resum), record.IR_resum->get_token(), data, Pk);
+                work_list->emplace_back(*(*record.k), *(*record.IR_resum), record.IR_resum->get_token(), loop_data, (*t).second, Pk);
               }
           }
       }
