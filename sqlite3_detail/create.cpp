@@ -8,6 +8,7 @@
 
 #include "create.h"
 
+#include "defaults.h"
 
 namespace sqlite3_operations
   {
