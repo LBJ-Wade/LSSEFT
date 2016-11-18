@@ -91,7 +91,7 @@ namespace sqlite3_operations
               << "SELECT "
               << "Ptree, err_tree, P13, err_13, P22, err_22, P1loopSPT, err_1loopSPT, Z2_delta "
               << "FROM " << table << " "
-              << "WHERE mid=@mid AND zid=@zid AND IR_id=@IR_id AND UV_id=@UV_id;";
+              << "WHERE mid=@mid AND zid=@zid AND kid=@kid AND IR_id=@IR_id AND UV_id=@UV_id;";
             
             // prepare statement
             sqlite3_stmt* stmt;
@@ -100,6 +100,7 @@ namespace sqlite3_operations
             // bind parameter values
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@mid"), model.get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@zid"), z.get_id()));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@kid"), k.get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_id"), IR_cutoff.get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@UV_id"), UV_cutoff.get_id()));
             
@@ -145,7 +146,7 @@ namespace sqlite3_operations
               << "Ptree, err_tree, P13, err_13, P22, err_22, P1loopSPT, err_1loopSPT, "
               << "Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv "
               << "FROM " << table << " "
-              << "WHERE mid=@mid AND zid=@zid AND IR_id=@IR_id AND UV_id=@UV_id;";
+              << "WHERE mid=@mid AND zid=@zid AND kid=@kid AND IR_id=@IR_id AND UV_id=@UV_id;";
     
             // prepare statement
             sqlite3_stmt* stmt;
@@ -154,6 +155,7 @@ namespace sqlite3_operations
             // bind parameter values
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@mid"), model.get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@zid"), z.get_id()));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@kid"), k.get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_id"), IR_cutoff.get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@UV_id"), UV_cutoff.get_id()));
     
@@ -184,7 +186,7 @@ namespace sqlite3_operations
                     check_stmt(db, sqlite3_clear_bindings(stmt));
                     check_stmt(db, sqlite3_finalize(stmt));
             
-                    throw runtime_exception(exception_type::database_error, ERROR_SQLITE3_READ_PK_FAIL);
+                    throw runtime_exception(exception_type::database_error, ERROR_SQLITE3_READ_RSD_PK_FAIL);
                   }
               }
     
@@ -192,7 +194,7 @@ namespace sqlite3_operations
             check_stmt(db, sqlite3_clear_bindings(stmt));
             check_stmt(db, sqlite3_finalize(stmt));
     
-            if(count > 1) throw runtime_exception(exception_type::database_error, ERROR_SQLITE3_READ_PK_MISREAD);
+            if(count > 1) throw runtime_exception(exception_type::database_error, ERROR_SQLITE3_READ_RSD_PK_MISREAD);
           }
           
       }   // namespace find_impl
