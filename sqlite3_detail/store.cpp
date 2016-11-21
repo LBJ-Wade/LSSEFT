@@ -419,7 +419,7 @@ namespace sqlite3_operations
         
         store_impl::store_multipole_Pk(db, policy.P0_table(), sample.get_P0(), model, sample);
         store_impl::store_multipole_Pk(db, policy.P2_table(), sample.get_P2(), model, sample);
-        store_impl::store_multipole_Pk(db, policy.P4_table(), sample.get_P2(), model, sample);
+        store_impl::store_multipole_Pk(db, policy.P4_table(), sample.get_P4(), model, sample);
       }
     
     
