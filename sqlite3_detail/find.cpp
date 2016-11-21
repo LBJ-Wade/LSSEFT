@@ -378,4 +378,54 @@ namespace sqlite3_operations
         return std::move(payload);
       }
     
+    
+    Matsubara_A
+    find(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model,
+         const IR_resum_token& IR_resum)
+      {
+        std::ostringstream read_stmt;
+        read_stmt << "SELECT value FROM " << policy.Matsubara_A_table() << " WHERE mid=@mid AND IR_resum_id=@IR_resum_id;";
+    
+        // prepare statement
+        sqlite3_stmt* stmt;
+        check_stmt(db, sqlite3_prepare_v2(db, read_stmt.str().c_str(), read_stmt.str().length()+1, &stmt, nullptr));
+    
+        // bind parameter values
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@mid"), model.get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_resum_id"), IR_resum.get_id()));
+    
+        // store value
+        Mpc_units::inverse_energy2 value(0.0);
+        
+        // perform read
+        int result = 0;
+        unsigned int count = 0;
+        while((result = sqlite3_step(stmt)) != SQLITE_DONE)
+          {
+            if(result == SQLITE_ROW)
+              {
+                value = sqlite3_column_double(stmt, 0) * dimensionful_unit<Mpc_units::inverse_energy2>();
+            
+                ++count;
+              }
+            else
+              {
+                check_stmt(db, sqlite3_clear_bindings(stmt));
+                check_stmt(db, sqlite3_finalize(stmt));
+            
+                throw runtime_exception(exception_type::database_error, ERROR_SQLITE3_READ_MATSUBARA_A_FAIL);
+              }
+          }
+    
+        // clear bindings and release
+        check_stmt(db, sqlite3_clear_bindings(stmt));
+        check_stmt(db, sqlite3_finalize(stmt));
+    
+        if(count > 1) throw runtime_exception(exception_type::database_error, ERROR_SQLITE3_MATSUBARA_A_MISREAD);
+        
+        Matsubara_A payload(IR_resum, value);
+        
+        return std::move(payload);
+      }
+    
   }   // namespace sqlite3_operations

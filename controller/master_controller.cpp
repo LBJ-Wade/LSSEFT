@@ -183,10 +183,18 @@ void master_controller::execute()
         // distribute this work list among the worker processes
         if(Pk_work) this->scatter(cosmology_model, *model, *Pk_work, dmgr);
         
+        // build a work list of the Matsubara A coefficient associated with these resummation scales
+        std::unique_ptr<Matsubara_A_work_list> Matsubara_work =
+          dmgr.build_Matsubara_A_work_list(*model, *IR_resum_db, Pk);
+    
+        // distribute this work list among the worker processes
+        if(Matsubara_work) this->scatter(cosmology_model, *model, *Matsubara_work, dmgr);
+        
         // build a work list for the resummed multipole power spectra
         std::unique_ptr<multipole_Pk_work_list> multipole_Pk_work =
           dmgr.build_multipole_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, *IR_resum_db, Pk);
-        
+    
+        // distribute this work list among the worker processes
         if(multipole_Pk_work) this->scatter(cosmology_model, *model, *multipole_Pk_work, dmgr);
       }
 

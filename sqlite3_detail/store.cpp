@@ -423,4 +423,31 @@ namespace sqlite3_operations
       }
     
     
+    void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model,
+               const Matsubara_A& sample)
+      {
+        assert(db != nullptr);
+        
+        std::ostringstream insert_stmt;
+        insert_stmt
+          << "INSERT INTO " << policy.Matsubara_A_table() << " VALUES (@mid, @IR_resum_id, @A);";
+    
+        // prepare statement
+        sqlite3_stmt* stmt;
+        check_stmt(db, sqlite3_prepare_v2(db, insert_stmt.str().c_str(), insert_stmt.str().length()+1, &stmt, nullptr));
+    
+        // bind parameter values
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@mid"), model.get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_resum_id"), sample.get_token().get_id()));
+        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@A"), store_impl::make_dimensionless(*sample)));
+    
+        // perform insertion
+        check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_MATSUBARA_A_FAIL, SQLITE_DONE);
+    
+        // clear bindings and release
+        check_stmt(db, sqlite3_clear_bindings(stmt));
+        check_stmt(db, sqlite3_finalize(stmt));
+      }
+    
+    
   }   // namespace sqlite3_operations

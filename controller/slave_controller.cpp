@@ -59,6 +59,13 @@ void slave_controller::execute()
                 break;
               }
             
+            case MPI_detail::MESSAGE_NEW_MATSUBARA_A_TASK:
+              {
+                this->mpi_world.recv(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_NEW_MATSUBARA_A);
+                this->process_task<Matsubara_A_work_record>();
+                break;
+              }
+            
             case MPI_detail::MESSAGE_NEW_MULTIPOLE_PK_TASK:
               {
                 this->mpi_world.recv(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_NEW_MULTIPOLE_PK_TASK);
@@ -200,12 +207,10 @@ void slave_controller::process_item(MPI_detail::new_one_loop_Pk& payload)
 void slave_controller::process_item(MPI_detail::new_multipole_Pk& payload)
   {
     const Mpc_units::energy& k = payload.get_k();
-    const Mpc_units::energy& IR_resum = payload.get_IR_resum();
+    const Matsubara_A& A = payload.get_Matsubara_A();
     const oneloop_Pk& oneloop_data = payload.get_oneloop_Pk_data();
     const oneloop_growth_record& gf_data = payload.get_gf_data();
     const tree_power_spectrum& Pk = payload.get_tree_power_spectrum();
-    
-    const IR_resum_token& IR_resum_tok = payload.get_IR_resum_token();
     
 //    std::cout << "Worker " << this->worker_number() << " processing multipole P(k) for"
 //              << " k-id = " << oneloop_data.get_k_token().get_id()
@@ -215,10 +220,27 @@ void slave_controller::process_item(MPI_detail::new_multipole_Pk& payload)
 //              << ", IR-resum-id = " << IR_resum_tok.get_id() << '\n';
     
     multipole_Pk_calculator calculator;
-    multipole_Pk sample = calculator.calculate(k, IR_resum, IR_resum_tok, oneloop_data, gf_data, Pk);
+    multipole_Pk sample = calculator.calculate_Legendre(k, A, oneloop_data, gf_data, Pk);
     
     // inform master process that the calculation is finished
     MPI_detail::multipole_Pk_ready return_payload(sample);
+    boost::mpi::request ack = this->mpi_world.isend(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_WORK_PRODUCT_READY, return_payload);
+    ack.wait();
+  }
+
+
+void slave_controller::process_item(MPI_detail::new_Matsubara_A& payload)
+  {
+    const Mpc_units::energy& IR_resum = payload.get_IR_resum();
+    const tree_power_spectrum& Pk = payload.get_tree_power_spectrum();
+    
+    const IR_resum_token& IR_resum_tok = payload.get_IR_resum_token();
+    
+    multipole_Pk_calculator calculator;
+    Matsubara_A item = calculator.calculate_Matsubara_A(IR_resum, IR_resum_tok, Pk);
+    
+    // inform master process that the calculation is finished
+    MPI_detail::Matsubara_A_ready return_payload(item);
     boost::mpi::request ack = this->mpi_world.isend(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_WORK_PRODUCT_READY, return_payload);
     ack.wait();
   }

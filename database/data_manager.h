@@ -112,13 +112,18 @@ class data_manager
                                                                          IR_resum_database& IR_resum_db,
                                                                          std::shared_ptr<tree_power_spectrum>& Pk);
     
+    //! build a work list representing data for calculation of the Matsubara-A coefficient
+    std::unique_ptr<Matsubara_A_work_list> build_Matsubara_A_work_list(FRW_model_token& model,
+                                                                       IR_resum_database& IR_resum_db,
+                                                                       std::shared_ptr<tree_power_spectrum>& Pk);
+    
   protected:
     
     //! tensor together (k, IR cutoff, UV cutoff) combinations for loop integrals
     loop_configs tensor_product(k_database& k_db, IR_cutoff_database& IR_db, UV_cutoff_database& UV_db);
     
     //! tensor together (k, IR cutoff, UV cutoff, IR resummation scale) combinations for loop integrals
-    resum_configs tensor_product(k_database& k_db, IR_cutoff_database& IR_cutoff_db, UV_cutoff_database& UV_cutoff_db,
+    resum_Pk_configs tensor_product(k_database& k_db, IR_cutoff_database& IR_cutoff_db, UV_cutoff_database& UV_cutoff_db,
                                  IR_resum_database& IR_resum_db);
 
 
@@ -172,6 +177,11 @@ class data_manager
     PayloadType find(transaction_manager& mgr, const FRW_model_token& model,
                      const k_token& k, const z_token& z,
                      const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
+    
+    //! extract a quantity of a IR-resummation-scale dependent quantity
+    template <typename PayloadType>
+    PayloadType find(transaction_manager& mgr, const FRW_model_token& model,
+                     const IR_resum_token& IR_resum);
 
     // TRANSACTIONS
 

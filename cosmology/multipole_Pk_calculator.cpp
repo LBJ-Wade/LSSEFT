@@ -49,26 +49,21 @@ namespace multipole_Pk_calculator_impl
       
       public:
         
-        integrand_data(const Mpc_units::energy& _k, const Mpc_units::energy& UV, const Mpc_units::energy& IR,
-                       const tree_power_spectrum& _Pk)
-          : k(_k),
-            UV_cutoff(UV),
+        integrand_data(const Mpc_units::energy& UV, const Mpc_units::energy& IR, const tree_power_spectrum& _Pk)
+          : UV_cutoff(UV),
             IR_cutoff(IR),
             Pk(_Pk),
             jacobian(UV_cutoff - IR_cutoff),
-            q_range(UV_cutoff - IR_cutoff),
-            k_sq(k*k)
+            q_range(UV_cutoff - IR_cutoff)
           {
           }
         
-        const Mpc_units::energy& k;
         const Mpc_units::energy& UV_cutoff;
         const Mpc_units::energy& IR_cutoff;
         const tree_power_spectrum& Pk;
         
         Mpc_units::energy  jacobian;
         Mpc_units::energy  q_range;
-        Mpc_units::energy2 k_sq;
       };
     
     
@@ -330,16 +325,16 @@ namespace multipole_Pk_calculator_impl
         
         Mpc_units::energy q = data->IR_cutoff + x[0] * data->q_range;
         
-        f[0] = data->jacobian * data->k*data->k * data->Pk(q);
+        f[0] = data->jacobian * data->Pk(q) / Mpc_units::Mpc2;
         
         return(0);  // return value irrelevant unless = -999, which means stop integration
       }
     
   }
 
-multipole_Pk multipole_Pk_calculator::calculate(const Mpc_units::energy& k, const Mpc_units::energy& IR_resum,
-                                                const IR_resum_token& IR_resum_tok, const oneloop_Pk& data,
-                                                const oneloop_growth_record& gf_data, const tree_power_spectrum& Ptree)
+multipole_Pk multipole_Pk_calculator::calculate_Legendre(const Mpc_units::energy& k, const Matsubara_A& A,
+                                                         const oneloop_Pk& data, const oneloop_growth_record& gf_data,
+                                                         const tree_power_spectrum& Ptree)
   {
     // construct lambdas to access components of an RSD P(k) record
 
@@ -356,8 +351,9 @@ multipole_Pk multipole_Pk_calculator::calculate(const Mpc_units::energy& k, cons
     auto access_Z2vvd  = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy  { return data.get_Z2_vvdelta().value; };
     auto access_Z2vvv  = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy  { return data.get_Z2_vvv().value; };
     
-    // get Matsubara A-coeff (remember we compute it multiplied by k^2 to get something dimensionless)
-    double Matsubara_A = this->compute_Matsubara_A(k, IR_resum, Ptree);
+    // get Matsubara A-coeff (remember we have to scale up by the linear growth factor, since we store just the
+    // raw integral over the early-time tree-level power spectrum)
+    double Matsubara_A = gf_data.g*gf_data.g * k*k * A;
     
     double A_coeff = gf_data.f*(gf_data.f+2.0) * Matsubara_A;
     double B_coeff = Matsubara_A;
@@ -394,9 +390,9 @@ multipole_Pk multipole_Pk_calculator::calculate(const Mpc_units::energy& k, cons
     Mpc_units::inverse_energy3 P2_22_rs = this->decompose(access_22, data, multipole_Pk_calculator_impl::mu_to_ell2_rs(A_coeff, B_coeff));
     Mpc_units::inverse_energy3 P4_22_rs = this->decompose(access_22, data, multipole_Pk_calculator_impl::mu_to_ell4_rs(A_coeff, B_coeff));
     
-    Mpc_units::inverse_energy3 P0_SPT_rs = this->decompose_1loop_resummed(data, Matsubara_A, gf_data.f, multipole_Pk_calculator_impl::mu_to_ell0_rs(A_coeff, B_coeff), k, Ptree);
-    Mpc_units::inverse_energy3 P2_SPT_rs = this->decompose_1loop_resummed(data, Matsubara_A, gf_data.f, multipole_Pk_calculator_impl::mu_to_ell2_rs(A_coeff, B_coeff), k, Ptree);
-    Mpc_units::inverse_energy3 P4_SPT_rs = this->decompose_1loop_resummed(data, Matsubara_A, gf_data.f, multipole_Pk_calculator_impl::mu_to_ell4_rs(A_coeff, B_coeff), k, Ptree);
+    Mpc_units::inverse_energy3 P0_SPT_rs = this->decompose_1loop_resummed(data, Matsubara_A, gf_data, multipole_Pk_calculator_impl::mu_to_ell0_rs(A_coeff, B_coeff), k, Ptree);
+    Mpc_units::inverse_energy3 P2_SPT_rs = this->decompose_1loop_resummed(data, Matsubara_A, gf_data, multipole_Pk_calculator_impl::mu_to_ell2_rs(A_coeff, B_coeff), k, Ptree);
+    Mpc_units::inverse_energy3 P4_SPT_rs = this->decompose_1loop_resummed(data, Matsubara_A, gf_data, multipole_Pk_calculator_impl::mu_to_ell4_rs(A_coeff, B_coeff), k, Ptree);
     
     Mpc_units::inverse_energy P0_Z2d_rs = this->decompose(access_Z2d, data, multipole_Pk_calculator_impl::mu_to_ell0_rs(A_coeff, B_coeff));
     Mpc_units::inverse_energy P2_Z2d_rs = this->decompose(access_Z2d, data, multipole_Pk_calculator_impl::mu_to_ell2_rs(A_coeff, B_coeff));
@@ -441,7 +437,7 @@ multipole_Pk multipole_Pk_calculator::calculate(const Mpc_units::energy& k, cons
     
     return multipole_Pk(data.get_k_token(), data.get_IR_token(),
                         data.get_UV_token(), data.get_z_token(),
-                        IR_resum_tok, P0, P2, P4);
+                        A.get_token(), P0, P2, P4);
   }
 
 
@@ -465,7 +461,8 @@ multipole_Pk_calculator::decompose(Accessor extract, const oneloop_Pk& data, Dec
 
 template <typename Decomposer>
 Mpc_units::inverse_energy3
-multipole_Pk_calculator::decompose_1loop_resummed(const oneloop_Pk& data, double Matsubara_A, double f,
+multipole_Pk_calculator::decompose_1loop_resummed(const oneloop_Pk& data, double Matsubara_A,
+                                                  const oneloop_growth_record& gf_data,
                                                   Decomposer decomp, const Mpc_units::energy& k,
                                                   const tree_power_spectrum& Ptree)
   {
@@ -475,10 +472,15 @@ multipole_Pk_calculator::decompose_1loop_resummed(const oneloop_Pk& data, double
     auto raw_mu6 = data.get_dd_rsd_mu6().get_1loop_SPT().value;
     auto raw_mu8 = data.get_dd_rsd_mu8().get_1loop_SPT().value;
     
-    auto mu0 = raw_mu0 + Matsubara_A * Ptree(k);
-    auto mu2 = raw_mu2 + (4.0*f + f*f) * Matsubara_A * Ptree(k);
-    auto mu4 = raw_mu4 + (5.0*f*f + 2.0*f*f*f) * Matsubara_A * Ptree(k);
-    auto mu6 = raw_mu6 + (2.0*f*f*f + f*f*f*f) * Matsubara_A * Ptree(k);
+    double g = gf_data.g;
+    double f = gf_data.f;
+    
+    auto Ptr = g*g * Ptree(k);
+    
+    auto mu0 = raw_mu0 + Matsubara_A * Ptr;
+    auto mu2 = raw_mu2 + (4.0*f + f*f) * Matsubara_A * Ptr;
+    auto mu4 = raw_mu4 + (5.0*f*f + 2.0*f*f*f) * Matsubara_A * Ptr;
+    auto mu6 = raw_mu6 + (2.0*f*f*f + f*f*f*f) * Matsubara_A * Ptr;
     auto mu8 = raw_mu8;
     
     return mu0 * decomp(mu_power::mu0)
@@ -489,8 +491,9 @@ multipole_Pk_calculator::decompose_1loop_resummed(const oneloop_Pk& data, double
   }
 
 
-double multipole_Pk_calculator::compute_Matsubara_A(const Mpc_units::energy& k, const Mpc_units::energy& IR_resum,
-                                                    const tree_power_spectrum& Ptree)
+Matsubara_A
+multipole_Pk_calculator::calculate_Matsubara_A(const Mpc_units::energy& IR_resum, const IR_resum_token& IR_resum_tok,
+                                               const tree_power_spectrum& Ptree)
   {
     cubareal integral[multipole_Pk_calculator_impl::dimensions];
     cubareal error[multipole_Pk_calculator_impl::dimensions];
@@ -502,8 +505,12 @@ double multipole_Pk_calculator::compute_Matsubara_A(const Mpc_units::energy& k, 
     
     const powerspectrum_database& db = Ptree.get_db();
     
+    // use 10% clearance above lower limit of spline to avoid unwanted effects associated
+    // with inaccuracies in the fit there
+    constexpr double TEN_PERCENT_CLEARANCE = 1.1;
+    
     std::unique_ptr<multipole_Pk_calculator_impl::integrand_data> data =
-      std::make_unique<multipole_Pk_calculator_impl::integrand_data>(k, IR_resum, db.get_k_min(), Ptree);
+      std::make_unique<multipole_Pk_calculator_impl::integrand_data>(IR_resum, TEN_PERCENT_CLEARANCE*db.get_k_min(), Ptree);
     
     cubacores(0, multipole_Pk_calculator_impl::pcores);
     
@@ -519,5 +526,5 @@ double multipole_Pk_calculator::compute_Matsubara_A(const Mpc_units::energy& k, 
           &regions, &evaluations, &fail,
           integral, error, prob);
     
-    return integral[0] / (6.0*M_PI*M_PI);
+    return Matsubara_A(IR_resum_tok, integral[0] * Mpc_units::Mpc2 / (6.0*M_PI*M_PI));
   }

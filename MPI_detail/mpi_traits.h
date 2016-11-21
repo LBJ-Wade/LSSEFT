@@ -44,6 +44,15 @@ namespace MPI_detail
         static constexpr unsigned int new_item_message() { return(MESSAGE_NEW_ONE_LOOP_PK); }
       };
     
+    template<> struct work_item_traits<Matsubara_A_work_record>
+      {
+        typedef new_Matsubara_A   outgoing_payload_type;
+        typedef Matsubara_A_ready incoming_payload_type;
+        
+        static constexpr unsigned int new_task_message() { return(MESSAGE_NEW_MATSUBARA_A_TASK); }
+        static constexpr unsigned int new_item_message() { return(MESSAGE_NEW_MATSUBARA_A); }
+      };
+    
     template <> struct work_item_traits<multipole_Pk_work_record>
       {
         typedef new_multipole_Pk   outgoing_payload_type;

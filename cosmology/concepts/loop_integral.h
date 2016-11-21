@@ -77,15 +77,21 @@ inline double dimensionful_unit<double>()
   }
 
 template <>
-inline Mpc_units::inverse_energy3 dimensionful_unit<Mpc_units::inverse_energy3>()
-  {
-    return Mpc_units::Mpc3;
-  }
-
-template <>
 inline Mpc_units::inverse_energy dimensionful_unit<Mpc_units::inverse_energy>()
   {
     return Mpc_units::Mpc;
+  }
+
+template <>
+inline Mpc_units::inverse_energy2 dimensionful_unit<Mpc_units::inverse_energy2>()
+  {
+    return Mpc_units::Mpc2;
+  }
+
+template <>
+inline Mpc_units::inverse_energy3 dimensionful_unit<Mpc_units::inverse_energy3>()
+  {
+    return Mpc_units::Mpc3;
   }
 
 

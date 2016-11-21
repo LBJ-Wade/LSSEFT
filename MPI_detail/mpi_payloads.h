@@ -18,16 +18,18 @@ namespace MPI_detail
   {
 
     //! build payload for transfer-function integration
-    new_transfer_integration build_payload(const FRW_model& model, std::list<transfer_work_record>::const_iterator& t);
+    new_transfer_integration build_payload(const FRW_model& model, transfer_work_list::const_iterator& t);
 
     //! build payload for loop integration
-    new_loop_momentum_integration build_payload(const FRW_model& model, std::list<loop_momentum_work_record>::const_iterator& t);
+    new_loop_momentum_integration build_payload(const FRW_model& model, loop_momentum_work_list::const_iterator& t);
     
     //! build payload for one-loop P(k) calculation
-    new_one_loop_Pk build_payload(const FRW_model&, std::list<one_loop_Pk_work_record>::const_iterator& t);
+    new_one_loop_Pk build_payload(const FRW_model&, one_loop_Pk_work_list::const_iterator& t);
+    
+    new_Matsubara_A build_payload(const FRW_model&, Matsubara_A_work_list::const_iterator& t);
     
     //! build payload for multipole P(k) calculation
-    new_multipole_Pk build_payload(const FRW_model&, std::list<multipole_Pk_work_record>::const_iterator& t);
+    new_multipole_Pk build_payload(const FRW_model&, multipole_Pk_work_list::const_iterator& t);
 
 
   }   // namespace MPI_detail

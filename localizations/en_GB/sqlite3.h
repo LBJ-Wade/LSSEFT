@@ -27,14 +27,13 @@ constexpr auto ERROR_SQLITE3_TEMPORARY_WAVENUMBER      = "failed to insert waven
 constexpr auto ERROR_SQLITE3_INSERT_TRANSFER_FAIL      = "failed to insert transfer function record [backend code=";
 constexpr auto ERROR_SQLITE3_INSERT_GROWTH_G_FAIL      = "failed to insert one-loop growth g-factor record [backend code=";
 constexpr auto ERROR_SQLITE3_INSERT_GROWTH_F_FAIL      = "failed to insert one-loop growth g-factor record [backend code=";
-constexpr auto ERROR_SQLITE3_INSERT_GROWTH_META_FAIL   = "failed to insert one-loop growth metadata record [backend code=";
 constexpr auto ERROR_SQLITE3_INSERT_LOOP_MOMENTUM_FAIL = "failed to insert one-loop momentum integral record [backend code=";
 constexpr auto ERROR_SQLITE3_INSERT_ONELOOP_PK_FAIL    = "failed to insert one-loop P(k) record [backend code=";
 constexpr auto ERROR_SQLITE3_INSERT_ONELOOP_RSD_PK_FAIL = "failed to insert one-loop RSD P(k) record [backend code=";
 constexpr auto ERROR_SQLITE3_INSERT_MULTIPOLE_PK_FAIL  = "failed to insert multipole P(k) record [backend code=";
+constexpr auto ERROR_SQLITE3_INSERT_MATSUBARA_A_FAIL   = "failed to insert Matsubara-A record [backend code=";
 
 constexpr auto ERROR_SQLITE3_FG_GROWTH_TABLE_READ_FAIL = "failed to read from g- and f-factor growth tables [backend code=";
-constexpr auto ERROR_SQLITE3_FG_GROWTH_META_READ_FAIL  = "failed to read g- and f-factor metadata [backend code=";
 constexpr auto ERROR_SQLITE3_FG_GROWTH_MISREAD         = "read unexpected number of results from g- and f-factor growth table";
 constexpr auto ERROR_SQLITE3_READ_LOOP_MOMENTUM_FAIL   = "failed to read from loop momentum table [backend code=";
 constexpr auto ERROR_SQLITE3_LOOP_MOMENTUM_MISREAD     = "read unexpected number of results from loop momentum table [backend code=";
@@ -42,5 +41,7 @@ constexpr auto ERROR_SQLITE3_READ_PK_FAIL              = "failed to read from th
 constexpr auto ERROR_SQLITE3_READ_PK_MISREAD           = "read unexpected number of results from delta-delta P(k) table [backend code=";
 constexpr auto ERROR_SQLITE3_READ_RSD_PK_FAIL          = "failed to read from a delta-delta RSD P(k) table [backend code=";
 constexpr auto ERROR_SQLITE3_READ_RSD_PK_MISREAD       = "read unexpected number of results from a delta-delta RSD P(k) table [backend code=";
+constexpr auto ERROR_SQLITE3_READ_MATSUBARA_A_FAIL     = "failed to read from Matsubara-A table [backend code=";
+constexpr auto ERROR_SQLITE3_MATSUBARA_A_MISREAD       = "read unexpected number of results from Matsubara-A table [backend code=";
 
 #endif //LSSEFT_SQLITE3_EN_GB_H

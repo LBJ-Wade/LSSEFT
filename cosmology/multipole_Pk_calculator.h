@@ -11,6 +11,7 @@
 #include "concepts/oneloop_growth.h"
 #include "concepts/oneloop_Pk.h"
 #include "concepts/multipole_Pk.h"
+#include "concepts/Matsubara_A.h"
 #include "concepts/tree_power_spectrum.h"
 
 #include "database/tokens.h"
@@ -44,11 +45,15 @@ class multipole_Pk_calculator
     
   public:
     
-    //! calculate power spectra
+    //! calculate power spectra decomposition into Legendre modes
     multipole_Pk
-    calculate(const Mpc_units::energy& k, const Mpc_units::energy& IR_resum,
-              const IR_resum_token& IR_resum_tok, const oneloop_Pk& data,
-              const oneloop_growth_record& gf_data, const tree_power_spectrum& Ptree);
+    calculate_Legendre(const Mpc_units::energy& k, const Matsubara_A& A,
+                       const oneloop_Pk& data, const oneloop_growth_record& gf_data, const tree_power_spectrum& Ptree);
+    
+    //! calculate Matsubara-A coefficient
+    Matsubara_A
+    calculate_Matsubara_A(const Mpc_units::energy& IR_resum, const IR_resum_token& IR_resum_tok,
+                          const tree_power_spectrum& Ptree);
     
   private:
     
@@ -61,12 +66,8 @@ class multipole_Pk_calculator
     //! to prevent double-counting after resummation
     template <typename Decomposer>
     Mpc_units::inverse_energy3
-    decompose_1loop_resummed(const oneloop_Pk& data, double Matsubara_A, double f, Decomposer decomp,
-                             const Mpc_units::energy& k, const tree_power_spectrum& Ptree);
-    
-    //! compute Matsubara's A coefficient (actually multiplied by k^2 to make it dimensionless)
-    double compute_Matsubara_A(const Mpc_units::energy& k, const Mpc_units::energy& IR_resum,
-                               const tree_power_spectrum& Ptree);
+    decompose_1loop_resummed(const oneloop_Pk& data, double Matsubara_A, const oneloop_growth_record& gf_data,
+                             Decomposer decomp, const Mpc_units::energy& k, const tree_power_spectrum& Ptree);
     
     // INTERNAL DATA
     

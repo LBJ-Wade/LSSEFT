@@ -150,7 +150,7 @@ namespace sqlite3_operations
     //! find missing redshifts for a named loop-k-dependent table, returned as a std::set<> of ints
     std::set<unsigned int> missing_redshifts_for_table(sqlite3* db, const FRW_model_token& model,
                                                        const std::string& table, const std::string& z_table,
-                                                       const resum_configs::value_type& record)
+                                                       const resum_Pk_configs::value_type& record)
       {
         assert(db != nullptr);
         
@@ -293,7 +293,7 @@ namespace sqlite3_operations
     
     std::set<unsigned int> update_missing_multipole_Pk(sqlite3* db, const FRW_model_token& model,
                                                        const std::string& table, const std::string& z_table,
-                                                       const resum_configs::value_type& record,
+                                                       const resum_Pk_configs::value_type& record,
                                                        std::set<unsigned int>& total_missing)
       {
         std::set<unsigned int> missing = missing_redshifts_for_table(db, model, table, z_table, record);
@@ -381,7 +381,7 @@ namespace sqlite3_operations
     
     
     void drop_inconsistent_redshifts(sqlite3* db, const FRW_model_token& model, const std::string& table,
-                                     const resum_configs::value_type& record, const std::set<unsigned int>& missing,
+                                     const resum_Pk_configs::value_type& record, const std::set<unsigned int>& missing,
                                      const std::set<unsigned int>& total_missing)
       {
         std::set<unsigned int> inconsistent_set;
@@ -464,13 +464,13 @@ namespace sqlite3_operations
 
     
     //! search for missing wavenumber/UV limit/IR limit configurations for a named table
-    std::unordered_set<data_manager_impl::loop_momentum_configuration>
+    loop_configs
     missing_loop_integral_configurations_for_table(sqlite3* db, const FRW_model_token& model, const std::string& table,
                                                    const std::unordered_set<data_manager_impl::loop_momentum_configuration>& required_configs)
       {
         assert(db != nullptr);
     
-        std::unordered_set<data_manager_impl::loop_momentum_configuration> missing_configs;
+        loop_configs missing_configs;
     
         std::ostringstream count_stmt;
         count_stmt
@@ -696,7 +696,7 @@ namespace sqlite3_operations
     std::unique_ptr<z_database>
     missing_multipole_Pk_redshifts(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
                                    const FRW_model_token& model, const std::string& z_table, const z_database& z_db,
-                                   const resum_configs::value_type& record)
+                                   const resum_Pk_configs::value_type& record)
       {
         assert(db != nullptr);
     
@@ -730,6 +730,53 @@ namespace sqlite3_operations
           }
     
         return missing_db;
+      }
+    
+    
+    Matsubara_configs
+    missing_Matsubara_A_configurations(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
+                                       const FRW_model_token& model, const IR_resum_database& IR_db)
+      {
+        assert(db != nullptr);
+        
+        Matsubara_configs missing_configs;
+        
+        std::ostringstream count_stmt;
+        count_stmt
+          << "SELECT COUNT(*) FROM (SELECT * FROM " << policy.Matsubara_A_table() << " "
+          << "WHERE mid=@mid AND IR_resum_id=@IR_resum_id);";
+    
+        // prepare statement
+        sqlite3_stmt* stmt;
+        check_stmt(db, sqlite3_prepare_v2(db, count_stmt.str().c_str(), count_stmt.str().length()+1, &stmt, nullptr));
+        
+        for(IR_resum_database::const_record_iterator t = IR_db.record_cbegin(); t != IR_db.record_cend(); ++t)
+          {
+            // bind parameter values
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@mid"), model.get_id()));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_resum_id"), t->get_token().get_id()));
+    
+            int status = 0;
+            while((status = sqlite3_step(stmt)) != SQLITE_DONE)
+              {
+                if(status == SQLITE_ROW)
+                  {
+                    if(sqlite3_column_int(stmt, 0) == 0)
+                      {
+                        missing_configs.emplace(t);
+                      }
+                  }
+              }
+    
+            // release bindings and reset statement
+            check_stmt(db, sqlite3_clear_bindings(stmt));
+            check_stmt(db, sqlite3_reset(stmt));
+          }
+    
+        // finalize statement to release resources
+        check_stmt(db, sqlite3_finalize(stmt));
+    
+        return missing_configs;
       }
     
     

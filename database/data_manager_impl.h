@@ -21,9 +21,9 @@ namespace data_manager_impl
 
       public:
 
-        loop_momentum_configuration(k_database::const_record_iterator& _k,
-                                    UV_cutoff_database::const_record_iterator& _UV_cutoff,
-                                    IR_cutoff_database::const_record_iterator& _IR_cutoff)
+        loop_momentum_configuration(const k_database::const_record_iterator& _k,
+                                    const UV_cutoff_database::const_record_iterator& _UV_cutoff,
+                                    const IR_cutoff_database::const_record_iterator& _IR_cutoff)
           : k(_k),
             UV_cutoff(_UV_cutoff),
             IR_cutoff(_IR_cutoff)
@@ -32,9 +32,9 @@ namespace data_manager_impl
 
         ~loop_momentum_configuration() = default;
 
-        k_database::const_record_iterator k;
-        UV_cutoff_database::const_record_iterator UV_cutoff;
-        IR_cutoff_database::const_record_iterator IR_cutoff;
+        const k_database::const_record_iterator k;
+        const UV_cutoff_database::const_record_iterator UV_cutoff;
+        const IR_cutoff_database::const_record_iterator IR_cutoff;
       };
     
     
@@ -45,15 +45,38 @@ namespace data_manager_impl
       }
     
     
+    class Matsubara_A_configuration
+      {
+        
+      public:
+        
+        Matsubara_A_configuration(const IR_resum_database::const_record_iterator& _IR_resum)
+          : IR_resum(_IR_resum)
+          {
+          }
+        
+        ~Matsubara_A_configuration() = default;
+        
+        const IR_resum_database::const_record_iterator IR_resum;
+      };
+    
+    
+    // specialize equality operator
+    inline bool operator==(const Matsubara_A_configuration& A, const Matsubara_A_configuration& B)
+      {
+        return A.IR_resum == B.IR_resum;
+      }
+    
+    
     class resummed_Pk_configuration
       {
       
       public:
     
-        resummed_Pk_configuration(k_database::const_record_iterator& _k,
-                                  UV_cutoff_database::const_record_iterator& _UV_cutoff,
-                                  IR_cutoff_database::const_record_iterator& _IR_cutoff,
-                                  IR_resum_database::const_record_iterator& _IR_resum)
+        resummed_Pk_configuration(const k_database::const_record_iterator& _k,
+                                  const UV_cutoff_database::const_record_iterator& _UV_cutoff,
+                                  const IR_cutoff_database::const_record_iterator& _IR_cutoff,
+                                  const IR_resum_database::const_record_iterator& _IR_resum)
           : k(_k),
             UV_cutoff(_UV_cutoff),
             IR_cutoff(_IR_cutoff),
@@ -63,10 +86,10 @@ namespace data_manager_impl
         
         ~resummed_Pk_configuration() = default;
         
-        k_database::const_record_iterator k;
-        UV_cutoff_database::const_record_iterator UV_cutoff;
-        IR_cutoff_database::const_record_iterator IR_cutoff;
-        IR_resum_database::const_record_iterator IR_resum;
+        const k_database::const_record_iterator k;
+        const UV_cutoff_database::const_record_iterator UV_cutoff;
+        const IR_cutoff_database::const_record_iterator IR_cutoff;
+        const IR_resum_database::const_record_iterator IR_resum;
       };
     
     
@@ -129,6 +152,38 @@ namespace std
             std::size_t hash = 0;
             hash_impl::hash_combine(hash, config.k->get_token(), config.UV_cutoff->get_token(), config.IR_cutoff->get_token());
             
+            return hash;
+          }
+        
+      };
+    
+    
+    // specialize std::hash() to Matsubara_configuration so that it can be used with std::unordered_set
+    template <>
+    class hash<::data_manager_impl::Matsubara_A_configuration>
+      {
+        
+        // CONSTRUCTOR, DESTRUCTOR
+      
+      public:
+        
+        //! constructor is default
+        hash() = default;
+        
+        //! destructor is default
+        ~hash() = default;
+        
+        
+        // IMPLEMENTATION
+      
+      public:
+        
+        //! hash operation
+        size_t operator()(const ::data_manager_impl::Matsubara_A_configuration& config) const
+          {
+            size_t hash = 0;
+            hash_impl::hash_combine(hash, config.IR_resum->get_token());
+
             return hash;
           }
         

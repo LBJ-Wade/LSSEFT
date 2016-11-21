@@ -84,6 +84,7 @@ SET(COSMOLOGY_SOURCE_FILES
   cosmology/concepts/tree_power_spectrum.cpp cosmology/concepts/tree_power_spectrum.h
   cosmology/concepts/multipole_Pk.cpp cosmology/concepts/multipole_Pk.h
   cosmology/concepts/oneloop_Pk.cpp cosmology/concepts/oneloop_Pk.h
+  cosmology/concepts/Matsubara_A.cpp cosmology/concepts/Matsubara_A.h
   cosmology/oneloop_integrands/shared.h
   cosmology/oneloop_integrands/delta_13.h
   cosmology/oneloop_integrands/delta_22.h
@@ -141,7 +142,7 @@ SET(SOURCE_FILES
   ${DATABASE_SOURCE_FILES}
   ${SQLITE3_DETAIL_SOURCE_FILES}
   ${LOCALIZATION}
-  ${LOCALIZATION_EN_GB})
+  ${LOCALIZATION_EN_GB} cosmology/concepts/Matsubara_A.cpp cosmology/concepts/Matsubara_A.h)
 
 ADD_EXECUTABLE(lsseft
   main.cpp
@@ -161,6 +162,7 @@ ADD_EXECUTABLE(lsseft
   cosmology/concepts/tree_power_spectrum.cpp
   cosmology/concepts/oneloop_Pk.cpp
   cosmology/concepts/multipole_Pk.cpp
+  cosmology/concepts/Matsubara_A.cpp
   cosmology/transfer_integrator.cpp
   cosmology/oneloop_growth_integrator.cpp
   cosmology/oneloop_momentum_integrator.cpp

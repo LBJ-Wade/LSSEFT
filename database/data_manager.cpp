@@ -380,10 +380,10 @@ loop_configs data_manager::tensor_product(k_database& k_db, IR_cutoff_database& 
   }
 
 
-resum_configs data_manager::tensor_product(k_database& k_db, IR_cutoff_database& IR_cutoff_db,
+resum_Pk_configs data_manager::tensor_product(k_database& k_db, IR_cutoff_database& IR_cutoff_db,
                                            UV_cutoff_database& UV_cutoff_db, IR_resum_database& IR_resum_db)
   {
-    resum_configs tensor_prod;
+    resum_Pk_configs tensor_prod;
     
     for(k_database::const_record_iterator t = k_db.record_cbegin(); t != k_db.record_cend(); ++t)
       {
@@ -429,7 +429,8 @@ data_manager::build_loop_momentum_work_list(FRW_model_token& model, k_database& 
     // add these missing configurations to the work list
     for(const loop_configs::value_type& record : missing)
       {
-        work_list->emplace_back(*(*record.k), record.k->get_token(), *(*record.UV_cutoff), record.UV_cutoff->get_token(), *(*record.IR_cutoff), record.IR_cutoff->get_token(), Pk);
+        work_list->emplace_back(*(*record.k), record.k->get_token(), *(*record.UV_cutoff),
+                                record.UV_cutoff->get_token(), *(*record.IR_cutoff), record.IR_cutoff->get_token(), Pk);
       }
 
     // close transaction
@@ -462,7 +463,8 @@ data_manager::find<loop_integral>(transaction_manager& mgr, const FRW_model_toke
   {
     // construct payload and ask SQLite backend to populate it
     loop_integral payload(std::move(
-      sqlite3_operations::find(this->handle, mgr, this->policy, model, k, IR_cutoff, UV_cutoff)));
+      sqlite3_operations::find(this->handle, mgr, this->policy, model, k, IR_cutoff, UV_cutoff))
+    );
     
     return std::move(payload);
   }
@@ -475,7 +477,21 @@ data_manager::find<oneloop_Pk>(transaction_manager& mgr, const FRW_model_token& 
   {
     // construct payload and ask SQLite backend to populate it
     oneloop_Pk payload(std::move(
-      sqlite3_operations::find(this->handle, mgr, this->policy, model, k, z, IR_cutoff, UV_cutoff)));
+      sqlite3_operations::find(this->handle, mgr, this->policy, model, k, z, IR_cutoff, UV_cutoff))
+    );
+    
+    return std::move(payload);
+  }
+
+
+template <>
+Matsubara_A
+data_manager::find(transaction_manager& mgr, const FRW_model_token& model, const IR_resum_token& IR_resum)
+  {
+    // construct payload nad ask SQLite backend to populate it
+    Matsubara_A payload(std::move(
+      sqlite3_operations::find(this->handle, mgr, this->policy, model, IR_resum))
+    );
     
     return std::move(payload);
   }
@@ -554,9 +570,9 @@ data_manager::build_multipole_Pk_work_list(FRW_model_token& model, z_database& z
     std::string z_table = sqlite3_operations::z_table(this->handle, *mgr, this->policy, z_db);
     
     // tensor together the desired k-values with the UV and IR cutoffs
-    resum_configs required_configs = this->tensor_product(k_db, IR_cutoff_db, UV_cutoff_db, IR_resum_db);
+    resum_Pk_configs required_configs = this->tensor_product(k_db, IR_cutoff_db, UV_cutoff_db, IR_resum_db);
     
-    for(const resum_configs::value_type& record : required_configs)
+    for(const resum_Pk_configs::value_type& record : required_configs)
       {
         // find redshifts that are missing for this configuration, if any
         std::unique_ptr<z_database> missing_zs =
@@ -575,8 +591,11 @@ data_manager::build_multipole_Pk_work_list(FRW_model_token& model, z_database& z
                   this->find<oneloop_Pk>(*mgr, model, record.k->get_token(), (*t).first,
                                          record.IR_cutoff->get_token(), record.UV_cutoff->get_token())
                 );
+                
+                // lookup Matsubara-A coefficient for this IR resummation scale
+                Matsubara_A A_coeff = this->find<Matsubara_A>(*mgr, model, record.IR_resum->get_token());
     
-                work_list->emplace_back(*(*record.k), *(*record.IR_resum), record.IR_resum->get_token(), loop_data, (*t).second, Pk);
+                work_list->emplace_back(*(*record.k), A_coeff, loop_data, (*t).second, Pk);
               }
           }
       }
@@ -584,11 +603,47 @@ data_manager::build_multipole_Pk_work_list(FRW_model_token& model, z_database& z
     // drop unneeded temporary tables
     sqlite3_operations::drop_temp(this->handle, *mgr, z_table);
     
+    // close transaction
+    mgr->commit();
+    
     timer.stop();
     std::cout << "lsseft: constructed one-loop multipole P(k) work list in time " << format_time(timer.elapsed().wall) << '\n';
     
+    // release list if it contains no work
+    if(work_list->empty()) work_list.release();
+    
+    return work_list;
+  }
+
+
+std::unique_ptr<Matsubara_A_work_list>
+data_manager::build_Matsubara_A_work_list(FRW_model_token& model, IR_resum_database& IR_resum_db,
+                                          std::shared_ptr<tree_power_spectrum>& Pk)
+  {
+    // start timer
+    boost::timer::cpu_timer timer;
+    
+    // construct an empty work list
+    std::unique_ptr<Matsubara_A_work_list> work_list = std::make_unique<Matsubara_A_work_list>();
+    
+    // open a transaction on the tabase
+    std::shared_ptr<transaction_manager> mgr = this->open_transaction();
+    
+    // obatain list of missing configurations
+    Matsubara_configs missing = sqlite3_operations::missing_Matsubara_A_configurations(this->handle, *mgr, this->policy,
+                                                                                       model, IR_resum_db);
+    
+    // add these configurations to the work list
+    for(const Matsubara_configs::value_type& record : missing)
+      {
+        work_list->emplace_back(*(*record.IR_resum), record.IR_resum->get_token(), Pk);
+      }
+    
     // close transaction
     mgr->commit();
+    
+    timer.stop();
+    std::cout << "lsseft: constructed Matsubara-A work list in time " << format_time(timer.elapsed().wall) << '\n';
     
     // release list if it contains no work
     if(work_list->empty()) work_list.release();

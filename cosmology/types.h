@@ -15,6 +15,7 @@
 #include "cosmology/concepts/oneloop_growth.h"
 #include "cosmology/concepts/loop_integral.h"
 #include "cosmology/concepts/oneloop_Pk.h"
+#include "cosmology/concepts/Matsubara_A.h"
 
 #include "units/Mpc_units.h"
 
@@ -220,6 +221,59 @@ class one_loop_Pk_work_record
 typedef std::list<one_loop_Pk_work_record> one_loop_Pk_work_list;
 
 
+//! work record for a Matsubara A-coefficient
+class Matsubara_A_work_record
+  {
+    
+    // CONSTRUCTOR, DESTRUCTOR
+  
+  public:
+    
+    //! constructor
+    Matsubara_A_work_record(const Mpc_units::energy& _IR, const IR_resum_token& _IRt,
+                            const std::shared_ptr<tree_power_spectrum>& _Pk)
+      : IR_resum(_IR),
+        IR_resum_tok(_IRt),
+        Pk(_Pk)
+      {
+      }
+    
+    
+    // INTERFACE
+  
+  public:
+    
+    //! get IR resummation scale
+    const Mpc_units::energy& get_IR_resum() const { return this->IR_resum; }
+    
+    //! get IR resummation token
+    const IR_resum_token& get_IR_resum_token() const { return this->IR_resum_tok; }
+    
+    //! get tree-level power spectrum
+    const std::shared_ptr<tree_power_spectrum>& get_tree_Pk_db() const { return this->Pk; }
+    
+    
+    // INTERNAL DATA
+  
+  private:
+    
+    // Payload data
+    
+    //! IR resummation scale
+    Mpc_units::energy IR_resum;
+    
+    //! IR resummation token
+    IR_resum_token IR_resum_tok;
+    
+    //! tree-level power spectrum
+    std::shared_ptr<tree_power_spectrum> Pk;
+    
+  };
+
+//! list of work
+typedef std::list<Matsubara_A_work_record> Matsubara_A_work_list;
+
+
 //! work record for a (one-loop) multipole power spectrum calculation
 class multipole_Pk_work_record
   {
@@ -229,14 +283,12 @@ class multipole_Pk_work_record
   public:
     
     //! constructor
-    multipole_Pk_work_record(const Mpc_units::energy& _k,
-                             const Mpc_units::energy& _IR, const IR_resum_token& _IRt,
+    multipole_Pk_work_record(const Mpc_units::energy& _k, const Matsubara_A& _A,
                              const std::shared_ptr<oneloop_Pk>& _data,
                              const oneloop_growth_record& _gf_data,
                              const std::shared_ptr<tree_power_spectrum>& _Pk)
       : k(_k),
-        IR_resum(_IR),
-        IR_resum_tok(_IRt),
+        A(_A),
         data(_data),
         gf_data(_gf_data),
         Pk(_Pk)
@@ -251,11 +303,8 @@ class multipole_Pk_work_record
     //! get wavenumber
     const Mpc_units::energy& operator*() const { return this->k; }
     
-    //! get IR resummation scale
-    const Mpc_units::energy& get_IR_resum() const { return this->IR_resum; }
-    
-    //! get IR resummation token
-    const IR_resum_token& get_IR_resum_token() const { return this->IR_resum_tok; }
+    //! get Matsubara A coefficient
+    const Matsubara_A& get_Matsubara_A() const { return this->A; }
     
     //! get one-loop P(k) data
     const std::shared_ptr<oneloop_Pk>& get_Pk_data() const { return this->data; }
@@ -276,11 +325,8 @@ class multipole_Pk_work_record
     //! physical scale k
     Mpc_units::energy k;
     
-    //! IR resummation scale
-    Mpc_units::energy IR_resum;
-    
-    //! IR resummation token
-    IR_resum_token IR_resum_tok;
+    //! Matsubara-A coefficient
+    Matsubara_A A;
     
     //! one-loop power spectrum data
     std::shared_ptr<oneloop_Pk> data;

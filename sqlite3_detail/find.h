@@ -17,6 +17,7 @@
 #include "cosmology/concepts/oneloop_growth.h"
 #include "cosmology/concepts/loop_integral.h"
 #include "cosmology/concepts/oneloop_Pk.h"
+#include "cosmology/concepts/Matsubara_A.h"
 
 #include "sqlite3.h"
 
@@ -37,6 +38,10 @@ namespace sqlite3_operations
     oneloop_Pk find(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
                     const FRW_model_token& model, const k_token& k, const z_token& z,
                     const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
+   
+    //! extract Matsubara-A coefficient for a given IR resummation scale
+    Matsubara_A find(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
+                     const FRW_model_token& model, const IR_resum_token& IR_resum);
     
   }   // namespace sqlite3_operations
 
