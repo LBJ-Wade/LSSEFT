@@ -327,7 +327,7 @@ namespace sqlite3_operations
                 check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@mid"), model.get_id()));
                 check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@zid"), t));
                 
-                check_stmt(db, sqlite3_step(stmt));
+                check_stmt(db, sqlite3_step(stmt), SQLITE_DONE);
     
                 // release bindings and reset statement
                 check_stmt(db, sqlite3_clear_bindings(stmt));
@@ -367,7 +367,7 @@ namespace sqlite3_operations
                 check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@UV_id"), record.UV_cutoff->get_token().get_id()));
                 check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_id"), record.IR_cutoff->get_token().get_id()));
             
-                check_stmt(db, sqlite3_step(stmt));
+                check_stmt(db, sqlite3_step(stmt), SQLITE_DONE);
             
                 // release bindings and reset statement
                 check_stmt(db, sqlite3_clear_bindings(stmt));
@@ -409,7 +409,7 @@ namespace sqlite3_operations
                 check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@UV_cutoff_id"), record.UV_cutoff->get_token().get_id()));
                 check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_resum_id"), record.IR_resum->get_token().get_id()));
                 
-                check_stmt(db, sqlite3_step(stmt));
+                check_stmt(db, sqlite3_step(stmt), SQLITE_DONE);
                 
                 // release bindings and reset statement
                 check_stmt(db, sqlite3_clear_bindings(stmt));
@@ -553,7 +553,7 @@ namespace sqlite3_operations
                 check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@UV_id"), t.UV_cutoff->get_token().get_id()));
                 check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_id"), t.IR_cutoff->get_token().get_id()));
                 
-                check_stmt(db, sqlite3_step(stmt));
+                check_stmt(db, sqlite3_step(stmt), SQLITE_DONE);
                 
                 // release bindings and reset statement
                 check_stmt(db, sqlite3_clear_bindings(stmt));
