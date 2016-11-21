@@ -138,7 +138,7 @@ oneloop_growth_integrator::oneloop_growth_integrator(double a, double r)
   }
 
 
-std::unique_ptr<oneloop_growth> oneloop_growth_integrator::integrate(const FRW_model& model, z_database& z_db)
+growth_integrator_data oneloop_growth_integrator::integrate(const FRW_model& model, z_database& z_db)
   {
     // set up empty oneloop_growth container
     std::unique_ptr<oneloop_growth> ctr = std::make_unique<oneloop_growth>(z_db);
@@ -167,10 +167,8 @@ std::unique_ptr<oneloop_growth> oneloop_growth_integrator::integrate(const FRW_m
     obs.start_timer();
     size_t steps = boost::numeric::odeint::integrate_times(stepper, rhs, x, z_sample.begin(), z_sample.end(), -1E-3, obs);
     obs.stop_timer();
-
-    ctr->set_integration_metadata(obs.read_timer(), steps);
-
-    return(ctr);
+    
+    return growth_integrator_data(std::move(ctr), obs.read_timer(), steps);
   }
 
 

@@ -52,9 +52,6 @@ class sqlite3_policy
     
     //! 1-loop growth f-factor table
     const std::string& f_factor_table() const { return(this->growth_f_factor); }
-    
-    //! 1-loop growth metadata table
-    const std::string& gf_metadata_table() const { return(this->growth_fg_metadata); }
 
     //! 1-loop AA integral table
     const std::string& AA_table() const { return(this->AA); }
@@ -210,9 +207,6 @@ class sqlite3_policy
     //! 1-loop growth f-factor table
     const std::string growth_f_factor;
     
-    //! 1-loop growth metadata table
-    const std::string growth_fg_metadata;
-
     //! 1-loop momentum integrals - AA
     const std::string AA;
     

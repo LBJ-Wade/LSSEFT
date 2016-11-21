@@ -244,44 +244,15 @@ namespace sqlite3_operations
           << "ON " << ztab << ".id = f_sample.zid "
           << "ORDER BY " << ztab << ".ROWID DESC;";
         
-        std::ostringstream meta_select_stmt;
-        meta_select_stmt
-          << "SELECT time, steps FROM " << policy.gf_metadata_table() << " WHERE mid=@mid;";
-        
         // prepare statements
         sqlite3_stmt* g_stmt;
         check_stmt(db, sqlite3_prepare_v2(db, g_select_stmt.str().c_str(), g_select_stmt.str().length()+1, &g_stmt, nullptr));
     
         sqlite3_stmt* f_stmt;
         check_stmt(db, sqlite3_prepare_v2(db, f_select_stmt.str().c_str(), f_select_stmt.str().length()+1, &f_stmt, nullptr));
-        
-        sqlite3_stmt* meta_stmt;
-        check_stmt(db, sqlite3_prepare_v2(db, meta_select_stmt.str().c_str(), meta_select_stmt.str().length()+1, &meta_stmt, nullptr));
     
         check_stmt(db, sqlite3_bind_int(g_stmt, sqlite3_bind_parameter_index(g_stmt, "@mid"), model.get_id()));
         check_stmt(db, sqlite3_bind_int(f_stmt, sqlite3_bind_parameter_index(f_stmt, "@mid"), model.get_id()));
-        check_stmt(db, sqlite3_bind_int(meta_stmt, sqlite3_bind_parameter_index(meta_stmt, "@mid"), model.get_id()));
-        
-        int status = 0;
-        if((status = sqlite3_step(meta_stmt)) != SQLITE_DONE)
-          {
-            if(status == SQLITE_ROW)
-              {
-                payload.set_integration_metadata(sqlite3_column_int64(meta_stmt, 0),
-                                                 sqlite3_column_int(meta_stmt, 1));
-              }
-            else
-              {
-                std::ostringstream msg;
-                msg << ERROR_SQLITE3_FG_GROWTH_META_READ_FAIL << status << ": " << sqlite3_errmsg(db) << "]";
-    
-                check_stmt(db, sqlite3_finalize(g_stmt));
-                check_stmt(db, sqlite3_finalize(f_stmt));
-                check_stmt(db, sqlite3_finalize(meta_stmt));
-    
-                throw runtime_exception(exception_type::database_error, msg.str());
-              }
-          }
         
         int g_status = 0;
         int f_status = 0;
@@ -318,7 +289,6 @@ namespace sqlite3_operations
 
                 check_stmt(db, sqlite3_finalize(g_stmt));
                 check_stmt(db, sqlite3_finalize(f_stmt));
-                check_stmt(db, sqlite3_finalize(meta_stmt));
 
                 throw runtime_exception(exception_type::database_error, msg.str());
               }
@@ -328,7 +298,6 @@ namespace sqlite3_operations
         
         check_stmt(db, sqlite3_finalize(g_stmt));
         check_stmt(db, sqlite3_finalize(f_stmt));
-        check_stmt(db, sqlite3_finalize(meta_stmt));
     
         // drop unneeded temporary tables
         drop_temp(db, mgr, ztab);

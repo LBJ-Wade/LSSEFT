@@ -409,20 +409,6 @@ class oneloop_growth
                    double f, double fA, double fB, double fD, double fE, double fF, double fG, double fJ);
 
 
-    // METADATA
-
-  public:
-
-    //! store integration time
-    void set_integration_metadata(boost::timer::nanosecond_type t, size_t s);
-
-    //! get integration time
-    boost::timer::nanosecond_type get_integration_time() const { return(this->integration_time); }
-
-    //! get number of steps used by integrator
-    size_t get_integration_steps() const { return(this->steps); }
-
-
     // INTERNAL DATA
 
   private:
@@ -485,15 +471,6 @@ class oneloop_growth
     
     //! J growth rate
     std::unique_ptr< std::vector<double> > fJ;
-
-    
-    // METADATA
-
-    //! time taken to perform integration
-    boost::timer::nanosecond_type integration_time;
-
-    //! number of steps used by integrator
-    size_t steps;
     
     
     // enable boost::serialization support, and hence automated packing for transmission over MPI
@@ -521,8 +498,6 @@ class oneloop_growth
         ar & fF;
         ar & fG;
         ar & fJ;
-        ar & integration_time;
-        ar & steps;
       }
 
   };

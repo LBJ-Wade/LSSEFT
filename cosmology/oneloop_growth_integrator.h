@@ -20,6 +20,23 @@
 #include "boost/timer/timer.hpp"
 
 
+struct growth_integrator_data
+  {
+    
+    growth_integrator_data(std::unique_ptr<oneloop_growth> c, boost::timer::nanosecond_type t, size_t s)
+      : container(std::move(c)),
+        time(t),
+        steps(s)
+      {
+      }
+    
+    std::unique_ptr<oneloop_growth> container;
+    boost::timer::nanosecond_type time;
+    size_t steps;
+    
+  };
+
+
 class oneloop_growth_integrator
   {
 
@@ -39,7 +56,7 @@ class oneloop_growth_integrator
   public:
 
     //! integrate one-loop growth factors for a given set of redshift samples
-    std::unique_ptr<oneloop_growth> integrate(const FRW_model& model, z_database& z_db);
+    growth_integrator_data integrate(const FRW_model& model, z_database& z_db);
 
 
     // INTERNAL DATA

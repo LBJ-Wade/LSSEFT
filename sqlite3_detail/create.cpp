@@ -275,16 +275,6 @@ namespace sqlite3_operations
 #endif
     
         exec(db, oneloop_f_stmt.str());
-    
-        std::ostringstream oneloop_fgmeta_stmt;
-        oneloop_fgmeta_stmt
-          << "CREATE TABLE " << policy.gf_metadata_table() << " ("
-          << "mid INTEGER PRIMARY KEY, "
-          << "time INTEGER, "
-          << "steps INTEGER, "
-          << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id));";
-        
-        exec(db, oneloop_fgmeta_stmt.str());
         
         create_impl::oneloop_momentum_integral_table(db, policy.AA_table(), policy);
         create_impl::oneloop_momentum_integral_table(db, policy.AB_table(), policy);

@@ -16,7 +16,6 @@ constexpr auto SQLITE3_DEFAULT_IR_RESUM_CONFIGURATION_TABLE   = "IR_resum";
 constexpr auto SQLITE3_DEFAULT_TRANSFER_TABLE                 = "transfer";
 constexpr auto SQLITE3_DEFAULT_GROWTH_G_TABLE                 = "g_factors";
 constexpr auto SQLITE3_DEFAULT_GROWTH_F_TABLE                 = "f_factors";
-constexpr auto SQLITE3_DEFAULT_LOOP_FG_META_TABLE             = "fg_metadata";
 constexpr auto SQLITE3_DEFAULT_LOOP_AA_TABLE                  = "delta22_AA";
 constexpr auto SQLITE3_DEFAULT_LOOP_AB_TABLE                  = "delta22_AB";
 constexpr auto SQLITE3_DEFAULT_LOOP_BB_TABLE                  = "delta22_BB";

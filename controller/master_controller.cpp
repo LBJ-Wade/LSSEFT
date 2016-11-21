@@ -351,6 +351,8 @@ void master_controller::integrate_oneloop(const FRW_model& model, const FRW_mode
                                           data_manager& dmgr)
   {
     oneloop_growth_integrator integrator;
-    std::unique_ptr<oneloop_growth> sample = integrator.integrate(model, z_db);
-    dmgr.store(token, *sample);
+
+    growth_integrator_data data = integrator.integrate(model, z_db);
+
+    dmgr.store(token, *data.container);
   }

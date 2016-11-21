@@ -295,10 +295,6 @@ namespace sqlite3_operations
         std::ostringstream insert_f_stmt;
         insert_f_stmt
           << "INSERT INTO " << policy.f_factor_table() << " VALUES (@mid, @zid, @f_linear, @fA, @fB, @fD, @fE, @fF, @fG, @fJ);";
-        
-        std::ostringstream insert_meta_stmt;
-        insert_meta_stmt
-          << "INSERT INTO " << policy.gf_metadata_table() << " VALUES (@mid, @time, @steps);";
 
         // prepare statements
         sqlite3_stmt* g_stmt;
@@ -306,15 +302,6 @@ namespace sqlite3_operations
     
         sqlite3_stmt* f_stmt;
         check_stmt(db, sqlite3_prepare_v2(db, insert_f_stmt.str().c_str(), insert_f_stmt.str().length()+1, &f_stmt, nullptr));
-        
-        sqlite3_stmt* meta_stmt;
-        check_stmt(db, sqlite3_prepare_v2(db, insert_meta_stmt.str().c_str(), insert_meta_stmt.str().length()+1, &meta_stmt, nullptr));
-        
-        check_stmt(db, sqlite3_bind_int(meta_stmt, sqlite3_bind_parameter_index(meta_stmt, "@mid"), model.get_id()));
-        check_stmt(db, sqlite3_bind_int64(meta_stmt, sqlite3_bind_parameter_index(meta_stmt, "@time"), sample.get_integration_time()));
-        check_stmt(db, sqlite3_bind_int(meta_stmt, sqlite3_bind_parameter_index(meta_stmt, "@steps"), static_cast<int>(sample.get_integration_steps())));
-        
-        check_stmt(db, sqlite3_step(meta_stmt), ERROR_SQLITE3_INSERT_GROWTH_META_FAIL, SQLITE_DONE);
     
         // loop through sample, writing its values into the database
         for(const oneloop_value& val : sample)
@@ -359,7 +346,6 @@ namespace sqlite3_operations
         // finalize statement and release resources
         check_stmt(db, sqlite3_finalize(g_stmt));
         check_stmt(db, sqlite3_finalize(f_stmt));
-        check_stmt(db, sqlite3_finalize(meta_stmt));
       }
 
 
