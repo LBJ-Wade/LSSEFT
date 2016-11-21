@@ -545,7 +545,7 @@ data_manager::build_one_loop_Pk_work_list(FRW_model_token& model, z_database& z_
     sqlite3_operations::drop_temp(this->handle, *mgr, z_table);
     
     timer.stop();
-    std::cout << "lsseft: constructed one-loop P(k) work list (" << work_list->size() << " items)in time " << format_time(timer.elapsed().wall) << '\n';
+    std::cout << "lsseft: constructed one-loop P(k) work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall) << '\n';
     
     // close transaction
     mgr->commit();
@@ -612,7 +612,7 @@ data_manager::build_multipole_Pk_work_list(FRW_model_token& model, z_database& z
     mgr->commit();
     
     timer.stop();
-    std::cout << "lsseft: constructed one-loop multipole P(k) work list (" << work_list->size() << " items)in time " << format_time(timer.elapsed().wall) << '\n';
+    std::cout << "lsseft: constructed one-loop multipole P(k) work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall) << '\n';
     
     // release list if it contains no work
     if(work_list->empty()) work_list.release();
