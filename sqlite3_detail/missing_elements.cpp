@@ -272,7 +272,7 @@ namespace sqlite3_operations
       {
         std::set<unsigned int> missing = missing_redshifts_for_table(db, model, table, z_table);
         
-        total_missing.insert(missing.begin(), missing.end());
+        if(!missing.empty()) total_missing.insert(missing.begin(), missing.end());
         
         return missing;
       }
@@ -285,7 +285,7 @@ namespace sqlite3_operations
       {
         std::set<unsigned int> missing = missing_redshifts_for_table(db, model, table, z_table, record);
         
-        total_missing.insert(missing.begin(), missing.end());
+        if(!missing.empty()) total_missing.insert(missing.begin(), missing.end());
         
         return missing;
       }

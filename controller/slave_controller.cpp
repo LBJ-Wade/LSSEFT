@@ -61,7 +61,7 @@ void slave_controller::execute()
             
             case MPI_detail::MESSAGE_NEW_MATSUBARA_A_TASK:
               {
-                this->mpi_world.recv(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_NEW_MATSUBARA_A);
+                this->mpi_world.recv(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_NEW_MATSUBARA_A_TASK);
                 this->process_task<Matsubara_A_work_record>();
                 break;
               }
@@ -70,6 +70,7 @@ void slave_controller::execute()
               {
                 this->mpi_world.recv(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_NEW_MULTIPOLE_PK_TASK);
                 this->process_task<multipole_Pk_work_record>();
+                break;
               }
 
             case MPI_detail::MESSAGE_TERMINATE:
@@ -95,7 +96,7 @@ void slave_controller::process_task()
     this->mpi_world.isend(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_WORKER_READY);
 
     bool finished = false;
-
+    
     while(!finished)
       {
         // wait for a message from the master node

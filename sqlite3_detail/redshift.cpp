@@ -6,6 +6,8 @@
 #include <sstream>
 #include <assert.h>
 
+#include <cmath>
+
 #include "redshift.h"
 
 #include "database/tokens.h"
@@ -24,10 +26,21 @@ namespace sqlite3_operations
       {
         assert(db != nullptr);
 
+        constexpr double USE_RELATIVE_ERROR = 1E-10;
+        
         std::ostringstream select_stmt;
-        select_stmt
-          << "SELECT id FROM " << tokenization_table<z_token>(policy) << " WHERE "
-          << "ABS((z-@z)/z)<@tol;";
+        if(std::abs(z) > USE_RELATIVE_ERROR)
+          {
+            select_stmt
+              << "SELECT id FROM " << tokenization_table<z_token>(policy) << " WHERE "
+              << "ABS((z-@z)/z)<@tol;";
+          }
+        else
+          {
+            select_stmt
+              << "SELECT id FROM " << tokenization_table<z_token>(policy) << " WHERE "
+              << "ABS(z-@z)<@tol;";
+          }
 
         // prepare SQL statement
         sqlite3_stmt* stmt;

@@ -151,9 +151,9 @@ void master_controller::execute()
 
     // build a work list for transfer functions
     std::unique_ptr<transfer_work_list> transfer_work = dmgr.build_transfer_work_list(*model, *transfer_k_db, *hi_z_db);
-
+    
     // distribute this work list among the worker processes
-    this->scatter(cosmology_model, *model, *transfer_work, dmgr);
+    if(transfer_work) this->scatter(cosmology_model, *model, *transfer_work, dmgr);
 
     // build a work list for linear and one-loop growth functions (and their growth rates);
     // we inherit ownership of its lifetime using std::unique_ptr<>
@@ -161,7 +161,7 @@ void master_controller::execute()
 
     // compute linear and one-loop growth functions, if needed; can be done on master process since there is only one integration
     if(loop_growth_work) this->integrate_oneloop(cosmology_model, *model, *loop_growth_work, dmgr);
-
+    
     if(this->arg_cache.get_powerspectrum_set())
       {
         // read in tree-level power spectrum in CAMB format;

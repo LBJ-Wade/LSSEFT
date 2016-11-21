@@ -384,7 +384,7 @@ namespace sqlite3_operations
          const IR_resum_token& IR_resum)
       {
         std::ostringstream read_stmt;
-        read_stmt << "SELECT value FROM " << policy.Matsubara_A_table() << " WHERE mid=@mid AND IR_resum_id=@IR_resum_id;";
+        read_stmt << "SELECT A FROM " << policy.Matsubara_A_table() << " WHERE mid=@mid AND IR_resum_id=@IR_resum_id;";
     
         // prepare statement
         sqlite3_stmt* stmt;

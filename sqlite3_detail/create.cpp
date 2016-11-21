@@ -41,7 +41,7 @@ namespace sqlite3_operations
               << "evals DOUBLE, "
               << "err DOUBLE, "
               << "time DOUBLE"
-              #ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
+#ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
               << ", "
               << "PRIMARY KEY (mid, kid, IR_id, UV_id), "
               << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
@@ -75,7 +75,7 @@ namespace sqlite3_operations
               << "P1loopSPT DOUBLE, "
               << "err_1loopSPT DOUBLE, "
               << "Z2_delta DOUBLE"
-              #ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
+#ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
               << ", "
               << "PRIMARY KEY (mid, zid, kid, IR_id, UV_id), "
               << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
@@ -117,7 +117,7 @@ namespace sqlite3_operations
               << "Z2_vv DOUBLE, "
               << "Z2_vvdelta DOUBLE, "
               << "Z2_vvv DOUBLE"
-              #ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
+#ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
               << ", "
               << "PRIMARY KEY (mid, zid, kid, IR_id, UV_id), "
               << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
@@ -160,7 +160,7 @@ namespace sqlite3_operations
               << "Z2_vv DOUBLE, "
               << "Z2_vvdelta DOUBLE, "
               << "Z2_vvv DOUBLE"
-              #ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
+#ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
               << ", "
               << "PRIMARY KEY (mid, zid, kid, IR_cutoff_id, UV_cutoff_id, IR_resum_id), "
               << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
@@ -218,7 +218,7 @@ namespace sqlite3_operations
           << "theta_m DOUBLE, "
           << "theta_r DOUBLE, "
           << "Phi DOUBLE"
-          #ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
+#ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
           << ", "
           << "PRIMARY KEY (zid, kid), "
           << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
@@ -243,7 +243,7 @@ namespace sqlite3_operations
           << "F DOUBLE, "
           << "G DOUBLE, "
           << "J DOUBLE"
-          #ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
+#ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
           << ", "
           << "PRIMARY KEY (mid, zid), "
           << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
@@ -267,7 +267,7 @@ namespace sqlite3_operations
           << "fF DOUBLE, "
           << "fG DOUBLE, "
           << "fJ DOUBLE"
-          #ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
+#ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
           << ", "
           << "PRIMARY KEY (mid, zid), "
           << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
@@ -330,9 +330,9 @@ namespace sqlite3_operations
           << "mid INTEGER, "
           << "IR_resum_id INTEGER, "
           << "A DOUBLE"
-          #ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
+#ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
           << ", "
-          << "PRIMARY KEY (mid, IR_id), "
+          << "PRIMARY KEY (mid, IR_resum_id), "
           << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
           << "FOREIGN KEY (IR_resum_id) REFERENCES " << policy.IR_resum_table() << "(id));";
 #else
