@@ -74,11 +74,11 @@ namespace multipole_Pk_calculator_impl
           {
             switch(n)
               {
-                case mu_power::mu0: return 2.0;
-                case mu_power::mu2: return 2.0 / 3.0;
-                case mu_power::mu4: return 2.0 / 5.0;
-                case mu_power::mu6: return 2.0 / 7.0;
-                case mu_power::mu8: return 2.0 / 9.0;
+                case mu_power::mu0: return 1.0;
+                case mu_power::mu2: return 1.0 / 3.0;
+                case mu_power::mu4: return 1.0 / 5.0;
+                case mu_power::mu6: return 1.0 / 7.0;
+                case mu_power::mu8: return 1.0 / 9.0;
               }
           }
         
@@ -95,41 +95,40 @@ namespace multipole_Pk_calculator_impl
         
         double mu0()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (2 - (2*A)/3. + std::pow(A,2)/5. - std::pow(A,3)/21. + std::pow(A,4)/108. - std::pow(A,5)/660. + std::pow(A,6)/4680. - std::pow(A,7)/37800. + std::pow(A,8)/342720.);
+            if(std::abs(A) < 0.01) return std::exp(-B) * (1 - A/3. + std::pow(A,2)/10. - std::pow(A,3)/42. + std::pow(A,4)/216. - std::pow(A,5)/1320. + std::pow(A,6)/9360. - std::pow(A,7)/75600. + std::pow(A,8)/685440.);
             
-            return (std::sqrt(M_PI)*std::erf(std::sqrt(A)))/(std::sqrt(A)*std::exp(B));
+            return (std::sqrt(M_PI)*std::erf(std::sqrt(A)))/(2.*std::sqrt(A)*std::exp(B));
           }
         
         double mu2()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.6666666666666666 - (2*A)/5. + std::pow(A,2)/7. - std::pow(A,3)/27. + std::pow(A,4)/132. - std::pow(A,5)/780. + std::pow(A,6)/5400. - std::pow(A,7)/42840. +
-                                                          std::pow(A,8)/383040.);
+            if(std::abs(A) < 0.01) return std::exp(-B) * (0.3333333333333333 - A/5. + std::pow(A,2)/14. - std::pow(A,3)/54. + std::pow(A,4)/264. - std::pow(A,5)/1560. + std::pow(A,6)/10800. - std::pow(A,7)/85680. +
+                                                          std::pow(A,8)/766080.);
             
-            return (std::exp(-A - B)*(-2*std::sqrt(A) + std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(2.*std::pow(A,1.5));
+            return (std::exp(-A - B)*(-2*std::sqrt(A) + std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(4.*std::pow(A,1.5));
           }
         
         double mu4()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.4 - (2*A)/7. + std::pow(A,2)/9. - std::pow(A,3)/33. + std::pow(A,4)/156. - std::pow(A,5)/900. + std::pow(A,6)/6120. - std::pow(A,7)/47880. +
-                                                          std::pow(A,8)/423360.);
+            if(std::abs(A) < 0.01) return std::exp(-B) * (0.2 - A/7. + std::pow(A,2)/18. - std::pow(A,3)/66. + std::pow(A,4)/312. - std::pow(A,5)/1800. + std::pow(A,6)/12240. - std::pow(A,7)/95760. + std::pow(A,8)/846720.);
             
-            return (std::exp(-A - B)*(-2*std::sqrt(A)*(3 + 2*A) + 3*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(4.*std::pow(A,2.5));
+            return (std::exp(-A - B)*(-2*std::sqrt(A)*(3 + 2*A) + 3*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(8.*std::pow(A,2.5));
           }
         
         double mu6()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.2857142857142857 - (2*A)/9. + std::pow(A,2)/11. - std::pow(A,3)/39. + std::pow(A,4)/180. - std::pow(A,5)/1020. + std::pow(A,6)/6840. - std::pow(A,7)/52920. +
-                                                          std::pow(A,8)/463680.);
+            if(std::abs(A) < 0.01) return std::exp(-B) * (0.14285714285714285 - A/9. + std::pow(A,2)/22. - std::pow(A,3)/78. + std::pow(A,4)/360. - std::pow(A,5)/2040. + std::pow(A,6)/13680. - std::pow(A,7)/105840. +
+                                                          std::pow(A,8)/927360.);
             
-            return (std::exp(-A - B)*(-2*std::sqrt(A)*(15 + 2*A*(5 + 2*A)) + 15*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(8.*std::pow(A,3.5));
+            return (std::exp(-A - B)*(-2*std::sqrt(A)*(15 + 2*A*(5 + 2*A)) + 15*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(16.*std::pow(A,3.5));
           }
         
         double mu8()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.2222222222222222 - (2*A)/11. + std::pow(A,2)/13. - std::pow(A,3)/45. + std::pow(A,4)/204. - std::pow(A,5)/1140. + std::pow(A,6)/7560. -
-                                                          std::pow(A,7)/57960. + std::pow(A,8)/504000.);
+            if(std::abs(A) < 0.01) return std::exp(-B) * (0.1111111111111111 - A/11. + std::pow(A,2)/26. - std::pow(A,3)/90. + std::pow(A,4)/408. - std::pow(A,5)/2280. + std::pow(A,6)/15120. - std::pow(A,7)/115920. +
+                                                          std::pow(A,8)/1.008e6);
             
-            return (std::exp(-A - B)*(-2*std::sqrt(A)*(105 + 2*A*(35 + 2*A*(7 + 2*A))) + 105*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(16.*std::pow(A,4.5));
+            return (std::exp(-A - B)*(-2*std::sqrt(A)*(105 + 2*A*(35 + 2*A*(7 + 2*A))) + 105*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(32.*std::pow(A,4.5));
           }
         
         double operator()(mu_power n)
@@ -157,10 +156,10 @@ namespace multipole_Pk_calculator_impl
             switch(n)
               {
                 case mu_power::mu0: return 0.0;
-                case mu_power::mu2: return 4.0 / 15.0;
-                case mu_power::mu4: return 8.0 / 35.0;
-                case mu_power::mu6: return 4.0 / 21.0;
-                case mu_power::mu8: return 16.0 / 99.0;
+                case mu_power::mu2: return 2.0 / 3.0;
+                case mu_power::mu4: return 4.0 / 7.0;
+                case mu_power::mu6: return 10.0 / 21.0;
+                case mu_power::mu8: return 40.0 / 99.0;
               }
           }
         
@@ -177,42 +176,43 @@ namespace multipole_Pk_calculator_impl
     
         double mu0()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * ((-4*A)/15. + (4*std::pow(A,2))/35. - (2*std::pow(A,3))/63. + (2*std::pow(A,4))/297. - std::pow(A,5)/858. + std::pow(A,6)/5850. - std::pow(A,7)/45900. +
-                                                          std::pow(A,8)/406980.);
+            if(std::abs(A) < 0.01) return std::exp(-B) * ((-2*A)/3. + (2*std::pow(A,2))/7. - (5*std::pow(A,3))/63. + (5*std::pow(A,4))/297. - (5*std::pow(A,5))/1716. + std::pow(A,6)/2340. - std::pow(A,7)/18360. +
+                                                          std::pow(A,8)/162792.);
         
-            return (std::exp(-A - B)*(-6*std::sqrt(A) - (-3 + 2*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(4.*std::pow(A,1.5));
+            return (-5*std::exp(-A - B)*(6*std::sqrt(A) + (-3 + 2*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(8.*std::pow(A,1.5));
           }
     
         double mu2()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.26666666666666666 - (8*A)/35. + (2*std::pow(A,2))/21. - (8*std::pow(A,3))/297. + (5*std::pow(A,4))/858. - std::pow(A,5)/975. + (7*std::pow(A,6))/45900. -
-                                                          (2*std::pow(A,7))/101745. + std::pow(A,8)/446880.);
+            if(std::abs(A) < 0.01) return std::exp(-B) * (0.6666666666666666 - (4*A)/7. + (5*std::pow(A,2))/21. - (20*std::pow(A,3))/297. + (25*std::pow(A,4))/1716. - std::pow(A,5)/390. + (7*std::pow(A,6))/18360. -
+                                                          std::pow(A,7)/20349. + std::pow(A,8)/178752.);
         
-            return (std::exp(-A - B)*(-2*std::sqrt(A)*(9 + 4*A) - (-9 + 2*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(8.*std::pow(A,2.5));
+            return (-5*std::exp(-A - B)*(2*std::sqrt(A)*(9 + 4*A) + (-9 + 2*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(16.*std::pow(A,2.5));
           }
     
         double mu4()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.22857142857142856 - (4*A)/21. + (8*std::pow(A,2))/99. - (10*std::pow(A,3))/429. + std::pow(A,4)/195. - (7*std::pow(A,5))/7650. +
-                                                          (2*std::pow(A,6))/14535. - std::pow(A,7)/55860. + std::pow(A,8)/486864.);
+            if(std::abs(A) < 0.01) return std::exp(-B) * (0.5714285714285714 - (10*A)/21. + (20*std::pow(A,2))/99. - (25*std::pow(A,3))/429. + std::pow(A,4)/78. - (7*std::pow(A,5))/3060. + std::pow(A,6)/2907. -
+                                                          std::pow(A,7)/22344. + (5*std::pow(A,8))/973728.);
         
-            return (std::exp(-A - B)*(-2*std::sqrt(A)*(45 + 8*A*(3 + A)) - 3*(-15 + 2*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(16.*std::pow(A,3.5));
+            return (-5*std::exp(-A - B)*(2*std::sqrt(A)*(45 + 8*A*(3 + A)) + 3*(-15 + 2*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(32.*std::pow(A,3.5));
           }
     
         double mu6()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.19047619047619047 - (16*A)/99. + (10*std::pow(A,2))/143. - (4*std::pow(A,3))/195. + (7*std::pow(A,4))/1530. - (4*std::pow(A,5))/4845. +
-                                                          std::pow(A,6)/7980. - std::pow(A,7)/60858. + (11*std::pow(A,8))/5.796e6);
+            if(std::abs(A) < 0.01) return std::exp(-B) * (0.47619047619047616 - (40*A)/99. + (25*std::pow(A,2))/143. - (2*std::pow(A,3))/39. + (7*std::pow(A,4))/612. - (2*std::pow(A,5))/969. + std::pow(A,6)/3192. -
+                                                          (5*std::pow(A,7))/121716. + (11*std::pow(A,8))/2.3184e6);
         
-            return (std::exp(-A - B)*(-2*std::sqrt(A)*(315 + 4*A*(45 + 4*A*(4 + A))) - 15*(-21 + 2*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(32.*std::pow(A,4.5));
+            return (std::exp(-A - B)*(-10*std::sqrt(A)*(315 + 4*A*(45 + 4*A*(4 + A))) - 75*(-21 + 2*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(64.*std::pow(A,4.5));
           }
     
         double mu8()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.16161616161616163 - (20*A)/143. + (4*std::pow(A,2))/65. - (14*std::pow(A,3))/765. + (4*std::pow(A,4))/969. - std::pow(A,5)/1330. + std::pow(A,6)/8694. -
-                                                          (11*std::pow(A,7))/724500. + std::pow(A,8)/567000.);
+            if(std::abs(A) < 0.01) return std::exp(-B) * (0.40404040404040403 - (50*A)/143. + (2*std::pow(A,2))/13. - (7*std::pow(A,3))/153. + (10*std::pow(A,4))/969. - std::pow(A,5)/532. +
+                                                          (5*std::pow(A,6))/17388. - (11*std::pow(A,7))/289800. + std::pow(A,8)/226800.);
         
-            return (std::exp(-A - B)*(-2*std::sqrt(A)*(2835 + 8*A*(210 + A*(77 + 4*A*(5 + A)))) - 105*(-27 + 2*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(64.*std::pow(A,5.5));
+            return (5*std::exp(-A - B)*(-2*std::sqrt(A)*(2835 + 8*A*(210 + A*(77 + 4*A*(5 + A)))) - 105*(-27 + 2*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/
+                   (128.*std::pow(A,5.5));
           }
     
         double operator()(mu_power n)
@@ -241,9 +241,9 @@ namespace multipole_Pk_calculator_impl
               {
                 case mu_power::mu0: return 0.0;
                 case mu_power::mu2: return 0.0;
-                case mu_power::mu4: return 16.0 / 315.0;
-                case mu_power::mu6: return 16.0 / 231.0;
-                case mu_power::mu8: return 32.0 / 429.0;
+                case mu_power::mu4: return 8.0 / 35.0;
+                case mu_power::mu6: return 24.0 / 77.0;
+                case mu_power::mu8: return 48.0 / 143.0;
               }
           }
         
@@ -260,45 +260,45 @@ namespace multipole_Pk_calculator_impl
     
         double mu0()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * ((8*std::pow(A,2))/315. - (8*std::pow(A,3))/693. + (4*std::pow(A,4))/1287. - (4*std::pow(A,5))/6435. + std::pow(A,6)/9945. - std::pow(A,7)/72675. +
-                                                          std::pow(A,8)/610470.);
+            if(std::abs(A) < 0.01) return std::exp(-B) * ((4*std::pow(A,2))/35. - (4*std::pow(A,3))/77. + (2*std::pow(A,4))/143. - (2*std::pow(A,5))/715. + std::pow(A,6)/2210. - std::pow(A,7)/16150. +
+                                                          std::pow(A,8)/135660.);
         
-            return (std::exp(-A - B)*(-10*std::sqrt(A)*(21 + 2*A) + 3*(35 + 4*(-5 + A)*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(32.*std::pow(A,2.5));
+            return (std::exp(-A - B)*(-90*std::sqrt(A)*(21 + 2*A) + 27*(35 + 4*(-5 + A)*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(64.*std::pow(A,2.5));
           }
     
         double mu2()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * ((-16*A)/315. + (8*std::pow(A,2))/231. - (16*std::pow(A,3))/1287. + (4*std::pow(A,4))/1287. - (2*std::pow(A,5))/3315. + (7*std::pow(A,6))/72675. -
-                                                          (4*std::pow(A,7))/305235. + std::pow(A,8)/642390.);
+            if(std::abs(A) < 0.01) return std::exp(-B) * ((-8*A)/35. + (12*std::pow(A,2))/77. - (8*std::pow(A,3))/143. + (2*std::pow(A,4))/143. - (3*std::pow(A,5))/1105. + (7*std::pow(A,6))/16150. -
+                                                          (2*std::pow(A,7))/33915. + (3*std::pow(A,8))/428260.);
         
-            return (std::exp(-A - B)*(-2*std::sqrt(A)*(525 + 2*A*(85 + 16*A)) + 3*(175 + 4*(-15 + A)*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(64.*std::pow(A,3.5));
+            return (std::exp(-A - B)*(-18*std::sqrt(A)*(525 + 2*A*(85 + 16*A)) + 27*(175 + 4*(-15 + A)*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(128.*std::pow(A,3.5));
           }
     
         double mu4()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.050793650793650794 - (16*A)/231. + (16*std::pow(A,2))/429. - (16*std::pow(A,3))/1287. + (2*std::pow(A,4))/663. - (14*std::pow(A,5))/24225. +
-                                                          (4*std::pow(A,6))/43605. - (4*std::pow(A,7))/321195. + std::pow(A,8)/676200.);
+            if(std::abs(A) < 0.01) return std::exp(-B) * (0.22857142857142856 - (24*A)/77. + (24*std::pow(A,2))/143. - (8*std::pow(A,3))/143. + (3*std::pow(A,4))/221. - (21*std::pow(A,5))/8075. +
+                                                          (2*std::pow(A,6))/4845. - (6*std::pow(A,7))/107065. + (3*std::pow(A,8))/450800.);
         
-            return (std::exp(-A - B)*(-2*std::sqrt(A)*(3675 + 2*A*(775 + 16*A*(13 + 2*A))) + 3*(1225 + 12*(-25 + A)*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/
-                   (128.*std::pow(A,4.5));
+            return (std::exp(-A - B)*(-18*std::sqrt(A)*(3675 + 2*A*(775 + 16*A*(13 + 2*A))) + 27*(1225 + 12*(-25 + A)*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/
+                   (256.*std::pow(A,4.5));
           }
     
         double mu6()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.06926406926406926 - (32*A)/429. + (16*std::pow(A,2))/429. - (8*std::pow(A,3))/663. + (14*std::pow(A,4))/4845. - (8*std::pow(A,5))/14535. +
-                                                          (4*std::pow(A,6))/45885. - std::pow(A,7)/84525. + (11*std::pow(A,8))/7.8246e6);
+            if(std::abs(A) < 0.01) return std::exp(-B) * (0.3116883116883117 - (48*A)/143. + (24*std::pow(A,2))/143. - (12*std::pow(A,3))/221. + (21*std::pow(A,4))/1615. - (4*std::pow(A,5))/1615. +
+                                                          (6*std::pow(A,6))/15295. - (3*std::pow(A,7))/56350. + (11*std::pow(A,8))/1.7388e6);
         
-            return (std::exp(-A - B)*(-2*std::sqrt(A)*(33075 + 2*A*(7875 + 32*A*(75 + A*(15 + 2*A)))) + 45*(735 + 4*(-35 + A)*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/
-                   (256.*std::pow(A,5.5));
+            return (9*std::exp(-A - B)*(-2*std::sqrt(A)*(33075 + 2*A*(7875 + 32*A*(75 + A*(15 + 2*A)))) + 45*(735 + 4*(-35 + A)*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/
+                   (512.*std::pow(A,5.5));
           }
     
         double mu8()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.07459207459207459 - (32*A)/429. + (8*std::pow(A,2))/221. - (56*std::pow(A,3))/4845. + (8*std::pow(A,4))/2907. - (8*std::pow(A,5))/15295. +
-                                                          std::pow(A,6)/12075. - (11*std::pow(A,7))/978075. + (11*std::pow(A,8))/8.2215e6);
+            if(std::abs(A) < 0.01) return std::exp(-B) * (0.3356643356643357 - (48*A)/143. + (36*std::pow(A,2))/221. - (84*std::pow(A,3))/1615. + (4*std::pow(A,4))/323. - (36*std::pow(A,5))/15295. +
+                                                          (3*std::pow(A,6))/8050. - (11*std::pow(A,7))/217350. + (11*std::pow(A,8))/1.827e6);
         
-            return (std::exp(-A - B)*(-2*std::sqrt(A)*(363825 + 2*A*(92925 + 32*A*(945 + 2*A*(105 + A*(17 + 2*A))))) +
-                                     315*(1155 + 4*(-45 + A)*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(512.*std::pow(A,6.5));
+            return (9*std::exp(-A - B)*(-2*std::sqrt(A)*(363825 + 2*A*(92925 + 32*A*(945 + 2*A*(105 + A*(17 + 2*A))))) +
+                                       315*(1155 + 4*(-45 + A)*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(1024.*std::pow(A,6.5));
           }
     
         double operator()(mu_power n)

@@ -45,7 +45,7 @@ oneloop_Pk_calculator::compute_dd(const Mpc_units::energy& k, const oneloop_grow
     
     // 13 TERMS
     
-    Pk_value P13 = Ptr * val.g * ( (val.D - val.J)   * d13.get_D()
+    Pk_value P13 = Ptr * val.g * ( (val.D - val.J)    * d13.get_D()
                                     + val.E           * d13.get_E()
                                     + (val.F + val.J) * d13.get_F()
                                     + val.G           * d13.get_G()
