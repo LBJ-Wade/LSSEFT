@@ -42,13 +42,19 @@ k_token::k_token(unsigned int i)
   }
 
 
-IR_token::IR_token(unsigned int i)
+IR_cutoff_token::IR_cutoff_token(unsigned int i)
   : generic_token(i)
   {
   }
 
 
-UV_token::UV_token(unsigned int i)
+UV_cutoff_token::UV_cutoff_token(unsigned int i)
+  : generic_token(i)
+  {
+  }
+
+
+IR_resum_token::IR_resum_token(unsigned int i)
   : generic_token(i)
   {
   }

@@ -15,6 +15,10 @@
 
 #include "boost/timer/timer.hpp"
 
+#include "boost/serialization/serialization.hpp"
+#include "boost/serialization/shared_ptr.hpp"
+#include "boost/serialization/unique_ptr.hpp"
+
 
 struct oneloop_growth_record
   {
@@ -26,17 +30,52 @@ struct oneloop_growth_record
     double F;
     double G;
     double J;
+    
+    double f;
+    double fA;
+    double fB;
+    double fD;
+    double fE;
+    double fF;
+    double fG;
+    double fJ;
+    
+    
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+    
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & g;
+        ar & A;
+        ar & B;
+        ar & D;
+        ar & E;
+        ar & F;
+        ar & G;
+        ar & J;
+
+        ar & f;
+        ar & fA;
+        ar & fB;
+        ar & fD;
+        ar & fE;
+        ar & fF;
+        ar & fG;
+        ar & fJ;
+      }
   };
 
 
-typedef std::pair< const z_token&, oneloop_growth_record> oneloop_value;
+typedef std::pair< const z_token&, oneloop_growth_record > oneloop_value;
 
 
 namespace oneloop_growth_impl
   {
 
     template <typename RecordIterator, typename ConstRecordIterator, typename ValueIterator, typename ConstValueIterator, bool is_const_iterator=true>
-    class generic_token_iterator: public std::iterator< std::bidirectional_iterator_tag, oneloop_value >
+    class generic_tokenized_database_iterator: public std::iterator< std::bidirectional_iterator_tag, oneloop_value >
       {
 
       private:
@@ -53,12 +92,14 @@ namespace oneloop_growth_impl
       public:
 
         //! default constructor: points to nothing when it is constructed
-        generic_token_iterator() = default;
+        generic_tokenized_database_iterator() = default;
 
         //! value constructor; points to a given element in the transfer function sample
-        generic_token_iterator(record_iterator r,
-                               value_iterator g, value_iterator A, value_iterator B, value_iterator D, value_iterator E,
-                               value_iterator F, value_iterator G, value_iterator J)
+        generic_tokenized_database_iterator(record_iterator r,
+                                            value_iterator g, value_iterator A, value_iterator B, value_iterator D,
+                                            value_iterator E, value_iterator F, value_iterator G, value_iterator J,
+                                            value_iterator f, value_iterator fA, value_iterator fB, value_iterator fD,
+                                            value_iterator fE, value_iterator fF, value_iterator fG, value_iterator fJ)
           : record_iter(r),
             g_iter(g),
             A_iter(A),
@@ -67,12 +108,20 @@ namespace oneloop_growth_impl
             E_iter(E),
             F_iter(F),
             G_iter(G),
-            J_iter(J)
+            J_iter(J),
+            f_iter(f),
+            fA_iter(fA),
+            fB_iter(fB),
+            fD_iter(fD),
+            fE_iter(fE),
+            fF_iter(fF),
+            fG_iter(fG),
+            fJ_iter(fJ)
           {
           }
 
         //! copy constructor; allows implicit conversion from a regular iterator to a const iterator
-        generic_token_iterator(const generic_token_iterator<RecordIterator, ConstRecordIterator, ValueIterator, ConstValueIterator, false>& obj)
+        generic_tokenized_database_iterator(const generic_tokenized_database_iterator<RecordIterator, ConstRecordIterator, ValueIterator, ConstValueIterator, false>& obj)
           : record_iter(obj.record_iter),
             g_iter(obj.g_iter),
             A_iter(obj.A_iter),
@@ -81,7 +130,15 @@ namespace oneloop_growth_impl
             E_iter(obj.E_iter),
             F_iter(obj.F_iter),
             G_iter(obj.G_iter),
-            J_iter(obj.J_iter)
+            J_iter(obj.J_iter),
+            f_iter(obj.f_iter),
+            fA_iter(obj.fA_iter),
+            fB_iter(obj.fB_iter),
+            fD_iter(obj.fD_iter),
+            fE_iter(obj.fE_iter),
+            fF_iter(obj.fF_iter),
+            fG_iter(obj.fG_iter),
+            fJ_iter(obj.fJ_iter)
           {
           }
 
@@ -91,14 +148,14 @@ namespace oneloop_growth_impl
       public:
 
         //! equality comparison
-        bool operator==(const generic_token_iterator& obj) const
+        bool operator==(const generic_tokenized_database_iterator& obj) const
           {
             // all should be in step, so need only compare one of them
             return(this->record_iter == obj.record_iter);
           }
 
         //! inequality comparison
-        bool operator!=(const generic_token_iterator& obj) const
+        bool operator!=(const generic_tokenized_database_iterator& obj) const
           {
             // all iterators should be in step, so need only compare one of them
             return(this->record_iter != obj.record_iter);
@@ -113,6 +170,7 @@ namespace oneloop_growth_impl
         oneloop_value operator*() const
           {
             oneloop_growth_record rec;
+
             rec.g = *this->g_iter;
             rec.A = *this->A_iter;
             rec.B = *this->B_iter;
@@ -121,6 +179,15 @@ namespace oneloop_growth_impl
             rec.F = *this->F_iter;
             rec.G = *this->G_iter;
             rec.J = *this->J_iter;
+            
+            rec.f = *this->f_iter;
+            rec.fA = *this->fA_iter;
+            rec.fB = *this->fB_iter;
+            rec.fD = *this->fD_iter;
+            rec.fE = *this->fE_iter;
+            rec.fG = *this->fG_iter;
+            rec.fF = *this->fF_iter;
+            rec.fJ = *this->fJ_iter;
 
             return oneloop_value(this->record_iter->get_token(), rec);
           }
@@ -131,7 +198,7 @@ namespace oneloop_growth_impl
       public:
 
         //! prefix decrement
-        generic_token_iterator& operator--()
+        generic_tokenized_database_iterator& operator--()
           {
             --this->g_iter;
             --this->A_iter;
@@ -146,15 +213,15 @@ namespace oneloop_growth_impl
           }
 
         //! postfix decrement
-        generic_token_iterator& operator--(int)
+        generic_tokenized_database_iterator& operator--(int)
           {
-            const generic_token_iterator old(*this);
+            const generic_tokenized_database_iterator old(*this);
             --(*this);
             return(old);
           }
 
         //! prefix increment
-        generic_token_iterator& operator++()
+        generic_tokenized_database_iterator& operator++()
           {
             ++this->g_iter;
             ++this->A_iter;
@@ -164,21 +231,32 @@ namespace oneloop_growth_impl
             ++this->F_iter;
             ++this->G_iter;
             ++this->J_iter;
+            
+            ++this->f_iter;
+            ++this->fA_iter;
+            ++this->fB_iter;
+            ++this->fD_iter;
+            ++this->fE_iter;
+            ++this->fF_iter;
+            ++this->fG_iter;
+            ++this->fJ_iter;
+
             ++this->record_iter;
+
             return(*this);
           }
 
         //! postfix increment
-        generic_token_iterator& operator++(int)
+        generic_tokenized_database_iterator& operator++(int)
           {
-            const generic_token_iterator old(*this);
+            const generic_tokenized_database_iterator old(*this);
             ++(*this);
             return(old);
           }
 
         // make the const version a friend of the non-const version,
         // so the copy constructor can access its private members during implicit conversion
-        friend class generic_token_iterator<RecordIterator, ConstRecordIterator, ValueIterator, ConstValueIterator, true>;
+        friend class generic_tokenized_database_iterator<RecordIterator, ConstRecordIterator, ValueIterator, ConstValueIterator, true>;
 
 
         // INTERNAL DATA
@@ -211,6 +289,30 @@ namespace oneloop_growth_impl
 
         //! iterator into J sample
         value_iterator J_iter;
+        
+        //! iterator into linear growth rate sample
+        value_iterator f_iter;
+        
+        //! iterator into fA sample
+        value_iterator fA_iter;
+    
+        //! iterator into fB sample
+        value_iterator fB_iter;
+    
+        //! iterator into fD sample
+        value_iterator fD_iter;
+    
+        //! iterator into fE sample
+        value_iterator fE_iter;
+    
+        //! iterator into fF sample
+        value_iterator fF_iter;
+    
+        //! iterator into fG sample
+        value_iterator fG_iter;
+    
+        //! iterator into fJ sample
+        value_iterator fJ_iter;
 
       };
 
@@ -225,11 +327,20 @@ class oneloop_growth
 
   public:
 
-    //! constructor
+    //! value constructor
     oneloop_growth(z_database& z);
+    
+    //! empty constructor used for receiving an MPI payload
+    oneloop_growth();
 
     //! destructor is default
     ~oneloop_growth() = default;
+    
+    //! copy constructor is deleted
+    oneloop_growth(const oneloop_growth& obj) = delete;
+    
+    //! move constructor
+    oneloop_growth(oneloop_growth&& obj);
 
 
     // ITERATORS
@@ -237,41 +348,53 @@ class oneloop_growth
   public:
 
     //! type alias for non-const iterator
-    typedef oneloop_growth_impl::generic_token_iterator<z_database::reverse_record_iterator, z_database::const_reverse_record_iterator,
-                                                        std::vector<double>::iterator, std::vector<double>::const_iterator, false> token_iterator;
+    typedef oneloop_growth_impl::generic_tokenized_database_iterator<z_database::reverse_record_iterator, z_database::const_reverse_record_iterator,
+                                                                     std::vector<double>::iterator, std::vector<double>::const_iterator, false> iterator;
 
     //! type alias for const iterator
-    typedef oneloop_growth_impl::generic_token_iterator<z_database::reverse_record_iterator, z_database::const_reverse_record_iterator,
-                                                        std::vector<double>::iterator, std::vector<double>::const_iterator, true> const_token_iterator;
+    typedef oneloop_growth_impl::generic_tokenized_database_iterator<z_database::reverse_record_iterator, z_database::const_reverse_record_iterator,
+                                                                     std::vector<double>::iterator, std::vector<double>::const_iterator, true> const_iterator;
 
-    token_iterator token_begin()
+    iterator begin()
       {
-        return(token_iterator(this->z_db.record_rbegin(), this->g_linear->begin(), this->A->begin(), this->B->begin(), this->D->begin(), this->E->begin(), this->F->begin(), this->G->begin(), this->J->begin()));
+        return(iterator(this->z_db->record_rbegin(),
+                        this->g_linear->begin(), this->A->begin(), this->B->begin(), this->D->begin(), this->E->begin(), this->F->begin(), this->G->begin(), this->J->begin(),
+                        this->f_linear->begin(), this->fA->begin(), this->fB->begin(), this->fD->begin(), this->fE->begin(), this->fF->begin(), this->fG->begin(), this->fJ->begin()));
       }
 
-    token_iterator token_end()
+    iterator end()
       {
-        return(token_iterator(this->z_db.record_rend(), this->g_linear->end(), this->A->end(), this->B->end(), this->D->end(), this->E->end(), this->F->end(), this->G->end(), this->J->end()));
+        return(iterator(this->z_db->record_rend(),
+                        this->g_linear->end(), this->A->end(), this->B->end(), this->D->end(), this->E->end(), this->F->end(), this->G->end(), this->J->end(),
+                        this->f_linear->end(), this->fA->end(), this->fB->end(), this->fD->end(), this->fE->end(), this->fF->end(), this->fG->end(), this->fJ->end()));
       }
 
-    const_token_iterator token_begin() const
+    const_iterator begin() const
       {
-        return(const_token_iterator(this->z_db.record_crbegin(), this->g_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->J->cbegin()));
+        return(const_iterator(this->z_db->record_crbegin(),
+                              this->g_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->J->cbegin(),
+                              this->f_linear->cbegin(), this->fA->cbegin(), this->fB->cbegin(), this->fD->cbegin(), this->fE->cbegin(), this->fF->cbegin(), this->fG->cbegin(), this->fJ->cbegin()));
       }
 
-    const_token_iterator token_end() const
+    const_iterator end() const
       {
-        return(const_token_iterator(this->z_db.record_crend(), this->g_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->J->cend()));
+        return(const_iterator(this->z_db->record_crend(),
+                              this->g_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->J->cend(),
+                              this->f_linear->cend(), this->fA->cend(), this->fB->cend(), this->fD->cend(), this->fE->cend(), this->fF->cend(), this->fG->cend(), this->fJ->cend()));
       }
 
-    const_token_iterator token_cbegin() const
+    const_iterator cbegin() const
       {
-        return(const_token_iterator(this->z_db.record_crbegin(), this->g_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->J->cbegin()));
+        return(const_iterator(this->z_db->record_crbegin(),
+                              this->g_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->J->cbegin(),
+                              this->f_linear->cbegin(), this->fA->cbegin(), this->fB->cbegin(), this->fD->cbegin(), this->fE->cbegin(), this->fF->cbegin(), this->fG->cbegin(), this->fJ->cbegin()));
       }
 
-    const_token_iterator token_cend() const
+    const_iterator cend() const
       {
-        return(const_token_iterator(this->z_db.record_crend(), this->g_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->J->cend()));
+        return(const_iterator(this->z_db->record_crend(),
+                              this->g_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->J->cend(),
+                              this->f_linear->cend(), this->fA->cend(), this->fB->cend(), this->fD->cend(), this->fE->cend(), this->fF->cend(), this->fG->cend(), this->fJ->cend()));
       }
 
 
@@ -279,22 +402,11 @@ class oneloop_growth
 
   public:
 
+    size_t size() const { return this->z_db->size(); }
+    
     //! store components
-    void push_back(double g, double A, double B, double D, double E, double F, double G, double J);
-
-
-    // METADATA
-
-  public:
-
-    //! store integration time
-    void set_integration_metadata(boost::timer::nanosecond_type t, size_t s);
-
-    //! get integration time
-    boost::timer::nanosecond_type get_integration_time() const { return(this->integration_time); }
-
-    //! get number of steps used by integrator
-    size_t get_integration_steps() const { return(this->steps); }
+    void push_back(double g, double A, double B, double D, double E, double F, double G, double J,
+                   double f, double fA, double fB, double fD, double fE, double fF, double fG, double fJ);
 
 
     // INTERNAL DATA
@@ -303,15 +415,15 @@ class oneloop_growth
 
     // CONFIGURATION DATA
 
-    //! reference to redshift database
-    z_database& z_db;
+    //! copy of redshift database
+    std::unique_ptr<z_database> z_db;
 
 
-    // ONE-LOOP FUNCITONS
+    // ONE-LOOP FUNCTIONS
 
     // these are managed using std::unique_ptr<>s to control their lifetime
 
-    //! linear growth factor
+    //! linear growth factor g(z)
     std::unique_ptr< std::vector<double> > g_linear;
 
     //! A growth factor
@@ -335,14 +447,58 @@ class oneloop_growth
     //! J growth factor
     std::unique_ptr< std::vector<double> > J;
 
+    
+    //! linear growth rate f(z)
+    std::unique_ptr< std::vector<double> > f_linear;
+    
+    //! A growth rate
+    std::unique_ptr< std::vector<double> > fA;
+    
+    //! B growth rate
+    std::unique_ptr< std::vector<double> > fB;
+    
+    //! D growth rate
+    std::unique_ptr< std::vector<double> > fD;
+    
+    //! E growth rate
+    std::unique_ptr< std::vector<double> > fE;
+    
+    //! F growth rate
+    std::unique_ptr< std::vector<double> > fF;
+    
+    //! G growth rate
+    std::unique_ptr< std::vector<double> > fG;
+    
+    //! J growth rate
+    std::unique_ptr< std::vector<double> > fJ;
+    
+    
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+    
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & z_db;
 
-    // METADATA
+        ar & g_linear;
+        ar & A;
+        ar & B;
+        ar & D;
+        ar & E;
+        ar & F;
+        ar & G;
+        ar & J;
 
-    //! time taken to perform integration
-    boost::timer::nanosecond_type integration_time;
-
-    //! number of steps used by integrator
-    size_t steps;
+        ar & f_linear;
+        ar & fA;
+        ar & fB;
+        ar & fD;
+        ar & fE;
+        ar & fF;
+        ar & fG;
+        ar & fJ;
+      }
 
   };
 

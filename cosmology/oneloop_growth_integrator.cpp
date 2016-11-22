@@ -138,7 +138,7 @@ oneloop_growth_integrator::oneloop_growth_integrator(double a, double r)
   }
 
 
-std::unique_ptr<oneloop_growth> oneloop_growth_integrator::integrate(const FRW_model& model, z_database& z_db)
+growth_integrator_data oneloop_growth_integrator::integrate(const FRW_model& model, z_database& z_db)
   {
     // set up empty oneloop_growth container
     std::unique_ptr<oneloop_growth> ctr = std::make_unique<oneloop_growth>(z_db);
@@ -167,10 +167,8 @@ std::unique_ptr<oneloop_growth> oneloop_growth_integrator::integrate(const FRW_m
     obs.start_timer();
     size_t steps = boost::numeric::odeint::integrate_times(stepper, rhs, x, z_sample.begin(), z_sample.end(), -1E-3, obs);
     obs.stop_timer();
-
-    ctr->set_integration_metadata(obs.read_timer(), steps);
-
-    return(ctr);
+    
+    return growth_integrator_data(std::move(ctr), obs.read_timer(), steps);
   }
 
 
@@ -187,22 +185,22 @@ oneloop_functor::oneloop_functor(const FRW_model& m)
 
 void oneloop_functor::operator()(const state_vector& x, state_vector& dxdz, double z)
   {
-    // compute rho, remembering that we use 1/Mpc^4 as units for background densitities
+    // compute rho, remembering that we use 1/Mpc^4 as units for background densities
     // during the integration
-    double rho = x[RHO_M] + x[RHO_R] + this->rho_cc * Mpc_units::Mpc4;
+    state_vector::value_type rho = x[RHO_M] + x[RHO_R] + this->rho_cc * Mpc_units::Mpc4;
 
     // compute H in the same units
-    double Mp_in_Mpc_units = Mpc_units::PlanckMass * Mpc_units::Mpc;
-    double H               = std::sqrt(rho / (3.0 * Mp_in_Mpc_units*Mp_in_Mpc_units));
+    state_vector::value_type Mp_in_Mpc_units = Mpc_units::PlanckMass * Mpc_units::Mpc;
+    state_vector::value_type H               = std::sqrt(rho / (3.0 * Mp_in_Mpc_units*Mp_in_Mpc_units));
 
-    double Hdot            = -(3.0*x[RHO_M] + 4.0*x[RHO_R]) / (6.0 * Mp_in_Mpc_units*Mp_in_Mpc_units);
-    double epsilon         = -Hdot/(H*H);
+    state_vector::value_type Hdot            = -(3.0*x[RHO_M] + 4.0*x[RHO_R]) / (6.0 * Mp_in_Mpc_units*Mp_in_Mpc_units);
+    state_vector::value_type epsilon         = -Hdot/(H*H);
 
-    double Omega_m         = x[RHO_M]/rho;
-    double Omega_r         = x[RHO_R]/rho;
+    state_vector::value_type Omega_m         = x[RHO_M]/rho;
+    state_vector::value_type Omega_r         = x[RHO_R]/rho;
 
-    double one_plus_z      = 1.0+z;
-    double one_plus_z_sq   = (1.0+z)*(1.0+z);
+    state_vector::value_type one_plus_z      = 1.0+z;
+    state_vector::value_type one_plus_z_sq   = (1.0+z)*(1.0+z);
 
     // evolve background
     dxdz[RHO_M] = 3.0*x[RHO_M] / one_plus_z;
@@ -256,8 +254,8 @@ void oneloop_functor::operator()(const state_vector& x, state_vector& dxdz, doub
 void oneloop_functor::ics(state_vector& x, double z)
   {
     // compute (a0/a)^3 and (a0/a)^4
-    double a_three = (1.0+z)*(1.0+z)*(1.0+z);
-    double a_four  = (1.0+z)*a_three;
+    state_vector::value_type a_three = (1.0+z)*(1.0+z)*(1.0+z);
+    state_vector::value_type a_four  = (1.0+z)*a_three;
 
     // compute matter and radiation densities today
     // for radiation, we need the Stefan-Boltzman law and the present day CMB temperature
@@ -324,5 +322,24 @@ boost::timer::nanosecond_type oneloop_observer::read_timer()
 
 void oneloop_observer::operator()(const state_vector& x, double z)
   {
-    this->container.push_back(x[ELEMENT_g], x[ELEMENT_A], x[ELEMENT_B], x[ELEMENT_D], x[ELEMENT_E], x[ELEMENT_F], x[ELEMENT_G], x[ELEMENT_J]);
+    state_vector::value_type g = x[ELEMENT_g];
+    state_vector::value_type A = x[ELEMENT_A];
+    state_vector::value_type B = x[ELEMENT_B];
+    state_vector::value_type D = x[ELEMENT_D];
+    state_vector::value_type E = x[ELEMENT_E];
+    state_vector::value_type F = x[ELEMENT_F];
+    state_vector::value_type G = x[ELEMENT_G];
+    state_vector::value_type J = x[ELEMENT_J];
+    
+    state_vector::value_type f = - (1.0+z) * x[ELEMENT_dgdz] / g;
+    state_vector::value_type fA = - (1.0+z) * x[ELEMENT_dAdz] / (std::fabs(A) > 0.0 ? A : 1.0);
+    state_vector::value_type fB = - (1.0+z) * x[ELEMENT_dBdz] / (std::fabs(B) > 0.0 ? B : 1.0);
+    state_vector::value_type fD = - (1.0+z) * x[ELEMENT_dDdz] / (std::fabs(D) > 0.0 ? D : 1.0);
+    state_vector::value_type fE = - (1.0+z) * x[ELEMENT_dEdz] / (std::fabs(E) > 0.0 ? E : 1.0);
+    state_vector::value_type fF = - (1.0+z) * x[ELEMENT_dFdz] / (std::fabs(F) > 0.0 ? F : 1.0);
+    state_vector::value_type fG = - (1.0+z) * x[ELEMENT_dGdz] / (std::fabs(G) > 0.0 ? G : 1.0);
+    state_vector::value_type fJ = - (1.0+z) * x[ELEMENT_dJdz] / (std::fabs(J) > 0.0 ? J : 1.0);
+    
+    this->container.push_back(g, A, B, D, E, F, G, J,
+                              f, fA, fB, fD, fE, fF, fG, fJ);
   }

@@ -7,6 +7,8 @@
 #define LSSEFT_TOKENS_H
 
 
+#include <functional>
+
 #include "sqlite3_detail/sqlite3_policy.h"
 
 #include "boost/serialization/serialization.hpp"
@@ -80,6 +82,41 @@ class generic_token
 
 
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(generic_token)
+
+
+namespace std
+  {
+    
+    template<>
+    class hash<generic_token>
+      {
+        
+        // CONSTRUCTOR, DESTRUCTOR
+        
+      public:
+        
+        //! constructor is default
+        hash() = default;
+        
+        //! destructor is default
+        ~hash() = default;
+        
+        
+        // IMPLEMENTATION
+        
+      public:
+        
+        //! hash function
+        size_t operator()(const generic_token& tok) const
+          {
+            std::hash<unsigned int> hasher;
+
+            return hasher(tok.get_id());
+          }
+        
+      };
+    
+  }
 
 
 //! token representing an FRW model
@@ -187,7 +224,7 @@ inline const std::string& tokenization_table<k_token>(const sqlite3_policy& poli
 
 
 //! token representing a k-value corresponding to an IR cutoff
-class IR_token: public generic_token
+class IR_cutoff_token: public generic_token
   {
 
     // CONSTRUCTOR, DESTRUCTOR
@@ -195,10 +232,10 @@ class IR_token: public generic_token
   public:
 
     //! constructor
-    IR_token(unsigned int i);
+    IR_cutoff_token(unsigned int i);
 
     //! destructor is default
-    virtual ~IR_token() = default;
+    virtual ~IR_cutoff_token() = default;
 
 
   private:
@@ -217,14 +254,14 @@ class IR_token: public generic_token
 
 // specialize tokenization for this
 template <>
-inline const std::string& tokenization_table<IR_token>(const sqlite3_policy& policy)
+inline const std::string& tokenization_table<IR_cutoff_token>(const sqlite3_policy& policy)
   {
     return(policy.IR_config_table());
   }
 
 
 //! token representing a k-value corresponding to a UV cutoff
-class UV_token: public generic_token
+class UV_cutoff_token: public generic_token
   {
 
     // CONSTRUCTOR, DESTRUCTOR
@@ -232,10 +269,10 @@ class UV_token: public generic_token
   public:
 
     //! constructor
-    UV_token(unsigned int i);
+    UV_cutoff_token(unsigned int i);
 
     //! destructor is default
-    virtual ~UV_token() = default;
+    virtual ~UV_cutoff_token() = default;
 
 
   private:
@@ -254,10 +291,226 @@ class UV_token: public generic_token
 
 // specialize tokenization for this
 template <>
-inline const std::string& tokenization_table<UV_token>(const sqlite3_policy& policy)
+inline const std::string& tokenization_table<UV_cutoff_token>(const sqlite3_policy& policy)
   {
     return(policy.UV_config_table());
   }
+
+
+//! token representing a k-value associated with an IR resummation scale
+class IR_resum_token: public generic_token
+  {
+    
+    // CONSTRUCTOR, DESTRUCTOR
+    
+  public:
+    
+    //! constructor
+    IR_resum_token(unsigned int i);
+    
+    //! destructor is default
+    virtual ~IR_resum_token() = default;
+    
+    
+  private:
+    
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+    
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & boost::serialization::base_object<generic_token>(*this);
+      }
+    
+  };
+
+
+// specialize tokenization for this
+template <>
+inline const std::string& tokenization_table<IR_resum_token>(const sqlite3_policy& policy)
+  {
+    return(policy.IR_resum_table());
+  }
+
+
+namespace std
+  {
+    
+    template<>
+    class hash<FRW_model_token>
+      {
+        
+        // CONSTRUCTOR, DESTRUCTOR
+        
+      public:
+        
+        //! constructor is default
+        hash() = default;
+        
+        //! destrucotr is default
+        ~hash() = default;
+        
+        
+        // IMPLEMENTATION
+        
+      public:
+        
+        //! hash function
+        size_t operator()(const FRW_model_token& tok)
+          {
+            std::hash<generic_token> hasher;
+            return hasher(tok);
+          }
+        
+      };
+    
+    
+    template<>
+    class hash<z_token>
+      {
+        
+        // CONSTRUCTOR, DESTRUCTOR
+      
+      public:
+        
+        //! constructor is default
+        hash() = default;
+        
+        //! destrucotr is default
+        ~hash() = default;
+        
+        
+        // IMPLEMENTATION
+      
+      public:
+        
+        //! hash function
+        size_t operator()(const z_token& tok) const
+          {
+            std::hash<generic_token> hasher;
+            return hasher(tok);
+          }
+        
+      };
+    
+    
+    template<>
+    class hash<k_token>
+      {
+        
+        // CONSTRUCTOR, DESTRUCTOR
+      
+      public:
+        
+        //! constructor is default
+        hash() = default;
+        
+        //! destrucotr is default
+        ~hash() = default;
+        
+        
+        // IMPLEMENTATION
+      
+      public:
+        
+        //! hash function
+        size_t operator()(const k_token& tok) const
+          {
+            std::hash<generic_token> hasher;
+            return hasher(tok);
+          }
+        
+      };
+    
+    
+    template<>
+    class hash<IR_cutoff_token>
+      {
+        
+        // CONSTRUCTOR, DESTRUCTOR
+      
+      public:
+        
+        //! constructor is default
+        hash() = default;
+        
+        //! destrucotr is default
+        ~hash() = default;
+        
+        
+        // IMPLEMENTATION
+      
+      public:
+        
+        //! hash function
+        size_t operator()(const IR_cutoff_token& tok) const
+          {
+            std::hash<generic_token> hasher;
+            return hasher(tok);
+          }
+        
+      };
+    
+    
+    template<>
+    class hash<UV_cutoff_token>
+      {
+        
+        // CONSTRUCTOR, DESTRUCTOR
+      
+      public:
+        
+        //! constructor is default
+        hash() = default;
+        
+        //! destrucotr is default
+        ~hash() = default;
+        
+        
+        // IMPLEMENTATION
+      
+      public:
+        
+        //! hash function
+        size_t operator()(const UV_cutoff_token& tok) const
+          {
+            std::hash<generic_token> hasher;
+            return hasher(tok);
+          }
+        
+      };
+    
+    
+    template<>
+    class hash<IR_resum_token>
+      {
+        
+        // CONSTRUCTOR, DESTRUCTOR
+      
+      public:
+        
+        //! constructor is default
+        hash() = default;
+        
+        //! destrucotr is default
+        ~hash() = default;
+        
+        
+        // IMPLEMENTATION
+      
+      public:
+        
+        //! hash function
+        size_t operator()(const IR_resum_token& tok) const
+          {
+            std::hash<generic_token> hasher;
+            return hasher(tok);
+          }
+        
+      };
+    
+  }   // namespace std
 
 
 

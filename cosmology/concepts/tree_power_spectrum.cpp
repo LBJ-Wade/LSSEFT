@@ -14,9 +14,6 @@
 
 #include "tree_power_spectrum.h"
 
-#include "datatable.h"
-#include "bsplineapproximant.h"
-
 
 tree_power_spectrum::tree_power_spectrum(const boost::filesystem::path& p)
   {
@@ -78,8 +75,15 @@ void tree_power_spectrum::recalculate_spline()
       {
         this->table->addSample(t->get_wavenumber() * Mpc_units::Mpc, t->get_Pk() / Mpc_units::Mpc3);
       }
-
-    this->spline = std::make_unique<SPLINTER::BSplineApproximant>(*this->table, SPLINTER::BSplineType::CUBIC);
+    
+    try
+      {
+        this->spline = std::make_unique<SPLINTER::BSpline>(SPLINTER::BSpline::Builder(*this->table).degree(3).build());
+      }
+    catch(SPLINTER::Exception& xe)
+      {
+        throw runtime_exception(exception_type::spline_error, xe.what());
+      }
   }
 
 

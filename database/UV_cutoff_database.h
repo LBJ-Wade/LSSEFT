@@ -3,15 +3,15 @@
 // Copyright (c) 2015 University of Sussex. All rights reserved.
 //
 
-#ifndef LSSEFT_IR_DATABASE_H
-#define LSSEFT_IR_DATABASE_H
+#ifndef LSSEFT_UV_DATABASE_H
+#define LSSEFT_UV_DATABASE_H
 
 
 #include "tokens.h"
 #include "wavenumber_database.h"
 
 
-typedef wavenumber_database<IR_token> IR_database;
+typedef wavenumber_database<UV_cutoff_token> UV_cutoff_database;
 
 
-#endif //LSSEFT_IR_DATABASE_H
+#endif //LSSEFT_UV_DATABASE_H

@@ -22,6 +22,9 @@
 #include "boost/timer/timer.hpp"
 
 
+enum class loop_integral_type { P13, P22 };
+
+
 class oneloop_momentum_integrator
   {
 
@@ -30,7 +33,8 @@ class oneloop_momentum_integrator
   public:
 
     //! constructor
-    oneloop_momentum_integrator(double a=LSSEFT_DEFAULT_INTEGRAL_ABS_ERR, double r=LSSEFT_DEFAULT_INTEGRAL_REL_ERR);
+    oneloop_momentum_integrator(double a_13=LSSEFT_DEFAULT_INTEGRAL_ABS_ERR_13, double r_13=LSSEFT_DEFAULT_INTEGRAL_REL_ERR_13,
+                                double a_22=LSSEFT_DEFAULT_INTEGRAL_ABS_ERR_22, double r_22=LSSEFT_DEFAULT_INTEGRAL_REL_ERR_22);
 
     //! destructor is default
     ~oneloop_momentum_integrator() = default;
@@ -42,14 +46,14 @@ class oneloop_momentum_integrator
 
     //! integrate one-loop kernels
     loop_integral integrate(const FRW_model& model, const Mpc_units::energy& k, const k_token& k_tok,
-                            const Mpc_units::energy& UV_cutoff, const UV_token& UV_tok,
-                            const Mpc_units::energy& IR_cutoff, const IR_token& IR_tok,
-                            std::shared_ptr<tree_power_spectrum>& Pk);
+                            const Mpc_units::energy& UV_cutoff, const UV_cutoff_token& UV_tok,
+                            const Mpc_units::energy& IR_cutoff, const IR_cutoff_token& IR_tok,
+                            const tree_power_spectrum& Pk);
 
     //! output integrands for inspection
     void write_integrands(const FRW_model& model, const Mpc_units::energy& k,
                           const Mpc_units::energy& UV_cutoff, const Mpc_units::energy& IR_cutoff,
-                          std::shared_ptr<tree_power_spectrum>& Pk, unsigned int Npoints);
+                          const tree_power_spectrum& Pk, unsigned int Npoints);
 
     // INTERNAL API
 
@@ -58,20 +62,26 @@ class oneloop_momentum_integrator
     //! perform a kernel integral
     template <typename KernelRecord>
     bool kernel_integral(const FRW_model& model, const Mpc_units::energy& k,
-                         const Mpc_units::energy& UV_cutoff, const Mpc_units::energy& IR_cutoff,
-                         std::shared_ptr<tree_power_spectrum>& Pk,
-                         integrand_t interand, KernelRecord& result);
+                         const Mpc_units::energy& UV_cutoff,
+                         const Mpc_units::energy& IR_cutoff, const tree_power_spectrum& Pk,
+                         integrand_t interand, KernelRecord& result, loop_integral_type type);
 
 
     // INTERNAL DATA
 
   private:
 
-    //! absolute tolerance
-    double abs_err;
+    //! absolute tolerance for 13 integrals
+    double abs_err_13;
+    
+    //! relative tolerance for 13 integrals
+    double rel_err_13;
+    
+    //! absolute tolerance for 22 integrals
+    double abs_err_22;
 
-    //! relative tolerance
-    double rel_err;
+    //! relative tolerance for 22 integrals
+    double rel_err_22;
 
 
     // RANDOM NUMBER GENERATORS

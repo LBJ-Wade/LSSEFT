@@ -35,7 +35,7 @@ namespace transfer_function_impl
   {
 
     template <typename RecordIterator, typename ConstRecordIterator, typename ValueIterator, typename ConstValueIterator, bool is_const_iterator=true>
-    class generic_token_iterator: public std::iterator< std::bidirectional_iterator_tag, transfer_value >
+    class generic_tokenized_database_iterator: public std::iterator< std::bidirectional_iterator_tag, transfer_value >
       {
 
       private:
@@ -52,11 +52,11 @@ namespace transfer_function_impl
       public:
 
         //! default constructor: points to nothing when it is constructed
-        generic_token_iterator() = default;
+        generic_tokenized_database_iterator() = default;
 
         //! value constructor; points to a given element in the transfer function sample
-        generic_token_iterator(record_iterator r,
-                               value_iterator dm, value_iterator tm, value_iterator dr, value_iterator tr, value_iterator P)
+        generic_tokenized_database_iterator(record_iterator r, value_iterator dm, value_iterator tm,
+                                            value_iterator dr, value_iterator tr, value_iterator P)
           : record_iter(r),
             delta_m_iter(dm),
             theta_m_iter(tm),
@@ -67,7 +67,7 @@ namespace transfer_function_impl
           }
 
         //! copy constructor; allows implicit conversion from a regular iterator to a const iterator
-        generic_token_iterator(const generic_token_iterator<RecordIterator, ConstRecordIterator, ValueIterator, ConstValueIterator, false>& obj)
+        generic_tokenized_database_iterator(const generic_tokenized_database_iterator<RecordIterator, ConstRecordIterator, ValueIterator, ConstValueIterator, false>& obj)
           : record_iter(obj.record_iter),
             delta_m_iter(obj.delta_m_iter),
             theta_m_iter(obj.theta_m_iter),
@@ -83,14 +83,14 @@ namespace transfer_function_impl
       public:
 
         //! equality comparison
-        bool operator==(const generic_token_iterator& obj) const
+        bool operator==(const generic_tokenized_database_iterator& obj) const
           {
             // all should be in step, so need only compare one of them
             return(this->record_iter == obj.record_iter);
           }
 
         //! inequality comparison
-        bool operator!=(const generic_token_iterator& obj) const
+        bool operator!=(const generic_tokenized_database_iterator& obj) const
           {
             // all iterators should be in step, so need only compare one of them
             return(this->record_iter != obj.record_iter);
@@ -120,7 +120,7 @@ namespace transfer_function_impl
       public:
 
         //! prefix decrement
-        generic_token_iterator& operator--()
+        generic_tokenized_database_iterator& operator--()
           {
             --this->delta_m_iter;
             --this->theta_m_iter;
@@ -132,15 +132,15 @@ namespace transfer_function_impl
           }
 
         //! postfix decrement
-        generic_token_iterator& operator--(int)
+        generic_tokenized_database_iterator& operator--(int)
           {
-            const generic_token_iterator old(*this);
+            const generic_tokenized_database_iterator old(*this);
             --(*this);
             return(old);
           }
 
         //! prefix increment
-        generic_token_iterator& operator++()
+        generic_tokenized_database_iterator& operator++()
           {
             ++this->delta_m_iter;
             ++this->theta_m_iter;
@@ -152,16 +152,16 @@ namespace transfer_function_impl
           }
 
         //! postfix increment
-        generic_token_iterator& operator++(int)
+        generic_tokenized_database_iterator& operator++(int)
           {
-            const generic_token_iterator old(*this);
+            const generic_tokenized_database_iterator old(*this);
             ++(*this);
             return(old);
           }
 
         // make the const version a friend of the non-const version,
         // so the copy constructor can access its private members during implicit conversion
-        friend class generic_token_iterator<RecordIterator, ConstRecordIterator, ValueIterator, ConstValueIterator, true>;
+        friend class generic_tokenized_database_iterator<RecordIterator, ConstRecordIterator, ValueIterator, ConstValueIterator, true>;
 
 
         // INTERNAL DATA
@@ -210,42 +210,42 @@ class transfer_function
   public:
 
     //! type alias for non-const iterator
-    typedef transfer_function_impl::generic_token_iterator<z_database::reverse_record_iterator, z_database::const_reverse_record_iterator,
-                                                           std::vector<double>::iterator, std::vector<double>::const_iterator, false> token_iterator;
+    typedef transfer_function_impl::generic_tokenized_database_iterator<z_database::reverse_record_iterator, z_database::const_reverse_record_iterator,
+                                                                        std::vector<double>::iterator, std::vector<double>::const_iterator, false> iterator;
 
     //! type alias for const iterator
-    typedef transfer_function_impl::generic_token_iterator<z_database::reverse_record_iterator, z_database::const_reverse_record_iterator,
-                                                           std::vector<double>::iterator, std::vector<double>::const_iterator,true> const_token_iterator;
+    typedef transfer_function_impl::generic_tokenized_database_iterator<z_database::reverse_record_iterator, z_database::const_reverse_record_iterator,
+                                                                        std::vector<double>::iterator, std::vector<double>::const_iterator,true> const_iterator;
 
 
-    token_iterator token_begin()
+    iterator begin()
       {
-        return(token_iterator(this->z_db->record_rbegin(), this->delta_m->begin(), this->theta_m->begin(), this->delta_r->begin(), this->theta_r->begin(), this->Phi->begin()));
+        return(iterator(this->z_db->record_rbegin(), this->delta_m->begin(), this->theta_m->begin(), this->delta_r->begin(), this->theta_r->begin(), this->Phi->begin()));
       }
 
-    token_iterator token_end()
+    iterator end()
       {
-        return(token_iterator(this->z_db->record_rend(), this->delta_m->end(), this->theta_m->end(), this->delta_r->end(), this->theta_r->end(), this->Phi->end()));
+        return(iterator(this->z_db->record_rend(), this->delta_m->end(), this->theta_m->end(), this->delta_r->end(), this->theta_r->end(), this->Phi->end()));
       }
 
-    const_token_iterator token_begin() const
+    const_iterator begin() const
       {
-        return(const_token_iterator(this->z_db->record_crbegin(), this->delta_m->cbegin(), this->theta_m->cbegin(), this->delta_r->cbegin(), this->theta_r->cbegin(), this->Phi->cbegin()));
+        return(const_iterator(this->z_db->record_crbegin(), this->delta_m->cbegin(), this->theta_m->cbegin(), this->delta_r->cbegin(), this->theta_r->cbegin(), this->Phi->cbegin()));
       }
 
-    const_token_iterator token_end() const
+    const_iterator end() const
       {
-        return(const_token_iterator(this->z_db->record_crend(), this->delta_m->cend(), this->theta_m->cend(), this->delta_r->cend(), this->theta_r->cend(), this->Phi->cend()));
+        return(const_iterator(this->z_db->record_crend(), this->delta_m->cend(), this->theta_m->cend(), this->delta_r->cend(), this->theta_r->cend(), this->Phi->cend()));
       }
 
-    const_token_iterator token_cbegin() const
+    const_iterator cbegin() const
       {
-        return (const_token_iterator(this->z_db->record_crbegin(), this->delta_m->cbegin(), this->theta_m->cbegin(), this->delta_r->cbegin(), this->theta_r->cbegin(), this->Phi->cbegin()));
+        return (const_iterator(this->z_db->record_crbegin(), this->delta_m->cbegin(), this->theta_m->cbegin(), this->delta_r->cbegin(), this->theta_r->cbegin(), this->Phi->cbegin()));
       }
 
-    const_token_iterator token_cend() const
+    const_iterator cend() const
       {
-        return(const_token_iterator(this->z_db->record_crend(), this->delta_m->cend(), this->theta_m->cend(), this->delta_r->cend(), this->theta_r->cend(), this->Phi->cend()));
+        return(const_iterator(this->z_db->record_crend(), this->delta_m->cend(), this->theta_m->cend(), this->delta_r->cend(), this->theta_r->cend(), this->Phi->cend()));
       }
 
 
