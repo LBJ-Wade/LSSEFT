@@ -12,7 +12,7 @@
 namespace multipole_Pk_calculator_impl
   {
 
-    constexpr unsigned int dimensions            = 2;   // no point doing integrals over phi, because the integrands don't depend on it
+    constexpr unsigned int dimensions            = 2;       // have to use 2 dimensions; Cuhre does not work in < 2
     constexpr unsigned int components            = 1;
     constexpr unsigned int points_per_invocation = 1;
     
@@ -34,7 +34,6 @@ namespace multipole_Pk_calculator_impl
     constexpr unsigned int pcores                = 10000;   // matches default Cuba value
     
     constexpr unsigned int cuhre_key             = 13;      // degree-13 only available in 2-dimensions
-    constexpr unsigned int cuhre_key_1d          = 9;
     constexpr unsigned int divonne_key1          = 47;
     constexpr unsigned int divonne_key2          = 13;      // degree-13 only available in 2-dimensions
     constexpr unsigned int divonne_key3          = 1;
