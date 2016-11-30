@@ -77,8 +77,16 @@ class power_spectrum
     //! get power spectrum database
     const powerspectrum_database<Dimension>& get_db() const { return(this->database); }
 
-    //! evaluate spline
+    //! evaluate spline, using k-range protection if enabled
+    template <bool P=protect, typename std::enable_if<P>::type* = nullptr>
     Dimension operator()(const Mpc_units::energy& k) const;
+
+    template <bool P=protect, typename std::enable_if<!P>::type* = nullptr>
+    Dimension operator()(const Mpc_units::energy& k) const;
+    
+  private:
+    
+    Dimension evaluate(const Mpc_units::energy& k) const;
 
 
     // INTERNAL API
@@ -194,27 +202,42 @@ void power_spectrum<Tag, Dimension, protect>::recalculate_spline()
 
 
 template <typename Tag, typename Dimension, bool protect>
+template <bool P, typename std::enable_if<P>::type*>
 Dimension power_spectrum<Tag, Dimension, protect>::operator()(const Mpc_units::energy& k) const
   {
     constexpr double TEN_PERCENT_UPPER_CLEARANCE = 0.9;
     constexpr double TEN_PERCENT_LOWER_CLEARANCE = 1.1;
     
-    if(protect)
+    if(k > TEN_PERCENT_UPPER_CLEARANCE * this->database.get_k_max())
       {
-        if(k > TEN_PERCENT_UPPER_CLEARANCE*this->database.get_k_max())
-          {
-            std::ostringstream msg;
-            msg << ERROR_POWERSPECTRUM_SPLINE_TOO_BIG << " (k = " << k * Mpc_units::Mpc << " h/Mpc, k_max = " << this->database.get_k_max() * Mpc_units::Mpc << " h/Mpc)";
-            throw std::overflow_error(msg.str());
-          }
-        if(k < TEN_PERCENT_LOWER_CLEARANCE*this->database.get_k_min())
-          {
-            std::ostringstream msg;
-            msg << ERROR_POWERSPECTRUM_SPLINE_TOO_SMALL << " (k = " << k * Mpc_units::Mpc << " h/Mpc, k_min = " << this->database.get_k_min() * Mpc_units::Mpc << " h/Mpc)";
-            throw std::overflow_error(msg.str());
-          }
+        std::ostringstream msg;
+        msg << ERROR_POWERSPECTRUM_SPLINE_TOO_BIG << " (k = " << k * Mpc_units::Mpc << " h/Mpc, k_max = "
+            << this->database.get_k_max() * Mpc_units::Mpc << " h/Mpc)";
+        throw std::overflow_error(msg.str());
+      }
+    if(k < TEN_PERCENT_LOWER_CLEARANCE * this->database.get_k_min())
+      {
+        std::ostringstream msg;
+        msg << ERROR_POWERSPECTRUM_SPLINE_TOO_SMALL << " (k = " << k * Mpc_units::Mpc << " h/Mpc, k_min = "
+            << this->database.get_k_min() * Mpc_units::Mpc << " h/Mpc)";
+        throw std::overflow_error(msg.str());
       }
     
+    return this->evaluate(k);
+  }
+
+
+template <typename Tag, typename Dimension, bool protect>
+template <bool P, typename std::enable_if<!P>::type*>
+Dimension power_spectrum<Tag, Dimension, protect>::operator()(const Mpc_units::energy& k) const
+  {
+    return this->evaluate(k);
+  }
+
+
+template <typename Tag, typename Dimension, bool protect>
+Dimension power_spectrum<Tag, Dimension, protect>::evaluate(const Mpc_units::energy& k) const
+  {
     SPLINTER::DenseVector x(1);
     x(0) = k * Mpc_units::Mpc;
     
