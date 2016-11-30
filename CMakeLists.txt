@@ -81,7 +81,7 @@ SET(COSMOLOGY_SOURCE_FILES
   cosmology/concepts/range_detail/aggregation.h
   cosmology/concepts/oneloop_growth.cpp cosmology/concepts/oneloop_growth.h
   cosmology/concepts/transfer_function.cpp cosmology/concepts/transfer_function.h
-  cosmology/concepts/tree_power_spectrum.cpp cosmology/concepts/tree_power_spectrum.h
+  cosmology/concepts/power_spectrum.h
   cosmology/concepts/multipole_Pk.cpp cosmology/concepts/multipole_Pk.h
   cosmology/concepts/oneloop_Pk.cpp cosmology/concepts/oneloop_Pk.h
   cosmology/concepts/Matsubara_A.cpp cosmology/concepts/Matsubara_A.h
@@ -110,7 +110,7 @@ SET(DATABASE_SOURCE_FILES
   database/powerspectrum_database.cpp database/powerspectrum_database.h
   database/z_record.cpp database/z_record.h
   database/wavenumber_record.h
-  database/powerspectrum_record.cpp database/powerspectrum_record.h
+  database/powerspectrum_record.h
   database/k_database.h
   database/IR_cutoff_database.h
   database/UV_cutoff_database.h
@@ -142,7 +142,7 @@ SET(SOURCE_FILES
   ${DATABASE_SOURCE_FILES}
   ${SQLITE3_DETAIL_SOURCE_FILES}
   ${LOCALIZATION}
-  ${LOCALIZATION_EN_GB} cosmology/concepts/Matsubara_A.cpp cosmology/concepts/Matsubara_A.h)
+  ${LOCALIZATION_EN_GB})
 
 ADD_EXECUTABLE(lsseft
   main.cpp
@@ -159,7 +159,6 @@ ADD_EXECUTABLE(lsseft
   cosmology/concepts/transfer_function.cpp
   cosmology/concepts/oneloop_growth.cpp
   cosmology/concepts/loop_integral.cpp
-  cosmology/concepts/tree_power_spectrum.cpp
   cosmology/concepts/oneloop_Pk.cpp
   cosmology/concepts/multipole_Pk.cpp
   cosmology/concepts/Matsubara_A.cpp
@@ -174,7 +173,6 @@ ADD_EXECUTABLE(lsseft
   database/z_database.cpp
   database/powerspectrum_database.cpp
   database/z_record.cpp
-  database/powerspectrum_record.cpp
   MPI_detail/mpi_payloads.cpp
   sqlite3_detail/utilities.cpp
   sqlite3_detail/create.cpp

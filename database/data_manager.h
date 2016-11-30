@@ -22,7 +22,7 @@
 #include "cosmology/concepts/transfer_function.h"
 #include "cosmology/concepts/oneloop_growth.h"
 #include "cosmology/concepts/range.h"
-#include "cosmology/concepts/tree_power_spectrum.h"
+#include "cosmology/concepts/power_spectrum.h"
 #include "cosmology/concepts/loop_integral.h"
 
 #include "sqlite3_detail/sqlite3_policy.h"

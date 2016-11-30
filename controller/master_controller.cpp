@@ -13,7 +13,7 @@
 #include "cosmology/FRW_model.h"
 #include "cosmology/oneloop_growth_integrator.h"
 #include "cosmology/concepts/range.h"
-#include "cosmology/concepts/tree_power_spectrum.h"
+#include "cosmology/concepts/power_spectrum.h"
 
 #include "database/data_manager.h"
 

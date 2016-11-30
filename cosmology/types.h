@@ -11,7 +11,7 @@
 
 #include "database/tokens.h"
 #include "database/z_database.h"
-#include "cosmology/concepts/tree_power_spectrum.h"
+#include "cosmology/concepts/power_spectrum.h"
 #include "cosmology/concepts/oneloop_growth.h"
 #include "cosmology/concepts/loop_integral.h"
 #include "cosmology/concepts/oneloop_Pk.h"

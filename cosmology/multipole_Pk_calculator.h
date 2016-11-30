@@ -12,7 +12,7 @@
 #include "concepts/oneloop_Pk.h"
 #include "concepts/multipole_Pk.h"
 #include "concepts/Matsubara_A.h"
-#include "concepts/tree_power_spectrum.h"
+#include "cosmology/concepts/power_spectrum.h"
 
 #include "database/tokens.h"
 

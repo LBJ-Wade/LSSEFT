@@ -13,7 +13,7 @@
 #include "cosmology/concepts/oneloop_Pk.h"
 #include "concepts/oneloop_growth.h"
 #include "concepts/loop_integral.h"
-#include "concepts/tree_power_spectrum.h"
+#include "cosmology/concepts/power_spectrum.h"
 
 #include "database/tokens.h"
 

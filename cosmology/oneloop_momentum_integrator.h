@@ -11,7 +11,7 @@
 
 #include "FRW_model.h"
 #include "concepts/loop_integral.h"
-#include "concepts/tree_power_spectrum.h"
+#include "cosmology/concepts/power_spectrum.h"
 
 #include "database/tokens.h"
 

@@ -502,7 +502,7 @@ multipole_Pk_calculator::calculate_Matsubara_A(const Mpc_units::energy& IR_resum
     int evaluations;
     int fail;
     
-    const powerspectrum_database& db = Ptree.get_db();
+    const auto& db = Ptree.get_db();
     
     // use 10% clearance above lower limit of spline to avoid unwanted effects associated
     // with inaccuracies in the fit there
