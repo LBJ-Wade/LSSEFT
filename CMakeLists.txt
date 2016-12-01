@@ -107,7 +107,7 @@ SET(DATABASE_SOURCE_FILES
   database/wavenumber_database.h
   database/z_database.cpp database/z_database.h
   database/generic_record_iterator.h database/generic_value_iterator.h
-  database/powerspectrum_database.cpp database/powerspectrum_database.h
+  database/powerspectrum_database.h
   database/z_record.cpp database/z_record.h
   database/wavenumber_record.h
   database/powerspectrum_record.h
@@ -171,7 +171,6 @@ ADD_EXECUTABLE(lsseft
   database/tokens.cpp
   database/transaction_manager.cpp
   database/z_database.cpp
-  database/powerspectrum_database.cpp
   database/z_record.cpp
   MPI_detail/mpi_payloads.cpp
   sqlite3_detail/utilities.cpp
