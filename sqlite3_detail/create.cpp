@@ -317,9 +317,9 @@ namespace sqlite3_operations
               << "CREATE TABLE " << policy.Pk_linear_config_table() << "("
               << "id INTEGER PRIMARY KEY, "
               << "mid INTEGER, "
-              << "path STRING, "
-              << "md5_hash STRING, "
-              << "FOREIGN KEY (mid) REFERENCES << " << policy.FRW_model_table() << "(id));";
+              << "path TEXT, "
+              << "md5_hash TEXT, "
+              << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id));";
             
             exec(db, stmt.str());
           }

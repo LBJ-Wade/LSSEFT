@@ -164,7 +164,10 @@ void master_controller::execute()
     
     if(this->arg_cache.get_powerspectrum_set())
       {
-        // read in tree-level power spectrum in CAMB format;
+        // read in tree-level power spectrum in CAMB format, and ask the database to tokenize it
+        linear_power_spectrum Pk_lin_db(this->arg_cache.get_powerspectrum_path());
+        std::unique_ptr<Pk_linear_token> Pk_lin = dmgr.tokenize(*model, Pk_lin_db);
+
         // we manage its lifetime with std::shared_ptr since ownership is shared with the
         // MPI messaging routines
         std::shared_ptr<tree_power_spectrum> Pk = std::make_shared<tree_power_spectrum>(this->arg_cache.get_powerspectrum_path());

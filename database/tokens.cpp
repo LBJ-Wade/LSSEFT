@@ -58,3 +58,9 @@ IR_resum_token::IR_resum_token(unsigned int i)
   : generic_token(i)
   {
   }
+
+
+Pk_linear_token::Pk_linear_token(unsigned int i)
+  : generic_token(i)
+  {
+  }

@@ -144,6 +144,10 @@ class data_manager
     //! generates a new transaction on the database; will fail if a transaction is in progress
     template <typename Token>
     std::unique_ptr<Token> tokenize(const Mpc_units::energy& k);
+    
+    //! tokenize a linear power spectrum
+    //! generates a new transaction on the database; will fail if a transaction is in progress
+    std::unique_ptr<Pk_linear_token> tokenize(const FRW_model_token& model, const linear_power_spectrum& Pk_lin);
 
 
     // DATA STORAGE
@@ -218,8 +222,11 @@ class data_manager
     //! lookup or insert a wavenumber
     template <typename Token>
     unsigned int lookup_or_insert(transaction_manager& mgr, const Mpc_units::energy &k);
-
-
+    
+    //! lookup or insert a linear power spectrum identifier
+    unsigned int lookup_or_insert(transaction_manager& mgr, const FRW_model_token& model, const linear_power_spectrum& Pk_lin);
+    
+    
     // INTERNAL DATA
 
   private:

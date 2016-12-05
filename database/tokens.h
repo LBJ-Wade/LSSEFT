@@ -547,6 +547,35 @@ namespace std
         
       };
     
+    
+    template<>
+    class hash<Pk_linear_token>
+      {
+        
+        // CONSTRUCTOR, DESTRUCTOR
+      
+      public:
+        
+        //! constructor is default
+        hash() = default;
+        
+        //! destrucotr is default
+        ~hash() = default;
+        
+        
+        // IMPLEMENTATION
+      
+      public:
+        
+        //! hash function
+        size_t operator()(const Pk_linear_token& tok) const
+          {
+            std::hash<generic_token> hasher;
+            return hasher(tok);
+          }
+        
+      };
+    
   }   // namespace std
 
 

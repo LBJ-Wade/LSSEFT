@@ -16,9 +16,35 @@
 
 #include "units/Mpc_units.h"
 
+#include "exceptions.h"
+#include "localizations/messages.h"
+
 #include "boost/timer/timer.hpp"
 #include "boost/serialization/serialization.hpp"
 #include "boost/serialization/map.hpp"
+#include "boost/filesystem.hpp"
+
+
+namespace power_spectrum_database_impl
+  {
+    
+    
+    template<typename Dimension> struct DimensionTraits;
+    
+    template <>
+    struct DimensionTraits<Mpc_units::inverse_energy3>
+      {
+        constexpr Mpc_units::inverse_energy3 unit() const { return Mpc_units::Mpc3; }
+      };
+    
+    template <>
+    struct DimensionTraits<Mpc_units::inverse_energy>
+      {
+        constexpr Mpc_units::inverse_energy unit() const { return Mpc_units::Mpc; }
+      };
+    
+    
+  }   // namespace power_spectrum_database_impl
 
 
 template <typename Dimension>
@@ -62,8 +88,11 @@ class powerspectrum_database
 
   public:
 
-    //! constructor
+    //! empty constructor
     powerspectrum_database();
+    
+    //! construct a power spectrum database from a file in CAMB format
+    powerspectrum_database(const boost::filesystem::path& p);
 
     //! destructor is default
     ~powerspectrum_database() = default;
@@ -168,6 +197,36 @@ powerspectrum_database<Dimension>::powerspectrum_database()
   : k_min(std::numeric_limits<double>::max()),
     k_max(std::numeric_limits<double>::min())
   {
+  }
+
+
+template <typename Dimension>
+powerspectrum_database<Dimension>::powerspectrum_database(const boost::filesystem::path& p)
+  : powerspectrum_database<Dimension>()   // forward to empty constructor
+  {
+    std::ifstream in;
+    in.open(p.string());
+    
+    if(!in.good())
+      {
+        std::ostringstream msg;
+        msg << ERROR_POWERSPECTRUM_FILE_NOT_READABLE_A << " " << p << " " << ERROR_POWERSPECTRUM_FILE_NOT_READABLE_B;
+        throw runtime_exception(exception_type::runtime_error, msg.str());
+      }
+    
+    for(std::string line; std::getline(in, line); )
+      {
+        std::stringstream line_stream(line);
+        
+        double _k, _Pk;
+        line_stream >> _k >> _Pk;
+        
+        Mpc_units::energy k = _k / Mpc_units::Mpc;
+        Mpc_units::inverse_energy3 Pk = _Pk * power_spectrum_database_impl::DimensionTraits<Dimension>().unit();
+        this->add_record(k, Pk);
+      }
+    
+    in.close();
   }
 
 

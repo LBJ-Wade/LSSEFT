@@ -129,6 +129,22 @@ std::unique_ptr<Token> data_manager::tokenize(const Mpc_units::energy& k)
   }
 
 
+std::unique_ptr<Pk_linear_token>
+data_manager::tokenize(const FRW_model_token& model, const linear_power_spectrum& Pk_lin)
+  {
+    // open a new transaction on the database
+    std::shared_ptr<transaction_manager> transaction = this->open_transaction();
+    
+    // lookup id for this power spectrum, or generate one if it doesn't already exist
+    unsigned int id = this->lookup_or_insert(*transaction, model, Pk_lin);
+    
+    // commit the transaction
+    transaction->commit();
+    
+    return std::make_unique<Pk_linear_token>(id);
+  }
+
+
 // TRANSACTIONS
 
 
@@ -216,6 +232,15 @@ unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const Mpc_
     if(id) return(*id);
 
     return sqlite3_operations::insert_wavenumber<Token>(this->handle, mgr, k, this->policy);
+  }
+
+
+unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const FRW_model_token& model, const linear_power_spectrum& Pk_lin)
+  {
+    boost::optional<unsigned int> id = sqlite3_operations::lookup_Pk_linear(this->handle, mgr, model, Pk_lin, this->policy);
+    if(id) return(*id);
+    
+    return sqlite3_operations::insert_Pk_linear(this->handle, mgr, model, Pk_lin, this->policy);
   }
 
 
