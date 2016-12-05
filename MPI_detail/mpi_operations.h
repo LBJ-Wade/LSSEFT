@@ -15,6 +15,8 @@
 #include "cosmology/concepts/oneloop_Pk.h"
 #include "cosmology/concepts/multipole_Pk.h"
 #include "cosmology/concepts/Matsubara_A.h"
+#include "cosmology/concepts/filtered_Pk.h"
+
 #include "units/Mpc_units.h"
 #include "database/z_database.h"
 
@@ -32,18 +34,21 @@ namespace MPI_detail
 
     constexpr unsigned int MESSAGE_NEW_TRANSFER_TASK          = 0;
     constexpr unsigned int MESSAGE_NEW_TRANSFER_INTEGRATION   = 1;
+    
+    constexpr unsigned int MESSAGE_NEW_FILTER_PK_TASK         = 10;
+    constexpr unsigned int MESSAGE_NEW_FILTER_PK              = 21;
 
-    constexpr unsigned int MESSAGE_NEW_LOOP_INTEGRAL_TASK     = 10;
-    constexpr unsigned int MESSAGE_NEW_LOOP_INTEGRATION       = 11;
+    constexpr unsigned int MESSAGE_NEW_LOOP_INTEGRAL_TASK     = 20;
+    constexpr unsigned int MESSAGE_NEW_LOOP_INTEGRATION       = 21;
     
-    constexpr unsigned int MESSAGE_NEW_ONE_LOOP_PK_TASK       = 20;
-    constexpr unsigned int MESSAGE_NEW_ONE_LOOP_PK            = 21;
+    constexpr unsigned int MESSAGE_NEW_ONE_LOOP_PK_TASK       = 30;
+    constexpr unsigned int MESSAGE_NEW_ONE_LOOP_PK            = 31;
     
-    constexpr unsigned int MESSAGE_NEW_MATSUBARA_A_TASK       = 30;
-    constexpr unsigned int MESSAGE_NEW_MATSUBARA_A            = 31;
+    constexpr unsigned int MESSAGE_NEW_MATSUBARA_A_TASK       = 40;
+    constexpr unsigned int MESSAGE_NEW_MATSUBARA_A            = 51;
     
-    constexpr unsigned int MESSAGE_NEW_MULTIPOLE_PK_TASK      = 40;
-    constexpr unsigned int MESSAGE_NEW_MULTIPOLE_PK           = 41;
+    constexpr unsigned int MESSAGE_NEW_MULTIPOLE_PK_TASK      = 50;
+    constexpr unsigned int MESSAGE_NEW_MULTIPOLE_PK           = 51;
 
     constexpr unsigned int MESSAGE_WORKER_READY               = 90;
     constexpr unsigned int MESSAGE_WORK_PRODUCT_READY         = 91;
@@ -185,6 +190,147 @@ namespace MPI_detail
           }
 
       };
+    
+    
+    // FILTERING OF LINEAR POWER SPECTRUM
+
+
+    class new_filter_Pk
+      {
+        
+        // CONSTRUCTOR, DESTRUCTOR
+        
+      public:
+        
+        //! empty constructor, used to receive a payload
+        new_filter_Pk()
+          : model(),
+            k(0),
+            k_tok(0),
+            Pk_tok(0),
+            Pk_lin()
+          {
+          }
+           
+        //! value constructor, used to construct and send a payload
+        new_filter_Pk(const FRW_model& m, const Mpc_units::energy& _k, const k_token& kt,
+                      const linear_Pk_token& Pt, const std::shared_ptr<linear_Pk>& _Pk)
+          : model(m),
+            k(_k),
+            k_tok(kt),
+            Pk_tok(Pt),
+            Pk_lin(_Pk)
+          {
+          }
+        
+        //! destructor is default
+        ~new_filter_Pk() = default;
+        
+        
+        // ACCESS PAYLOAD
+        
+      public:
+    
+        //! get model
+        const FRW_model& get_model() const { return(this->model); }
+    
+        //! get wavenumber
+        const Mpc_units::energy& get_k() const { return(this->k); }
+    
+        //! get wavenumber token
+        const k_token& get_k_token() const { return(this->k_tok); }
+    
+        //! get power specturm token
+        const linear_Pk_token& get_Pk_token() const { return this->Pk_tok; }
+        
+        //! get linear power specturm container
+        const linear_Pk& get_Pk_linear() const { return *this->Pk_lin; }
+    
+    
+        // INTERNAL DATA
+        
+      private:
+    
+        //! FRW model to use for this calculation
+        FRW_model model;
+    
+        //! wavenumber to integrate
+        Mpc_units::energy k;
+    
+        //! wavenumber token
+        k_token k_tok;
+        
+        //! power spectrum token
+        linear_Pk_token Pk_tok;
+        
+        //! linear power spectrum container
+        std::shared_ptr<linear_Pk> Pk_lin;
+    
+    
+        // enable boost::serialization support, and hence automated packing for transmission over MPI
+        friend class boost::serialization::access;
+    
+        template <typename Archive>
+        void serialize(Archive& ar, unsigned int version)
+          {
+            ar & model;
+            ar & k;
+            ar & k_tok;
+            ar & Pk_tok;
+            ar & Pk_lin;
+          }
+    
+      };
+    
+    
+    class filter_Pk_ready
+      {
+        
+        // CONSTRUCTOR, DESTRUCTOR
+        
+      public:
+        
+        //! empty constructor: used to receive a payload
+        filter_Pk_ready()
+          : data()
+          {
+          }
+        
+        //! value constructor: used to construct and send a payload
+        filter_Pk_ready(const filtered_Pk& f)
+          : data(f)
+          {
+          }
+    
+        //! destructor is default
+        ~filter_Pk_ready() = default;
+    
+    
+        // INTERFACE
+  
+      public:
+    
+        const filtered_Pk& get_data() const { return this->data; }
+    
+    
+        // INTERNAL DATA
+  
+      private:
+    
+        //! loop integral container
+        filtered_Pk data;
+    
+    
+        // enable boost::serialization support, and hence automated packing for transmission over MPI
+        friend class boost::serialization::access;
+    
+        template <typename Archive>
+        void serialize(Archive& ar, unsigned int version)
+          {
+            ar & data;
+          }
+        
+      };
 
 
     // LOOP INTEGRAL PAYLOADS
@@ -214,7 +360,7 @@ namespace MPI_detail
         new_loop_momentum_integration(const FRW_model& m, const Mpc_units::energy& _k, const k_token& kt,
                                       const Mpc_units::energy& UV, const UV_cutoff_token& UVt,
                                       const Mpc_units::energy& IR, const IR_cutoff_token& IRt,
-                                      const std::shared_ptr<tree_power_spectrum>& _Pk)
+                                      const std::shared_ptr<tree_Pk>& _Pk)
           : model(m),
             k(_k),
             UV_cutoff(UV),
@@ -256,7 +402,7 @@ namespace MPI_detail
         const IR_cutoff_token& get_IR_token() const { return(this->IR_tok); }
 
         //! get tree-level power spectrum
-        const tree_power_spectrum& get_tree_power_spectrum() const { return *this->Pk; }
+        const tree_Pk& get_tree_power_spectrum() const { return *this->Pk; }
 
 
         // INTERNAL DATA
@@ -285,7 +431,7 @@ namespace MPI_detail
         IR_cutoff_token IR_tok;
 
         //! tree-level power spectrum
-        std::shared_ptr<tree_power_spectrum> Pk;
+        std::shared_ptr<tree_Pk> Pk;
 
 
         // enable boost::serialization support, and hence automated packing for transmission over MPI
@@ -376,7 +522,7 @@ namespace MPI_detail
         
         //! value constructor: used to construct and send a payload
         new_Matsubara_A(const Mpc_units::energy& _IR, const IR_resum_token& _IRt,
-                        const std::shared_ptr<tree_power_spectrum>& _Pk)
+                        const std::shared_ptr<tree_Pk>& _Pk)
           : IR_resum(_IR),
             IR_resum_tok(_IRt),
             Pk(_Pk)
@@ -398,7 +544,7 @@ namespace MPI_detail
         const IR_resum_token& get_IR_resum_token() const { return this->IR_resum_tok; }
     
         //! get tree-level power spectrum
-        const tree_power_spectrum& get_tree_power_spectrum() const { return *this->Pk; }
+        const tree_Pk& get_tree_power_spectrum() const { return *this->Pk; }
     
     
         // INTERNAL DATA
@@ -412,7 +558,7 @@ namespace MPI_detail
         IR_resum_token IR_resum_tok;
     
         //! tree-level power spectrum
-        std::shared_ptr<tree_power_spectrum> Pk;
+        std::shared_ptr<tree_Pk> Pk;
     
     
         // enable boost::serialization support, and hence automated packing for transmission over MPI
@@ -451,7 +597,7 @@ namespace MPI_detail
         //! value constructor: used to construct and send a payload
         new_one_loop_Pk(const Mpc_units::energy& _k,
                         const std::shared_ptr<oneloop_growth>& gf, const std::shared_ptr<loop_integral>& k,
-                        const std::shared_ptr<tree_power_spectrum>& _Pk)
+                        const std::shared_ptr<tree_Pk>& _Pk)
           : k(_k),
             gf_factors(gf),
             loop_data(k),
@@ -477,7 +623,7 @@ namespace MPI_detail
         const loop_integral& get_loop_data() const { return *this->loop_data; }
     
         //! get tree-level power spectrum
-        const tree_power_spectrum& get_tree_power_spectrum() const { return *this->Pk; }
+        const tree_Pk& get_tree_power_spectrum() const { return *this->Pk; }
 
         
         // INTERNAL DATA
@@ -494,7 +640,7 @@ namespace MPI_detail
         std::shared_ptr<loop_integral> loop_data;
     
         //! tree-level power spectrum
-        std::shared_ptr<tree_power_spectrum> Pk;
+        std::shared_ptr<tree_Pk> Pk;
     
     
         // enable boost::serialization support, and hence automated packing for transmission over MPI
@@ -583,7 +729,7 @@ namespace MPI_detail
         new_multipole_Pk(const Mpc_units::energy& _k, const Matsubara_A& _A,
                          const std::shared_ptr<oneloop_Pk>& _data,
                          const oneloop_growth_record& _gf_data,
-                         const std::shared_ptr<tree_power_spectrum>& _Pk)
+                         const std::shared_ptr<tree_Pk>& _Pk)
           : k(_k),
             A(_A),
             data(_data),
@@ -613,7 +759,7 @@ namespace MPI_detail
         const oneloop_growth_record& get_gf_data() const { return this->gf_data; }
         
         //! get tree-level power spectrum
-        const tree_power_spectrum& get_tree_power_spectrum() const { return *this->Pk; }
+        const tree_Pk& get_tree_power_spectrum() const { return *this->Pk; }
     
     
         // INTERNAL DATA
@@ -635,7 +781,7 @@ namespace MPI_detail
         oneloop_growth_record gf_data;
     
         //! tree-level power spectrum
-        std::shared_ptr<tree_power_spectrum> Pk;
+        std::shared_ptr<tree_Pk> Pk;
     
     
         // enable boost::serialization support, and hence automated packing for transmission over MPI

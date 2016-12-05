@@ -44,6 +44,13 @@ void slave_controller::execute()
                 this->process_task<transfer_work_record>();
                 break;
               }
+            
+            case MPI_detail::MESSAGE_NEW_FILTER_PK_TASK:
+              {
+                this->mpi_world.recv(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_NEW_FILTER_PK_TASK);
+                this->process_task<filter_Pk_work_record>();
+                break;
+              }
 
             case MPI_detail::MESSAGE_NEW_LOOP_INTEGRAL_TASK:
               {
@@ -151,16 +158,35 @@ void slave_controller::process_item(MPI_detail::new_transfer_integration& payloa
   }
 
 
+void slave_controller::process_item(MPI_detail::new_filter_Pk& payload)
+  {
+    const FRW_model& model = payload.get_model();
+    const Mpc_units::energy& k = payload.get_k();
+    const linear_Pk& Pk_lin = payload.get_Pk_linear();
+    
+    const k_token& k_tok = payload.get_k_token();
+    const linear_Pk_token& Pk_tok = payload.get_Pk_token();
+    
+    filtered_Pk sample(k_tok, Pk_tok, 0.0, Pk_lin(k));
+    
+    // inform master process we have finished work on this calculation
+    MPI_detail::filter_Pk_ready return_payload(sample);
+    boost::mpi::request ack = this->mpi_world.isend(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_WORK_PRODUCT_READY, return_payload);
+    ack.wait();
+  }
+
+
 void slave_controller::process_item(MPI_detail::new_loop_momentum_integration& payload)
   {
     const FRW_model& model = payload.get_model();
     const Mpc_units::energy& k = payload.get_k();
     const Mpc_units::energy& UV_cutoff = payload.get_UV_cutoff();
     const Mpc_units::energy& IR_cutoff = payload.get_IR_cutoff();
+
     const k_token& k_tok = payload.get_k_token();
     const UV_cutoff_token& UV_tok = payload.get_UV_token();
     const IR_cutoff_token& IR_tok = payload.get_IR_token();
-    const tree_power_spectrum& Pk = payload.get_tree_power_spectrum();
+    const tree_Pk& Pk = payload.get_tree_power_spectrum();
     
 //    std::cout << "Worker " << this->worker_number() << " processing loop integral item: k-id = " << k_tok.get_id()
 //              << " for k = " << k * Mpc_units::Mpc << " h/Mpc, IR cutoff = " << IR_cutoff * Mpc_units::Mpc
@@ -181,7 +207,7 @@ void slave_controller::process_item(MPI_detail::new_one_loop_Pk& payload)
     const Mpc_units::energy& k = payload.get_k();
     const oneloop_growth& gf_factors = payload.get_gf_factors();
     const loop_integral& loop_data = payload.get_loop_data();
-    const tree_power_spectrum& Pk = payload.get_tree_power_spectrum();
+    const tree_Pk& Pk = payload.get_tree_power_spectrum();
     
     const k_token& k_tok = loop_data.get_k_token();
     const IR_cutoff_token& IR_tok = loop_data.get_IR_token();
@@ -211,7 +237,7 @@ void slave_controller::process_item(MPI_detail::new_multipole_Pk& payload)
     const Matsubara_A& A = payload.get_Matsubara_A();
     const oneloop_Pk& oneloop_data = payload.get_oneloop_Pk_data();
     const oneloop_growth_record& gf_data = payload.get_gf_data();
-    const tree_power_spectrum& Pk = payload.get_tree_power_spectrum();
+    const tree_Pk& Pk = payload.get_tree_power_spectrum();
     
 //    std::cout << "Worker " << this->worker_number() << " processing multipole P(k) for"
 //              << " k-id = " << oneloop_data.get_k_token().get_id()
@@ -233,7 +259,7 @@ void slave_controller::process_item(MPI_detail::new_multipole_Pk& payload)
 void slave_controller::process_item(MPI_detail::new_Matsubara_A& payload)
   {
     const Mpc_units::energy& IR_resum = payload.get_IR_resum();
-    const tree_power_spectrum& Pk = payload.get_tree_power_spectrum();
+    const tree_Pk& Pk = payload.get_tree_power_spectrum();
     
     const IR_resum_token& IR_resum_tok = payload.get_IR_resum_token();
     

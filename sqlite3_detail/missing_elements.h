@@ -70,6 +70,11 @@ namespace sqlite3_operations
     missing_multipole_Pk_redshifts(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
                                    const FRW_model_token& model, const std::string& z_table, const z_database& z_db,
                                    const resum_Pk_configs::value_type& record);
+    
+    //! process a list of configurations for filtering the wiggle & no-wiggle part of Pk
+    std::unique_ptr<k_database>
+    missing_filter_Pk_wavenumbers(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
+                                  const linear_Pk_token& token, const k_database& k_db, const std::string& k_table);
 
   }   // namespace sqlite3_operations
 

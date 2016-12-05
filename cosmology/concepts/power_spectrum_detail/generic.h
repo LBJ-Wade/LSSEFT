@@ -3,13 +3,13 @@
 // Copyright (c) 2015 University of Sussex. All rights reserved.
 //
 
-#ifndef LSSEFT_TREE_POWER_SPECTRUM_H
-#define LSSEFT_TREE_POWER_SPECTRUM_H
+#ifndef LSSEFT_GENERIC_POWER_SPECTRUM_H
+#define LSSEFT_GENERIC_POWER_SPECTRUM_H
 
 #include <memory>
 #include <fstream>
 
-#include "database/powerspectrum_database.h"
+#include "database/Pk_database.h"
 
 #include "exceptions.h"
 #include "localizations/messages.h"
@@ -22,29 +22,51 @@
 #include "SPLINTER/bsplinebuilder.h"
 
 
+namespace generic_Pk_impl
+  {
+
+    constexpr double TEN_PERCENT_UPPER_CLEARANCE = 0.9;
+    constexpr double TEN_PERCENT_LOWER_CLEARANCE = 1.1;
+    
+  }
 
 
 template <typename Tag, typename Dimension, bool protect=false>
-class generic_power_spectrum
+class generic_Pk
   {
+    
+    // TYPEDEFS
+    
+  public:
+    
+    typedef Pk_database<Dimension> database_type;
 
+    
     // CONSTRUCTOR, DESTRUCTOR
 
   public:
     
     //! constructor -- from directly-supplied database
-    generic_power_spectrum(const powerspectrum_database<Dimension>& db);
+    generic_Pk(const Pk_database<Dimension>& db);
 
     //! destructor is default
-    ~generic_power_spectrum() = default;
+    ~generic_Pk() = default;
 
 
-    // INTERFACE
+    // DATABASE SERVICES
 
   public:
 
     //! get power spectrum database
-    const powerspectrum_database<Dimension>& get_db() const { return(this->database); }
+    const Pk_database<Dimension>& get_db() const { return(this->database); }
+    
+    //! ask whether it is valid to evaluate the spline at a given k-value
+    bool is_valid(const Mpc_units::energy& k) const;
+    
+    
+    // EVALUATION
+    
+  public:
 
     //! evaluate spline, using k-range protection if enabled
     template <bool P=protect, typename std::enable_if<P>::type* = nullptr>
@@ -62,9 +84,6 @@ class generic_power_spectrum
 
   private:
 
-    //! ingest CAMB-format powerspectrum file
-    void ingest_CAMB(const boost::filesystem::path& p);
-
     //! recalculate spline approximant
     void recalculate_spline();
 
@@ -74,7 +93,7 @@ class generic_power_spectrum
   private:
 
     //! power spectrum
-    powerspectrum_database<Dimension> database;
+    Pk_database<Dimension> database;
 
     //! splines representing power spectrum
     std::unique_ptr<SPLINTER::DataTable> table;
@@ -95,7 +114,7 @@ class generic_power_spectrum
 
 
 template <typename Tag, typename Dimension, bool protect>
-generic_power_spectrum<Tag, Dimension, protect>::generic_power_spectrum(const powerspectrum_database<Dimension>& db)
+generic_Pk<Tag, Dimension, protect>::generic_Pk(const Pk_database<Dimension>& db)
   : database(db)
   {
     this->recalculate_spline();
@@ -103,16 +122,16 @@ generic_power_spectrum<Tag, Dimension, protect>::generic_power_spectrum(const po
 
 
 template <typename Tag, typename Dimension, bool protect>
-void generic_power_spectrum<Tag, Dimension, protect>::recalculate_spline()
+void generic_Pk<Tag, Dimension, protect>::recalculate_spline()
   {
     this->table.release();
     this->spline.release();
     
     this->table = std::make_unique<SPLINTER::DataTable>();
     
-    for(typename powerspectrum_database<Dimension>::const_record_iterator t = this->database.record_begin(); t != this->database.record_end(); ++t)
+    for(typename Pk_database<Dimension>::const_record_iterator t = this->database.record_begin(); t != this->database.record_end(); ++t)
       {
-        this->table->addSample(t->get_wavenumber() * Mpc_units::Mpc, t->get_Pk() / power_spectrum_database_impl::DimensionTraits<Dimension>().unit());
+        this->table->addSample(t->get_wavenumber() * Mpc_units::Mpc, t->get_Pk() / Pk_database_impl::DimensionTraits<Dimension>().unit());
       }
     
     try
@@ -128,12 +147,9 @@ void generic_power_spectrum<Tag, Dimension, protect>::recalculate_spline()
 
 template <typename Tag, typename Dimension, bool protect>
 template <bool P, typename std::enable_if<P>::type*>
-Dimension generic_power_spectrum<Tag, Dimension, protect>::operator()(const Mpc_units::energy& k) const
+Dimension generic_Pk<Tag, Dimension, protect>::operator()(const Mpc_units::energy& k) const
   {
-    constexpr double TEN_PERCENT_UPPER_CLEARANCE = 0.9;
-    constexpr double TEN_PERCENT_LOWER_CLEARANCE = 1.1;
-    
-    if(k > TEN_PERCENT_UPPER_CLEARANCE * this->database.get_k_max())
+    if(k > generic_Pk_impl::TEN_PERCENT_UPPER_CLEARANCE * this->database.get_k_max())
       {
         std::ostringstream msg;
         msg << ERROR_POWERSPECTRUM_SPLINE_TOO_BIG << " (k = " << k * Mpc_units::Mpc << " h/Mpc, k_max = "
@@ -141,7 +157,7 @@ Dimension generic_power_spectrum<Tag, Dimension, protect>::operator()(const Mpc_
         throw std::overflow_error(msg.str());
       }
 
-    if(k < TEN_PERCENT_LOWER_CLEARANCE * this->database.get_k_min())
+    if(k < generic_Pk_impl::TEN_PERCENT_LOWER_CLEARANCE * this->database.get_k_min())
       {
         std::ostringstream msg;
         msg << ERROR_POWERSPECTRUM_SPLINE_TOO_SMALL << " (k = " << k * Mpc_units::Mpc << " h/Mpc, k_min = "
@@ -155,19 +171,31 @@ Dimension generic_power_spectrum<Tag, Dimension, protect>::operator()(const Mpc_
 
 template <typename Tag, typename Dimension, bool protect>
 template <bool P, typename std::enable_if<!P>::type*>
-Dimension generic_power_spectrum<Tag, Dimension, protect>::operator()(const Mpc_units::energy& k) const
+Dimension generic_Pk<Tag, Dimension, protect>::operator()(const Mpc_units::energy& k) const
   {
     return this->evaluate(k);
   }
 
 
 template <typename Tag, typename Dimension, bool protect>
-Dimension generic_power_spectrum<Tag, Dimension, protect>::evaluate(const Mpc_units::energy& k) const
+Dimension generic_Pk<Tag, Dimension, protect>::evaluate(const Mpc_units::energy& k) const
   {
     SPLINTER::DenseVector x(1);
     x(0) = k * Mpc_units::Mpc;
     
-    return(this->spline->eval(x) * power_spectrum_database_impl::DimensionTraits<Dimension>().unit());
+    return(this->spline->eval(x) * Pk_database_impl::DimensionTraits<Dimension>().unit());
+  }
+
+
+template <typename Tag, typename Dimension, bool protect>
+bool generic_Pk<Tag, Dimension, protect>::is_valid(const Mpc_units::energy& k) const
+  {
+    if(this->database.size() == 0) return false;
+    
+    if(k > generic_Pk_impl::TEN_PERCENT_UPPER_CLEARANCE * this->database.get_k_max()) return false;
+    if(k < generic_Pk_impl::TEN_PERCENT_LOWER_CLEARANCE * this->database.get_k_min()) return false;
+    
+    return true;
   }
 
 
@@ -178,19 +206,19 @@ namespace boost
       {
 
         template <typename Archive, typename Tag, typename Dimension, bool protect>
-        inline void save_construct_data(Archive& ar, const generic_power_spectrum<Tag, Dimension, protect>* t, const unsigned int file_version)
+        inline void save_construct_data(Archive& ar, const generic_Pk<Tag, Dimension, protect>* t, const unsigned int file_version)
           {
             ar << t->get_db();
           }
 
 
         template <typename Archive, typename Tag, typename Dimension, bool protect>
-        inline void load_construct_data(Archive& ar, generic_power_spectrum<Tag, Dimension, protect>* t, const unsigned int file_version)
+        inline void load_construct_data(Archive& ar, generic_Pk<Tag, Dimension, protect>* t, const unsigned int file_version)
           {
-            powerspectrum_database<Dimension> db;
+            Pk_database<Dimension> db;
             ar >> db;
 
-            ::new(t) generic_power_spectrum<Tag, Dimension, protect>(db);
+            ::new(t) generic_Pk<Tag, Dimension, protect>(db);
           }
 
       }   // namespace serialization
@@ -198,4 +226,4 @@ namespace boost
   }   // namespace boost
 
 
-#endif //LSSEFT_TREE_POWER_SPECTRUM_H
+#endif //LSSEFT_GENERIC_POWER_SPECTRUM_H

@@ -10,13 +10,13 @@ namespace sqlite3_operations
   {
     
     boost::optional<unsigned int> lookup_Pk_linear(sqlite3* db, transaction_manager& mgr, const FRW_model_token& model,
-                                                   const linear_power_spectrum& Pk_lin, const sqlite3_policy& policy)
+                                                   const linear_Pk& Pk_lin, const sqlite3_policy& policy)
       {
         assert(db != nullptr);
         
         std::ostringstream select_stmt;
         select_stmt
-          << "SELECT id, mid, md5_hash FROM " << tokenization_table<Pk_linear_token>(policy) << " WHERE "
+          << "SELECT id, mid, md5_hash FROM " << tokenization_table<linear_Pk_token>(policy) << " WHERE "
           << "path = @p;";
         
         // prepare SQL statement
@@ -68,16 +68,16 @@ namespace sqlite3_operations
     
     
     unsigned int insert_Pk_linear(sqlite3* db, transaction_manager& mgr, const FRW_model_token& model,
-                                  const linear_power_spectrum& Pk_lin, const sqlite3_policy& policy)
+                                  const linear_Pk& Pk_lin, const sqlite3_policy& policy)
       {
         assert(db != nullptr);
         
         // get number of rows in table; this will be the identifier for the new power spectrum record
-        unsigned int new_id = count(db, tokenization_table<Pk_linear_token>(policy));
+        unsigned int new_id = count(db, tokenization_table<linear_Pk_token>(policy));
         
         std::ostringstream insert_stmt;
         insert_stmt
-          << "INSERT INTO " << tokenization_table<Pk_linear_token>(policy) << " VALUES (@id, @mid, @path, @md5_hash);";
+          << "INSERT INTO " << tokenization_table<linear_Pk_token>(policy) << " VALUES (@id, @mid, @path, @md5_hash);";
     
         // prepare SQL statement
         sqlite3_stmt* stmt;

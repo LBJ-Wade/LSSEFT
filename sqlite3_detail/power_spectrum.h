@@ -31,11 +31,11 @@ namespace sqlite3_operations
     
     //! lookup ID for linear power spectrum
     boost::optional<unsigned int> lookup_Pk_linear(sqlite3* db, transaction_manager& mgr, const FRW_model_token& model,
-                                                   const linear_power_spectrum& Pk_lin, const sqlite3_policy& policy);
+                                                   const linear_Pk& Pk_lin, const sqlite3_policy& policy);
     
     //! insert a linear power spectrum configuraiton
     unsigned int insert_Pk_linear(sqlite3* db, transaction_manager& mgr, const FRW_model_token& model,
-                                  const linear_power_spectrum& Pk_lin, const sqlite3_policy& policy);
+                                  const linear_Pk& Pk_lin, const sqlite3_policy& policy);
     
     
     

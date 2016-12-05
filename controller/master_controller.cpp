@@ -165,12 +165,20 @@ void master_controller::execute()
     if(this->arg_cache.get_powerspectrum_set())
       {
         // read in tree-level power spectrum in CAMB format, and ask the database to tokenize it
-        linear_power_spectrum Pk_lin_db(this->arg_cache.get_powerspectrum_path());
-        std::unique_ptr<Pk_linear_token> Pk_lin = dmgr.tokenize(*model, Pk_lin_db);
+        // we manage its lifetime using std::shared_ptr<> because we want to share ownership with
+        // the MPI work records and payloads
+        std::shared_ptr<linear_Pk> Pk_lin_db = std::make_shared<linear_Pk>(this->arg_cache.get_powerspectrum_path());
+        std::unique_ptr<linear_Pk_token> Pk_lin = dmgr.tokenize(*model, *Pk_lin_db);
+        
+        // build a work list for filtering the linear power spectrum in wiggle/no-wiggle components
+        std::shared_ptr<filter_Pk_work_list> filter_work = dmgr.build_filter_Pk_work_list(*Pk_lin, Pk_lin_db);
+        
+        // distribute this work list among the worker processes
+        if(filter_work) this->scatter(cosmology_model, *model, *filter_work, dmgr);
 
         // we manage its lifetime with std::shared_ptr since ownership is shared with the
         // MPI messaging routines
-        std::shared_ptr<tree_power_spectrum> Pk = std::make_shared<tree_power_spectrum>(this->arg_cache.get_powerspectrum_path());
+        std::shared_ptr<tree_Pk> Pk = std::make_shared<tree_Pk>(this->arg_cache.get_powerspectrum_path());
 
         // build a work list for the loop integrals
         std::unique_ptr<loop_momentum_work_list> loop_momentum_work =

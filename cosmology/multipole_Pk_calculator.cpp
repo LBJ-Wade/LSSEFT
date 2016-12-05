@@ -48,7 +48,7 @@ namespace multipole_Pk_calculator_impl
       
       public:
         
-        integrand_data(const Mpc_units::energy& UV, const Mpc_units::energy& IR, const tree_power_spectrum& _Pk)
+        integrand_data(const Mpc_units::energy& UV, const Mpc_units::energy& IR, const tree_Pk& _Pk)
           : UV_cutoff(UV),
             IR_cutoff(IR),
             Pk(_Pk),
@@ -59,7 +59,7 @@ namespace multipole_Pk_calculator_impl
         
         const Mpc_units::energy& UV_cutoff;
         const Mpc_units::energy& IR_cutoff;
-        const tree_power_spectrum& Pk;
+        const tree_Pk& Pk;
         
         Mpc_units::energy  jacobian;
         Mpc_units::energy  q_range;
@@ -333,7 +333,7 @@ namespace multipole_Pk_calculator_impl
 
 multipole_Pk multipole_Pk_calculator::calculate_Legendre(const Mpc_units::energy& k, const Matsubara_A& A,
                                                          const oneloop_Pk& data, const oneloop_growth_record& gf_data,
-                                                         const tree_power_spectrum& Ptree)
+                                                         const tree_Pk& Ptree)
   {
     // construct lambdas to access components of an RSD P(k) record
 
@@ -463,7 +463,7 @@ Mpc_units::inverse_energy3
 multipole_Pk_calculator::decompose_1loop_resummed(const oneloop_Pk& data, double Matsubara_A,
                                                   const oneloop_growth_record& gf_data,
                                                   Decomposer decomp, const Mpc_units::energy& k,
-                                                  const tree_power_spectrum& Ptree)
+                                                  const tree_Pk& Ptree)
   {
     auto raw_mu0 = data.get_dd_rsd_mu0().get_1loop_SPT().value;
     auto raw_mu2 = data.get_dd_rsd_mu2().get_1loop_SPT().value;
@@ -492,7 +492,7 @@ multipole_Pk_calculator::decompose_1loop_resummed(const oneloop_Pk& data, double
 
 Matsubara_A
 multipole_Pk_calculator::calculate_Matsubara_A(const Mpc_units::energy& IR_resum, const IR_resum_token& IR_resum_tok,
-                                               const tree_power_spectrum& Ptree)
+                                               const tree_Pk& Ptree)
   {
     cubareal integral[multipole_Pk_calculator_impl::dimensions];
     cubareal error[multipole_Pk_calculator_impl::dimensions];

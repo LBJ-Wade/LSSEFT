@@ -89,11 +89,19 @@ std::unique_ptr<FRW_model_token> data_manager::tokenize(const FRW_model& obj)
     std::shared_ptr<transaction_manager> transaction = this->open_transaction();
 
     // lookup id for this model, or generate one if it does not already exist
-    unsigned int id = this->lookup_or_insert(*transaction, obj);
+    std::unique_ptr<FRW_model_token> id = this->tokenize(*transaction, obj);
 
     // commit the transaction
     transaction->commit();
 
+    return std::move(id);
+  }
+
+
+std::unique_ptr<FRW_model_token> data_manager::tokenize(transaction_manager& mgr, const FRW_model& obj)
+  {
+    // lookup id for this model, or generate one if it does not already exist
+    unsigned int id = this->lookup_or_insert(mgr, obj);
     return std::make_unique<FRW_model_token>(id);
   }
 
@@ -104,11 +112,19 @@ std::unique_ptr<z_token> data_manager::tokenize(double z)
     std::shared_ptr<transaction_manager> transaction = this->open_transaction();
 
     // lookup id for this redshift, or generate one if it does not already exist
-    unsigned int id = this->lookup_or_insert(*transaction, z);
+    std::unique_ptr<z_token> id = this->tokenize(*transaction, z);
 
     // commit the transaction
     transaction->commit();
 
+    return std::move(id);
+  }
+
+
+std::unique_ptr<z_token> data_manager::tokenize(transaction_manager& mgr, double z)
+  {
+    // lookup id for this redshift, or generate one if it does not already exist
+    unsigned int id = this->lookup_or_insert(mgr, z);
     return std::make_unique<z_token>(id);
   }
 
@@ -120,28 +136,46 @@ std::unique_ptr<Token> data_manager::tokenize(const Mpc_units::energy& k)
     std::shared_ptr<transaction_manager> transaction = this->open_transaction();
 
     // lookup id for this wavenumber, or generate one if it does not already exist
-    unsigned int id = this->lookup_or_insert<Token>(*transaction, k);
+    std::unique_ptr<Token> id = this->tokenize<Token>(*transaction, k);
 
     // commit the transaction
     transaction->commit();
 
+    return std::move(id);
+  }
+
+
+template <typename Token>
+std::unique_ptr<Token> data_manager::tokenize(transaction_manager& mgr, const Mpc_units::energy& k)
+  {
+    // lookup id for this wavenumber, or generate one if it does not already exist
+    unsigned int id = this->lookup_or_insert<Token>(mgr, k);
     return std::make_unique<Token>(id);
   }
 
 
-std::unique_ptr<Pk_linear_token>
-data_manager::tokenize(const FRW_model_token& model, const linear_power_spectrum& Pk_lin)
+std::unique_ptr<linear_Pk_token>
+data_manager::tokenize(const FRW_model_token& model, const linear_Pk& Pk_lin)
   {
     // open a new transaction on the database
     std::shared_ptr<transaction_manager> transaction = this->open_transaction();
     
     // lookup id for this power spectrum, or generate one if it doesn't already exist
-    unsigned int id = this->lookup_or_insert(*transaction, model, Pk_lin);
+    std::unique_ptr<linear_Pk_token> id = this->tokenize(*transaction, model, Pk_lin);
     
     // commit the transaction
     transaction->commit();
     
-    return std::make_unique<Pk_linear_token>(id);
+    return std::move(id);
+  }
+
+
+std::unique_ptr<linear_Pk_token>
+data_manager::tokenize(transaction_manager& mgr, const FRW_model_token& model, const linear_Pk& Pk_lin)
+  {
+    // lookup id for this power spectrum, or generate one if it doesn't already exist
+    unsigned int id = this->lookup_or_insert(mgr, model, Pk_lin);
+    return std::make_unique<linear_Pk_token>(id);
   }
 
 
@@ -235,7 +269,7 @@ unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const Mpc_
   }
 
 
-unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const FRW_model_token& model, const linear_power_spectrum& Pk_lin)
+unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const FRW_model_token& model, const linear_Pk& Pk_lin)
   {
     boost::optional<unsigned int> id = sqlite3_operations::lookup_Pk_linear(this->handle, mgr, model, Pk_lin, this->policy);
     if(id) return(*id);
@@ -308,8 +342,31 @@ std::unique_ptr<IR_resum_database> data_manager::build_IR_resum_db(range<Mpc_uni
   }
 
 
-std::unique_ptr<transfer_work_list> data_manager::build_transfer_work_list(FRW_model_token& model, k_database& k_db,
-                                                                           z_database& z_db)
+std::unique_ptr<k_database> data_manager::build_k_db(transaction_manager& mgr, linear_Pk& Pk_lin)
+  {
+    // construct an empty wavenumber database
+    std::unique_ptr<k_database> k_db = std::make_unique<k_database>();
+    
+    // get power spectrum database underlying this container
+    const tree_Pk::database_type& Pk_db = Pk_lin.get_db();
+    
+    for(tree_Pk::database_type::const_record_iterator t = Pk_db.record_cbegin(); t != Pk_db.record_cend(); ++t)
+      {
+        // ask linear_Pk container whether this P(k) value is acceptable
+        const Mpc_units::energy& k = t->get_wavenumber();
+        if(Pk_lin.is_valid(k))
+          {
+            std::unique_ptr<k_token> tok = this->tokenize<k_token>(mgr, k);
+            k_db->add_record(k, *tok);
+          }
+      }
+    
+    return k_db;
+  }
+
+
+std::unique_ptr<transfer_work_list>
+data_manager::build_transfer_work_list(FRW_model_token& model, k_database& k_db, z_database& z_db)
   {
     // start timer
     boost::timer::cpu_timer timer;
@@ -333,15 +390,16 @@ std::unique_ptr<transfer_work_list> data_manager::build_transfer_work_list(FRW_m
         // but we want to convert that to a std::shared_ptr which is what transfer_work_item expects,
         // because it shares ownership with objects representing MPI messages
         // (see comments in transfer_work_item constructor)
-        std::shared_ptr<z_database> missing_values(std::move(sqlite3_operations::missing_transfer_redshifts(this->handle, *mgr, this->policy, model,
-                                                                                                            t->get_token(), z_db, z_table)));
+        std::shared_ptr<z_database> missing(
+          std::move(sqlite3_operations::missing_transfer_redshifts(this->handle, *mgr, this->policy, model,
+                                                                   t->get_token(), z_db, z_table)));
 
         // if any redshifts were missing, set up a record in the work list
-        if(missing_values)
+        if(missing)
           {
 //            std::cout << "  -- " << missing_values->size() << " redshifts" << '\n';
 
-            work_list->emplace_back(*(*t), t->get_token(), missing_values);
+            work_list->emplace_back(*(*t), t->get_token(), missing);
           }
       }
 
@@ -411,7 +469,7 @@ loop_configs data_manager::tensor_product(k_database& k_db, IR_cutoff_database& 
 
 
 resum_Pk_configs data_manager::tensor_product(k_database& k_db, IR_cutoff_database& IR_cutoff_db,
-                                           UV_cutoff_database& UV_cutoff_db, IR_resum_database& IR_resum_db)
+                                              UV_cutoff_database& UV_cutoff_db, IR_resum_database& IR_resum_db)
   {
     resum_Pk_configs tensor_prod;
     
@@ -436,7 +494,7 @@ resum_Pk_configs data_manager::tensor_product(k_database& k_db, IR_cutoff_databa
 std::unique_ptr<loop_momentum_work_list>
 data_manager::build_loop_momentum_work_list(FRW_model_token& model, k_database& k_db,
                                             IR_cutoff_database& IR_db, UV_cutoff_database& UV_db,
-                                            std::shared_ptr<tree_power_spectrum>& Pk)
+                                            std::shared_ptr<tree_Pk>& Pk)
   {
     // start timer
     boost::timer::cpu_timer timer;
@@ -530,7 +588,7 @@ data_manager::find(transaction_manager& mgr, const FRW_model_token& model, const
 std::unique_ptr<one_loop_Pk_work_list>
 data_manager::build_one_loop_Pk_work_list(FRW_model_token& model, z_database& z_db, k_database& k_db,
                                           IR_cutoff_database& IR_db, UV_cutoff_database& UV_db,
-                                          std::shared_ptr<tree_power_spectrum>& Pk)
+                                          std::shared_ptr<tree_Pk>& Pk)
   {
     // start timer
     boost::timer::cpu_timer timer;
@@ -585,7 +643,7 @@ data_manager::build_one_loop_Pk_work_list(FRW_model_token& model, z_database& z_
 std::unique_ptr<multipole_Pk_work_list>
 data_manager::build_multipole_Pk_work_list(FRW_model_token& model, z_database& z_db, k_database& k_db,
                                            IR_cutoff_database& IR_cutoff_db, UV_cutoff_database& UV_cutoff_db,
-                                           IR_resum_database& IR_resum_db, std::shared_ptr<tree_power_spectrum>& Pk)
+                                           IR_resum_database& IR_resum_db, std::shared_ptr<tree_Pk>& Pk)
   {
     // start timer
     boost::timer::cpu_timer timer;
@@ -648,7 +706,7 @@ data_manager::build_multipole_Pk_work_list(FRW_model_token& model, z_database& z
 
 std::unique_ptr<Matsubara_A_work_list>
 data_manager::build_Matsubara_A_work_list(FRW_model_token& model, IR_resum_database& IR_resum_db,
-                                          std::shared_ptr<tree_power_spectrum>& Pk)
+                                          std::shared_ptr<tree_Pk>& Pk)
   {
     // start timer
     boost::timer::cpu_timer timer;
@@ -656,7 +714,7 @@ data_manager::build_Matsubara_A_work_list(FRW_model_token& model, IR_resum_datab
     // construct an empty work list
     std::unique_ptr<Matsubara_A_work_list> work_list = std::make_unique<Matsubara_A_work_list>();
     
-    // open a transaction on the tabase
+    // open a transaction on the database
     std::shared_ptr<transaction_manager> mgr = this->open_transaction();
     
     // obatain list of missing configurations
@@ -676,6 +734,51 @@ data_manager::build_Matsubara_A_work_list(FRW_model_token& model, IR_resum_datab
     std::cout << "lsseft: constructed Matsubara-A work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall) << '\n';
     
     // release list if it contains no work
+    if(work_list->empty()) work_list.release();
+    
+    return work_list;
+  }
+
+
+std::unique_ptr<filter_Pk_work_list>
+data_manager::build_filter_Pk_work_list(linear_Pk_token& token, std::shared_ptr<linear_Pk>& Pk_lin)
+  {
+    // start timer
+    boost::timer::cpu_timer timer;
+    
+    // construct an empty work list
+    std::unique_ptr<filter_Pk_work_list> work_list = std::make_unique<filter_Pk_work_list>();
+    
+    // open a transaction on the database
+    std::shared_ptr<transaction_manager> mgr = this->open_transaction();
+    
+    // set up temporary table of desired wavenumber identifiers
+    std::unique_ptr<k_database> k_db = this->build_k_db(*mgr, *Pk_lin);
+    std::string k_table = sqlite3_operations::k_table(this->handle, *mgr, this->policy, *k_db);
+    
+    // obtain list of missing configurations
+    std::unique_ptr<k_database> missing =
+      sqlite3_operations::missing_filter_Pk_wavenumbers(this->handle, *mgr, this->policy, token, *k_db, k_table);
+    
+    if(missing)
+      {
+        // add these configurations to the work list
+        for(k_database::const_record_iterator t = missing->record_cbegin(); t != missing->record_cend(); ++t)
+          {
+            work_list->emplace_back(*(*t), t->get_token(), Pk_lin, token);
+          }
+      }
+    
+    // drop temporary table
+    sqlite3_operations::drop_temp(this->handle, *mgr, k_table);
+    
+    // close transaction
+    mgr->commit();
+    
+    timer.stop();
+    std::cout << "lsseft: constructed no-wiggle filter work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall) << '\n';
+    
+    // release list if it contains to work
     if(work_list->empty()) work_list.release();
     
     return work_list;

@@ -41,4 +41,10 @@ namespace MPI_detail
         return new_Matsubara_A(t->get_IR_resum(), t->get_IR_resum_token(), t->get_tree_Pk_db());
       }
     
+    
+    new_filter_Pk build_payload(const FRW_model& model, filter_Pk_work_list::const_iterator& t)
+      {
+        return new_filter_Pk(model, *(*t), t->get_k_token(), t->get_Pk_token(), t->get_linear_Pk());
+      }
+    
   }

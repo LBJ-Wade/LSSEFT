@@ -335,7 +335,7 @@ inline const std::string& tokenization_table<IR_resum_token>(const sqlite3_polic
 
 
 //! token representing a linear power spectrum P(k)
-class Pk_linear_token: public generic_token
+class linear_Pk_token: public generic_token
   {
     
     // CONSTRUCTOR, DESTRUCTOR
@@ -343,10 +343,10 @@ class Pk_linear_token: public generic_token
   public:
     
     //! constructor
-    Pk_linear_token(unsigned int i);
+    linear_Pk_token(unsigned int i);
     
     //! destructor is default
-    virtual ~Pk_linear_token() = default;
+    virtual ~linear_Pk_token() = default;
   
   
   private:
@@ -365,7 +365,7 @@ class Pk_linear_token: public generic_token
 
 // specialize tokenization for linear P(k) tokens
 template <>
-inline const std::string& tokenization_table<Pk_linear_token>(const sqlite3_policy& policy)
+inline const std::string& tokenization_table<linear_Pk_token>(const sqlite3_policy& policy)
   {
     return(policy.Pk_linear_config_table());
   }
@@ -549,7 +549,7 @@ namespace std
     
     
     template<>
-    class hash<Pk_linear_token>
+    class hash<linear_Pk_token>
       {
         
         // CONSTRUCTOR, DESTRUCTOR
@@ -568,7 +568,7 @@ namespace std
       public:
         
         //! hash function
-        size_t operator()(const Pk_linear_token& tok) const
+        size_t operator()(const linear_Pk_token& tok) const
           {
             std::hash<generic_token> hasher;
             return hasher(tok);

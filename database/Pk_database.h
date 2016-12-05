@@ -25,7 +25,7 @@
 #include "boost/filesystem.hpp"
 
 
-namespace power_spectrum_database_impl
+namespace Pk_database_impl
   {
     
     
@@ -44,11 +44,11 @@ namespace power_spectrum_database_impl
       };
     
     
-  }   // namespace power_spectrum_database_impl
+  }   // namespace Pk_database_impl
 
 
 template <typename Dimension>
-class powerspectrum_database
+class Pk_database
   {
 
   private:
@@ -89,13 +89,13 @@ class powerspectrum_database
   public:
 
     //! empty constructor
-    powerspectrum_database();
+    Pk_database();
     
     //! construct a power spectrum database from a file in CAMB format
-    powerspectrum_database(const boost::filesystem::path& p);
+    Pk_database(const boost::filesystem::path& p);
 
     //! destructor is default
-    ~powerspectrum_database() = default;
+    ~Pk_database() = default;
 
 
     // MANUFACTURE RECORD-VALUED ITERATORS
@@ -193,7 +193,7 @@ class powerspectrum_database
 
 
 template <typename Dimension>
-powerspectrum_database<Dimension>::powerspectrum_database()
+Pk_database<Dimension>::Pk_database()
   : k_min(std::numeric_limits<double>::max()),
     k_max(std::numeric_limits<double>::min())
   {
@@ -201,8 +201,8 @@ powerspectrum_database<Dimension>::powerspectrum_database()
 
 
 template <typename Dimension>
-powerspectrum_database<Dimension>::powerspectrum_database(const boost::filesystem::path& p)
-  : powerspectrum_database<Dimension>()   // forward to empty constructor
+Pk_database<Dimension>::Pk_database(const boost::filesystem::path& p)
+  : Pk_database<Dimension>()   // forward to empty constructor
   {
     std::ifstream in;
     in.open(p.string());
@@ -218,12 +218,15 @@ powerspectrum_database<Dimension>::powerspectrum_database(const boost::filesyste
       {
         std::stringstream line_stream(line);
         
-        double _k, _Pk;
-        line_stream >> _k >> _Pk;
-        
-        Mpc_units::energy k = _k / Mpc_units::Mpc;
-        Mpc_units::inverse_energy3 Pk = _Pk * power_spectrum_database_impl::DimensionTraits<Dimension>().unit();
-        this->add_record(k, Pk);
+        if(line.front() != '#')   // hash # is CAMB-format comment character
+          {
+            double _k, _Pk;
+            line_stream >> _k >> _Pk;
+    
+            Mpc_units::energy k = _k / Mpc_units::Mpc;
+            Dimension Pk = _Pk * Pk_database_impl::DimensionTraits<Dimension>().unit();
+            this->add_record(k, Pk);
+          }
       }
     
     in.close();
@@ -231,7 +234,7 @@ powerspectrum_database<Dimension>::powerspectrum_database(const boost::filesyste
 
 
 template <typename Dimension>
-void powerspectrum_database<Dimension>::add_record(const Mpc_units::energy& k, const Dimension& Pk)
+void Pk_database<Dimension>::add_record(const Mpc_units::energy& k, const Dimension& Pk)
   {
     std::pair<typename database_type::iterator, bool> emplaced_value = this->database.emplace(k, Pk_record<Dimension>(k, Pk));
     assert(emplaced_value.second);

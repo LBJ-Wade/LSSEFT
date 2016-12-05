@@ -73,6 +73,14 @@ class slave_controller
 
     //! integrate a given transfer function
     void process_item(MPI_detail::new_transfer_integration& payload);
+    
+    
+    // LINEAR POWER SPECTRUM TASKS
+    
+  protected:
+    
+    //! filter a linear power spectrum into wiggle/no-wiggle components
+    void process_item(MPI_detail::new_filter_Pk& payload);
 
 
     // LOOP MOMENTUM TASKS

@@ -10,7 +10,7 @@
 #include "openssl/md5.h"
 
 
-linear_power_spectrum::linear_power_spectrum(const boost::filesystem::path& p)
+linear_Pk::linear_Pk(const boost::filesystem::path& p)
   : path(p.is_absolute() ? p : boost::filesystem::absolute(p)),
     container(path)    // need to be sure path is initialized before container
   {
@@ -18,7 +18,15 @@ linear_power_spectrum::linear_power_spectrum(const boost::filesystem::path& p)
   }
 
 
-std::string linear_power_spectrum::hash(const boost::filesystem::path& p)
+linear_Pk::linear_Pk(const std::string& p, const tree_Pk::database_type& d, const std::string& h)
+  : path(p),
+    container(d),
+    md5_hash(h)
+  {
+  }
+
+
+std::string linear_Pk::hash(const boost::filesystem::path& p)
   {
     unsigned char result[MD5_DIGEST_LENGTH];
 

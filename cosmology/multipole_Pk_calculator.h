@@ -48,12 +48,12 @@ class multipole_Pk_calculator
     //! calculate power spectra decomposition into Legendre modes
     multipole_Pk
     calculate_Legendre(const Mpc_units::energy& k, const Matsubara_A& A,
-                       const oneloop_Pk& data, const oneloop_growth_record& gf_data, const tree_power_spectrum& Ptree);
+                       const oneloop_Pk& data, const oneloop_growth_record& gf_data, const tree_Pk& Ptree);
     
     //! calculate Matsubara-A coefficient
     Matsubara_A
     calculate_Matsubara_A(const Mpc_units::energy& IR_resum, const IR_resum_token& IR_resum_tok,
-                          const tree_power_spectrum& Ptree);
+                          const tree_Pk& Ptree);
     
   private:
     
@@ -67,7 +67,7 @@ class multipole_Pk_calculator
     template <typename Decomposer>
     Mpc_units::inverse_energy3
     decompose_1loop_resummed(const oneloop_Pk& data, double Matsubara_A, const oneloop_growth_record& gf_data,
-                             Decomposer decomp, const Mpc_units::energy& k, const tree_power_spectrum& Ptree);
+                             Decomposer decomp, const Mpc_units::energy& k, const tree_Pk& Ptree);
     
     // INTERNAL DATA
     

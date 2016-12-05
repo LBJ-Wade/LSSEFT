@@ -450,4 +450,32 @@ namespace sqlite3_operations
       }
     
     
+    void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token&,
+               const filtered_Pk& sample)
+      {
+        assert(db != nullptr);
+        
+        std::ostringstream insert_stmt;
+        insert_stmt
+          << "INSERT INTO " << policy.Pk_linear_table() << " VALUES (@Pk_id, @kid, @Pk_raw, @Pk_w);";
+    
+        // prepare statement
+        sqlite3_stmt* stmt;
+        check_stmt(db, sqlite3_prepare_v2(db, insert_stmt.str().c_str(), insert_stmt.str().length()+1, &stmt, nullptr));
+    
+        // bind parameter values
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_id"), sample.get_Pk_token().get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@kid"), sample.get_k_token().get_id()));
+        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_raw"), store_impl::make_dimensionless(sample.get_Pk_raw())));
+        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_w"), store_impl::make_dimensionless(sample.get_Pk_w())));
+    
+        // perform insertion
+        check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_MATSUBARA_A_FAIL, SQLITE_DONE);
+    
+        // clear bindings and release
+        check_stmt(db, sqlite3_clear_bindings(stmt));
+        check_stmt(db, sqlite3_finalize(stmt));
+      }
+    
+    
   }   // namespace sqlite3_operations

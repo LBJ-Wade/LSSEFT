@@ -30,6 +30,9 @@ namespace MPI_detail
     
     //! build payload for multipole P(k) calculation
     new_multipole_Pk build_payload(const FRW_model&, multipole_Pk_work_list::const_iterator& t);
+    
+    //! build payload for linear Pk filter calculation
+    new_filter_Pk build_payload(const FRW_model& model, filter_Pk_work_list::const_iterator& t);
 
 
   }   // namespace MPI_detail

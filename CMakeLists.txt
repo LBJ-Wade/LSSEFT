@@ -94,6 +94,7 @@ SET(COSMOLOGY_SOURCE_FILES
   cosmology/concepts/multipole_Pk.cpp cosmology/concepts/multipole_Pk.h
   cosmology/concepts/oneloop_Pk.cpp cosmology/concepts/oneloop_Pk.h
   cosmology/concepts/Matsubara_A.cpp cosmology/concepts/Matsubara_A.h
+  cosmology/concepts/filtered_Pk.cpp cosmology/concepts/filtered_Pk.h
   cosmology/oneloop_integrands/shared.h
   cosmology/oneloop_integrands/delta_13.h
   cosmology/oneloop_integrands/delta_22.h
@@ -116,7 +117,7 @@ SET(DATABASE_SOURCE_FILES
   database/wavenumber_database.h
   database/z_database.cpp database/z_database.h
   database/generic_record_iterator.h database/generic_value_iterator.h
-  database/powerspectrum_database.h
+  database/Pk_database.h
   database/z_record.cpp database/z_record.h
   database/wavenumber_record.h
   database/powerspectrum_record.h
@@ -172,6 +173,7 @@ ADD_EXECUTABLE(lsseft
   cosmology/concepts/oneloop_Pk.cpp
   cosmology/concepts/multipole_Pk.cpp
   cosmology/concepts/Matsubara_A.cpp
+  cosmology/concepts/filtered_Pk.cpp
   cosmology/concepts/power_spectrum_detail/linear.cpp
   cosmology/transfer_integrator.cpp
   cosmology/oneloop_growth_integrator.cpp

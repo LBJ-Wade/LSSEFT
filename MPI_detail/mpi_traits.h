@@ -25,6 +25,15 @@ namespace MPI_detail
         static constexpr unsigned int new_task_message() { return(MESSAGE_NEW_TRANSFER_TASK); }
         static constexpr unsigned int new_item_message() { return(MESSAGE_NEW_TRANSFER_INTEGRATION); }
       };
+    
+    template <> struct work_item_traits<filter_Pk_work_record>
+      {
+        typedef new_filter_Pk   outgoing_payload_type;
+        typedef filter_Pk_ready incoming_payload_type;
+    
+        static constexpr unsigned int new_task_message() { return(MESSAGE_NEW_FILTER_PK_TASK); }
+        static constexpr unsigned int new_item_message() { return(MESSAGE_NEW_FILTER_PK); }
+      };
 
     template <> struct work_item_traits<loop_momentum_work_record>
       {

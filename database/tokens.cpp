@@ -60,7 +60,7 @@ IR_resum_token::IR_resum_token(unsigned int i)
   }
 
 
-Pk_linear_token::Pk_linear_token(unsigned int i)
+linear_Pk_token::linear_Pk_token(unsigned int i)
   : generic_token(i)
   {
   }

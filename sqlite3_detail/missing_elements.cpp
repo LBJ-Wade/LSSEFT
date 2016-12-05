@@ -193,7 +193,7 @@ namespace sqlite3_operations
 
 
     //! find missing wavenumbers in a named table, returned as a std::set<> of ids
-    std::set<unsigned int> missing_wavenumbers_for_table(sqlite3* db, const FRW_model_token& model,
+    std::set<unsigned int> missing_wavenumbers_for_table(sqlite3* db, const linear_Pk_token& token,
                                                          const std::string& table, const std::string& k_table)
       {
         assert(db != nullptr);
@@ -203,7 +203,7 @@ namespace sqlite3_operations
         select_stmt
           << "SELECT id FROM " << k_table << " "
           << "WHERE id NOT IN "
-          << "(SELECT kid FROM " << table << " WHERE " << table << ".mid=@mid) "
+          << "(SELECT kid FROM " << table << " WHERE " << table << ".Pk_id=@Pk_id) "
           << "ORDER BY id;";
 
         // prepare statement
@@ -211,7 +211,7 @@ namespace sqlite3_operations
         check_stmt(db, sqlite3_prepare_v2(db, select_stmt.str().c_str(), select_stmt.str().length()+1, &stmt, nullptr));
 
         // bind parameter values
-        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@mid"), model.get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_id"), token.get_id()));
 
         std::set<unsigned int> results;
 
@@ -245,14 +245,14 @@ namespace sqlite3_operations
         std::unique_ptr<z_database> missing_db;
 
         // get list of missing z-values for this k-mode of the transfer function
-        std::set<unsigned int> missing_list = missing_redshifts_for_table(db, model, k, policy.transfer_table(), z_table);
+        std::set<unsigned int> missing = missing_redshifts_for_table(db, model, k, policy.transfer_table(), z_table);
 
         // if any elements are missing, push them into a database
-        if(missing_list.size() > 0)
+        if(missing.size() > 0)
           {
             missing_db = std::make_unique<z_database>();
 
-            for(unsigned int t : missing_list)
+            for(unsigned int t : missing)
               {
                 // lookup record for this identifier
                 z_database::const_record_iterator rec = z_db.lookup(z_token(t));
@@ -777,6 +777,36 @@ namespace sqlite3_operations
         check_stmt(db, sqlite3_finalize(stmt));
     
         return missing_configs;
+      }
+    
+    
+    std::unique_ptr<k_database>
+    missing_filter_Pk_wavenumbers(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
+                                  const linear_Pk_token& token, const k_database& k_db, const std::string& k_table)
+      {
+        assert(db != nullptr);
+        
+        // set up null pointer; will be attached to an empty database later if needed
+        std::unique_ptr<k_database> missing_db;
+        
+        // get list of missing k-values for this linear power spectrum
+        std::set<unsigned int> missing = missing_wavenumbers_for_table(db, token, policy.Pk_linear_table(), k_table);
+        
+        if(missing.size() > 0)
+          {
+            missing_db = std::make_unique<k_database>();
+            
+            for(unsigned int t : missing)
+              {
+                // lookup record for this identifier
+                k_database::const_record_iterator rec = k_db.lookup(k_token(t));
+                
+                // add a corresponding element to the missing database
+                missing_db->add_record(*(*rec), rec->get_token());
+              }
+          }
+        
+        return missing_db;
       }
     
     
