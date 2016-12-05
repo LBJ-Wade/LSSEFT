@@ -16,14 +16,126 @@ namespace sqlite3_operations
     namespace create_impl
       {
         
-        void wavenubmer_config_table(sqlite3* db, const std::string& table_name, const sqlite3_policy& policy)
+        void model_table(sqlite3* db, const sqlite3_policy& policy)
           {
-            std::ostringstream config_stmt;
-            config_stmt
+            std::ostringstream stmt;
+            stmt
+              << "CREATE TABLE " << policy.FRW_model_table() << "("
+              << "id INTEGER PRIMARY KEY, "
+              << "omega_m DOUBLE, "
+              << "omega_cc DOUBLE, "
+              << "h DOUBLE, "
+              << "T_CMB DOUBLE, "
+              << "Neff DOUBLE"
+              << ");";
+    
+            exec(db, stmt.str());
+          }
+        
+        
+        void z_config_table(sqlite3* db, const sqlite3_policy& policy)
+          {
+            std::ostringstream stmt;
+            stmt
+              << "CREATE TABLE " << policy.redshift_config_table() << "("
+              << "id INTEGER PRIMARY KEY, "
+              << "z DOUBLE);";
+    
+            exec(db, stmt.str());
+          }
+
+        
+        void wavenumber_config_table(sqlite3* db, const std::string& table_name, const sqlite3_policy& policy)
+          {
+            std::ostringstream stmt;
+            stmt
               << "CREATE TABLE " << table_name << "("
               << "id INTEGER PRIMARY KEY, "
               << "k DOUBLE);";
-            exec(db, config_stmt.str());
+            exec(db, stmt.str());
+          }
+        
+        
+        void transfer_function_table(sqlite3* db, const sqlite3_policy& policy)
+          {
+            std::ostringstream stmt;
+            stmt
+              << "CREATE TABLE " << policy.transfer_table() << "("
+              << "mid INTEGER, "
+              << "kid INTEGER, "
+              << "zid INTEGER, "
+              << "delta_m DOUBLE, "
+              << "delta_r DOUBLE, "
+              << "theta_m DOUBLE, "
+              << "theta_r DOUBLE, "
+              << "Phi DOUBLE"
+#ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
+              << ", "
+              << "PRIMARY KEY (zid, kid), "
+              << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
+              << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id), "
+              << "FOREIGN KEY (kid) REFERENCES " << policy.wavenumber_config_table() << "(id));";
+#else
+              << ");";
+#endif
+    
+            exec(db, stmt.str());
+          }
+        
+        
+        void oneloop_g_table(sqlite3* db, const sqlite3_policy& policy)
+          {
+            std::ostringstream stmt;
+            stmt
+              << "CREATE TABLE " << policy.g_factor_table() << "("
+              << "mid INTEGER, "
+              << "zid INTEGER, "
+              << "g_linear DOUBLE, "
+              << "A DOUBLE, "
+              << "B DOUBLE, "
+              << "D DOUBLE, "
+              << "E DOUBLE, "
+              << "F DOUBLE, "
+              << "G DOUBLE, "
+              << "J DOUBLE"
+#ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
+              << ", "
+              << "PRIMARY KEY (mid, zid), "
+              << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
+              << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id));";
+#else
+              << ");";
+#endif
+    
+            exec(db, stmt.str());
+          }
+    
+    
+        void oneloop_f_table(sqlite3* db, const sqlite3_policy& policy)
+          {
+            std::ostringstream stmt;
+            stmt
+              << "CREATE TABLE " << policy.f_factor_table() << "("
+              << "mid INTEGER, "
+              << "zid INTEGER, "
+              << "f_linear DOUBLE, "
+              << "fA DOUBLE, "
+              << "fB DOUBLE, "
+              << "fD DOUBLE, "
+              << "fE DOUBLE, "
+              << "fF DOUBLE, "
+              << "fG DOUBLE, "
+              << "fJ DOUBLE"
+#ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
+              << ", "
+              << "PRIMARY KEY (mid, zid), "
+              << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
+              << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id));";
+#else
+              << ");";
+#endif
+    
+            exec(db, stmt.str());
           }
         
         
@@ -170,9 +282,30 @@ namespace sqlite3_operations
               << "FOREIGN KEY (UV_cutoff_id) REFERENCES " << policy.UV_config_table() << "(id) "
               << "FOREIGN KEY (IR_resum_id) REFERENCES " << policy.IR_resum_table() << "(id));";
 #else
-            << ");";
+              << ");";
 #endif
             
+            exec(db, stmt.str());
+          }
+        
+        
+        void Matsubara_table(sqlite3* db, const sqlite3_policy& policy)
+          {
+            std::ostringstream stmt;
+            stmt
+              << "CREATE TABLE " << policy.Matsubara_A_table() << "("
+              << "mid INTEGER, "
+              << "IR_resum_id INTEGER, "
+              << "A DOUBLE"
+#ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
+              << ", "
+              << "PRIMARY KEY (mid, IR_resum_id), "
+              << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
+              << "FOREIGN KEY (IR_resum_id) REFERENCES " << policy.IR_resum_table() << "(id));";
+#else
+              << ");";
+#endif
+    
             exec(db, stmt.str());
           }
         
@@ -181,102 +314,18 @@ namespace sqlite3_operations
     
     void create_tables(sqlite3* db, const sqlite3_policy& policy)
       {
-        std::ostringstream models_stmt;
-        models_stmt
-          << "CREATE TABLE " << policy.FRW_model_table() << "("
-          << "id INTEGER PRIMARY KEY, "
-          << "omega_m DOUBLE, "
-          << "omega_cc DOUBLE, "
-          << "h DOUBLE, "
-          << "T_CMB DOUBLE, "
-          << "Neff DOUBLE"
-          << ");";
+        create_impl::model_table(db, policy);
+        create_impl::z_config_table(db, policy);
+    
+        create_impl::wavenumber_config_table(db, policy.wavenumber_config_table(), policy);
+        create_impl::wavenumber_config_table(db, policy.IR_config_table(), policy);
+        create_impl::wavenumber_config_table(db, policy.UV_config_table(), policy);
+        create_impl::wavenumber_config_table(db, policy.IR_resum_table(), policy);
         
-        exec(db, models_stmt.str());
+        create_impl::transfer_function_table(db, policy);
         
-        std::ostringstream z_config_stmt;
-        z_config_stmt
-          << "CREATE TABLE " << policy.redshift_config_table() << "("
-          << "id INTEGER PRIMARY KEY, "
-          << "z DOUBLE);";
-        
-        exec(db, z_config_stmt.str());
-        
-        create_impl::wavenubmer_config_table(db, policy.wavenumber_config_table(), policy);
-        create_impl::wavenubmer_config_table(db, policy.IR_config_table(), policy);
-        create_impl::wavenubmer_config_table(db, policy.UV_config_table(), policy);
-        create_impl::wavenubmer_config_table(db, policy.IR_resum_table(), policy);
-        
-        std::ostringstream transfer_stmt;
-        transfer_stmt
-          << "CREATE TABLE " << policy.transfer_table() << "("
-          << "mid INTEGER, "
-          << "kid INTEGER, "
-          << "zid INTEGER, "
-          << "delta_m DOUBLE, "
-          << "delta_r DOUBLE, "
-          << "theta_m DOUBLE, "
-          << "theta_r DOUBLE, "
-          << "Phi DOUBLE"
-#ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
-          << ", "
-          << "PRIMARY KEY (zid, kid), "
-          << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
-          << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id), "
-          << "FOREIGN KEY (kid) REFERENCES " << policy.wavenumber_config_table() << "(id));";
-#else
-        << ");";
-#endif
-        
-        exec(db, transfer_stmt.str());
-        
-        std::ostringstream oneloop_g_stmt;
-        oneloop_g_stmt
-          << "CREATE TABLE " << policy.g_factor_table() << "("
-          << "mid INTEGER, "
-          << "zid INTEGER, "
-          << "g_linear DOUBLE, "
-          << "A DOUBLE, "
-          << "B DOUBLE, "
-          << "D DOUBLE, "
-          << "E DOUBLE, "
-          << "F DOUBLE, "
-          << "G DOUBLE, "
-          << "J DOUBLE"
-#ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
-          << ", "
-          << "PRIMARY KEY (mid, zid), "
-          << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
-          << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id));";
-#else
-        << ");";
-#endif
-        
-        exec(db, oneloop_g_stmt.str());
-        
-        std::ostringstream oneloop_f_stmt;
-        oneloop_f_stmt
-          << "CREATE TABLE " << policy.f_factor_table() << "("
-          << "mid INTEGER, "
-          << "zid INTEGER, "
-          << "f_linear DOUBLE, "
-          << "fA DOUBLE, "
-          << "fB DOUBLE, "
-          << "fD DOUBLE, "
-          << "fE DOUBLE, "
-          << "fF DOUBLE, "
-          << "fG DOUBLE, "
-          << "fJ DOUBLE"
-#ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
-          << ", "
-          << "PRIMARY KEY (mid, zid), "
-          << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
-          << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id));";
-#else
-        << ");";
-#endif
-        
-        exec(db, oneloop_f_stmt.str());
+        create_impl::oneloop_g_table(db, policy);
+        create_impl::oneloop_f_table(db, policy);
         
         create_impl::oneloop_momentum_integral_table(db, policy.AA_table(), policy);
         create_impl::oneloop_momentum_integral_table(db, policy.AB_table(), policy);
@@ -324,22 +373,7 @@ namespace sqlite3_operations
         create_impl::multipole_Pk_table(db, policy.P2_table(), policy);
         create_impl::multipole_Pk_table(db, policy.P4_table(), policy);
     
-        std::ostringstream Matsubara_stmt;
-        Matsubara_stmt
-          << "CREATE TABLE " << policy.Matsubara_A_table() << "("
-          << "mid INTEGER, "
-          << "IR_resum_id INTEGER, "
-          << "A DOUBLE"
-#ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
-          << ", "
-          << "PRIMARY KEY (mid, IR_resum_id), "
-          << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
-          << "FOREIGN KEY (IR_resum_id) REFERENCES " << policy.IR_resum_table() << "(id));";
-#else
-        << ");";
-#endif
-    
-        exec(db, Matsubara_stmt.str());
+        create_impl::Matsubara_table(db, policy);
       }
     
   }   // namespace sqlite3_operations
