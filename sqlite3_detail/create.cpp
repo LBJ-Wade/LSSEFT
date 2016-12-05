@@ -280,7 +280,7 @@ namespace sqlite3_operations
               << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id), "
               << "FOREIGN KEY (IR_cutoff_id) REFERENCES " << policy.IR_config_table() << "(id), "
               << "FOREIGN KEY (UV_cutoff_id) REFERENCES " << policy.UV_config_table() << "(id) "
-              << "FOREIGN KEY (IR_resum_id) REFERENCES " << policy.IR_resum_table() << "(id));";
+              << "FOREIGN KEY (IR_resum_id) REFERENCES " << policy.IR_resum_config_table() << "(id));";
 #else
               << ");";
 #endif
@@ -301,11 +301,48 @@ namespace sqlite3_operations
               << ", "
               << "PRIMARY KEY (mid, IR_resum_id), "
               << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
-              << "FOREIGN KEY (IR_resum_id) REFERENCES " << policy.IR_resum_table() << "(id));";
+              << "FOREIGN KEY (IR_resum_id) REFERENCES " << policy.IR_resum_config_table() << "(id));";
 #else
               << ");";
 #endif
     
+            exec(db, stmt.str());
+          }
+        
+        
+        void Pk_linear_config_table(sqlite3* db, const sqlite3_policy& policy)
+          {
+            std::ostringstream stmt;
+            stmt
+              << "CREATE TABLE " << policy.Pk_linear_config_table() << "("
+              << "id INTEGER PRIMARY KEY, "
+              << "mid INTEGER, "
+              << "path STRING, "
+              << "md5_hash STRING, "
+              << "FOREIGN KEY (mid) REFERENCES << " << policy.FRW_model_table() << "(id));";
+            
+            exec(db, stmt.str());
+          }
+        
+        
+        void Pk_linear_data_table(sqlite3* db, const sqlite3_policy& policy)
+          {
+            std::ostringstream stmt;
+            stmt
+              << "CREATE TABLE " << policy.Pk_linear_table() << "("
+              << "Pk_id INTEGER, "
+              << "kid INTEGER, "
+              << "Pk_raw DOUBLE, "
+              << "Pk_w DOUBLE"
+#ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
+              << ", "
+              << "PRIMARY KEY (Pk_id, kid), "
+              << "FOREIGN KEY (Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
+              << "FOREIGN KEY (kid) REFERENCES " << policy.wavenumber_config_table() << "(id));";
+#else
+              << ");";
+#endif
+            
             exec(db, stmt.str());
           }
         
@@ -320,12 +357,15 @@ namespace sqlite3_operations
         create_impl::wavenumber_config_table(db, policy.wavenumber_config_table(), policy);
         create_impl::wavenumber_config_table(db, policy.IR_config_table(), policy);
         create_impl::wavenumber_config_table(db, policy.UV_config_table(), policy);
-        create_impl::wavenumber_config_table(db, policy.IR_resum_table(), policy);
+        create_impl::wavenumber_config_table(db, policy.IR_resum_config_table(), policy);
         
         create_impl::transfer_function_table(db, policy);
         
         create_impl::oneloop_g_table(db, policy);
         create_impl::oneloop_f_table(db, policy);
+        
+        create_impl::Pk_linear_config_table(db, policy);
+        create_impl::Pk_linear_data_table(db, policy);
         
         create_impl::oneloop_momentum_integral_table(db, policy.AA_table(), policy);
         create_impl::oneloop_momentum_integral_table(db, policy.AB_table(), policy);

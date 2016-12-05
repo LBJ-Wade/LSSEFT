@@ -4,8 +4,14 @@ PROJECT(LSSEFT)
 LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/)
 INCLUDE(BuildDeps)
 
+# find MPI libraries
 FIND_PACKAGE(MPI REQUIRED)
+
+# find Boost libraries
 FIND_PACKAGE(Boost REQUIRED COMPONENTS system filesystem timer date_time mpi program_options serialization)
+
+# find OpenSSL libraries
+FIND_PACKAGE(OpenSSL REQUIRED)
 
 # pull in bundled SPLINTER sources; on most platforms will need to switch default build to 64-bit
 SET(ARCH "x86-64")
@@ -185,7 +191,7 @@ ADD_EXECUTABLE(lsseft
 
 ADD_DEPENDENCIES(lsseft DEPS)
 
-TARGET_LINK_LIBRARIES(lsseft sqlite3 cuba ${Boost_LIBRARIES} ${MPI_LIBRARIES} ${SPLINTER_LIBRARIES})
+TARGET_LINK_LIBRARIES(lsseft sqlite3 cuba ${Boost_LIBRARIES} ${MPI_LIBRARIES} ${SPLINTER_LIBRARIES} ${OPENSSL_LIBRARIES})
 
 TARGET_COMPILE_OPTIONS(lsseft PRIVATE -std=c++14)
 
@@ -194,6 +200,7 @@ TARGET_INCLUDE_DIRECTORIES(lsseft PRIVATE
   ${CMAKE_CURRENT_BINARY_DIR}
   ${SPLINTER_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
+  ${OPENSSL_INCLUDE_DIR}
   ${MPI_CXX_INCLUDE_PATH}
   ${CUBA_INCLUDE_DIR})
 

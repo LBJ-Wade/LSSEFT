@@ -326,11 +326,48 @@ class IR_resum_token: public generic_token
   };
 
 
-// specialize tokenization for this
+// specialize tokenization for IR-resummation-scale tokens
 template <>
 inline const std::string& tokenization_table<IR_resum_token>(const sqlite3_policy& policy)
   {
-    return(policy.IR_resum_table());
+    return(policy.IR_resum_config_table());
+  }
+
+
+//! token representing a linear power spectrum P(k)
+class Pk_linear_token: public generic_token
+  {
+    
+    // CONSTRUCTOR, DESTRUCTOR
+  
+  public:
+    
+    //! constructor
+    Pk_linear_token(unsigned int i);
+    
+    //! destructor is default
+    virtual ~Pk_linear_token() = default;
+  
+  
+  private:
+    
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+    
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & boost::serialization::base_object<generic_token>(*this);
+      }
+    
+  };
+
+
+// specialize tokenization for linear P(k) tokens
+template <>
+inline const std::string& tokenization_table<Pk_linear_token>(const sqlite3_policy& policy)
+  {
+    return(policy.Pk_linear_config_table());
   }
 
 

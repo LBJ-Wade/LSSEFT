@@ -42,7 +42,13 @@ class sqlite3_policy
     const std::string& UV_config_table() const { return(this->UV_config); }
     
     //! IR-resummation configuration table
-    const std::string& IR_resum_table() const { return(this->IR_resum); }
+    const std::string& IR_resum_config_table() const { return(this->IR_resum_config); }
+    
+    //! linear power spectrum configuration table
+    const std::string& Pk_linear_config_table() const { return(this->Pk_linear_config); }
+    
+    //! linear power spectrum table
+    const std::string& Pk_linear_table() const { return(this->Pk_linear); }
     
     //! transfer function table
     const std::string& transfer_table() const { return(this->transfer); }
@@ -199,7 +205,13 @@ class sqlite3_policy
     const std::string UV_config;
     
     //! IR-resummation configuration table
-    const std::string IR_resum;
+    const std::string IR_resum_config;
+    
+    //! linear power spectrum P(k) configuration table
+    const std::string Pk_linear_config;
+    
+    //! linear power spectrum data table
+    const std::string Pk_linear;
 
     //! transfer function table
     const std::string transfer;
