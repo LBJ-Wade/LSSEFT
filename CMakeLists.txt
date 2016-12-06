@@ -90,6 +90,7 @@ SET(COSMOLOGY_SOURCE_FILES
   cosmology/concepts/power_spectrum_detail/generic.h
   cosmology/concepts/power_spectrum_detail/types.h
   cosmology/concepts/power_spectrum_detail/linear.cpp cosmology/concepts/power_spectrum_detail/linear.h
+  cosmology/concepts/power_spectrum_detail/wiggle.cpp cosmology/concepts/power_spectrum_detail/wiggle.h
   cosmology/concepts/power_spectrum.h
   cosmology/concepts/multipole_Pk.cpp cosmology/concepts/multipole_Pk.h
   cosmology/concepts/oneloop_Pk.cpp cosmology/concepts/oneloop_Pk.h
@@ -175,6 +176,7 @@ ADD_EXECUTABLE(lsseft
   cosmology/concepts/Matsubara_A.cpp
   cosmology/concepts/filtered_Pk.cpp
   cosmology/concepts/power_spectrum_detail/linear.cpp
+  cosmology/concepts/power_spectrum_detail/wiggle.cpp
   cosmology/transfer_integrator.cpp
   cosmology/oneloop_growth_integrator.cpp
   cosmology/oneloop_momentum_integrator.cpp

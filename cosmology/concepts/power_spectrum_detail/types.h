@@ -33,8 +33,8 @@ namespace Pk_database_impl
 typedef generic_Pk< Pk_database_impl::TreeTag, Mpc_units::inverse_energy3, true > tree_Pk;
 
 // convenience types for wiggle/no-wiggle tree-level power spectra
-typedef generic_Pk< Pk_database_impl::WiggleTag, Mpc_units::inverse_energy3, true > wiggle_Pk;
-typedef generic_Pk< Pk_database_impl::NoWiggleTag, Mpc_units::inverse_energy3, true > nowiggle_Pk;
+typedef generic_Pk< Pk_database_impl::WiggleTag, Mpc_units::inverse_energy3, true > tree_Pk_w;
+typedef generic_Pk< Pk_database_impl::NoWiggleTag, Mpc_units::inverse_energy3, true > tree_Pk_nw;
 
 
 #endif //LSSEFT_POWER_SPECTRUM_TYPES_H

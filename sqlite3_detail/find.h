@@ -18,6 +18,7 @@
 #include "cosmology/concepts/loop_integral.h"
 #include "cosmology/concepts/oneloop_Pk.h"
 #include "cosmology/concepts/Matsubara_A.h"
+#include "cosmology/concepts/power_spectrum.h"
 
 #include "sqlite3.h"
 
@@ -26,22 +27,26 @@ namespace sqlite3_operations
   {
     
     //! extract one-loop growth g- and f-functions for a given set of redshifts
-    oneloop_growth find(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
-                        const FRW_model_token& token, const z_database& z_db);
+    std::unique_ptr<oneloop_growth> find(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
+                                         const FRW_model_token& token, const z_database& z_db);
+    
+    //! extract filtered linear power spectrum for a given set of k-moes
+    std::unique_ptr<wiggle_Pk> find(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
+                                    const linear_Pk_token& token, const k_database& k_db);
     
     //! extract loop integrals for a given wavenumber, UV-cutoff and IR-cutoff combination
-    loop_integral find(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
-                       const FRW_model_token& model, const k_token& k,
-                       const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
+    std::unique_ptr<loop_integral> find(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
+                                        const FRW_model_token& model, const k_token& k,
+                                        const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
     
     //! extract P(k) data for a given wavenumber, z-value, UV-cutoff and IR-cutoff combination
-    oneloop_Pk find(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
-                    const FRW_model_token& model, const k_token& k, const z_token& z,
-                    const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
-   
+    std::unique_ptr<oneloop_Pk> find(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
+                                     const FRW_model_token& model, const k_token& k, const z_token& z,
+                                     const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
+    
     //! extract Matsubara-A coefficient for a given IR resummation scale
-    Matsubara_A find(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
-                     const FRW_model_token& model, const IR_resum_token& IR_resum);
+    std::unique_ptr<Matsubara_A> find(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
+                                      const FRW_model_token& model, const IR_resum_token& IR_resum);
     
   }   // namespace sqlite3_operations
 

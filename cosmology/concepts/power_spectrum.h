@@ -10,6 +10,7 @@
 #include "power_spectrum_detail/types.h"
 
 #include "power_spectrum_detail/linear.h"
+#include "power_spectrum_detail/wiggle.h"
 
 
 #endif //LSSEFT_POWER_SPECTRUM_H

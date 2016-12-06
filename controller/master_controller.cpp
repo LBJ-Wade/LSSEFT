@@ -175,7 +175,12 @@ void master_controller::execute()
         
         // distribute this work list among the worker processes
         if(filter_work) this->scatter(cosmology_model, *model, *filter_work, dmgr);
-
+        
+        // exchange our linear power spectrum for the filtered version;
+        // we manage its lifetime using std::shared_ptr<> since ownership is shared with the
+        // MPI work records and payloads
+        std::shared_ptr<wiggle_Pk> Pk_wig = dmgr.build_wiggle_Pk(*Pk_lin, *Pk_lin_db);
+        
         // we manage its lifetime with std::shared_ptr since ownership is shared with the
         // MPI messaging routines
         std::shared_ptr<tree_Pk> Pk = std::make_shared<tree_Pk>(this->arg_cache.get_powerspectrum_path());

@@ -58,7 +58,8 @@ class data_manager
     std::unique_ptr<k_database> build_k_db(range<Mpc_units::energy>& sample);
     
     //! generate wavenumber database from a linear power spectrum container
-    std::unique_ptr<k_database> build_k_db(transaction_manager& mgr, linear_Pk& Pk_lin);
+    //! only contains wavenumbers that can actually be evaluated by the container
+    std::unique_ptr<k_database> build_k_db(transaction_manager& mgr, const linear_Pk& Pk_lin);
 
     //! generate IR cutoff database from a set of samples
     std::unique_ptr<IR_cutoff_database> build_IR_cutoff_db(range<Mpc_units::energy>& sample);
@@ -122,6 +123,9 @@ class data_manager
     
     //! build a work list representing k-modes for which we need to produce a filtered wiggle/no-wiggle power spectrum
     std::unique_ptr<filter_Pk_work_list> build_filter_Pk_work_list(linear_Pk_token& token, std::shared_ptr<linear_Pk>& Pk_lin);
+
+    //! exchange a linear power spectrum container for a wiggle-Pk container
+    std::unique_ptr<wiggle_Pk> build_wiggle_Pk(const linear_Pk_token& token, const linear_Pk& Pk_lin);
     
   protected:
     
@@ -178,26 +182,31 @@ class data_manager
     //! extract a sample of a z-dependent but not k-dependent quantity, of the type specified by
     //! the payload
     template <typename PayloadType>
-    PayloadType find(transaction_manager& mgr, const FRW_model_token& model, const z_database& z_db);
+    std::unique_ptr<PayloadType> find(transaction_manager& mgr, const FRW_model_token& model, const z_database& z_db);
+    
+    //! extract a sample of a power spectrum-like quantity that depends on k but not z
+    template <typename PayloadType>
+    std::unique_ptr<PayloadType> find(transaction_manager& mgr, const linear_Pk_token& token, const k_database& k_db);
     
     //! extract a sample of a loop integral-like quantity that is k-dependent, UV and IR cutoff-dependent
     //! but not z-dependent
     template <typename PayloadType>
-    PayloadType find(transaction_manager& mgr, const FRW_model_token& model, const k_token& k,
-                     const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
+    std::unique_ptr<PayloadType> find(transaction_manager& mgr, const FRW_model_token& model, const k_token& k,
+                                      const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
     
     //! extract a sample of a P(k)-like quantity that is k-dependent, z-dependent,
     //! and IR/UV-cutoff dependent
     template <typename PayloadType>
-    PayloadType find(transaction_manager& mgr, const FRW_model_token& model,
-                     const k_token& k, const z_token& z,
-                     const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
+    std::unique_ptr<PayloadType> find(transaction_manager& mgr, const FRW_model_token& model,
+                                      const k_token& k, const z_token& z,
+                                      const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
     
     //! extract a quantity of a IR-resummation-scale dependent quantity
     template <typename PayloadType>
-    PayloadType find(transaction_manager& mgr, const FRW_model_token& model,
-                     const IR_resum_token& IR_resum);
+    std::unique_ptr<PayloadType> find(transaction_manager& mgr, const FRW_model_token& model,
+                                      const IR_resum_token& IR_resum);
 
+    
     // TRANSACTIONS
 
   protected:

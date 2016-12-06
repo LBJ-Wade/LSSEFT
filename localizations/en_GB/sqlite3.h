@@ -49,5 +49,7 @@ constexpr auto ERROR_SQLITE3_READ_RSD_PK_FAIL          = "failed to read from a 
 constexpr auto ERROR_SQLITE3_READ_RSD_PK_MISREAD       = "read unexpected number of results from a delta-delta RSD P(k) table [backend code=";
 constexpr auto ERROR_SQLITE3_READ_MATSUBARA_A_FAIL     = "failed to read from Matsubara-A table [backend code=";
 constexpr auto ERROR_SQLITE3_MATSUBARA_A_MISREAD       = "read unexpected number of results from Matsubara-A table [backend code=";
+constexpr auto ERROR_SQLITE3_READ_WIGGLE_PK_FAIL       = "failed to read from filtered linear Pk table [backend code=";
+constexpr auto ERROR_SQLITE3_WIGGLE_PK_MISREAD         = "read unexpected number of results from filtered linear Pk table [backend code=";
 
 #endif //LSSEFT_SQLITE3_EN_GB_H

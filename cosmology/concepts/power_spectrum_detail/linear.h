@@ -14,27 +14,6 @@
 #include "boost/filesystem.hpp"
 
 
-// place serialization overloads before linear_Pk class definition to avoid compiler problems with overload resolution
-// for templated friend functions (should disappear as compilers mature)
-class linear_Pk;
-
-namespace boost
-  {
-    
-    namespace serialization
-      {
-
-        template <typename Archive>
-        void save_construct_data(Archive& ar, const linear_Pk* t, const unsigned int file_version);
-
-        template <typename Archive>
-        inline void load_construct_data(Archive& ar, linear_Pk* t, const unsigned int file_version);
-        
-      }
-    
-  }
-
-
 // container class for linear power spectrum, read in from a file
 class linear_Pk
   {
@@ -95,10 +74,6 @@ class linear_Pk
   
   private:
     
-    // declare boost::serialization::save_construct_data() to be friend, so it can archive the tree_Pk container
-    template <typename Archive>
-    friend void boost::serialization::save_construct_data(Archive& ar, const linear_Pk* t, const unsigned int file_version);
-    
     //! fully-qualified path to file; should come before container in declaration so that it is constructed first
     boost::filesystem::path path;
     
@@ -130,7 +105,7 @@ namespace boost
         inline void save_construct_data(Archive& ar, const linear_Pk* t, const unsigned int file_version)
           {
             ar << t->get_path().string();
-            ar << t->container.get_db();
+            ar << t->get_db();
             ar << t->get_MD5_hash();
           }
         

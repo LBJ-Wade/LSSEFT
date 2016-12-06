@@ -342,7 +342,7 @@ std::unique_ptr<IR_resum_database> data_manager::build_IR_resum_db(range<Mpc_uni
   }
 
 
-std::unique_ptr<k_database> data_manager::build_k_db(transaction_manager& mgr, linear_Pk& Pk_lin)
+std::unique_ptr<k_database> data_manager::build_k_db(transaction_manager& mgr, const linear_Pk& Pk_lin)
   {
     // construct an empty wavenumber database
     std::unique_ptr<k_database> k_db = std::make_unique<k_database>();
@@ -535,53 +535,42 @@ data_manager::build_loop_momentum_work_list(FRW_model_token& model, k_database& 
 
 
 template <>
-oneloop_growth data_manager::find<oneloop_growth>(transaction_manager& mgr, const FRW_model_token& model, const z_database& z_db)
+std::unique_ptr<oneloop_growth> data_manager::find<oneloop_growth>(transaction_manager& mgr, const FRW_model_token& model, const z_database& z_db)
   {
-    // construct payload and ask SQLite backend to populate it
-    oneloop_growth payload(std::move(sqlite3_operations::find(this->handle, mgr, this->policy, model, z_db)));
-    
-    return std::move(payload);
+    return sqlite3_operations::find(this->handle, mgr, this->policy, model, z_db);
   }
 
 
 template <>
-loop_integral
+std::unique_ptr<wiggle_Pk> data_manager::find<wiggle_Pk>(transaction_manager& mgr, const linear_Pk_token& token, const k_database& k_db)
+  {
+    return sqlite3_operations::find(this->handle, mgr, this->policy, token, k_db);
+  }
+
+
+template <>
+std::unique_ptr<loop_integral>
 data_manager::find<loop_integral>(transaction_manager& mgr, const FRW_model_token& model, const k_token& k,
                                   const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff)
   {
-    // construct payload and ask SQLite backend to populate it
-    loop_integral payload(std::move(
-      sqlite3_operations::find(this->handle, mgr, this->policy, model, k, IR_cutoff, UV_cutoff))
-    );
-    
-    return std::move(payload);
+    return sqlite3_operations::find(this->handle, mgr, this->policy, model, k, IR_cutoff, UV_cutoff);
   }
 
 
 template <>
-oneloop_Pk
+std::unique_ptr<oneloop_Pk>
 data_manager::find<oneloop_Pk>(transaction_manager& mgr, const FRW_model_token& model, const k_token& k, const z_token& z,
                                const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff)
   {
-    // construct payload and ask SQLite backend to populate it
-    oneloop_Pk payload(std::move(
-      sqlite3_operations::find(this->handle, mgr, this->policy, model, k, z, IR_cutoff, UV_cutoff))
-    );
-    
-    return std::move(payload);
+    return sqlite3_operations::find(this->handle, mgr, this->policy, model, k, z, IR_cutoff, UV_cutoff);
   }
 
 
 template <>
-Matsubara_A
+std::unique_ptr<Matsubara_A>
 data_manager::find(transaction_manager& mgr, const FRW_model_token& model, const IR_resum_token& IR_resum)
   {
-    // construct payload nad ask SQLite backend to populate it
-    Matsubara_A payload(std::move(
-      sqlite3_operations::find(this->handle, mgr, this->policy, model, IR_resum))
-    );
-    
-    return std::move(payload);
+    return sqlite3_operations::find(this->handle, mgr, this->policy, model, IR_resum);
   }
 
 
@@ -615,10 +604,8 @@ data_manager::build_one_loop_Pk_work_list(FRW_model_token& model, z_database& z_
         // schedule a task to compute any missing redshifts
         if(missing_zs)
           {
-            std::shared_ptr<oneloop_growth> g = std::make_shared<oneloop_growth>(
-              this->find<oneloop_growth>(*mgr, model, z_db));
-            std::shared_ptr<loop_integral> l = std::make_shared<loop_integral>(
-              this->find<loop_integral>(*mgr, model, record.k->get_token(), record.IR_cutoff->get_token(), record.UV_cutoff->get_token()));
+            std::shared_ptr<oneloop_growth> g = this->find<oneloop_growth>(*mgr, model, z_db);
+            std::shared_ptr<loop_integral> l = this->find<loop_integral>(*mgr, model, record.k->get_token(), record.IR_cutoff->get_token(), record.UV_cutoff->get_token());
 
             work_list->emplace_back(*(*record.k), g, l, Pk);
           }
@@ -670,20 +657,19 @@ data_manager::build_multipole_Pk_work_list(FRW_model_token& model, z_database& z
         // schedule a task to compute any missing redshifts
         if(missing_zs)
           {
-            oneloop_growth gf_data = this->find<oneloop_growth>(*mgr, model, *missing_zs);
+            std::unique_ptr<oneloop_growth> gf_data = this->find<oneloop_growth>(*mgr, model, *missing_zs);
             
-            for(oneloop_growth::const_iterator t = gf_data.cbegin(); t != gf_data.cend(); ++t)
+            for(oneloop_growth::const_iterator t = gf_data->cbegin(); t != gf_data->cend(); ++t)
               {
                 // lookup one-loop data for this redshift and loop configuration
-                std::shared_ptr<oneloop_Pk> loop_data = std::make_shared<oneloop_Pk>(
-                  this->find<oneloop_Pk>(*mgr, model, record.k->get_token(), (*t).first,
-                                         record.IR_cutoff->get_token(), record.UV_cutoff->get_token())
-                );
+                std::shared_ptr<oneloop_Pk> loop_data =
+                  this->find<oneloop_Pk>(*mgr, model, record.k->get_token(), (*t).first, record.IR_cutoff->get_token(),
+                                         record.UV_cutoff->get_token());
                 
                 // lookup Matsubara-A coefficient for this IR resummation scale
-                Matsubara_A A_coeff = this->find<Matsubara_A>(*mgr, model, record.IR_resum->get_token());
+                std::unique_ptr<Matsubara_A> A_coeff = this->find<Matsubara_A>(*mgr, model, record.IR_resum->get_token());
     
-                work_list->emplace_back(*(*record.k), A_coeff, loop_data, (*t).second, Pk);
+                work_list->emplace_back(*(*record.k), *A_coeff, loop_data, (*t).second, Pk);
               }
           }
       }
@@ -776,10 +762,28 @@ data_manager::build_filter_Pk_work_list(linear_Pk_token& token, std::shared_ptr<
     mgr->commit();
     
     timer.stop();
-    std::cout << "lsseft: constructed no-wiggle filter work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall) << '\n';
+    std::cout << "lsseft: constructed wiggle/no-wiggle filter work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall) << '\n';
     
     // release list if it contains to work
     if(work_list->empty()) work_list.release();
     
     return work_list;
+  }
+
+
+std::unique_ptr<wiggle_Pk> data_manager::build_wiggle_Pk(const linear_Pk_token& token, const linear_Pk& Pk_lin)
+  {
+    // open a transaction on the database
+    std::shared_ptr<transaction_manager> mgr = this->open_transaction();
+    
+    // extract database of wavenumber configurations from linear power spectrum container
+    std::unique_ptr<k_database> k_db = this->build_k_db(*mgr, Pk_lin);
+    
+    // extract wiggle_Pk container
+    std::unique_ptr<wiggle_Pk> payload = this->find<wiggle_Pk>(*mgr, token, *k_db);
+    
+    // close transaction
+    mgr->commit();
+    
+    return std::move(payload);
   }
