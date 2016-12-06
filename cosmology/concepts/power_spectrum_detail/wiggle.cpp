@@ -6,8 +6,9 @@
 #include "wiggle.h"
 
 
-wiggle_Pk::wiggle_Pk(const tree_Pk_w::database_type& w, const tree_Pk::database_type& r)
-  : wiggle(w),
+wiggle_Pk::wiggle_Pk(const linear_Pk_token& t, const tree_Pk_w::database_type& w, const tree_Pk::database_type& r)
+  : tok(t),
+    wiggle(w),
     raw(r)
   {
   }

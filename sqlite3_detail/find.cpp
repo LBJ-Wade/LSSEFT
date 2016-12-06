@@ -487,7 +487,7 @@ namespace sqlite3_operations
     
         if(t != k_db.record_cend()) throw runtime_exception(exception_type::database_error, ERROR_SQLITE3_WIGGLE_PK_MISREAD);
         
-        std::unique_ptr<wiggle_Pk> payload = std::make_unique<wiggle_Pk>(wiggle_db, raw_db);
+        std::unique_ptr<wiggle_Pk> payload = std::make_unique<wiggle_Pk>(token, wiggle_db, raw_db);
         
         return std::move(payload);
       }

@@ -8,6 +8,7 @@
 
 
 #include "types.h"
+#include "database/tokens.h"
 
 
 class wiggle_Pk
@@ -18,7 +19,7 @@ class wiggle_Pk
   public:
     
     //! constructor -- populate with existing data
-    wiggle_Pk(const tree_Pk_w::database_type& w, const tree_Pk::database_type& r);
+    wiggle_Pk(const linear_Pk_token& t, const tree_Pk_w::database_type& w, const tree_Pk::database_type& r);
     
     //! destructor is default
     ~wiggle_Pk() = default;
@@ -38,6 +39,14 @@ class wiggle_Pk
     bool is_valid(const Mpc_units::energy& k) const { return this->wiggle.is_valid(k) && this->raw.is_valid(k); }
     
     
+    // TOKEN MANAGEMENT
+    
+  public:
+    
+    //! get token for linear power spectrum
+    const linear_Pk_token& get_token() const { return this->tok; }
+    
+    
     // EVALUATION
     
   public:
@@ -55,6 +64,9 @@ class wiggle_Pk
     // INTERNAL DATA
     
   private:
+    
+    //! token for corresponding linear power spectrum
+    linear_Pk_token tok;
     
     //! wiggle Pk container
     tree_Pk_w wiggle;
@@ -83,6 +95,7 @@ namespace boost
         template <typename Archive>
         inline void save_construct_data(Archive& ar, const wiggle_Pk* t, const unsigned int file_version)
           {
+            ar << t->get_token();
             ar << t->get_wiggle_db();
             ar << t->get_raw_db();
           }
@@ -91,13 +104,15 @@ namespace boost
         template <typename Archive>
         inline void load_construct_data(Archive& ar, wiggle_Pk* t, const unsigned int file_version)
           {
+            linear_Pk_token tok(0);
             tree_Pk_w::database_type wiggle;
             tree_Pk::database_type raw;
 
+            ar >> tok;
             ar >> wiggle;
             ar >> raw;
             
-            ::new(t) wiggle_Pk(wiggle, raw);
+            ::new(t) wiggle_Pk(tok, wiggle, raw);
           }
         
       }   // namespace serialization
