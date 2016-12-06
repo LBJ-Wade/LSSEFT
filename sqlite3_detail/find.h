@@ -27,7 +27,7 @@ namespace sqlite3_operations
     
     //! extract one-loop growth g- and f-functions for a given set of redshifts
     oneloop_growth find(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
-                        const FRW_model_token& token, z_database& z_db);
+                        const FRW_model_token& token, const z_database& z_db);
     
     //! extract loop integrals for a given wavenumber, UV-cutoff and IR-cutoff combination
     loop_integral find(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,

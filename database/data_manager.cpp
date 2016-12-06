@@ -535,7 +535,7 @@ data_manager::build_loop_momentum_work_list(FRW_model_token& model, k_database& 
 
 
 template <>
-oneloop_growth data_manager::find<oneloop_growth>(transaction_manager& mgr, const FRW_model_token& model, z_database& z_db)
+oneloop_growth data_manager::find<oneloop_growth>(transaction_manager& mgr, const FRW_model_token& model, const z_database& z_db)
   {
     // construct payload and ask SQLite backend to populate it
     oneloop_growth payload(std::move(sqlite3_operations::find(this->handle, mgr, this->policy, model, z_db)));

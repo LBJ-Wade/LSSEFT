@@ -200,7 +200,7 @@ namespace sqlite3_operations
       }   // namespace find_impl
     
     oneloop_growth find(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
-                        const FRW_model_token& model, z_database& z_db)
+                        const FRW_model_token& model, const z_database& z_db)
       {
         // set up temporary table of desired z identifiers
         std::string ztab = z_table(db, mgr, policy, z_db);

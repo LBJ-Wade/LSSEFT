@@ -25,11 +25,11 @@ namespace sqlite3_operations
 
     //! create temporary table of redshifts
     std::string z_table(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
-                        z_database& z_db);
+                        const z_database& z_db);
 
     //! create temporary table of wavenumbres
     std::string k_table(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
-                        k_database& k_db);
+                        const k_database& k_db);
 
     //! drop a temporary table
     void drop_temp(sqlite3* db, transaction_manager& mgr, const std::string& table);

@@ -29,7 +29,7 @@ namespace sqlite3_operations
         return(name.str());
       }
 
-    std::string z_table(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, z_database& z_db)
+    std::string z_table(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const z_database& z_db)
       {
         assert(db != nullptr);
 
@@ -55,7 +55,7 @@ namespace sqlite3_operations
         check_stmt(db, sqlite3_prepare_v2(db, insert_stmt.str().c_str(), insert_stmt.str().length()+1, &stmt, nullptr));
 
         // loop through records in the database, writing entries to the table
-        for(z_database::record_iterator t = z_db.record_begin(); t != z_db.record_end(); ++t)
+        for(z_database::const_record_iterator t = z_db.record_cbegin(); t != z_db.record_cend(); ++t)
           {
             // bind parameter values
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@id"), t->get_token().get_id()));
@@ -76,7 +76,7 @@ namespace sqlite3_operations
       }
 
 
-    std::string k_table(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, k_database& k_db)
+    std::string k_table(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const k_database& k_db)
       {
         assert(db != nullptr);
 
@@ -102,7 +102,7 @@ namespace sqlite3_operations
         check_stmt(db, sqlite3_prepare_v2(db, insert_stmt.str().c_str(), insert_stmt.str().length()+1, &stmt, nullptr));
 
         // loop through records in the database, writing entries to the table
-        for(k_database::record_iterator t = k_db.record_begin(); t != k_db.record_end(); ++t)
+        for(k_database::const_record_iterator t = k_db.record_cbegin(); t != k_db.record_cend(); ++t)
           {
             double k_in_h_inv_Mpc = *(*t) * Mpc_units::Mpc;
 

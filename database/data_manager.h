@@ -178,7 +178,7 @@ class data_manager
     //! extract a sample of a z-dependent but not k-dependent quantity, of the type specified by
     //! the payload
     template <typename PayloadType>
-    PayloadType find(transaction_manager& mgr, const FRW_model_token& model, z_database& z_db);
+    PayloadType find(transaction_manager& mgr, const FRW_model_token& model, const z_database& z_db);
     
     //! extract a sample of a loop integral-like quantity that is k-dependent, UV and IR cutoff-dependent
     //! but not z-dependent
