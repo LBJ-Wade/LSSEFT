@@ -45,8 +45,8 @@ namespace sqlite3_operations
               {
                 if(result == SQLITE_ROW)
                   {
-                    auto raw = kernel.get_raw();
-                    auto wiggle = kernel.get_wiggle();
+                    auto& raw = kernel.get_raw();
+                    auto& wiggle = kernel.get_wiggle();
                     
                     raw.value = sqlite3_column_double(stmt, 0) * dimensionful_unit<typename KernelType::value_type>();
                     raw.regions = sqlite3_column_int(stmt, 1);
