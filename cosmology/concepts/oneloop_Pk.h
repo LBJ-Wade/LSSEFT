@@ -103,7 +103,7 @@ Pk_value_group<ValueType> operator-(const Pk_value_group<ValueType>& A, const Pk
 
 
 //! overload scalar multiplication
-template <typename PkType, typename ScalarType>
+template <typename PkType, typename ScalarType, typename std::enable_if_t< !std::is_integral<ScalarType>::value >* = nullptr>
 auto operator*(const ScalarType& S, const Pk_value_group<PkType>& P) -> Pk_value_group<decltype(S*P.get_value())>
   {
     auto value = S * P.get_value();
@@ -112,7 +112,7 @@ auto operator*(const ScalarType& S, const Pk_value_group<PkType>& P) -> Pk_value
     return Pk_value_group<decltype(value)>(value, error);
   }
 
-template <typename PkType, typename ScalarType>
+template <typename PkType, typename ScalarType, typename std::enable_if_t< !std::is_integral<ScalarType>::value >* = nullptr>
 auto operator*(const Pk_value_group<PkType>& P, const ScalarType& S) -> Pk_value_group<decltype(S*P.get_value())>
   {
     auto value = S * P.get_value();
@@ -123,7 +123,7 @@ auto operator*(const Pk_value_group<PkType>& P, const ScalarType& S) -> Pk_value
 
 
 //! overload scalar division
-template <typename PkType, typename ScalarType>
+template <typename PkType, typename ScalarType, typename std::enable_if_t< !std::is_integral<ScalarType>::value >* = nullptr>
 auto operator/(const Pk_value_group<PkType>& P, const ScalarType& S) -> Pk_value_group<decltype(P.get_value()/S)>
   {
     auto value = P.get_value() / S;
@@ -221,13 +221,13 @@ Pk_value_group<ValueType> operator*(const loop_integral_result<ValueType>& A, do
 
 
 // allow multiplication of loop integral results by scalar-type objects
-template <typename ScalarType, typename LoopType>
+template <typename ScalarType, typename LoopType, typename std::enable_if_t< !std::is_integral<ScalarType>::value >* = nullptr>
 auto operator*(const ScalarType& S, const loop_integral_result<LoopType>& L) -> Pk_value_group<decltype(S*L.value)>
 {
     return Pk_value_group<decltype(S*L.value)>(S * L.value, std::abs(S) * L.error);
   };
 
-template <typename ScalarType, typename LoopType>
+template <typename ScalarType, typename LoopType, typename std::enable_if_t< !std::is_integral<ScalarType>::value >* = nullptr>
 auto operator*(const loop_integral_result<LoopType>& L, const ScalarType& S) -> Pk_value_group<decltype(S*L.value)>
   {
     return Pk_value_group<decltype(S*L.value)>(S * L.value, std::abs(S) * L.error);
@@ -390,13 +390,13 @@ dimensionful_Pk_component<ValueType> operator-(const dimensionful_Pk_component<V
 
 
 //! overload scalar multiplication
-template <typename ScalarType, typename PkType>
+template <typename ScalarType, typename PkType, typename std::enable_if_t< !std::is_integral<ScalarType>::value >* = nullptr>
 auto operator*(const ScalarType& S, const dimensionful_Pk_component<PkType>& P) -> dimensionful_Pk_component<decltype(S*P.get_raw().get_value())>
   {
     return dimensionful_Pk_component<decltype(S*P.get_raw().get_value())>(S * P.get_raw(), S * P.get_wiggle());
   }
 
-template <typename ScalarType, typename PkType>
+template <typename ScalarType, typename PkType, typename std::enable_if_t< !std::is_integral<ScalarType>::value >* = nullptr>
 auto operator*(const dimensionful_Pk_component<PkType>& P, const ScalarType& S) -> dimensionful_Pk_component<decltype(S*P.get_raw().get_value())>
   {
     return dimensionful_Pk_component<decltype(S*P.get_raw().get_value())>(S * P.get_raw(), S * P.get_wiggle());
@@ -404,7 +404,7 @@ auto operator*(const dimensionful_Pk_component<PkType>& P, const ScalarType& S) 
 
 
 //! overload scalar division
-template <typename ScalarType, typename PkType>
+template <typename ScalarType, typename PkType, typename std::enable_if_t< !std::is_integral<ScalarType>::value >* = nullptr>
 auto operator/(const dimensionful_Pk_component<PkType>& P, const ScalarType& S) -> dimensionful_Pk_component<decltype(P.get_raw().get_value()/S)>
   {
     return dimensionful_Pk_component<decltype(P.get_raw().get_value()/S)>(P.get_raw() / S, P.get_wiggle() / S);
@@ -416,13 +416,13 @@ auto operator/(const dimensionful_Pk_component<PkType>& P, const ScalarType& S) 
 
 
 // multiplication of any loop integral output by a scalar converts to a dimensionful_Pk_component<>
-template <typename ScalarType, typename LoopType>
+template <typename ScalarType, typename LoopType, typename std::enable_if_t< !std::is_integral<ScalarType>::value >* = nullptr>
 auto operator*(const ScalarType& S, const loop_integral_output<LoopType>& P) -> dimensionful_Pk_component<decltype(S*P.get_raw().value)>
   {
     return dimensionful_Pk_component<decltype(S*P.get_raw().value)>(S * P.get_raw(), S * P.get_wiggle());
   }
 
-template <typename ScalarType, typename LoopType>
+template <typename ScalarType, typename LoopType, typename std::enable_if_t< !std::is_integral<ScalarType>::value >* = nullptr>
 auto operator*(const loop_integral_output<LoopType>& P, const ScalarType& S) -> dimensionful_Pk_component<decltype(S*P.get_raw().value)>
   {
     return dimensionful_Pk_component<decltype(S*P.get_raw().value)>(S * P.get_raw(), S * P.get_wiggle());
