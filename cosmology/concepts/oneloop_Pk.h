@@ -243,6 +243,9 @@ auto operator*(const Pk_value_group<PkType> P, const loop_integral_result<LoopTy
     double relP_err = P.get_error() / P.get_value();
     double relL_err = L.error / L.value;
     
+    if(!std::isfinite(relP_err)) relP_err = 0.0;
+    if(!std::isfinite(relL_err)) relL_err = 0.0;
+    
     double quadrature = std::sqrt(relP_err * relP_err + relL_err * relL_err);
     
     return Pk_value_group<decltype(value)>(value, std::abs(value) * quadrature);
@@ -255,6 +258,9 @@ auto operator*(const loop_integral_result<LoopType>& L, const Pk_value_group<PkT
     
     double relP_err = P.get_error() / P.get_value();
     double relL_err = L.error / L.value;
+    
+    if(!std::isfinite(relP_err)) relP_err = 0.0;
+    if(!std::isfinite(relL_err)) relL_err = 0.0;
     
     double quadrature = std::sqrt(relP_err * relP_err + relL_err * relL_err);
     
@@ -270,6 +276,9 @@ auto operator*(const Pk_value_group<PkTypeA> PA, const Pk_value_group<PkTypeB>& 
     
     double relPA_err = PA.get_error() / PA.get_value();
     double relPB_err = PB.get_value() / PB.get_value();
+    
+    if(!std::isfinite(relPA_err)) relPA_err = 0.0;
+    if(!std::isfinite(relPB_err)) relPB_err = 0.0;
     
     double quadrature = std::sqrt(relPA_err * relPA_err + relPB_err * relPB_err);
     
