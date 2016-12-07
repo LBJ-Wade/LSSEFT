@@ -425,7 +425,6 @@ namespace multipole_Pk_calculator_impl
 
 
 template <typename Accessor, typename Decomposer>
-//decltype(std::declval<Accessor>()(std::declval<const rsd_dd_Pk&>()))
 auto
 multipole_Pk_calculator::decompose(Accessor extract, const oneloop_Pk& data, Decomposer decomp)
   {
@@ -444,7 +443,6 @@ multipole_Pk_calculator::decompose(Accessor extract, const oneloop_Pk& data, Dec
 
 
 template <typename WiggleAccessor, typename NoWiggleAccessor, typename ResumAdjuster, typename RawDecomposer, typename XYDecomposer>
-//decltype(std::declval<Accessor>()(std::declval<const rsd_dd_Pk&>()))
 auto
 multipole_Pk_calculator::decompose(WiggleAccessor wiggle, NoWiggleAccessor nowiggle, const oneloop_Pk& data,
                                    ResumAdjuster adjust, RawDecomposer raw_decomp, XYDecomposer XY_decomp)

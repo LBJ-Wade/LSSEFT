@@ -34,8 +34,8 @@ class multipole_Pk_calculator
     //! constructor
     multipole_Pk_calculator(double r = LSSEFT_DEFAULT_INTEGRAL_REL_ERR_22,
                             double a = LSSEFT_DEFAULT_INTEGRAL_ABS_ERR_22)
-      : rel_err(r),
-        abs_err(a)
+      : rel_err(std::abs(r)),
+        abs_err(std::abs(a))
       {
       }
     
@@ -52,7 +52,7 @@ class multipole_Pk_calculator
     calculate_Legendre(const Mpc_units::energy& k, const Matsubara_XY& XY,
                        const oneloop_Pk& data, const oneloop_growth_record& gf_data, const wiggle_Pk& Ptree);
     
-    //! calculate Matsubara-A coefficient
+    //! calculate Matsubara X & Y coefficients
     Matsubara_XY
     calculate_Matsubara_XY(const Mpc_units::energy& IR_resum, const IR_resum_token& IR_resum_tok,
                            const wiggle_Pk& Pk_lin);
@@ -61,13 +61,11 @@ class multipole_Pk_calculator
     
     //! decompose into Legendre modes using a specified decomposer functional and for a specified ell mode
     template <typename Accessor, typename Decomposer>
-//    decltype(std::declval<Accessor>()(std::declval<const rsd_dd_Pk&>()))
     auto decompose(Accessor extract, const oneloop_Pk& data, Decomposer decomp);
     
     //! decompose into Legendre modes using resummation of the wiggle part, including subtractions
     //! to prevent double-counting after resummation
     template <typename WiggleAccessor, typename NoWiggleAccessor, typename ResumAdjuster, typename RawDecomposer, typename XYDecomposer>
-//decltype(std::declval<Accessor>()(std::declval<const rsd_dd_Pk&>()))
     auto decompose(WiggleAccessor wiggle, NoWiggleAccessor nowiggle, const oneloop_Pk& data,
                    ResumAdjuster adjust, RawDecomposer raw_decomp, XYDecomposer XY_decomp);
     

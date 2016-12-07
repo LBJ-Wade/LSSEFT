@@ -23,10 +23,10 @@ namespace Planck2013
     constexpr double            Neff     = 3.046;   // Standard Model value
 
     // fluctuation two-point function
-    constexpr double Acurv  = 2.2150E-9;
-    constexpr double ns     = 0.9619;
-    constexpr double kpiv   = 0.05; // measured in 1/Mpc
-    constexpr double sigma8 = 0.8347;
+    constexpr double Acurv           = 2.2150E-9;
+    constexpr double ns              = 0.9619;
+    constexpr Mpc_units::energy kpiv = 0.05 / Mpc_units::Mpc;
+    constexpr double sigma8          = 0.8347;
 
     // CMB-related redshifts
     constexpr double z_star = 1090.48;

@@ -87,6 +87,7 @@ SET(COSMOLOGY_SOURCE_FILES
   cosmology/concepts/range_detail/aggregation.h
   cosmology/concepts/oneloop_growth.cpp cosmology/concepts/oneloop_growth.h
   cosmology/concepts/transfer_function.cpp cosmology/concepts/transfer_function.h
+  cosmology/concepts/loop_integral.cpp cosmology/concepts/loop_integral.h
   cosmology/concepts/power_spectrum_detail/generic.h
   cosmology/concepts/power_spectrum_detail/types.h
   cosmology/concepts/power_spectrum_detail/linear.cpp cosmology/concepts/power_spectrum_detail/linear.h
@@ -103,11 +104,11 @@ SET(COSMOLOGY_SOURCE_FILES
   cosmology/oneloop_integrands/delta_rsd_13.h
   cosmology/oneloop_integrands/delta_rsd_22.h
   cosmology/oneloop_momentum_integrator.cpp cosmology/oneloop_momentum_integrator.h
-  cosmology/concepts/loop_integral.cpp cosmology/concepts/loop_integral.h
   cosmology/transfer_integrator.cpp cosmology/transfer_integrator.h
   cosmology/oneloop_growth_integrator.cpp cosmology/oneloop_growth_integrator.h
   cosmology/oneloop_Pk_calculator.cpp cosmology/oneloop_Pk_calculator.h
-  cosmology/multipole_Pk_calculator.cpp cosmology/multipole_Pk_calculator.h)
+  cosmology/multipole_Pk_calculator.cpp cosmology/multipole_Pk_calculator.h
+  cosmology/Pk_filter.cpp cosmology/Pk_filter.h)
 
 SET(UNITS_SOURCE_FILES
   units/Mpc_units.h)
@@ -184,6 +185,7 @@ ADD_EXECUTABLE(lsseft
   cosmology/oneloop_momentum_integrator.cpp
   cosmology/oneloop_Pk_calculator.cpp
   cosmology/multipole_Pk_calculator.cpp
+  cosmology/Pk_filter.cpp
   database/data_manager.cpp
   database/tokens.cpp
   database/transaction_manager.cpp

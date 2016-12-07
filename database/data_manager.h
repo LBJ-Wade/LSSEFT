@@ -113,7 +113,7 @@ class data_manager
                                  IR_cutoff_database& IR_cutoff_db, UV_cutoff_database& UV_cutoff_db,
                                  IR_resum_database& IR_resum_db, std::shared_ptr<wiggle_Pk>& Pk);
     
-    //! build a work list representing data for calculation of the Matsubara-A coefficient
+    //! build a work list representing data for calculation of the Matsubara- X & Y coefficients
     std::unique_ptr<Matsubara_XY_work_list>
     build_Matsubara_XY_work_list(FRW_model_token& model, IR_resum_database& IR_resum_db, std::shared_ptr<wiggle_Pk>& Pk);
     

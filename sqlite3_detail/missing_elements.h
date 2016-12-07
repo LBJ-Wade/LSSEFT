@@ -58,7 +58,7 @@ namespace sqlite3_operations
                                   const FRW_model_token& model, const std::string& z_table, const z_database& z_db,
                                   const loop_configs::value_type& record);
     
-    //! processs a list of configurations for the Matsubara-A coefficient;
+    //! processs a list of configurations for the Matsubara X & Y  coefficients;
     //! we detect which ones are already present in the database and avoid computing them
     Matsubara_configs
     missing_Matsubara_A_configurations(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,

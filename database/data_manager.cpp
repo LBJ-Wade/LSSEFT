@@ -723,7 +723,7 @@ data_manager::build_Matsubara_XY_work_list(FRW_model_token& model, IR_resum_data
     mgr->commit();
     
     timer.stop();
-    std::cout << "lsseft: constructed Matsubara-A work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall) << '\n';
+    std::cout << "lsseft: constructed Matsubara XY work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall) << '\n';
     
     // release list if it contains no work
     if(work_list->empty()) work_list.release();

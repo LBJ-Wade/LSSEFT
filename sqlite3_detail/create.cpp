@@ -26,7 +26,14 @@ namespace sqlite3_operations
               << "omega_cc DOUBLE, "
               << "h DOUBLE, "
               << "T_CMB DOUBLE, "
-              << "Neff DOUBLE"
+              << "Neff DOUBLE, "
+              << "f_baryon DOUBLE, "
+              << "z_star DOUBLE, "
+              << "z_drag DOUBLE, "
+              << "z_eq DOUBLE, "
+              << "A_curv DOUBLE, "
+              << "ns DOUBLE, "
+              << "k_piv DOUBLE"
               << ");";
     
             exec(db, stmt.str());

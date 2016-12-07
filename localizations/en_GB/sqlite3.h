@@ -37,7 +37,7 @@ constexpr auto ERROR_SQLITE3_INSERT_LOOP_MOMENTUM_FAIL  = "failed to insert one-
 constexpr auto ERROR_SQLITE3_INSERT_ONELOOP_PK_FAIL     = "failed to insert one-loop P(k) record [backend code=";
 constexpr auto ERROR_SQLITE3_INSERT_ONELOOP_RSD_PK_FAIL = "failed to insert one-loop RSD P(k) record [backend code=";
 constexpr auto ERROR_SQLITE3_INSERT_MULTIPOLE_PK_FAIL   = "failed to insert multipole P(k) record [backend code=";
-constexpr auto ERROR_SQLITE3_INSERT_MATSUBARA_XY_FAIL   = "failed to insert Matsubara-A record [backend code=";
+constexpr auto ERROR_SQLITE3_INSERT_MATSUBARA_XY_FAIL   = "failed to insert Matsubara-XY record [backend code=";
 
 constexpr auto ERROR_SQLITE3_FG_GROWTH_TABLE_READ_FAIL  = "failed to read from g- and f-factor growth tables [backend code=";
 constexpr auto ERROR_SQLITE3_FG_GROWTH_MISREAD          = "read unexpected number of results from g- and f-factor growth table";
@@ -47,8 +47,8 @@ constexpr auto ERROR_SQLITE3_READ_PK_FAIL               = "failed to read from t
 constexpr auto ERROR_SQLITE3_READ_PK_MISREAD            = "read unexpected number of results from delta-delta P(k) table [backend code=";
 constexpr auto ERROR_SQLITE3_READ_RSD_PK_FAIL           = "failed to read from a delta-delta RSD P(k) table [backend code=";
 constexpr auto ERROR_SQLITE3_READ_RSD_PK_MISREAD        = "read unexpected number of results from a delta-delta RSD P(k) table [backend code=";
-constexpr auto ERROR_SQLITE3_READ_MATSUBARA_XY_FAIL     = "failed to read from Matsubara-A table [backend code=";
-constexpr auto ERROR_SQLITE3_MATSUBARA_XY_MISREAD       = "read unexpected number of results from Matsubara-A table [backend code=";
+constexpr auto ERROR_SQLITE3_READ_MATSUBARA_XY_FAIL     = "failed to read from Matsubara-XY table [backend code=";
+constexpr auto ERROR_SQLITE3_MATSUBARA_XY_MISREAD       = "read unexpected number of results from Matsubara-XY table [backend code=";
 constexpr auto ERROR_SQLITE3_READ_WIGGLE_PK_FAIL        = "failed to read from filtered linear Pk table [backend code=";
 constexpr auto ERROR_SQLITE3_WIGGLE_PK_MISREAD          = "read unexpected number of results from filtered linear Pk table [backend code=";
 

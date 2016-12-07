@@ -40,7 +40,7 @@ namespace sqlite3_operations
     //! store a one-loop Pk sample
     void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model, const oneloop_Pk& sample);
     
-    //! store a Matsubara-A coefficient
+    //! store Matsubara X & Y coefficients
     void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model, const Matsubara_XY& sample);
     
     //! store a multipole Pk sample

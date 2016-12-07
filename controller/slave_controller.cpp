@@ -13,6 +13,8 @@
 #include "cosmology/oneloop_momentum_integrator.h"
 #include "cosmology/oneloop_Pk_calculator.h"
 #include "cosmology/multipole_Pk_calculator.h"
+#include "cosmology/Pk_filter.h"
+
 #include "cosmology/types.h"
 
 
@@ -167,7 +169,8 @@ void slave_controller::process_item(MPI_detail::new_filter_Pk& payload)
     const k_token& k_tok = payload.get_k_token();
     const linear_Pk_token& Pk_tok = payload.get_Pk_token();
     
-    filtered_Pk sample(k_tok, Pk_tok, 0.0, Pk_lin(k));
+    Pk_filter filter;
+    filtered_Pk sample(k_tok, Pk_tok, filter(model, Pk_lin, k), Pk_lin(k));
     
     // inform master process we have finished work on this calculation
     MPI_detail::filter_Pk_ready return_payload(sample);

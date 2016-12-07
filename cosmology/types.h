@@ -325,7 +325,7 @@ class multipole_Pk_work_record
     //! physical scale k
     Mpc_units::energy k;
     
-    //! Matsubara-A coefficient
+    //! Matsubara X & Y coefficients
     Matsubara_XY XY;
     
     //! one-loop power spectrum data
