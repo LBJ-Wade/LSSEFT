@@ -32,13 +32,13 @@ namespace MPI_detail
     
     new_multipole_Pk build_payload(const FRW_model&, multipole_Pk_work_list::const_iterator& t)
       {
-        return new_multipole_Pk(*(*t), t->get_Matsubara_A(), t->get_Pk_data(), t->get_gf_data(), t->get_tree_Pk_db());
+        return new_multipole_Pk(*(*t), t->get_Matsubara_XY(), t->get_Pk_data(), t->get_gf_data(), t->get_tree_Pk_db());
       }
     
     
-    new_Matsubara_A build_payload(const FRW_model&, Matsubara_A_work_list::const_iterator& t)
+    new_Matsubara_XY build_payload(const FRW_model&, Matsubara_XY_work_list::const_iterator& t)
       {
-        return new_Matsubara_A(t->get_IR_resum(), t->get_IR_resum_token(), t->get_tree_Pk_db());
+        return new_Matsubara_XY(t->get_IR_resum(), t->get_IR_resum_token(), t->get_linear_Pk());
       }
     
     

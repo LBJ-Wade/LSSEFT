@@ -176,8 +176,8 @@ class sqlite3_policy
     //! 1-loop multipole P4 table
     const std::string& P4_table() const { return this->P4; }
     
-    //! Matsubara-A table
-    const std::string& Matsubara_A_table() const { return this->Matsubara_A; }
+    //! Matsubara-XY table
+    const std::string& Matsubara_XY_table() const { return this->Matsubara_XY; }
 
     //! temporary table
     const std::string& temp_table() const { return(this->temp); }
@@ -339,8 +339,8 @@ class sqlite3_policy
     //! 1-loop multipole P4 table
     const std::string P4;
     
-    //! Matsubara-A coefficients
-    const std::string Matsubara_A;
+    //! Matsubara X & Y coefficients
+    const std::string Matsubara_XY;
 
     //! temporary table name
     const std::string temp;

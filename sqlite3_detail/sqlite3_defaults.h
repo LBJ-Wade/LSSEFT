@@ -57,7 +57,7 @@ constexpr auto SQLITE3_DEFAULT_LOOP_DD_RSD_MU8_TABLE          = "dd_rsd_mu8_Pk";
 constexpr auto SQLITE3_DEFAULT_LOOP_P0_TABLE                  = "dd_P0";
 constexpr auto SQLITE3_DEFAULT_LOOP_P2_TABLE                  = "dd_P2";
 constexpr auto SQLITE3_DEFAULT_LOOP_P4_TABLE                  = "dd_P4";
-constexpr auto SQLITE3_DEFAULT_MATSUBARA_A_TABLE              = "Matsubara_A";
+constexpr auto SQLITE3_DEFAULT_MATSUBARA_XY_TABLE             = "Matsubara_XY";
 
 constexpr auto SQLITE3_DEFAULT_TEMPORARY_TABLE                = "temp";
 

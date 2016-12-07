@@ -48,23 +48,28 @@ class oneloop_momentum_integrator
     loop_integral integrate(const FRW_model& model, const Mpc_units::energy& k, const k_token& k_tok,
                             const Mpc_units::energy& UV_cutoff, const UV_cutoff_token& UV_tok,
                             const Mpc_units::energy& IR_cutoff, const IR_cutoff_token& IR_tok,
-                            const tree_Pk& Pk);
+                            const wiggle_Pk& Pk);
 
     //! output integrands for inspection
     void write_integrands(const FRW_model& model, const Mpc_units::energy& k,
                           const Mpc_units::energy& UV_cutoff, const Mpc_units::energy& IR_cutoff,
-                          const tree_Pk& Pk, unsigned int Npoints);
+                          const spline_Pk& Pk, unsigned int Npoints);
 
     // INTERNAL API
 
   private:
 
-    //! perform a kernel integral
+    //! perform a kernel integral, both raw and wiggle parts
     template <typename KernelRecord>
-    bool kernel_integral(const FRW_model& model, const Mpc_units::energy& k,
-                         const Mpc_units::energy& UV_cutoff,
-                         const Mpc_units::energy& IR_cutoff, const tree_Pk& Pk,
-                         integrand_t interand, KernelRecord& result, loop_integral_type type);
+    bool kernel_integral(const FRW_model& model, const Mpc_units::energy& k, const Mpc_units::energy& UV_cutoff,
+                         const Mpc_units::energy& IR_cutoff, const wiggle_Pk& Pk, integrand_t interand,
+                         KernelRecord& result, loop_integral_type type);
+    
+    //! perform a single kernel integral of either raw or wiggle type, depending on which spline is supplied
+    template <typename IntegralRecord>
+    bool evaluate_integral(const FRW_model& model, const Mpc_units::energy& k, const Mpc_units::energy& UV_cutoff,
+                           const Mpc_units::energy& IR_cutoff, const spline_Pk& Pk, integrand_t integrand,
+                           IntegralRecord& result, loop_integral_type type);
 
 
     // INTERNAL DATA

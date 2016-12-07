@@ -130,7 +130,7 @@ void master_controller::execute()
     stepping_range<Mpc_units::energy> loop_k_samples(0.005, 0.5, 200, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
     
     // set up a list of IR resummation scales, measured in h/Mpc
-    stepping_range<Mpc_units::energy> IR_resummation(0.1, 0.1, 0, 1.0 / Mpc_units::Mpc, spacing_type::linear);
+    stepping_range<Mpc_units::energy> IR_resummation(0.3, 0.3, 0, 1.0 / Mpc_units::Mpc, spacing_type::linear);
 
     // exchange these sample ranges for iterable databases
     std::unique_ptr<z_database> hi_z_db              = dmgr.build_redshift_db(hi_redshift_samples);
@@ -180,35 +180,31 @@ void master_controller::execute()
         // we manage its lifetime using std::shared_ptr<> since ownership is shared with the
         // MPI work records and payloads
         std::shared_ptr<wiggle_Pk> Pk_wig = dmgr.build_wiggle_Pk(*Pk_lin, *Pk_lin_db);
-        
-        // we manage its lifetime with std::shared_ptr since ownership is shared with the
-        // MPI messaging routines
-        std::shared_ptr<tree_Pk> Pk = std::make_shared<tree_Pk>(this->arg_cache.get_powerspectrum_path());
 
         // build a work list for the loop integrals
         std::unique_ptr<loop_momentum_work_list> loop_momentum_work =
-          dmgr.build_loop_momentum_work_list(*model, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, Pk);
+          dmgr.build_loop_momentum_work_list(*model, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, Pk_wig);
 
         // distribute this work list among the worker processes
         if(loop_momentum_work) this->scatter(cosmology_model, *model, *loop_momentum_work, dmgr);
         
         // build a work list for the individual power spectrum components
         std::unique_ptr<one_loop_Pk_work_list> Pk_work =
-          dmgr.build_one_loop_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, Pk);
+          dmgr.build_one_loop_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, Pk_wig);
 
         // distribute this work list among the worker processes
         if(Pk_work) this->scatter(cosmology_model, *model, *Pk_work, dmgr);
         
         // build a work list of the Matsubara A coefficient associated with these resummation scales
-        std::unique_ptr<Matsubara_A_work_list> Matsubara_work =
-          dmgr.build_Matsubara_A_work_list(*model, *IR_resum_db, Pk);
+        std::unique_ptr<Matsubara_XY_work_list> Matsubara_work =
+          dmgr.build_Matsubara_XY_work_list(*model, *IR_resum_db, Pk_wig);
     
         // distribute this work list among the worker processes
         if(Matsubara_work) this->scatter(cosmology_model, *model, *Matsubara_work, dmgr);
         
         // build a work list for the resummed multipole power spectra
         std::unique_ptr<multipole_Pk_work_list> multipole_Pk_work =
-          dmgr.build_multipole_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, *IR_resum_db, Pk);
+          dmgr.build_multipole_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, *IR_resum_db, Pk_wig);
     
         // distribute this work list among the worker processes
         if(multipole_Pk_work) this->scatter(cosmology_model, *model, *multipole_Pk_work, dmgr);

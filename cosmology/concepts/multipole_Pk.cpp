@@ -7,13 +7,13 @@
 
 
 Pk_ell::Pk_ell(const Mpc_units::inverse_energy3& _Pt, const Mpc_units::inverse_energy3& _Pt_resum,
-                           const Mpc_units::inverse_energy3& _P13, const Mpc_units::inverse_energy3& _P13_resum,
-                           const Mpc_units::inverse_energy3& _P22, const Mpc_units::inverse_energy3& _P22_resum,
-                           const Mpc_units::inverse_energy3& _PSPT, const Mpc_units::inverse_energy3& _PSPT_resum,
-                           const Mpc_units::inverse_energy& _Z2d, const Mpc_units::inverse_energy3& _Z0v,
-                           const Mpc_units::inverse_energy& _Z2v, const Mpc_units::inverse_energy3& _Z0vd,
-                           const Mpc_units::inverse_energy& _Z2vd, const Mpc_units::inverse_energy& _Z2vv,
-                           const Mpc_units::inverse_energy& _Z2vvd, const Mpc_units::inverse_energy& _Z2vvv)
+               const Mpc_units::inverse_energy3& _P13, const Mpc_units::inverse_energy3& _P13_resum,
+               const Mpc_units::inverse_energy3& _P22, const Mpc_units::inverse_energy3& _P22_resum,
+               const Mpc_units::inverse_energy3& _PSPT, const Mpc_units::inverse_energy3& _PSPT_resum,
+               const Mpc_units::inverse_energy& _Z2d, const Mpc_units::inverse_energy3& _Z0v,
+               const Mpc_units::inverse_energy& _Z2v, const Mpc_units::inverse_energy3& _Z0vd,
+               const Mpc_units::inverse_energy& _Z2vd, const Mpc_units::inverse_energy& _Z2vv,
+               const Mpc_units::inverse_energy& _Z2vvd, const Mpc_units::inverse_energy& _Z2vvv)
   : Ptree(_Pt),
     Ptree_resum(_Pt_resum),
     P13(_P13),
@@ -55,9 +55,11 @@ Pk_ell::Pk_ell()
   }
 
 
-multipole_Pk::multipole_Pk(const k_token& kt, const IR_cutoff_token& IRt, const UV_cutoff_token& UVt, const z_token& zt,
-                           const IR_resum_token& IRrt, const Pk_ell& _P0, const Pk_ell& _P2, const Pk_ell& _P4)
+multipole_Pk::multipole_Pk(const k_token& kt, const linear_Pk_token& Pkt, const IR_cutoff_token& IRt,
+                           const UV_cutoff_token& UVt, const z_token& zt, const IR_resum_token& IRrt, const Pk_ell& _P0,
+                           const Pk_ell& _P2, const Pk_ell& _P4)
   : k(kt),
+    Pk(Pkt),
     IR_cutoff(IRt),
     UV_cutoff(UVt),
     z(zt),
@@ -71,6 +73,7 @@ multipole_Pk::multipole_Pk(const k_token& kt, const IR_cutoff_token& IRt, const 
 
 multipole_Pk::multipole_Pk()
   : k(0),
+    Pk(0),
     IR_cutoff(0),
     UV_cutoff(0),
     z(0),

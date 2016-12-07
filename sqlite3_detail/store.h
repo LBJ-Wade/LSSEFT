@@ -15,7 +15,7 @@
 #include "cosmology/concepts/loop_integral.h"
 #include "cosmology/concepts/oneloop_Pk.h"
 #include "cosmology/concepts/multipole_Pk.h"
-#include "cosmology/concepts/Matsubara_A.h"
+#include "cosmology/concepts/Matsubara_XY.h"
 
 #include "sqlite3_policy.h"
 
@@ -41,7 +41,7 @@ namespace sqlite3_operations
     void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model, const oneloop_Pk& sample);
     
     //! store a Matsubara-A coefficient
-    void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model, const Matsubara_A& sample);
+    void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model, const Matsubara_XY& sample);
     
     //! store a multipole Pk sample
     void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model, const multipole_Pk& sample);

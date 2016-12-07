@@ -94,7 +94,7 @@ class slave_controller
     void process_item(MPI_detail::new_one_loop_Pk& payload);
     
     //! compute Matsubara's resummation A coefficient
-    void process_item(MPI_detail::new_Matsubara_A& payload);
+    void process_item(MPI_detail::new_Matsubara_XY& payload);
     
     //! combine 1-loop power spectrum data to produce multipole power spectra
     void process_item(MPI_detail::new_multipole_Pk& payload);

@@ -735,7 +735,8 @@ namespace sqlite3_operations
     
     Matsubara_configs
     missing_Matsubara_A_configurations(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
-                                       const FRW_model_token& model, const IR_resum_database& IR_db)
+                                       const FRW_model_token& model, const linear_Pk_token& Pk,
+                                       const IR_resum_database& IR_db)
       {
         assert(db != nullptr);
         
@@ -743,8 +744,8 @@ namespace sqlite3_operations
         
         std::ostringstream count_stmt;
         count_stmt
-          << "SELECT COUNT(*) FROM (SELECT * FROM " << policy.Matsubara_A_table() << " "
-          << "WHERE mid=@mid AND IR_resum_id=@IR_resum_id);";
+          << "SELECT COUNT(*) FROM (SELECT * FROM " << policy.Matsubara_XY_table() << " "
+          << "WHERE mid=@mid AND Pk_id=@Pk_id AND IR_resum_id=@IR_resum_id);";
     
         // prepare statement
         sqlite3_stmt* stmt;
@@ -754,6 +755,7 @@ namespace sqlite3_operations
           {
             // bind parameter values
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@mid"), model.get_id()));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_id"), Pk.get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_resum_id"), t->get_token().get_id()));
     
             int status = 0;

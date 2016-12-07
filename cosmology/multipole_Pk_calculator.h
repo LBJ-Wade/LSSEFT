@@ -11,12 +11,14 @@
 #include "concepts/oneloop_growth.h"
 #include "concepts/oneloop_Pk.h"
 #include "concepts/multipole_Pk.h"
-#include "concepts/Matsubara_A.h"
+#include "cosmology/concepts/Matsubara_XY.h"
 #include "cosmology/concepts/power_spectrum.h"
 
 #include "database/tokens.h"
 
 #include "defaults.h"
+
+#include "cuba.h"
 
 
 enum class mu_power { mu0, mu2, mu4, mu6, mu8 };
@@ -47,27 +49,33 @@ class multipole_Pk_calculator
     
     //! calculate power spectra decomposition into Legendre modes
     multipole_Pk
-    calculate_Legendre(const Mpc_units::energy& k, const Matsubara_A& A,
-                       const oneloop_Pk& data, const oneloop_growth_record& gf_data, const tree_Pk& Ptree);
+    calculate_Legendre(const Mpc_units::energy& k, const Matsubara_XY& XY,
+                       const oneloop_Pk& data, const oneloop_growth_record& gf_data, const wiggle_Pk& Ptree);
     
     //! calculate Matsubara-A coefficient
-    Matsubara_A
-    calculate_Matsubara_A(const Mpc_units::energy& IR_resum, const IR_resum_token& IR_resum_tok,
-                          const tree_Pk& Ptree);
+    Matsubara_XY
+    calculate_Matsubara_XY(const Mpc_units::energy& IR_resum, const IR_resum_token& IR_resum_tok,
+                           const wiggle_Pk& Pk_lin);
     
   private:
     
     //! decompose into Legendre modes using a specified decomposer functional and for a specified ell mode
     template <typename Accessor, typename Decomposer>
-    decltype(std::declval<Accessor>()(std::declval<const rsd_dd_Pk&>()))
-    decompose(Accessor extract, const oneloop_Pk& data, Decomposer decomp);
+//    decltype(std::declval<Accessor>()(std::declval<const rsd_dd_Pk&>()))
+    auto decompose(Accessor extract, const oneloop_Pk& data, Decomposer decomp);
     
-    //! decompose into Legendre modes using a specified decomposer, including the additive correction
+    //! decompose into Legendre modes using resummation of the wiggle part, including subtractions
     //! to prevent double-counting after resummation
-    template <typename Decomposer>
-    Mpc_units::inverse_energy3
-    decompose_1loop_resummed(const oneloop_Pk& data, double Matsubara_A, const oneloop_growth_record& gf_data,
-                             Decomposer decomp, const Mpc_units::energy& k, const tree_Pk& Ptree);
+    template <typename WiggleAccessor, typename NoWiggleAccessor, typename ResumAdjuster, typename RawDecomposer, typename XYDecomposer>
+//decltype(std::declval<Accessor>()(std::declval<const rsd_dd_Pk&>()))
+    auto decompose(WiggleAccessor wiggle, NoWiggleAccessor nowiggle, const oneloop_Pk& data,
+                   ResumAdjuster adjust, RawDecomposer raw_decomp, XYDecomposer XY_decomp);
+    
+    
+    //! compute integrals for Matsubara X & Y factors
+    Mpc_units::inverse_energy2
+    compute_XY(const Mpc_units::energy& IR_resum, const Mpc_units::energy& k_min,
+               const spline_Pk& Pk, integrand_t integrand);
     
     // INTERNAL DATA
     

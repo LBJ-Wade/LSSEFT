@@ -22,7 +22,7 @@
 
 
 typedef std::unordered_set<data_manager_impl::loop_momentum_configuration> loop_configs;
-typedef std::unordered_set<data_manager_impl::Matsubara_A_configuration> Matsubara_configs;
+typedef std::unordered_set<data_manager_impl::Matsubara_XY_configuration> Matsubara_configs;
 typedef std::unordered_set<data_manager_impl::resummed_Pk_configuration> resum_Pk_configs;
 
 namespace sqlite3_operations
@@ -62,7 +62,8 @@ namespace sqlite3_operations
     //! we detect which ones are already present in the database and avoid computing them
     Matsubara_configs
     missing_Matsubara_A_configurations(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
-                                       const FRW_model_token& model, const IR_resum_database& IR_db);
+                                           const FRW_model_token& model, const linear_Pk_token& Pk,
+                                           const IR_resum_database& IR_db);
     
     //! process a list of configurations for one-loop multipole P(k) calculations;
     //! we detect which ones are already present in the database and avoid computing them

@@ -253,6 +253,26 @@ namespace Mpc_units
       {
         return a.val*b.val;
       }
+    
+    constexpr double operator*(const inverse_energy& a, const energy& b)
+      {
+        return a.val*b.val;
+      }
+    
+    constexpr double operator*(const inverse_energy2& a, const energy2& b)
+      {
+        return a.val*b.val;
+      }
+    
+    constexpr double operator*(const inverse_energy3& a, const energy3& b)
+      {
+        return a.val*b.val;
+      }
+    
+    constexpr double operator*(const inverse_energy4& a, const energy4& b)
+      {
+        return a.val*b.val;
+      }
 
 
     // DIMENSIONLESS MULTIPLICATION

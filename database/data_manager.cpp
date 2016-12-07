@@ -494,7 +494,7 @@ resum_Pk_configs data_manager::tensor_product(k_database& k_db, IR_cutoff_databa
 std::unique_ptr<loop_momentum_work_list>
 data_manager::build_loop_momentum_work_list(FRW_model_token& model, k_database& k_db,
                                             IR_cutoff_database& IR_db, UV_cutoff_database& UV_db,
-                                            std::shared_ptr<tree_Pk>& Pk)
+                                            std::shared_ptr<wiggle_Pk>& Pk)
   {
     // start timer
     boost::timer::cpu_timer timer;
@@ -550,34 +550,35 @@ std::unique_ptr<wiggle_Pk> data_manager::find<wiggle_Pk>(transaction_manager& mg
 
 template <>
 std::unique_ptr<loop_integral>
-data_manager::find<loop_integral>(transaction_manager& mgr, const FRW_model_token& model, const k_token& k,
+data_manager::find<loop_integral>(transaction_manager& mgr, const FRW_model_token& model, const k_token& k, const linear_Pk_token& Pk,
                                   const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff)
   {
-    return sqlite3_operations::find(this->handle, mgr, this->policy, model, k, IR_cutoff, UV_cutoff);
+    return sqlite3_operations::find(this->handle, mgr, this->policy, model, k, Pk, IR_cutoff, UV_cutoff);
   }
 
 
 template <>
 std::unique_ptr<oneloop_Pk>
 data_manager::find<oneloop_Pk>(transaction_manager& mgr, const FRW_model_token& model, const k_token& k, const z_token& z,
-                               const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff)
+                               const linear_Pk_token& Pk, const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff)
   {
-    return sqlite3_operations::find(this->handle, mgr, this->policy, model, k, z, IR_cutoff, UV_cutoff);
+    return sqlite3_operations::find(this->handle, mgr, this->policy, model, k, z, Pk, IR_cutoff, UV_cutoff);
   }
 
 
 template <>
-std::unique_ptr<Matsubara_A>
-data_manager::find(transaction_manager& mgr, const FRW_model_token& model, const IR_resum_token& IR_resum)
+std::unique_ptr<Matsubara_XY>
+data_manager::find(transaction_manager& mgr, const FRW_model_token& model, const linear_Pk_token& Pk,
+                   const IR_resum_token& IR_resum)
   {
-    return sqlite3_operations::find(this->handle, mgr, this->policy, model, IR_resum);
+    return sqlite3_operations::find(this->handle, mgr, this->policy, model, Pk, IR_resum);
   }
 
 
 std::unique_ptr<one_loop_Pk_work_list>
 data_manager::build_one_loop_Pk_work_list(FRW_model_token& model, z_database& z_db, k_database& k_db,
                                           IR_cutoff_database& IR_db, UV_cutoff_database& UV_db,
-                                          std::shared_ptr<tree_Pk>& Pk)
+                                          std::shared_ptr<wiggle_Pk>& Pk)
   {
     // start timer
     boost::timer::cpu_timer timer;
@@ -605,7 +606,10 @@ data_manager::build_one_loop_Pk_work_list(FRW_model_token& model, z_database& z_
         if(missing_zs)
           {
             std::shared_ptr<oneloop_growth> g = this->find<oneloop_growth>(*mgr, model, z_db);
-            std::shared_ptr<loop_integral> l = this->find<loop_integral>(*mgr, model, record.k->get_token(), record.IR_cutoff->get_token(), record.UV_cutoff->get_token());
+
+            std::shared_ptr<loop_integral> l =
+              this->find<loop_integral>(*mgr, model, record.k->get_token(), Pk->get_token(),
+                                        record.IR_cutoff->get_token(), record.UV_cutoff->get_token());
 
             work_list->emplace_back(*(*record.k), g, l, Pk);
           }
@@ -630,7 +634,7 @@ data_manager::build_one_loop_Pk_work_list(FRW_model_token& model, z_database& z_
 std::unique_ptr<multipole_Pk_work_list>
 data_manager::build_multipole_Pk_work_list(FRW_model_token& model, z_database& z_db, k_database& k_db,
                                            IR_cutoff_database& IR_cutoff_db, UV_cutoff_database& UV_cutoff_db,
-                                           IR_resum_database& IR_resum_db, std::shared_ptr<tree_Pk>& Pk)
+                                           IR_resum_database& IR_resum_db, std::shared_ptr<wiggle_Pk>& Pk)
   {
     // start timer
     boost::timer::cpu_timer timer;
@@ -663,13 +667,14 @@ data_manager::build_multipole_Pk_work_list(FRW_model_token& model, z_database& z
               {
                 // lookup one-loop data for this redshift and loop configuration
                 std::shared_ptr<oneloop_Pk> loop_data =
-                  this->find<oneloop_Pk>(*mgr, model, record.k->get_token(), (*t).first, record.IR_cutoff->get_token(),
-                                         record.UV_cutoff->get_token());
+                  this->find<oneloop_Pk>(*mgr, model, record.k->get_token(), (*t).first, Pk->get_token(),
+                                         record.IR_cutoff->get_token(), record.UV_cutoff->get_token());
                 
-                // lookup Matsubara-A coefficient for this IR resummation scale
-                std::unique_ptr<Matsubara_A> A_coeff = this->find<Matsubara_A>(*mgr, model, record.IR_resum->get_token());
+                // lookup Matsubara X & Y coefficients for this IR resummation scale
+                std::unique_ptr<Matsubara_XY> XY_coeffs =
+                  this->find<Matsubara_XY>(*mgr, model, Pk->get_token(), record.IR_resum->get_token());
     
-                work_list->emplace_back(*(*record.k), *A_coeff, loop_data, (*t).second, Pk);
+                work_list->emplace_back(*(*record.k), *XY_coeffs, loop_data, (*t).second, Pk);
               }
           }
       }
@@ -690,22 +695,23 @@ data_manager::build_multipole_Pk_work_list(FRW_model_token& model, z_database& z
   }
 
 
-std::unique_ptr<Matsubara_A_work_list>
-data_manager::build_Matsubara_A_work_list(FRW_model_token& model, IR_resum_database& IR_resum_db,
-                                          std::shared_ptr<tree_Pk>& Pk)
+std::unique_ptr<Matsubara_XY_work_list>
+data_manager::build_Matsubara_XY_work_list(FRW_model_token& model, IR_resum_database& IR_resum_db,
+                                           std::shared_ptr<wiggle_Pk>& Pk)
   {
     // start timer
     boost::timer::cpu_timer timer;
     
     // construct an empty work list
-    std::unique_ptr<Matsubara_A_work_list> work_list = std::make_unique<Matsubara_A_work_list>();
+    std::unique_ptr<Matsubara_XY_work_list> work_list = std::make_unique<Matsubara_XY_work_list>();
     
     // open a transaction on the database
     std::shared_ptr<transaction_manager> mgr = this->open_transaction();
     
     // obatain list of missing configurations
-    Matsubara_configs missing = sqlite3_operations::missing_Matsubara_A_configurations(this->handle, *mgr, this->policy,
-                                                                                       model, IR_resum_db);
+    Matsubara_configs missing =
+      sqlite3_operations::missing_Matsubara_A_configurations(this->handle, *mgr, this->policy, model, Pk->get_token(),
+                                                             IR_resum_db);
     
     // add these configurations to the work list
     for(const Matsubara_configs::value_type& record : missing)

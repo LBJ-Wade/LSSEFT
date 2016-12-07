@@ -69,7 +69,7 @@ void slave_controller::execute()
             case MPI_detail::MESSAGE_NEW_MATSUBARA_A_TASK:
               {
                 this->mpi_world.recv(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_NEW_MATSUBARA_A_TASK);
-                this->process_task<Matsubara_A_work_record>();
+                this->process_task<Matsubara_XY_work_record>();
                 break;
               }
             
@@ -186,7 +186,7 @@ void slave_controller::process_item(MPI_detail::new_loop_momentum_integration& p
     const k_token& k_tok = payload.get_k_token();
     const UV_cutoff_token& UV_tok = payload.get_UV_token();
     const IR_cutoff_token& IR_tok = payload.get_IR_token();
-    const tree_Pk& Pk = payload.get_tree_power_spectrum();
+    const wiggle_Pk& Pk = payload.get_tree_power_spectrum();
     
 //    std::cout << "Worker " << this->worker_number() << " processing loop integral item: k-id = " << k_tok.get_id()
 //              << " for k = " << k * Mpc_units::Mpc << " h/Mpc, IR cutoff = " << IR_cutoff * Mpc_units::Mpc
@@ -207,7 +207,7 @@ void slave_controller::process_item(MPI_detail::new_one_loop_Pk& payload)
     const Mpc_units::energy& k = payload.get_k();
     const oneloop_growth& gf_factors = payload.get_gf_factors();
     const loop_integral& loop_data = payload.get_loop_data();
-    const tree_Pk& Pk = payload.get_tree_power_spectrum();
+    const wiggle_Pk& Pk = payload.get_tree_power_spectrum();
     
     const k_token& k_tok = loop_data.get_k_token();
     const IR_cutoff_token& IR_tok = loop_data.get_IR_token();
@@ -234,10 +234,10 @@ void slave_controller::process_item(MPI_detail::new_one_loop_Pk& payload)
 void slave_controller::process_item(MPI_detail::new_multipole_Pk& payload)
   {
     const Mpc_units::energy& k = payload.get_k();
-    const Matsubara_A& A = payload.get_Matsubara_A();
+    const Matsubara_XY& XY = payload.get_Matsubara_XY();
     const oneloop_Pk& oneloop_data = payload.get_oneloop_Pk_data();
     const oneloop_growth_record& gf_data = payload.get_gf_data();
-    const tree_Pk& Pk = payload.get_tree_power_spectrum();
+    const wiggle_Pk& Pk = payload.get_tree_power_spectrum();
     
 //    std::cout << "Worker " << this->worker_number() << " processing multipole P(k) for"
 //              << " k-id = " << oneloop_data.get_k_token().get_id()
@@ -247,7 +247,7 @@ void slave_controller::process_item(MPI_detail::new_multipole_Pk& payload)
 //              << ", IR-resum-id = " << IR_resum_tok.get_id() << '\n';
     
     multipole_Pk_calculator calculator;
-    multipole_Pk sample = calculator.calculate_Legendre(k, A, oneloop_data, gf_data, Pk);
+    multipole_Pk sample = calculator.calculate_Legendre(k, XY, oneloop_data, gf_data, Pk);
     
     // inform master process that the calculation is finished
     MPI_detail::multipole_Pk_ready return_payload(sample);
@@ -256,18 +256,18 @@ void slave_controller::process_item(MPI_detail::new_multipole_Pk& payload)
   }
 
 
-void slave_controller::process_item(MPI_detail::new_Matsubara_A& payload)
+void slave_controller::process_item(MPI_detail::new_Matsubara_XY& payload)
   {
     const Mpc_units::energy& IR_resum = payload.get_IR_resum();
-    const tree_Pk& Pk = payload.get_tree_power_spectrum();
+    const wiggle_Pk& Pk = payload.get_tree_power_spectrum();
     
     const IR_resum_token& IR_resum_tok = payload.get_IR_resum_token();
     
     multipole_Pk_calculator calculator;
-    Matsubara_A item = calculator.calculate_Matsubara_A(IR_resum, IR_resum_tok, Pk);
+    Matsubara_XY item = calculator.calculate_Matsubara_XY(IR_resum, IR_resum_tok, Pk);
     
     // inform master process that the calculation is finished
-    MPI_detail::Matsubara_A_ready return_payload(item);
+    MPI_detail::Matsubara_XY_ready return_payload(item);
     boost::mpi::request ack = this->mpi_world.isend(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_WORK_PRODUCT_READY, return_payload);
     ack.wait();
   }

@@ -45,24 +45,24 @@ namespace data_manager_impl
       }
     
     
-    class Matsubara_A_configuration
+    class Matsubara_XY_configuration
       {
         
       public:
         
-        Matsubara_A_configuration(const IR_resum_database::const_record_iterator& _IR_resum)
+        Matsubara_XY_configuration(const IR_resum_database::const_record_iterator& _IR_resum)
           : IR_resum(_IR_resum)
           {
           }
         
-        ~Matsubara_A_configuration() = default;
+        ~Matsubara_XY_configuration() = default;
         
         const IR_resum_database::const_record_iterator IR_resum;
       };
     
     
     // specialize equality operator
-    inline bool operator==(const Matsubara_A_configuration& A, const Matsubara_A_configuration& B)
+    inline bool operator==(const Matsubara_XY_configuration& A, const Matsubara_XY_configuration& B)
       {
         return A.IR_resum == B.IR_resum;
       }
@@ -160,7 +160,7 @@ namespace std
     
     // specialize std::hash() to Matsubara_configuration so that it can be used with std::unordered_set
     template <>
-    class hash<::data_manager_impl::Matsubara_A_configuration>
+    class hash<::data_manager_impl::Matsubara_XY_configuration>
       {
         
         // CONSTRUCTOR, DESTRUCTOR
@@ -179,7 +179,7 @@ namespace std
       public:
         
         //! hash operation
-        size_t operator()(const ::data_manager_impl::Matsubara_A_configuration& config) const
+        size_t operator()(const ::data_manager_impl::Matsubara_XY_configuration& config) const
           {
             size_t hash = 0;
             hash_impl::hash_combine(hash, config.IR_resum->get_token());

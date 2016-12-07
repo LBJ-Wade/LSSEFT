@@ -33,7 +33,7 @@ oneloop_momentum_integrator::oneloop_momentum_integrator(double a_13, double r_1
 loop_integral oneloop_momentum_integrator::integrate(const FRW_model& model, const Mpc_units::energy& k,
                                                      const k_token& k_tok, const Mpc_units::energy& UV_cutoff,
                                                      const UV_cutoff_token& UV_tok, const Mpc_units::energy& IR_cutoff,
-                                                     const IR_cutoff_token& IR_tok, const tree_Pk& Pk)
+                                                     const IR_cutoff_token& IR_tok, const wiggle_Pk& Pk)
   {
     delta_13_integrals delta13;
     delta_22_integrals delta22;
@@ -90,7 +90,7 @@ loop_integral oneloop_momentum_integrator::integrate(const FRW_model& model, con
        fail_RSD22_C4 || fail_RSD22_D1)
       rsd22.mark_failed();
     
-    loop_integral container(k_tok, UV_tok, IR_tok, delta22, delta13, rsd22, rsd13);
+    loop_integral container(k_tok, Pk.get_token(), UV_tok, IR_tok, delta22, delta13, rsd22, rsd13);
 
     return container;
   }
@@ -99,27 +99,77 @@ loop_integral oneloop_momentum_integrator::integrate(const FRW_model& model, con
 template <typename KernelRecord>
 bool oneloop_momentum_integrator::kernel_integral(const FRW_model& model, const Mpc_units::energy& k,
                                                   const Mpc_units::energy& UV_cutoff,
-                                                  const Mpc_units::energy& IR_cutoff, const tree_Pk& Pk,
+                                                  const Mpc_units::energy& IR_cutoff, const wiggle_Pk& Pk,
                                                   integrand_t integrand, KernelRecord& result, loop_integral_type type)
   {
-    boost::timer::cpu_timer timer;
-
-    cubareal integral[oneloop_momentum_impl::dimensions];
-    cubareal error[oneloop_momentum_impl::dimensions];
-    cubareal prob[oneloop_momentum_impl::dimensions];
-
-    int regions;
-    int evaluations;
-    int fail;
-
-    std::unique_ptr<oneloop_momentum_impl::integrand_data> data =
-      std::make_unique<oneloop_momentum_impl::integrand_data>(model, k, UV_cutoff, IR_cutoff, Pk);
-
     // disable CUBA's internal auto-parallelization
     // we're handling multiprocessor activity ourselves via the scheduler,
     // so it's preferable to keep each core fully active rather than have threads
     // trying to manage Cuba's subworkers
     cubacores(0, oneloop_momentum_impl::pcores);
+    
+    bool fail = false;
+    wiggle_Pk_raw_adapter raw(Pk);
+    wiggle_Pk_wiggle_adapter wiggle(Pk);
+    
+    fail |= this->evaluate_integral(model, k, UV_cutoff, IR_cutoff, raw, integrand, result.get_raw(), type);
+    fail |= this->evaluate_integral(model, k, UV_cutoff, IR_cutoff, wiggle, integrand, result.get_wiggle(), type);
+    
+    return fail;
+  }
+
+
+template <typename IntegralRecord>
+bool oneloop_momentum_integrator::evaluate_integral(const FRW_model& model, const Mpc_units::energy& k,
+                                                    const Mpc_units::energy& UV_cutoff,
+                                                    const Mpc_units::energy& IR_cutoff, const spline_Pk& Pk,
+                                                    integrand_t integrand, IntegralRecord& result,
+                                                    loop_integral_type type)
+  {
+    cubareal integral[oneloop_momentum_impl::dimensions];
+    cubareal error[oneloop_momentum_impl::dimensions];
+    cubareal prob[oneloop_momentum_impl::dimensions];
+    
+    int regions;
+    int evaluations;
+    int fail;
+
+    boost::timer::cpu_timer raw_timer;
+    
+    std::unique_ptr<oneloop_momentum_impl::integrand_data> data =
+      std::make_unique<oneloop_momentum_impl::integrand_data>(model, k, UV_cutoff, IR_cutoff, Pk);
+    
+    Cuhre(oneloop_momentum_impl::dimensions,
+          oneloop_momentum_impl::components,
+          integrand, data.get(),
+          oneloop_momentum_impl::points_per_invocation,
+          (type == loop_integral_type::P13 ? this->rel_err_13 : this->rel_err_22),
+          (type == loop_integral_type::P13 ? this->abs_err_13 : this->abs_err_22),
+          oneloop_momentum_impl::verbosity_none | oneloop_momentum_impl::samples_last,
+          oneloop_momentum_impl::min_eval, oneloop_momentum_impl::max_eval,
+          oneloop_momentum_impl::cuhre_key,
+          nullptr, nullptr,
+          &regions, &evaluations, &fail,
+          integral, error, prob);
+    
+    if(fail != 0)
+      std::cerr << "Integration failure: regions = " << regions << ", evaluations = " << evaluations << ", fail = "
+                << fail << ", value = " << integral[0] << ", error = " << error[0] << ", probability = " << prob[0]
+                << '\n';
+    
+    raw_timer.stop();
+    
+    // an overall factor 1/8pi^2 is taken out of the integrand, so remember to put it back here
+    result.value = typename IntegralRecord::value_type(integral[0] / (8.0 * M_PI * M_PI));
+    result.regions = regions;
+    result.evaluations = evaluations;
+    result.error = error[0];
+    result.time = raw_timer.elapsed().wall;
+    
+    return (fail != 0);
+  }
+
+// Alternative Divonne integrator
 
 //    Divonne(oneloop_momentum_impl::dimensions, oneloop_momentum_impl::components,
 //            integrand, data.get(),
@@ -137,38 +187,11 @@ bool oneloop_momentum_integrator::kernel_integral(const FRW_model& model, const 
 //            &regions, &evaluations, &fail,
 //            integral, error, prob);
 
-    Cuhre(oneloop_momentum_impl::dimensions,
-          oneloop_momentum_impl::components,
-          integrand, data.get(),
-          oneloop_momentum_impl::points_per_invocation,
-          (type == loop_integral_type::P13 ? this->rel_err_13 : this->rel_err_22),
-          (type == loop_integral_type::P13 ? this->abs_err_13 : this->abs_err_22),
-          oneloop_momentum_impl::verbosity_none | oneloop_momentum_impl::samples_last,
-          oneloop_momentum_impl::min_eval, oneloop_momentum_impl::max_eval,
-          oneloop_momentum_impl::cuhre_key,
-          nullptr, nullptr,
-          &regions, &evaluations, &fail,
-          integral, error, prob);
-
-    timer.stop();
-
-    if(fail != 0) std::cerr << "Integration failure: regions = " << regions << ", evaluations = " << evaluations << ", fail = " << fail << ", value = " << integral[0] << ", error = " << error[0] << ", probability = " << prob[0] << '\n';
-//    else          std::cerr << "Integration success: regions = " << regions << ", evaluations = " << evaluations << ", fail = " << fail << ", value = " << integral[0] << ", error = " << error[0] << ", probability = " << prob[0] << '\n';
-
-    // an overall factor 1/8pi^2 is taken out of the integrand, so remember to put it back here
-    result.value       = typename KernelRecord::value_type(integral[0] / (8.0*M_PI*M_PI));
-    result.regions     = regions;
-    result.evaluations = evaluations;
-    result.error       = error[0];
-    result.time        = timer.elapsed().wall;
-
-    return(fail != 0);
-  }
-
 
 void oneloop_momentum_integrator::write_integrands(const FRW_model& model, const Mpc_units::energy& k,
-                                                   const Mpc_units::energy& UV_cutoff, const Mpc_units::energy& IR_cutoff,
-                                                   const tree_Pk& Pk, unsigned int Npoints)
+                                                   const Mpc_units::energy& UV_cutoff,
+                                                   const Mpc_units::energy& IR_cutoff,
+                                                   const spline_Pk& Pk, unsigned int Npoints)
   {
     std::ofstream AA;
     std::ofstream AB;

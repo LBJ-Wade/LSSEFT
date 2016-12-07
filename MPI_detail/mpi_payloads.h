@@ -26,7 +26,7 @@ namespace MPI_detail
     //! build payload for one-loop P(k) calculation
     new_one_loop_Pk build_payload(const FRW_model&, one_loop_Pk_work_list::const_iterator& t);
     
-    new_Matsubara_A build_payload(const FRW_model&, Matsubara_A_work_list::const_iterator& t);
+    new_Matsubara_XY build_payload(const FRW_model&, Matsubara_XY_work_list::const_iterator& t);
     
     //! build payload for multipole P(k) calculation
     new_multipole_Pk build_payload(const FRW_model&, multipole_Pk_work_list::const_iterator& t);

@@ -10,6 +10,8 @@
 #include <cmath>
 
 #include "cosmology/FRW_model.h"
+#include "cosmology/concepts/power_spectrum.h"
+
 #include "units/Mpc_units.h"
 
 
@@ -53,7 +55,7 @@ namespace oneloop_momentum_impl
       public:
         
         integrand_data(const FRW_model& m, const Mpc_units::energy& _k, const Mpc_units::energy& UV, const Mpc_units::energy& IR,
-                       const tree_Pk& _Pk)
+                       const spline_Pk& _Pk)
           : model(m),
             k(_k),
             UV_cutoff(UV),
@@ -76,7 +78,7 @@ namespace oneloop_momentum_impl
         const Mpc_units::energy& k;
         const Mpc_units::energy& UV_cutoff;
         const Mpc_units::energy& IR_cutoff;
-        const tree_Pk& Pk;
+        const spline_Pk& Pk;
         
         Mpc_units::energy  jacobian_2d;
         Mpc_units::energy  jacobian_1d;
