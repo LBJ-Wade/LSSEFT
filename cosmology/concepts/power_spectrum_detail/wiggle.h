@@ -36,7 +36,8 @@ class wiggle_Pk
     const tree_Pk::database_type& get_raw_db() const { return this->raw.get_db(); }
     
     //! ask spline to determine whether a given k-mode is acceptable for evaluation
-    bool is_valid(const Mpc_units::energy& k) const { return this->wiggle.is_valid(k) && this->raw.is_valid(k); }
+    bool is_valid(const Mpc_units::energy& k) const { return this->wiggle.is_valid(k, 0, 0) && this->raw.is_valid(k, 0,
+                                                                                                                  0); }
     
     
     // TOKEN MANAGEMENT

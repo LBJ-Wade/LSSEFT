@@ -22,13 +22,8 @@
 #include "SPLINTER/bsplinebuilder.h"
 
 
-namespace generic_Pk_impl
-  {
-
-    constexpr double TEN_PERCENT_UPPER_CLEARANCE = 0.9;
-    constexpr double TEN_PERCENT_LOWER_CLEARANCE = 1.1;
-    
-  }
+constexpr double SPLINE_PK_DEFAULT_TOP_CLEARANCE = 0.9;
+constexpr double SPLINE_PK_DEFAULT_BOTTOM_CLEARANCE = 1.1;
 
 
 template <typename Tag, typename Dimension, bool protect=false>
@@ -61,7 +56,9 @@ class generic_Pk
     const Pk_database<Dimension>& get_db() const { return(this->database); }
     
     //! ask whether it is valid to evaluate the spline at a given k-value
-    bool is_valid(const Mpc_units::energy& k) const;
+    bool is_valid(const Mpc_units::energy& k,
+                  double bottom_clearance = SPLINE_PK_DEFAULT_BOTTOM_CLEARANCE,
+                  double top_clearance = SPLINE_PK_DEFAULT_TOP_CLEARANCE) const;
     
     
     // EVALUATION
@@ -149,7 +146,7 @@ template <typename Tag, typename Dimension, bool protect>
 template <bool P, typename std::enable_if<P>::type*>
 Dimension generic_Pk<Tag, Dimension, protect>::operator()(const Mpc_units::energy& k) const
   {
-    if(k > generic_Pk_impl::TEN_PERCENT_UPPER_CLEARANCE * this->database.get_k_max())
+    if(k > SPLINE_PK_DEFAULT_TOP_CLEARANCE * this->database.get_k_max())
       {
         std::ostringstream msg;
         msg << ERROR_POWERSPECTRUM_SPLINE_TOO_BIG << " (k = " << k * Mpc_units::Mpc << " h/Mpc, k_max = "
@@ -157,7 +154,7 @@ Dimension generic_Pk<Tag, Dimension, protect>::operator()(const Mpc_units::energ
         throw std::overflow_error(msg.str());
       }
 
-    if(k < generic_Pk_impl::TEN_PERCENT_LOWER_CLEARANCE * this->database.get_k_min())
+    if(k < SPLINE_PK_DEFAULT_BOTTOM_CLEARANCE * this->database.get_k_min())
       {
         std::ostringstream msg;
         msg << ERROR_POWERSPECTRUM_SPLINE_TOO_SMALL << " (k = " << k * Mpc_units::Mpc << " h/Mpc, k_min = "
@@ -188,12 +185,17 @@ Dimension generic_Pk<Tag, Dimension, protect>::evaluate(const Mpc_units::energy&
 
 
 template <typename Tag, typename Dimension, bool protect>
-bool generic_Pk<Tag, Dimension, protect>::is_valid(const Mpc_units::energy& k) const
+bool generic_Pk<Tag, Dimension, protect>::is_valid(const Mpc_units::energy& k, double bottom_clearance, double top_clearance) const
   {
     if(this->database.size() == 0) return false;
     
-    if(k > generic_Pk_impl::TEN_PERCENT_UPPER_CLEARANCE * this->database.get_k_max()) return false;
-    if(k < generic_Pk_impl::TEN_PERCENT_LOWER_CLEARANCE * this->database.get_k_min()) return false;
+    if(bottom_clearance < SPLINE_PK_DEFAULT_BOTTOM_CLEARANCE) bottom_clearance = SPLINE_PK_DEFAULT_BOTTOM_CLEARANCE;
+    if(top_clearance > SPLINE_PK_DEFAULT_TOP_CLEARANCE)       top_clearance = SPLINE_PK_DEFAULT_TOP_CLEARANCE;
+    
+    // TODO: detect max-k < min-k after accounting for clearances
+    
+    if(k > top_clearance * this->database.get_k_max()) return false;
+    if(k < bottom_clearance * this->database.get_k_min()) return false;
     
     return true;
   }

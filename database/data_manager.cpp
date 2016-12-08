@@ -24,6 +24,10 @@
 #include "boost/timer/timer.hpp"
 
 
+constexpr double FILTER_PK_DEFAULT_BOTTOM_CLEARANCE = 1.25;
+constexpr double FILTER_PK_DEFAULT_TOP_CLEARANCE    = 0.75;
+
+
 data_manager::data_manager(const boost::filesystem::path& c)
   : container(c),
     handle(nullptr),   // try to catch handle-not-initialized errors
@@ -342,7 +346,8 @@ std::unique_ptr<IR_resum_database> data_manager::build_IR_resum_db(range<Mpc_uni
   }
 
 
-std::unique_ptr<k_database> data_manager::build_k_db(transaction_manager& mgr, const linear_Pk& Pk_lin)
+std::unique_ptr<k_database> data_manager::build_k_db(transaction_manager& mgr, const linear_Pk& Pk_lin,
+                                                     double bottom_clearance, double top_clearance)
   {
     // construct an empty wavenumber database
     std::unique_ptr<k_database> k_db = std::make_unique<k_database>();
@@ -354,7 +359,7 @@ std::unique_ptr<k_database> data_manager::build_k_db(transaction_manager& mgr, c
       {
         // ask linear_Pk container whether this P(k) value is acceptable
         const Mpc_units::energy& k = t->get_wavenumber();
-        if(Pk_lin.is_valid(k))
+        if(Pk_lin.is_valid(k, bottom_clearance, top_clearance))
           {
             std::unique_ptr<k_token> tok = this->tokenize<k_token>(mgr, k);
             k_db->add_record(k, *tok);
@@ -745,7 +750,7 @@ data_manager::build_filter_Pk_work_list(linear_Pk_token& token, std::shared_ptr<
     std::shared_ptr<transaction_manager> mgr = this->open_transaction();
     
     // set up temporary table of desired wavenumber identifiers
-    std::unique_ptr<k_database> k_db = this->build_k_db(*mgr, *Pk_lin);
+    std::unique_ptr<k_database> k_db = this->build_k_db(*mgr, *Pk_lin, FILTER_PK_DEFAULT_BOTTOM_CLEARANCE, FILTER_PK_DEFAULT_TOP_CLEARANCE);
     std::string k_table = sqlite3_operations::k_table(this->handle, *mgr, this->policy, *k_db);
     
     // obtain list of missing configurations
@@ -783,7 +788,7 @@ std::unique_ptr<wiggle_Pk> data_manager::build_wiggle_Pk(const linear_Pk_token& 
     std::shared_ptr<transaction_manager> mgr = this->open_transaction();
     
     // extract database of wavenumber configurations from linear power spectrum container
-    std::unique_ptr<k_database> k_db = this->build_k_db(*mgr, Pk_lin);
+    std::unique_ptr<k_database> k_db = this->build_k_db(*mgr, Pk_lin, FILTER_PK_DEFAULT_BOTTOM_CLEARANCE, FILTER_PK_DEFAULT_TOP_CLEARANCE);
     
     // extract wiggle_Pk container
     std::unique_ptr<wiggle_Pk> payload = this->find<wiggle_Pk>(*mgr, token, *k_db);

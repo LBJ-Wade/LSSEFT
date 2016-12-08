@@ -59,7 +59,9 @@ class data_manager
     
     //! generate wavenumber database from a linear power spectrum container
     //! only contains wavenumbers that can actually be evaluated by the container
-    std::unique_ptr<k_database> build_k_db(transaction_manager& mgr, const linear_Pk& Pk_lin);
+    std::unique_ptr<k_database> build_k_db(transaction_manager& mgr, const linear_Pk& Pk_lin,
+                                           double bottom_clearance=SPLINE_PK_DEFAULT_BOTTOM_CLEARANCE,
+                                           double top_clearance=SPLINE_PK_DEFAULT_TOP_CLEARANCE);
 
     //! generate IR cutoff database from a set of samples
     std::unique_ptr<IR_cutoff_database> build_IR_cutoff_db(range<Mpc_units::energy>& sample);

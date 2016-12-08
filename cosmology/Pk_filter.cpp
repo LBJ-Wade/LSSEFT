@@ -106,11 +106,9 @@ Pk_filter::operator()(const FRW_model& model, const linear_Pk& Pk_lin, const Mpc
     int fail;
     
     // get maximum available scale from linear power spectrum
-    constexpr double TEN_PERCENT_CLEARANCE_UPPER = 0.9;
-    constexpr double TEN_PERCENT_CLEARANCE_LOWER = 1.1;
-    const Mpc_units::energy k_min = TEN_PERCENT_CLEARANCE_LOWER * Pk_lin.get_db().get_k_min();
-    const Mpc_units::energy k_max = TEN_PERCENT_CLEARANCE_UPPER * Pk_lin.get_db().get_k_max();
-
+    const Mpc_units::energy k_min = SPLINE_PK_DEFAULT_BOTTOM_CLEARANCE * Pk_lin.get_db().get_k_min();
+    const Mpc_units::energy k_max = SPLINE_PK_DEFAULT_TOP_CLEARANCE * Pk_lin.get_db().get_k_max();
+    
     const double klog = std::log10(k * Mpc_units::Mpc);
     
     const double slog_max = std::log10(k_max * Mpc_units::Mpc);
@@ -119,7 +117,8 @@ Pk_filter::operator()(const FRW_model& model, const linear_Pk& Pk_lin, const Mpc
     // scale 0.25 for lambda suggested by Vlah, Seljak, Chu & Feng p.23 arXiv:1509.02120
     // they also suggested it should grow slightly at large k
     constexpr Mpc_units::energy K_PIV = 0.05 / Mpc_units::Mpc;
-    constexpr double LAMBDA_SLOPE = 0.05;
+    constexpr double LAMBDA_SLOPE = 0.02;
+
     double lambda = 0.25 * std::pow(k/K_PIV, LAMBDA_SLOPE);
     
     std::unique_ptr<Pk_filter_impl::integrand_data> data =
@@ -170,17 +169,27 @@ std::unique_ptr<approx_Pk> Pk_filter::eisenstein_hu(const FRW_model& model, cons
     double omega_b = f_baryon * omega_m;
     double omega_c = omega_m - omega_b;
     
-    // from Einstein & Hu p.6
-    double a1 = std::pow(46.9*omega0*h*h, 0.670) * (1.0 + std::pow(32.1*omega0*h*h, -0.532));
-    double a2 = std::pow(12.0*omega0*h*h, 0.424) * (1.0 + std::pow(45.0*omega0*h*h, -0.582));
-    double alpha_c = std::pow(a1, -omega_b/omega0) * std::pow(a2, -std::pow(omega_b/omega0, 3));
+    // formulae for Eisenstein & Hu fitting function from astro-ph/9710252
     
-    double b1 = 0.944 / (1.0 + std::pow(458.0*omega0*h*h, -0.708));
-    double b2 = std::pow(0.395*omega0*h*h, -0.0266);
-    double beta_c = 1.0 / (1.0 + b1*(std::pow(omega_c/omega0, b2) - 1.0));
-
-    Mpc_units::inverse_energy s = 44.5*std::log(9.83/(omega_m*h*h)) / std::sqrt(1.0 + 10.0*std::pow(omega_b*h*h, 3.0/4.0)) * Mpc_units::Mpc;
-
+    // y and s defined on p. 4 of Eisenstein & Hu paper
+    double y = (1.0 + z_eq) / (1.0 + z_drag);
+    Mpc_units::inverse_energy s = 44.5 * std::log(9.83 / (omega_m * h * h))
+                                  / std::sqrt(1.0 + 10.0 * std::pow(omega_b * h * h, 3.0 / 4.0)) * Mpc_units::Mpc;
+    
+    // fs defined at top of Sec 3.1 on p.4 of Eisenstein & Hu paper
+    double fb  = omega_b / omega_m;
+    double fc  = omega_c / omega_m;
+    double fcb = fc + fb;
+    
+    // ps defined in Eq. (11) on p.5 of Eisenstein & Hu paper
+    double pc  = (1.0/4.0) * (5.0 - std::sqrt(1.0 + 24.0*fc));
+    double pb  = (1.0/4.0) * (5.0 - std::sqrt(1.0 + 24.0*fb));
+    double pcb = (1.0/4.0) * (5.0 - std::sqrt(1.0 + 24.0*fcb));
+    
+    // alpha_nu defined in Eq. (15) on p.6 of Eisenstein & Hu paper
+    double anu = (fc / fcb) * (5.0 - 2.0 * (pc + pcb)) / (5.0 - 4.0 * pcb) * std::pow(1.0 + y, pcb - pc) *
+                 (1.0 + (pc - pcb) / 2.0 * (1.0 + 1.0 / ((3.0 - 4.0 * pc) * (7.0 - 4.0 * pcb))) / (1 + y));
+    
     approx_Pk::database_type approx_db;
     
     // normalization is adjusted so that we match the input power spectrum on the largest scale
@@ -189,22 +198,23 @@ std::unique_ptr<approx_Pk> Pk_filter::eisenstein_hu(const FRW_model& model, cons
     for(tree_Pk::database_type::const_record_iterator t = db.record_cbegin(); t != db.record_cend(); ++t)
       {
         const Mpc_units::energy& k = t->get_wavenumber();
-        double q = (k*h * Mpc_units::Mpc) * Theta27*Theta27 / (omega0*h*h);
+
+        // Gamma_eff defined in Eq. (16) on p.6 of Eisenstein & Hu paper
+        double sqrt_anu = std::sqrt(anu);
+        double Gamma_eff = omega_m*h*h * (sqrt_anu + (1.0 - sqrt_anu) / (1.0 + std::pow(0.43*k*s, 4)));
         
-        double f = 1.0 / (1.0 + std::pow(k*h*s / 5.4, 4));
-    
-        auto C = [=](double alpha) -> double { return 14.2 / alpha + 386.0 / (1.0 + 69.9*std::pow(q, 1.08)); };
-    
-        double C1 = C(1.0);
-        double Calpha = C(alpha_c);
+        // q_eff defined in Eq. (5) p.4 of Eisenstein & Hu paper
+        double q_eff = (k*h * Mpc_units::Mpc) * Theta27*Theta27 / Gamma_eff;
         
-        auto T = [=](double C) -> double { return std::log(std::exp(1.0) + 1.8*beta_c*q) / (std::log(std::exp(1.0) + 1.8*beta_c*q) + C*q*q); };
+        // beta_c = 1 if there are no neutrinos
+        double L = std::log(std::exp(1.0) + 1.84*sqrt_anu*q_eff);
+        double C = 14.4 + 325.0 / (1.0 + 60.5*std::pow(q_eff, 1.08));
         
-        double Tc = f*T(C1) + (1.0-f)*T(Calpha);
+        double T = L / (L + C*q_eff*q_eff);
         
         // power spectrum is proportional to k^4 T^2 P_Phi(k), but we don't have to get the constant
         // of proportionality correct since it will be adjusted below
-        Mpc_units::inverse_energy3 Pk = Tc*Tc * std::pow(k*h / k_piv, ns-1.0) * k * Mpc_units::Mpc4;
+        Mpc_units::inverse_energy3 Pk = T*T * std::pow(k*h / k_piv, ns-1.0) * k * Mpc_units::Mpc4;
         
         if(normalization)
           {

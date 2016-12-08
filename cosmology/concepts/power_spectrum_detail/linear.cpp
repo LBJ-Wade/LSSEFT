@@ -63,3 +63,9 @@ std::string linear_Pk::hash(const boost::filesystem::path& p)
     
     return hash.str();
   }
+
+
+bool linear_Pk::is_valid(const Mpc_units::energy& k, double bottom_clearance, double top_clearance) const
+  {
+    return this->container.is_valid(k, bottom_clearance, top_clearance);
+  }

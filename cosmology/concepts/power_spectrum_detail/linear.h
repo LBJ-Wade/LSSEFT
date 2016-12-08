@@ -40,7 +40,9 @@ class linear_Pk
     const tree_Pk::database_type& get_db() const { return this->container.get_db(); }
     
     //! ask spline to determine whether a given k-mode is acceptable for evaluation
-    bool is_valid(const Mpc_units::energy& k) const { return this->container.is_valid(k); }
+    bool is_valid(const Mpc_units::energy& k,
+                  double bottom_clearance = SPLINE_PK_DEFAULT_BOTTOM_CLEARANCE,
+                  double top_clearance = SPLINE_PK_DEFAULT_TOP_CLEARANCE) const;
     
     
     // EVALUATION
