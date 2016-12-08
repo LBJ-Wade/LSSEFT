@@ -61,7 +61,8 @@ namespace multipole_Pk_calculator_impl
             Pk(_Pk),
             jacobian((UV_cutoff - IR_cutoff) * (qmax - qmin)),
             s_range(UV_cutoff - IR_cutoff),
-            q_range(qmax - qmin)
+            q_range(qmax - qmin),
+            q_volume(qmax*qmax*qmax/3.0 - qmin*qmin*qmin/3.0)
           {
           }
         
@@ -77,6 +78,7 @@ namespace multipole_Pk_calculator_impl
 
         Mpc_units::energy s_range;
         Mpc_units::inverse_energy q_range;
+        Mpc_units::inverse_energy3 q_volume;
       };
     
     
@@ -399,7 +401,7 @@ namespace multipole_Pk_calculator_impl
         Mpc_units::energy s = data->IR_cutoff + x[0] * data->s_range;
         Mpc_units::inverse_energy q = data->qmin + x[1] * data->q_range;
         
-        Mpc_units::energy qfactor = (q/data->q_range) * (q/data->q_range) * (1.0/data->q_range);
+        Mpc_units::energy qfactor = q*q / data->q_volume;
         
         f[0] = data->jacobian * qfactor * data->Pk(s) * (1.0 - (3.0/(q*s))*boost::math::sph_bessel(1, q*s)) / Mpc_units::Mpc2;
         
@@ -414,7 +416,7 @@ namespace multipole_Pk_calculator_impl
         Mpc_units::energy s = data->IR_cutoff + x[0] * data->s_range;
         Mpc_units::inverse_energy q = data->qmin + x[1] * data->q_range;
     
-        Mpc_units::energy qfactor = (q/data->q_range) * (q/data->q_range) * (1.0/data->q_range);
+        Mpc_units::energy qfactor = q*q / data->q_volume;
     
         f[0] = data->jacobian * qfactor * data->Pk(s) * boost::math::sph_bessel(2, q*s) / Mpc_units::Mpc2;
         
@@ -671,5 +673,6 @@ multipole_Pk_calculator::compute_XY(const Mpc_units::energy& IR_resum, const Mpc
           &regions, &evaluations, &fail,
           integral, error, prob);
     
-    return integral[0] * Mpc_units::Mpc2 / (12.0 * M_PI * M_PI * M_PI * M_PI);
+    // phase space factor is Matsubara's 1/6pi^2 multiplied by 4pi coming from the q integral angular average
+    return integral[0] * Mpc_units::Mpc2 / (6.0 * M_PI * M_PI);
   }

@@ -224,6 +224,11 @@ namespace Mpc_units
       {
         return energy(a.val/b.val);
       }
+    
+    constexpr energy operator/(const inverse_energy2& a, const inverse_energy3& b)
+      {
+        return energy(a.val/b.val);
+      }
 
 
     // DIMENSIONLESS RATIOS
