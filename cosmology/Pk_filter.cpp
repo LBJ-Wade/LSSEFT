@@ -83,7 +83,7 @@ namespace Pk_filter_impl
         double slog = data->slog_min + data->slog_range*x[0];
         Mpc_units::energy s = std::pow(10.0, slog) / Mpc_units::Mpc;
     
-        f[0] = data->jacobian * (data->Pk(s) / data->Pk_approx(s)) * std::exp(-(data->klog-slog)*(data->klog-slog)/ (2.0*data->lambda*data->lambda));
+        f[0] = data->jacobian * (data->Pk(s) / data->Pk_approx(s)) * std::exp(-(data->klog-slog)*(data->klog-slog) / (2.0*data->lambda*data->lambda));
     
         return(0);  // return value irrelevant unless = -999, which means stop integration
       }
@@ -91,7 +91,8 @@ namespace Pk_filter_impl
   }   // namespace Pk_filter_impl
 
 
-Mpc_units::inverse_energy3 Pk_filter::operator()(const FRW_model& model, const linear_Pk& Pk_lin, const Mpc_units::energy& k)
+std::pair< Mpc_units::inverse_energy3, Mpc_units::inverse_energy3 >
+Pk_filter::operator()(const FRW_model& model, const linear_Pk& Pk_lin, const Mpc_units::energy& k)
   {
     // build reference Eisenstein & Hu power spectrum
     std::unique_ptr<approx_Pk> Papprox = this->eisenstein_hu(model, Pk_lin);
@@ -115,7 +116,11 @@ Mpc_units::inverse_energy3 Pk_filter::operator()(const FRW_model& model, const l
     const double slog_max = std::log10(k_max * Mpc_units::Mpc);
     const double slog_min = std::log10(k_min * Mpc_units::Mpc);
 
-    double lambda = std::log10(0.25 * model.get_h());
+    // scale 0.25 for lambda suggested by Vlah, Seljak, Chu & Feng p.23 arXiv:1509.02120
+    // they also suggested it should grow slightly at large k
+    constexpr Mpc_units::energy K_PIV = 0.05 / Mpc_units::Mpc;
+    constexpr double LAMBDA_SLOPE = 0.05;
+    double lambda = 0.25 * std::pow(k/K_PIV, LAMBDA_SLOPE);
     
     std::unique_ptr<Pk_filter_impl::integrand_data> data =
       std::make_unique<Pk_filter_impl::integrand_data>(slog_min, slog_max, klog, lambda, Pk_lin, *Papprox);
@@ -132,7 +137,10 @@ Mpc_units::inverse_energy3 Pk_filter::operator()(const FRW_model& model, const l
           &regions, &evaluations, &fail,
           integral, error, prob);
     
-    return Pk_lin(k) - (*Papprox)(k) * integral[0] / (std::sqrt(2.0*M_PI) * lambda);
+    Mpc_units::inverse_energy3 P_nw = (*Papprox)(k) * integral[0] / (std::sqrt(2.0*M_PI) * lambda);
+    Mpc_units::inverse_energy3 P_w  = Pk_lin(k) - P_nw;
+    
+    return std::make_pair(P_w, (*Papprox)(k));
   }
 
 

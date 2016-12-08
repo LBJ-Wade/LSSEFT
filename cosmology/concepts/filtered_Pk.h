@@ -20,7 +20,8 @@ class filtered_Pk
   public:
     
     //! value constructor
-    filtered_Pk(const k_token& kt, const linear_Pk_token& Pt, Mpc_units::inverse_energy3 _Pk_w, Mpc_units::inverse_energy3 _Pk_raw);
+    filtered_Pk(const k_token& kt, const linear_Pk_token& Pt, Mpc_units::inverse_energy3 _Pk_w,
+                Mpc_units::inverse_energy3 _Pk_raw, Mpc_units::inverse_energy3 _Pk_ref);
     
     //! empty constructor, used only for receiving MPI payloads
     filtered_Pk();
@@ -45,6 +46,9 @@ class filtered_Pk
     //! get raw power spectrum
     const Mpc_units::inverse_energy3 get_Pk_raw() const { return this->Pk_raw; }
     
+    //! get reference power spectrum
+    const Mpc_units::inverse_energy3 get_Pk_ref() const { return this->Pk_ref; }
+    
     
     // INTERNAL DATA
     
@@ -66,6 +70,9 @@ class filtered_Pk
     
     //! raw power spectrum
     Mpc_units::inverse_energy3 Pk_raw;
+    
+    //! reference power spectrum
+    Mpc_units::inverse_energy3 Pk_ref;
  
  
     // enable boost::serialization support, and hence automated packing for transmission over MPI
@@ -78,6 +85,7 @@ class filtered_Pk
         ar & Pk_tok;
         ar & Pk_w;
         ar & Pk_raw;
+        ar & Pk_ref;
       }
     
   };

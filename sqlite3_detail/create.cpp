@@ -381,7 +381,8 @@ namespace sqlite3_operations
               << "Pk_id INTEGER, "
               << "kid INTEGER, "
               << "Pk_raw DOUBLE, "
-              << "Pk_w DOUBLE"
+              << "Pk_w DOUBLE, "
+              << "Pk_ref DOUBLE"
 #ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
               << ", "
               << "PRIMARY KEY (Pk_id, kid), "

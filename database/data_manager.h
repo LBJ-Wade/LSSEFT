@@ -130,7 +130,7 @@ class data_manager
     
     //! tensor together (k, IR cutoff, UV cutoff, IR resummation scale) combinations for loop integrals
     resum_Pk_configs tensor_product(k_database& k_db, IR_cutoff_database& IR_cutoff_db, UV_cutoff_database& UV_cutoff_db,
-                                 IR_resum_database& IR_resum_db);
+                                    IR_resum_database& IR_resum_db);
 
 
     // TOKENS
