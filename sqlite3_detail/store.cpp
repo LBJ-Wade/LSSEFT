@@ -145,7 +145,7 @@ namespace sqlite3_operations
         void store_Pk_value(sqlite3* db, sqlite3_stmt* stmt, const std::string& value, const std::string& error, const ValueType& item)
           {
             check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, value.c_str()), dimensionless_value(item)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, error.c_str()), dimensionless_value(item)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, error.c_str()), dimensionless_error(item)));
           };
     
     

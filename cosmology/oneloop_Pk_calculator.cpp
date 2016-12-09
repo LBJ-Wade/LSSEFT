@@ -394,11 +394,26 @@ oneloop_resum_Pk
 oneloop_Pk_calculator::calculate_resum_dd(const Mpc_units::energy& k, const Matsubara_XY& XY, const oneloop_Pk& data,
                                           const oneloop_growth_record& gf_data, const wiggle_Pk& Pk_lin)
   {
-    resum_Pk_value Ptree(0.0);
-    resum_Pk_value P13(0.0);
-    resum_Pk_value P22(0.0);
-    resum_Pk_value P1loop_SPT(0.0);
-    k2_resum_Pk_value Z2_delta(0.);
+    const auto& input_dd = data.get_dd();
+    const auto& input_tree = input_dd.get_tree();
+    const auto& input_13 = input_dd.get_13();
+    const auto& input_22 = input_dd.get_22();
+    const auto& input_Z2_delta = input_dd.get_Z2_delta();
+    
+    // compute Matsubara suppression factor
+    double MatsubaraA   = k*k * gf_data.g*gf_data.g * XY;
+    double MatsubaraExp = std::exp(-MatsubaraA);
+    
+    resum_Pk_value Ptree       = input_tree.get_nowiggle()     + MatsubaraExp*input_tree.get_wiggle();
+    resum_Pk_value P13         = input_13.get_nowiggle()       + MatsubaraExp*input_13.get_wiggle();
+    resum_Pk_value P22         = input_22.get_nowiggle()       + MatsubaraExp*input_22.get_wiggle();
+    k2_resum_Pk_value Z2_delta = input_Z2_delta.get_nowiggle() + MatsubaraExp*input_Z2_delta.get_wiggle();
+
+    resum_Pk_value SPT_nowiggle = input_tree.get_nowiggle() + input_13.get_nowiggle() + input_22.get_nowiggle();
+    resum_Pk_value SPT_wiggle   = input_tree.get_wiggle()   + input_13.get_wiggle()   + input_22.get_wiggle();
+    resum_Pk_value subtraction  = MatsubaraA * input_tree.get_wiggle();
+    
+    resum_Pk_value P1loop_SPT   = SPT_nowiggle + MatsubaraExp * (SPT_wiggle + subtraction);
     
     resum_dd_Pk Pk_resum(Ptree, P13, P22, P1loop_SPT, Z2_delta);
     

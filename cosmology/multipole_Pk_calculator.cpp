@@ -266,16 +266,12 @@ namespace multipole_Pk_calculator_impl
     struct resum_adjuster
       {
 
-        resum_adjuster(const Mpc_units::energy& _k, double _XY, const oneloop_growth_record& _gf, const wiggle_Pk& _Pk)
-          : k(_k),
-            XY(_XY),
-            gf(_gf),
-            Pk(_Pk),
-            f(gf.f),
+        resum_adjuster(const Mpc_units::energy& _k, double _XY, const oneloop_growth_record& _gf, const Pk_value& _Pk_tree)
+          : f(_gf.f),
             // the factor appearing in each subtraction is k^2 (X+Y) P_lin,w
             // here, k^2 (X+Y) is our variable XY
             // P_lin,w is g^2 Pk.Pk_wiggle
-            factor(XY * gf.g * gf.g * Pk.Pk_wiggle(k))
+            factor(_XY * _Pk_tree.get_wiggle().get_value())
           {
           }
     
@@ -290,11 +286,6 @@ namespace multipole_Pk_calculator_impl
                 case mu_power::mu8: return 0.0;
               }
           }
-        
-        const Mpc_units::energy& k;
-        double XY;
-        const oneloop_growth_record& gf;
-        const wiggle_Pk& Pk;
         
         double f;
         Mpc_units::inverse_energy3 factor;
@@ -431,7 +422,7 @@ multipole_Pk multipole_Pk_calculator::calculate_Legendre(const Mpc_units::energy
     double A_coeff = gf_data.f*(gf_data.f+2.0) * Matsubara_XY;
     double B_coeff = Matsubara_XY;
     
-    multipole_Pk_calculator_impl::resum_adjuster Pk_adj(k, Matsubara_XY, gf_data, Ptree);
+    multipole_Pk_calculator_impl::resum_adjuster Pk_adj(k, Matsubara_XY, gf_data, data.get_dd().get_tree());
     multipole_Pk_calculator_impl::null_adjuster<Mpc_units::inverse_energy3> Pk_null;
     multipole_Pk_calculator_impl::null_adjuster<Mpc_units::inverse_energy> k2_Pk_null;
     
