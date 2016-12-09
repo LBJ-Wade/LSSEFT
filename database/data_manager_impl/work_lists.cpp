@@ -169,8 +169,9 @@ data_manager::build_loop_momentum_work_list(FRW_model_token& model, k_database& 
     
     // obtain set of configurations that actually need to be computed, ie. are not already present
     // in the database
-    loop_configs missing = sqlite3_operations::missing_loop_integral_configurations(this->handle, *mgr, this->policy,
-                                                                                    model, required_configs);
+    loop_configs missing =
+      sqlite3_operations::missing_loop_integral_configurations(this->handle, *mgr, this->policy, model, Pk->get_token(),
+                                                               required_configs);
     
     // add these missing configurations to the work list
     for(const loop_configs::value_type& record : missing)
@@ -216,7 +217,7 @@ data_manager::build_one_loop_Pk_work_list(FRW_model_token& model, z_database& z_
       {
         // find redshifts that are missing for this configuration, if any
         std::unique_ptr<z_database> missing_zs =
-          sqlite3_operations::missing_one_loop_Pk_redshifts(this->handle, *mgr, this->policy, model,
+          sqlite3_operations::missing_one_loop_Pk_redshifts(this->handle, *mgr, this->policy, model, Pk->get_token(),
                                                             z_table, z_db, record);
         
         // schedule a task to compute any missing redshifts
@@ -273,7 +274,7 @@ data_manager::build_one_loop_resum_Pk_work_list(FRW_model_token& model, z_databa
         // find redshifts that are missing for this configuration, if any
         std::unique_ptr<z_database> missing_zs =
           sqlite3_operations::missing_one_loop_resum_Pk_redshifts(this->handle, *mgr, this->policy, model,
-                                                                  z_table, z_db, record);
+                                                                  Pk->get_token(), z_table, z_db, record);
         
         // schedule a task to compute any missing redshifts
         if(missing_zs)
@@ -336,7 +337,7 @@ data_manager::build_multipole_Pk_work_list(FRW_model_token& model, z_database& z
       {
         // find redshifts that are missing for this configuration, if any
         std::unique_ptr<z_database> missing_zs =
-          sqlite3_operations::missing_multipole_Pk_redshifts(this->handle, *mgr, this->policy, model,
+          sqlite3_operations::missing_multipole_Pk_redshifts(this->handle, *mgr, this->policy, model, Pk->get_token(),
                                                              z_table, z_db, record);
         
         // schedule a task to compute any missing redshifts
