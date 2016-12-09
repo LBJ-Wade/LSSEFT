@@ -14,6 +14,7 @@
 #include "cosmology/oneloop_Pk_calculator.h"
 #include "cosmology/multipole_Pk_calculator.h"
 #include "cosmology/Pk_filter.h"
+#include "cosmology/Matsubara_XY_calculator.h"
 
 #include "cosmology/types.h"
 
@@ -267,7 +268,7 @@ void slave_controller::process_item(MPI_detail::new_Matsubara_XY& payload)
     
     const IR_resum_token& IR_resum_tok = payload.get_IR_resum_token();
     
-    multipole_Pk_calculator calculator;
+    Matsubara_XY_calculator calculator;
     Matsubara_XY item = calculator.calculate_Matsubara_XY(IR_resum, IR_resum_tok, Pk);
     
     // inform master process that the calculation is finished

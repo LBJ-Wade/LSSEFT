@@ -18,8 +18,6 @@
 
 #include "defaults.h"
 
-#include "cuba.h"
-
 
 enum class mu_power { mu0, mu2, mu4, mu6, mu8 };
 
@@ -32,12 +30,7 @@ class multipole_Pk_calculator
   public:
     
     //! constructor
-    multipole_Pk_calculator(double r = LSSEFT_DEFAULT_INTEGRAL_REL_ERR_22,
-                            double a = LSSEFT_DEFAULT_INTEGRAL_ABS_ERR_22)
-      : rel_err(std::abs(r)),
-        abs_err(std::abs(a))
-      {
-      }
+    multipole_Pk_calculator() = default;
     
     //! destructor is default
     ~multipole_Pk_calculator() = default;
@@ -52,11 +45,6 @@ class multipole_Pk_calculator
     calculate_Legendre(const Mpc_units::energy& k, const Matsubara_XY& XY,
                        const oneloop_Pk& data, const oneloop_growth_record& gf_data, const wiggle_Pk& Ptree);
     
-    //! calculate Matsubara X & Y coefficients
-    Matsubara_XY
-    calculate_Matsubara_XY(const Mpc_units::energy& IR_resum, const IR_resum_token& IR_resum_tok,
-                           const wiggle_Pk& Pk_lin);
-    
   private:
     
     //! decompose into Legendre modes using a specified decomposer functional and for a specified ell mode
@@ -68,22 +56,6 @@ class multipole_Pk_calculator
     template <typename WiggleAccessor, typename NoWiggleAccessor, typename ResumAdjuster, typename RawDecomposer, typename XYDecomposer>
     auto decompose(WiggleAccessor wiggle, NoWiggleAccessor nowiggle, const oneloop_Pk& data,
                    ResumAdjuster adjust, RawDecomposer raw_decomp, XYDecomposer XY_decomp);
-    
-    
-    //! compute integrals for Matsubara X & Y factors
-    Mpc_units::inverse_energy2
-    compute_XY(const Mpc_units::energy& IR_resum, const Mpc_units::energy& k_min,
-               const spline_Pk& Pk, integrand_t integrand);
-    
-    // INTERNAL DATA
-    
-  private:
-    
-    //! relative error
-    double rel_err;
-    
-    //! absolute error
-    double abs_err;
     
   };
 

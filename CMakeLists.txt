@@ -108,7 +108,8 @@ SET(COSMOLOGY_SOURCE_FILES
   cosmology/oneloop_growth_integrator.cpp cosmology/oneloop_growth_integrator.h
   cosmology/oneloop_Pk_calculator.cpp cosmology/oneloop_Pk_calculator.h
   cosmology/multipole_Pk_calculator.cpp cosmology/multipole_Pk_calculator.h
-  cosmology/Pk_filter.cpp cosmology/Pk_filter.h)
+  cosmology/Pk_filter.cpp cosmology/Pk_filter.h
+  cosmology/Matsubara_XY_calculator.cpp cosmology/Matsubara_XY_calculator.h)
 
 SET(UNITS_SOURCE_FILES
   units/Mpc_units.h)
@@ -186,6 +187,7 @@ ADD_EXECUTABLE(lsseft
   cosmology/oneloop_Pk_calculator.cpp
   cosmology/multipole_Pk_calculator.cpp
   cosmology/Pk_filter.cpp
+  cosmology/Matsubara_XY_calculator.cpp
   database/data_manager.cpp
   database/tokens.cpp
   database/transaction_manager.cpp
