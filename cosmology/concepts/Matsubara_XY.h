@@ -3,8 +3,8 @@
 // Copyright (c) 2016 University of Sussex. All rights reserved.
 //
 
-#ifndef LSSEFT_MATSUBARA_A_H
-#define LSSEFT_MATSUBARA_A_H
+#ifndef LSSEFT_MATSUBARA_XY_H
+#define LSSEFT_MATSUBARA_XY_H
 
 
 #include "units/Mpc_units.h"
@@ -90,4 +90,4 @@ class Matsubara_XY
   };
 
 
-#endif //LSSEFT_MATSUBARA_A_H
+#endif //LSSEFT_MATSUBARA_XY_H
