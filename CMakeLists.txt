@@ -96,6 +96,7 @@ SET(COSMOLOGY_SOURCE_FILES
   cosmology/concepts/power_spectrum.h
   cosmology/concepts/multipole_Pk.cpp cosmology/concepts/multipole_Pk.h
   cosmology/concepts/oneloop_Pk.cpp cosmology/concepts/oneloop_Pk.h
+  cosmology/concepts/oneloop_resum_Pk.cpp cosmology/concepts/oneloop_resum_Pk.h
   cosmology/concepts/Matsubara_XY.cpp cosmology/concepts/Matsubara_XY.h
   cosmology/concepts/filtered_Pk.cpp cosmology/concepts/filtered_Pk.h
   cosmology/oneloop_integrands/shared.h
@@ -115,7 +116,15 @@ SET(UNITS_SOURCE_FILES
   units/Mpc_units.h)
 
 SET(DATABASE_SOURCE_FILES
-  database/data_manager.cpp database/data_manager.h database/data_manager_impl.h
+  database/data_manager_impl/data_manager.cpp database/data_manager.h
+  database/data_manager_impl/types.h
+  database/data_manager_impl/build_database.cpp
+  database/data_manager_impl/tokenize.cpp
+  database/data_manager_impl/lookup_insert.cpp
+  database/data_manager_impl/work_lists.cpp
+  database/data_manager_impl/find.cpp
+  database/data_manager_impl/services.cpp
+  database/data_manager_impl/transactions.cpp
   database/tokens.cpp database/tokens.h
   database/transaction_manager.cpp database/transaction_manager.h
   database/wavenumber_database.h
@@ -175,6 +184,7 @@ ADD_EXECUTABLE(lsseft
   cosmology/concepts/oneloop_growth.cpp
   cosmology/concepts/loop_integral.cpp
   cosmology/concepts/oneloop_Pk.cpp
+  cosmology/concepts/oneloop_resum_Pk.cpp
   cosmology/concepts/multipole_Pk.cpp
   cosmology/concepts/Matsubara_XY.cpp
   cosmology/concepts/filtered_Pk.cpp
@@ -188,7 +198,14 @@ ADD_EXECUTABLE(lsseft
   cosmology/multipole_Pk_calculator.cpp
   cosmology/Pk_filter.cpp
   cosmology/Matsubara_XY_calculator.cpp
-  database/data_manager.cpp
+  database/data_manager_impl/data_manager.cpp
+  database/data_manager_impl/build_database.cpp
+  database/data_manager_impl/tokenize.cpp
+  database/data_manager_impl/lookup_insert.cpp
+  database/data_manager_impl/work_lists.cpp
+  database/data_manager_impl/find.cpp
+  database/data_manager_impl/services.cpp
+  database/data_manager_impl/transactions.cpp
   database/tokens.cpp
   database/transaction_manager.cpp
   database/z_database.cpp

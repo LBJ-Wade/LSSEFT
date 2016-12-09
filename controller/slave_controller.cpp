@@ -61,6 +61,13 @@ void slave_controller::execute()
                 this->process_task<loop_momentum_work_record>();
                 break;
               }
+    
+            case MPI_detail::MESSAGE_NEW_MATSUBARA_XY_TASK:
+              {
+                this->mpi_world.recv(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_NEW_MATSUBARA_XY_TASK);
+                this->process_task<Matsubara_XY_work_record>();
+                break;
+              }
             
             case MPI_detail::MESSAGE_NEW_ONE_LOOP_PK_TASK:
               {
@@ -68,11 +75,11 @@ void slave_controller::execute()
                 this->process_task<one_loop_Pk_work_record>();
                 break;
               }
-            
-            case MPI_detail::MESSAGE_NEW_MATSUBARA_A_TASK:
+    
+            case MPI_detail::MESSAGE_NEW_ONE_LOOP_RESUM_PK_TASK:
               {
-                this->mpi_world.recv(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_NEW_MATSUBARA_A_TASK);
-                this->process_task<Matsubara_XY_work_record>();
+                this->mpi_world.recv(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_NEW_ONE_LOOP_RESUM_PK_TASK);
+                this->process_task<one_loop_resum_Pk_work_record>();
                 break;
               }
             
@@ -207,6 +214,23 @@ void slave_controller::process_item(MPI_detail::new_loop_momentum_integration& p
   }
 
 
+void slave_controller::process_item(MPI_detail::new_Matsubara_XY& payload)
+  {
+    const Mpc_units::energy& IR_resum = payload.get_IR_resum();
+    const wiggle_Pk& Pk = payload.get_tree_power_spectrum();
+    
+    const IR_resum_token& IR_resum_tok = payload.get_IR_resum_token();
+    
+    Matsubara_XY_calculator calculator;
+    Matsubara_XY item = calculator.calculate_Matsubara_XY(IR_resum, IR_resum_tok, Pk);
+    
+    // inform master process that the calculation is finished
+    MPI_detail::Matsubara_XY_ready return_payload(item);
+    boost::mpi::request ack = this->mpi_world.isend(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_WORK_PRODUCT_READY, return_payload);
+    ack.wait();
+  }
+
+
 void slave_controller::process_item(MPI_detail::new_one_loop_Pk& payload)
   {
     const Mpc_units::energy& k = payload.get_k();
@@ -223,7 +247,7 @@ void slave_controller::process_item(MPI_detail::new_one_loop_Pk& payload)
 //              << "; " << gf_factors.size() << " redshifts to process" << '\n';
     
     oneloop_Pk_calculator calculator;
-    std::list<oneloop_Pk> sample = calculator.calculate(k, k_tok, IR_tok, UV_tok, gf_factors, loop_data, Pk);
+    std::list<oneloop_Pk> sample = calculator.calculate_dd(k, k_tok, IR_tok, UV_tok, gf_factors, loop_data, Pk);
     
     // inform master process that the calculation is finished
     std::list<boost::mpi::request> acks;
@@ -233,6 +257,24 @@ void slave_controller::process_item(MPI_detail::new_one_loop_Pk& payload)
         acks.push_back(this->mpi_world.isend(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_WORK_PRODUCT_READY, return_payload));
       }
     boost::mpi::wait_all(acks.begin(), acks.end());
+  }
+
+
+void slave_controller::process_item(MPI_detail::new_one_loop_resum_Pk& payload)
+  {
+    const Mpc_units::energy& k = payload.get_k();
+    const Matsubara_XY& XY = payload.get_Matsubara_XY();
+    const oneloop_Pk& oneloop_data = payload.get_oneloop_Pk_data();
+    const oneloop_growth_record& gf_data = payload.get_gf_data();
+    const wiggle_Pk& Pk = payload.get_tree_power_spectrum();
+    
+    oneloop_Pk_calculator calculator;
+    oneloop_resum_Pk sample = calculator.calculate_resum_dd(k, XY, oneloop_data, gf_data, Pk);
+    
+    // inform master process that the calculation is finished
+    MPI_detail::one_loop_resum_Pk_ready return_payload(sample);
+    boost::mpi::request ack = this->mpi_world.isend(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_WORK_PRODUCT_READY, return_payload);
+    ack.wait();
   }
 
 
@@ -256,23 +298,6 @@ void slave_controller::process_item(MPI_detail::new_multipole_Pk& payload)
     
     // inform master process that the calculation is finished
     MPI_detail::multipole_Pk_ready return_payload(sample);
-    boost::mpi::request ack = this->mpi_world.isend(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_WORK_PRODUCT_READY, return_payload);
-    ack.wait();
-  }
-
-
-void slave_controller::process_item(MPI_detail::new_Matsubara_XY& payload)
-  {
-    const Mpc_units::energy& IR_resum = payload.get_IR_resum();
-    const wiggle_Pk& Pk = payload.get_tree_power_spectrum();
-    
-    const IR_resum_token& IR_resum_tok = payload.get_IR_resum_token();
-    
-    Matsubara_XY_calculator calculator;
-    Matsubara_XY item = calculator.calculate_Matsubara_XY(IR_resum, IR_resum_tok, Pk);
-    
-    // inform master process that the calculation is finished
-    MPI_detail::Matsubara_XY_ready return_payload(item);
     boost::mpi::request ack = this->mpi_world.isend(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_WORK_PRODUCT_READY, return_payload);
     ack.wait();
   }

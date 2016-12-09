@@ -274,6 +274,78 @@ class Matsubara_XY_work_record
 typedef std::list<Matsubara_XY_work_record> Matsubara_XY_work_list;
 
 
+// work record for a one-loop resummed P(k) calculation
+class one_loop_resum_Pk_work_record
+  {
+    
+    // CONSTRUCTOR, DESTRUCTOR
+    
+  public:
+    
+    //! constructor
+    one_loop_resum_Pk_work_record(const Mpc_units::energy& _k, const Matsubara_XY& _XY,
+                                  const std::shared_ptr<oneloop_Pk>& _data,
+                                  const oneloop_growth_record& _gf_data,
+                                  const std::shared_ptr<wiggle_Pk>& _Pk)
+      : k(_k),
+        XY(_XY),
+        data(_data),
+        gf_data(_gf_data),
+        Pk(_Pk)
+      {
+      }
+    
+    //! destructor is default
+    ~one_loop_resum_Pk_work_record() = default;
+    
+    
+    // INTERFACE
+  
+  public:
+    
+    //! get wavenumber
+    const Mpc_units::energy& operator*() const { return this->k; }
+    
+    //! get Matsubara X & Y coefficients
+    const Matsubara_XY& get_Matsubara_XY() const { return this->XY; }
+    
+    //! get one-loop P(k) data
+    const std::shared_ptr<oneloop_Pk>& get_Pk_data() const { return this->data; }
+    
+    //! get gf growth factors
+    const oneloop_growth_record& get_gf_data() const { return this->gf_data; }
+    
+    //! get tree-level power spectrum
+    const std::shared_ptr<wiggle_Pk>& get_tree_Pk_db() const { return this->Pk; }
+    
+    
+    // INTERNAL DATA
+  
+  private:
+    
+    // Payload data
+    
+    //! physical scale k
+    Mpc_units::energy k;
+    
+    //! Matsubara X & Y coefficients
+    Matsubara_XY XY;
+    
+    //! one-loop power spectrum data
+    std::shared_ptr<oneloop_Pk> data;
+    
+    //! gf growth factors
+    oneloop_growth_record gf_data;
+    
+    //! tree-level power spectrum
+    std::shared_ptr<wiggle_Pk> Pk;
+    
+  };
+
+//! list of work
+typedef std::list<one_loop_resum_Pk_work_record> one_loop_resum_Pk_work_list;
+
+
 //! work record for a (one-loop) multipole power spectrum calculation
 class multipole_Pk_work_record
   {

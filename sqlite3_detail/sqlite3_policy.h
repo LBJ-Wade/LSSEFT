@@ -152,6 +152,9 @@ class sqlite3_policy
     //! 1-loop delta-delta power spectrum table
     const std::string& dd_Pk_table() const { return(this->dd_Pk); }
     
+    //! 1-loop resummed delta-delta power spectrum table
+    const std::string& dd_Pk_resum_table() const { return(this->dd_Pk_resum); }
+    
     //! 1-loop delta-delta rsd power spectrum mu^0 table
     const std::string& dd_rsd_mu0_Pk_table() const { return(this->dd_rsd_mu0_Pk); }
     
@@ -314,6 +317,9 @@ class sqlite3_policy
     
     //! 1-loop delta delta power spectrum table
     const std::string dd_Pk;
+    
+    //! 1-loop resummed delta delta power spectrum table
+    const std::string dd_Pk_resum;
     
     //! 1-loop delta_s delta_s power spectrum table, mu^0 coefficient
     const std::string dd_rsd_mu0_Pk;

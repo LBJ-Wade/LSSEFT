@@ -41,26 +41,6 @@ oneloop_Pk::oneloop_Pk()
   }
 
 
-dd_Pk::dd_Pk(const Pk_value& _Pt, const Pk_value& _P13, const Pk_value& _P22, const k2_Pk_value& _Z2d)
-  : Ptree(_Pt),
-    P13(_P13),
-    P22(_P22),
-    P1loopSPT(_Pt + _P13 + _P22),
-    Z2_delta(_Z2d)
-  {
-  }
-
-
-dd_Pk::dd_Pk()
-  : Ptree(),
-    P13(),
-    P22(),
-    P1loopSPT(),
-    Z2_delta()
-  {
-  }
-
-
 rsd_dd_Pk::rsd_dd_Pk(const Pk_value& _Pt, const Pk_value& _P13, const Pk_value& _P22,
                      const k2_Pk_value& _Z2d, const Pk_value& _Z0v, const k2_Pk_value& _Z2v,
                      const Pk_value& _Z0vd, const k2_Pk_value& _Z2vd,

@@ -694,6 +694,37 @@ namespace sqlite3_operations
     
     
     std::unique_ptr<z_database>
+    missing_one_loop_resum_Pk_redshifts(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
+                                        const FRW_model_token& model, const std::string& z_table,
+                                        const z_database& z_db, const resum_Pk_configs::value_type& record)
+      {
+        assert(db != nullptr);
+        
+        // set up a null pointer for the returned database; will be attached to an empty instance later if needed
+        std::unique_ptr<z_database> missing_db;
+
+        // get missing redshifts for this configuration
+        std::set<unsigned int> missing = missing_redshifts_for_table(db, model, policy.dd_Pk_resum_table(), z_table, record);
+    
+        if(!missing.empty())
+          {
+            missing_db = std::make_unique<z_database>();
+            
+            for(unsigned int t : missing)
+              {
+                // lookup record for this identifier
+                z_database::const_record_iterator rec = z_db.lookup(z_token(t));
+                
+                // add a corresponding record to this missing database
+                missing_db->add_record(*(*rec), rec->get_token());
+              }
+          }
+    
+        return missing_db;
+      }
+    
+    
+    std::unique_ptr<z_database>
     missing_multipole_Pk_redshifts(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
                                    const FRW_model_token& model, const std::string& z_table, const z_database& z_db,
                                    const resum_Pk_configs::value_type& record)
@@ -734,9 +765,9 @@ namespace sqlite3_operations
     
     
     Matsubara_configs
-    missing_Matsubara_A_configurations(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
-                                       const FRW_model_token& model, const linear_Pk_token& Pk,
-                                       const IR_resum_database& IR_db)
+    missing_Matsubara_XY_configurations(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
+                                        const FRW_model_token& model, const linear_Pk_token& Pk,
+                                        const IR_resum_database& IR_db)
       {
         assert(db != nullptr);
         

@@ -228,6 +228,47 @@ namespace sqlite3_operations
           }
         
         
+        void oneloop_Pk_resum_table(sqlite3* db, const std::string& table_name, const sqlite3_policy& policy)
+          {
+            std::ostringstream stmt;
+            stmt
+              << "CREATE TABLE " << table_name << "("
+              << "mid INTEGER, "
+              << "zid INTEGER, "
+              << "kid INTEGER, "
+              << "Pk_id INTEGER, "
+              << "IR_cutoff_id INTEGER, "
+              << "UV_cutoff_id INTEGER, "
+              << "IR_resum_id INTEGER, "
+              << "Ptree DOUBLE, "
+              << "err_tree DOUBLE, "
+              << "P13 DOUBLE, "
+              << "err_13 DOUBLE, "
+              << "P22 DOUBLE, "
+              << "err_22 DOUBLE, "
+              << "P1loop_SPT DOUBLE, "
+              << "err_1loop_SPT DOUBLE, "
+              << "Z2_delta DOUBLE, "
+              << "err_Z2_delta DOUBLE"
+#ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
+              << ", "
+              << "PRIMARY KEY (mid, zid, kid, Pk_id, IR_cutoff_id, UV_cutoff_id, IR_resum_id), "
+              << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
+              << "FOREIGN KEY (kid) REFERENCES " << policy.wavenumber_config_table() << "(id), "
+              << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id), "
+              << "FOREIGN KEY (Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
+              << "FOREIGN KEY (IR_cutoff_id) REFERENCES " << policy.IR_config_table() << "(id), "
+              << "FOREIGN KEY (UV_cutoff_id) REFERENCES " << policy.UV_config_table() << "(id), "
+              << "FOREIGN KEY (IR_resum_id) REFERENCES " << policy.IR_resum_config_table() << "(id));";
+#else
+            << ");";
+#endif
+    
+            exec(db, stmt.str());
+          }
+      
+        
+        
         void oneloop_rsd_Pk_table(sqlite3* db, const std::string& table_name, const sqlite3_policy& policy)
           {
             std::ostringstream stmt;
@@ -451,6 +492,7 @@ namespace sqlite3_operations
         create_impl::oneloop_momentum_integral_table(db, policy.RSD22_D1_table(), policy);
         
         create_impl::oneloop_Pk_table(db, policy.dd_Pk_table(), policy);
+        create_impl::oneloop_Pk_resum_table(db, policy.dd_Pk_resum_table(), policy);
         
         create_impl::oneloop_rsd_Pk_table(db, policy.dd_rsd_mu0_Pk_table(), policy);
         create_impl::oneloop_rsd_Pk_table(db, policy.dd_rsd_mu2_Pk_table(), policy);

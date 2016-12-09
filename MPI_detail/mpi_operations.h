@@ -13,6 +13,7 @@
 #include "cosmology/concepts/transfer_function.h"
 #include "cosmology/concepts/loop_integral.h"
 #include "cosmology/concepts/oneloop_Pk.h"
+#include "cosmology/concepts/oneloop_resum_Pk.h"
 #include "cosmology/concepts/multipole_Pk.h"
 #include "cosmology/concepts/Matsubara_XY.h"
 #include "cosmology/concepts/filtered_Pk.h"
@@ -44,11 +45,14 @@ namespace MPI_detail
     constexpr unsigned int MESSAGE_NEW_ONE_LOOP_PK_TASK       = 30;
     constexpr unsigned int MESSAGE_NEW_ONE_LOOP_PK            = 31;
     
-    constexpr unsigned int MESSAGE_NEW_MATSUBARA_A_TASK       = 40;
-    constexpr unsigned int MESSAGE_NEW_MATSUBARA_A            = 51;
+    constexpr unsigned int MESSAGE_NEW_MATSUBARA_XY_TASK      = 40;
+    constexpr unsigned int MESSAGE_NEW_MATSUBARA_XY           = 51;
     
     constexpr unsigned int MESSAGE_NEW_MULTIPOLE_PK_TASK      = 50;
     constexpr unsigned int MESSAGE_NEW_MULTIPOLE_PK           = 51;
+    
+    constexpr unsigned int MESSAGE_NEW_ONE_LOOP_RESUM_PK_TASK = 60;
+    constexpr unsigned int MESSAGE_NEW_ONE_LOOP_RESUM_PK      = 61;
 
     constexpr unsigned int MESSAGE_WORKER_READY               = 90;
     constexpr unsigned int MESSAGE_WORK_PRODUCT_READY         = 91;
@@ -750,6 +754,147 @@ namespace MPI_detail
         // enable boost::serialization support, and hence automated packing for transmission over MPI
         friend class boost::serialization::access;
     
+        template <typename Archive>
+        void serialize(Archive& ar, unsigned int version)
+          {
+            ar & data;
+          }
+        
+      };
+    
+    
+    class new_one_loop_resum_Pk
+      {
+        
+        // CONSTRUCTOR, DESTRUCTOR
+        
+      public:
+        
+        //! empty constructor: used to receive a payload
+        new_one_loop_resum_Pk()
+          : k(0.0),
+            XY(),
+            data(),
+            gf_data(),
+            Pk()
+          {
+          }
+    
+        //! value constructor: used to construct and send a payload
+        new_one_loop_resum_Pk(const Mpc_units::energy& _k, const Matsubara_XY& _XY,
+                              const std::shared_ptr<oneloop_Pk>& _data,
+                              const oneloop_growth_record& _gf_data,
+                              const std::shared_ptr<wiggle_Pk>& _Pk)
+          : k(_k),
+            XY(_XY),
+            data(_data),
+            gf_data(_gf_data),
+            Pk(_Pk)
+          {
+          }
+    
+        //! destructor is default
+        ~new_one_loop_resum_Pk() = default;
+    
+    
+        // ACCESS PAYLOAD
+  
+      public:
+    
+        //! get wavenumber
+        const Mpc_units::energy& get_k() const { return this->k; }
+    
+        //! get Matsubara X & Y coefficients
+        const Matsubara_XY& get_Matsubara_XY() const { return this->XY; }
+    
+        //! get one-loop data
+        const oneloop_Pk& get_oneloop_Pk_data() const { return *this->data; }
+    
+        //! get gf growth factors
+        const oneloop_growth_record& get_gf_data() const { return this->gf_data; }
+    
+        //! get tree-level power spectrum
+        const wiggle_Pk& get_tree_power_spectrum() const { return *this->Pk; }
+    
+    
+        // INTERNAL DATA
+  
+      private:
+    
+        // Payload data
+    
+        //! physical scale k
+        Mpc_units::energy k;
+    
+        //! Matsubara X & Y coefficients
+        Matsubara_XY XY;
+    
+        //! one-loop power spectrum data
+        std::shared_ptr<oneloop_Pk> data;
+    
+        //! gf growth factors
+        oneloop_growth_record gf_data;
+    
+        //! tree-level power spectrum
+        std::shared_ptr<wiggle_Pk> Pk;
+    
+    
+        // enable boost::serialization support, and hence automated packing for transmission over MPI
+        friend class boost::serialization::access;
+    
+        template <typename Archive>
+        void serialize(Archive& ar, unsigned int version)
+          {
+            ar & k;
+            ar & XY;
+            ar & data;
+            ar & gf_data;
+            ar & Pk;
+          }
+    
+      };
+    
+    
+    class one_loop_resum_Pk_ready
+      {
+        
+        // CONSTRUCTOR, DESTRUCTOR
+      
+      public:
+        
+        //! empty constructor: used to receive a payload
+        one_loop_resum_Pk_ready()
+          {
+          }
+        
+        //! value constructor: used to construct and send a payload
+        one_loop_resum_Pk_ready(const oneloop_resum_Pk& Pk)
+          : data(Pk)
+          {
+          }
+        
+        //! destructor is default
+        ~one_loop_resum_Pk_ready() = default;
+        
+        
+        // INTERFACE
+      
+      public:
+        
+        const oneloop_resum_Pk& get_data() const { return this->data; }
+        
+        
+        // INTERNAL DATA
+      
+      private:
+        
+        //! resummed 1-loop Pk container
+        oneloop_resum_Pk data;
+        
+        
+        // enable boost::serialization support, and hence automated packing for transmission over MPI
+        friend class boost::serialization::access;
+        
         template <typename Archive>
         void serialize(Archive& ar, unsigned int version)
           {

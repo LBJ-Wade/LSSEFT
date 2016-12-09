@@ -49,6 +49,7 @@ constexpr auto SQLITE3_DEFAULT_LOOP_RSD22_C2_TABLE            = "rsd22_C2";
 constexpr auto SQLITE3_DEFAULT_LOOP_RSD22_C4_TABLE            = "rsd22_C4";
 constexpr auto SQLITE3_DEFAULT_LOOP_RSD22_D1_TABLE            = "rsd22_D1";
 constexpr auto SQLITE3_DEFAULT_LOOP_DD_TABLE                  = "dd_Pk";
+constexpr auto SQLITE3_DEFAULT_LOOP_DD_RESUM_TABLE            = "dd_Pk_resum";
 constexpr auto SQLITE3_DEFAULT_LOOP_DD_RSD_MU0_TABLE          = "dd_rsd_mu0_Pk";
 constexpr auto SQLITE3_DEFAULT_LOOP_DD_RSD_MU2_TABLE          = "dd_rsd_mu2_Pk";
 constexpr auto SQLITE3_DEFAULT_LOOP_DD_RSD_MU4_TABLE          = "dd_rsd_mu4_Pk";

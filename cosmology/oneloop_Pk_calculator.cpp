@@ -7,9 +7,9 @@
 
 
 std::list<oneloop_Pk>
-oneloop_Pk_calculator::calculate(const Mpc_units::energy& k, const k_token& k_tok, const IR_cutoff_token& IR_tok,
-                                 const UV_cutoff_token& UV_tok, const oneloop_growth& gf_factors,
-                                 const loop_integral& loop_data, const wiggle_Pk& Ptree)
+oneloop_Pk_calculator::calculate_dd(const Mpc_units::energy& k, const k_token& k_tok, const IR_cutoff_token& IR_tok,
+                                    const UV_cutoff_token& UV_tok, const oneloop_growth& gf_factors,
+                                    const loop_integral& loop_data, const wiggle_Pk& Ptree)
   {
     std::list<oneloop_Pk> container;
     
@@ -387,4 +387,21 @@ oneloop_Pk_calculator::compute_rsd_dd_mu8(const Mpc_units::energy& k, const onel
     k2_Pk_value Z2_vvv;   // no contribution at mu^8
     
     return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv);
+  }
+
+
+oneloop_resum_Pk
+oneloop_Pk_calculator::calculate_resum_dd(const Mpc_units::energy& k, const Matsubara_XY& XY, const oneloop_Pk& data,
+                                          const oneloop_growth_record& gf_data, const wiggle_Pk& Pk_lin)
+  {
+    resum_Pk_value Ptree(0.0);
+    resum_Pk_value P13(0.0);
+    resum_Pk_value P22(0.0);
+    resum_Pk_value P1loop_SPT(0.0);
+    k2_resum_Pk_value Z2_delta(0.);
+    
+    resum_dd_Pk Pk_resum(Ptree, P13, P22, P1loop_SPT, Z2_delta);
+    
+    return oneloop_resum_Pk(data.get_k_token(), data.get_Pk_token(), data.get_IR_token(), data.get_UV_token(),
+                            data.get_z_token(), XY.get_IR_resum_token(), Pk_resum);
   }

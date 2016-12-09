@@ -112,12 +112,13 @@ namespace sqlite3_operations
           }
         
         
+        // store Pk-value, including raw & wiggle parts, with error information
         template <typename ValueType>
         void store_Pk_value(sqlite3* db, sqlite3_stmt* stmt, const std::string& value_raw, const std::string& error_raw,
-                            const std::string& value_wiggle, const std::string& error_wiggle, const ValueType& value)
+                            const std::string& value_wiggle, const std::string& error_wiggle, const ValueType& item)
           {
-            const auto& raw = value.get_raw();
-            const auto& wiggle = value.get_wiggle();
+            const auto& raw = item.get_raw();
+            const auto& wiggle = item.get_wiggle();
             
             check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, value_raw.c_str()), dimensionless_value(raw)));
             check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, error_raw.c_str()), dimensionless_error(raw)));
@@ -127,15 +128,25 @@ namespace sqlite3_operations
           }
     
     
-        template <typename ValueType>
-        void store_Pk_value(sqlite3* db, sqlite3_stmt* stmt, const std::string& value_raw, const std::string& value_wiggle, const ValueType& value)
+        // store Pk-value, including raw & wiggle parts, with no error information
+        template <typename ValueType, typename ValueType::container_type* = nullptr>
+        void store_Pk_value(sqlite3* db, sqlite3_stmt* stmt, const std::string& value_raw, const std::string& value_wiggle, const ValueType& item)
           {
-            const auto& raw = value.get_raw();
-            const auto& wiggle = value.get_wiggle();
+            const auto& raw = item.get_raw();
+            const auto& wiggle = item.get_wiggle();
 
             check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, value_raw.c_str()), dimensionless_value(raw)));
             check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, value_wiggle.c_str()), dimensionless_value(wiggle)));
           }
+        
+        
+        // store Pk-value, including error information, but no raw/wiggle parts
+        template <typename ValueType, typename ValueType::error_type* = nullptr>
+        void store_Pk_value(sqlite3* db, sqlite3_stmt* stmt, const std::string& value, const std::string& error, const ValueType& item)
+          {
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, value.c_str()), dimensionless_value(item)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, error.c_str()), dimensionless_value(item)));
+          };
     
     
         template <typename PkType>
@@ -522,6 +533,46 @@ namespace sqlite3_operations
     
         // perform insertion
         check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_MATSUBARA_XY_FAIL, SQLITE_DONE);
+    
+        // clear bindings and release
+        check_stmt(db, sqlite3_clear_bindings(stmt));
+        check_stmt(db, sqlite3_finalize(stmt));
+      }
+    
+    
+    void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model,
+               const oneloop_resum_Pk& sample)
+      {
+        assert(db != nullptr);
+        
+        std::ostringstream insert_stmt;
+        insert_stmt
+          << "INSERT INTO " << policy.dd_Pk_resum_table() << " VALUES (@mid, @zid, @kid, @Pk_id, @IR_cutoff_id, @UV_cutoff_id, @IR_resum_id, "
+          << "@Ptree, @err_tree, @P13, @err_13, @P22, @err_22, @P1loop_SPT, @err_1loop_SPT, @Z2_delta, @err_Z2_delta);";
+    
+        // prepare statement
+        sqlite3_stmt* stmt;
+        check_stmt(db, sqlite3_prepare_v2(db, insert_stmt.str().c_str(), insert_stmt.str().length()+1, &stmt, nullptr));
+    
+        // bind parameter values
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@mid"), model.get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@zid"), sample.get_z_token().get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@kid"), sample.get_k_token().get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_id"), sample.get_Pk_token().get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_cutoff_id"), sample.get_IR_cutoff_token().get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@UV_cutoff_id"), sample.get_UV_cutoff_token().get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_resum_id"), sample.get_IR_resum_token().get_id()));
+        
+        // store data
+        const resum_dd_Pk& item = sample.get_Pk_resum();
+        store_impl::store_Pk_value(db, stmt, "@Ptree", "@err_tree", item.get_tree());
+        store_impl::store_Pk_value(db, stmt, "@P13", "@err_13", item.get_13());
+        store_impl::store_Pk_value(db, stmt, "@P22", "@err_22", item.get_22());
+        store_impl::store_Pk_value(db, stmt, "@P1loop_SPT", "@err_1loop_SPT", item.get_1loop_SPT());
+        store_impl::store_Pk_value(db, stmt, "@Z2_delta", "@err_Z2_delta", item.get_Z2_delta());
+    
+        // perform insertion
+        check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_RESUM_ONE_LOOP_PK_FAIL, SQLITE_DONE);
     
         // clear bindings and release
         check_stmt(db, sqlite3_clear_bindings(stmt));

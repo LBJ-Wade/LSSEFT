@@ -3,14 +3,14 @@
 // Copyright (c) 2015 University of Sussex. All rights reserved.
 //
 
-#ifndef LSSEFT_DATA_MANAGER_IMPL_H
-#define LSSEFT_DATA_MANAGER_IMPL_H
+#ifndef LSSEFT_DATA_MANAGER_TYPES_H
+#define LSSEFT_DATA_MANAGER_TYPES_H
 
 
-#include "k_database.h"
-#include "IR_cutoff_database.h"
-#include "UV_cutoff_database.h"
-#include "IR_resum_database.h"
+#include "database/k_database.h"
+#include "database/IR_cutoff_database.h"
+#include "database/UV_cutoff_database.h"
+#include "database/IR_resum_database.h"
 
 
 namespace data_manager_impl
@@ -225,4 +225,4 @@ namespace std
   }   // namespace std
 
 
-#endif //LSSEFT_DATA_MANAGER_IMPL_H
+#endif //LSSEFT_DATA_MANAGER_TYPES_H

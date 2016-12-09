@@ -196,7 +196,7 @@ void master_controller::execute()
         
         // STEP 3 - COMPUTE MATSUBARA X & Y COEFFICIENTS
         
-        // build a work list of the Matsubara A coefficient associated with these resummation scales
+        // build a work list of the Matsubara X & Y coefficients associated with these resummation scales
         std::unique_ptr<Matsubara_XY_work_list> Matsubara_work =
           dmgr.build_Matsubara_XY_work_list(*model, *IR_resum_db, Pk_wig);
     
@@ -212,6 +212,13 @@ void master_controller::execute()
 
         // distribute this work list among the worker processes
         if(Pk_work) this->scatter(cosmology_model, *model, *Pk_work, dmgr);
+        
+        // build a work list for the resummed power spectrum components
+        std::unique_ptr<one_loop_resum_Pk_work_list> Pk_resum_work =
+          dmgr.build_one_loop_resum_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, *IR_resum_db, Pk_wig);
+        
+        // distribute this work list among the worker processes
+        if(Pk_resum_work) this->scatter(cosmology_model, *model, *Pk_resum_work, dmgr);
         
         
         // STEP 5 - COMPUTE MULTIPOLE DECOMPOSIITON OF REDSHIFT-SPACE POWER SPECTRUM

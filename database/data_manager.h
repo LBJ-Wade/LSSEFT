@@ -33,6 +33,10 @@
 #include "sqlite3.h"
 
 
+constexpr double FILTER_PK_DEFAULT_BOTTOM_CLEARANCE = 1.25;
+constexpr double FILTER_PK_DEFAULT_TOP_CLEARANCE    = 0.75;
+
+
 class data_manager
   {
 
@@ -106,6 +110,14 @@ class data_manager
     std::unique_ptr<one_loop_Pk_work_list>
     build_one_loop_Pk_work_list(FRW_model_token& model, z_database& z_db, k_database& k_db, IR_cutoff_database& IR_db,
                                 UV_cutoff_database& UV_db, std::shared_ptr<wiggle_Pk>& Pk);
+    
+    //! build a work list represenitng (k, z, IR_cutoff, UV_cutoff, IR_resum) combinations of the one-loop
+    //! power spectrum that are missing from the SQLite backing store
+    //! generates a new transaction on the database; will fail if a transaction is in progress
+    std::unique_ptr<one_loop_resum_Pk_work_list>
+    build_one_loop_resum_Pk_work_list(FRW_model_token& model, z_database& z_db, k_database& k_db,
+                                      IR_cutoff_database& IR_cutoff_db, UV_cutoff_database& UV_cutoff_db,
+                                      IR_resum_database& IR_resum_db, std::shared_ptr<wiggle_Pk>& Pk);
     
     //! build a work list representing (k, z, IR_cutoff, UV_cutoff, IR_resum) combinations of the one-loop
     //! multipole power spectra that are missing from the SQLite backing store.
@@ -294,6 +306,60 @@ void data_manager::store(const FRW_model_token& model, const SampleType& sample)
 
     // commit the transaction
     transaction->commit();
+  }
+
+
+template <typename Token>
+std::unique_ptr< wavenumber_database<Token> > data_manager::build_wavenumber_db(range<Mpc_units::energy>& sample)
+  {
+    // construct an empty wavenumber database
+    std::unique_ptr< wavenumber_database<Token> > k_db = std::make_unique< wavenumber_database<Token> >();
+    
+    // grab the grid of wavenumber samples
+    const std::vector<Mpc_units::energy>& k_samples = sample.grid();
+    
+    for(std::vector<Mpc_units::energy>::const_iterator t = k_samples.begin(); t != k_samples.end(); ++t)
+      {
+        std::unique_ptr<Token> tok = this->tokenize<Token>(*t);
+        k_db->add_record(*t, *tok);
+      }
+    
+    return(k_db);
+  }
+
+
+template <typename Token>
+std::unique_ptr<Token> data_manager::tokenize(const Mpc_units::energy& k)
+  {
+    // open a new transaction on the database
+    std::shared_ptr<transaction_manager> transaction = this->open_transaction();
+    
+    // lookup id for this wavenumber, or generate one if it does not already exist
+    std::unique_ptr<Token> id = this->tokenize<Token>(*transaction, k);
+    
+    // commit the transaction
+    transaction->commit();
+    
+    return std::move(id);
+  }
+
+
+template <typename Token>
+std::unique_ptr<Token> data_manager::tokenize(transaction_manager& mgr, const Mpc_units::energy& k)
+  {
+    // lookup id for this wavenumber, or generate one if it does not already exist
+    unsigned int id = this->lookup_or_insert<Token>(mgr, k);
+    return std::make_unique<Token>(id);
+  }
+
+
+template <typename Token>
+unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const Mpc_units::energy& k)
+  {
+    boost::optional<unsigned int> id = sqlite3_operations::lookup_wavenumber<Token>(this->handle, mgr, k, this->policy, this->k_tol);
+    if(id) return(*id);
+    
+    return sqlite3_operations::insert_wavenumber<Token>(this->handle, mgr, k, this->policy);
   }
 
 
