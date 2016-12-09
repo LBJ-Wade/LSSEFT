@@ -346,8 +346,8 @@ namespace multipole_Pk_calculator_impl
             f(gf.f),
             // the factor appearing in each subtraction is k^2 (X+Y) P_lin,nw
             // here, k^2 (X+Y) is our variable XY
-            // P_lin,w is g^2 Pk.Pk_nowiggle
-            factor(XY * gf.g * gf.g * Pk.Pk_nowiggle(k))
+            // P_lin,w is g^2 Pk.Pk_wiggle
+            factor(XY * gf.g * gf.g * Pk.Pk_wiggle(k))
           {
           }
     
