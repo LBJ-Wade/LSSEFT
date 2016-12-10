@@ -85,7 +85,7 @@ Pk_value_group<ValueType> operator+(const Pk_value_group<ValueType>& A, const Pk
     
     double A_error = static_cast<double>(A.get_error());
     double B_error = static_cast<double>(B.get_error());
-    double error = std::sqrt(A_error*A_error + B_error*B_error);
+    double error = std::sqrt(A_error * A_error + B_error * B_error);
     
     return Pk_value_group<ValueType>(value, ValueType(error));
   }
@@ -97,7 +97,7 @@ Pk_value_group<ValueType> operator-(const Pk_value_group<ValueType>& A, const Pk
     
     double A_error = static_cast<double>(A.get_error());
     double B_error = static_cast<double>(B.get_error());
-    double error = std::sqrt(A_error*A_error + B_error*B_error);
+    double error = std::sqrt(A_error * A_error + B_error * B_error);
     
     return Pk_value_group<ValueType>(value, ValueType(error));
   }
@@ -165,9 +165,9 @@ Pk_value_group<ValueType> operator+(const Pk_value_group<ValueType>& A, const lo
     
     double A_error = static_cast<double>(A.get_error());
     double B_error = static_cast<double>(B.error);
-    double error = std::sqrt(A_error*A_error + B_error*B_error);
+    double error = std::sqrt(A_error * A_error + B_error * B_error);
     
-    return Pk_value_group<ValueType>(value, error);
+    return Pk_value_group<ValueType>(value, ValueType(error));
   }
 
 template <typename ValueType>
@@ -177,9 +177,9 @@ Pk_value_group<ValueType> operator+(const loop_integral_result<ValueType>& A, co
     
     double A_error = static_cast<double>(A.error);
     double B_error = static_cast<double>(B.get_error());
-    double error = std::sqrt(A_error*A_error + B_error*B_error);
+    double error = std::sqrt(A_error * A_error + B_error * B_error);
     
-    return Pk_value_group<ValueType>(value, error);
+    return Pk_value_group<ValueType>(value, ValueType(error));
   }
 
 template <typename ValueType>
@@ -189,9 +189,9 @@ Pk_value_group<ValueType> operator-(const Pk_value_group<ValueType>& A, const lo
     
     double A_error = static_cast<double>(A.get_error());
     double B_error = static_cast<double>(B.error);
-    double error = std::sqrt(A_error*A_error + B_error*B_error);
+    double error = std::sqrt(A_error * A_error + B_error * B_error);
     
-    return Pk_value_group<ValueType>(value, error);
+    return Pk_value_group<ValueType>(value, ValueType(error));
   }
 
 template <typename ValueType>
@@ -201,9 +201,9 @@ Pk_value_group<ValueType> operator-(const loop_integral_result<ValueType>& A, co
     
     double A_error = static_cast<double>(A.error);
     double B_error = static_cast<double>(B.get_error());
-    double error = std::sqrt(A_error*A_error + B_error*B_error);
+    double error = std::sqrt(A_error * A_error + B_error * B_error);
     
-    return Pk_value_group<ValueType>(value, error);
+    return Pk_value_group<ValueType>(value, ValueType(error));
   }
 
 
@@ -276,7 +276,7 @@ auto operator*(const Pk_value_group<PkTypeA> PA, const Pk_value_group<PkTypeB>& 
     auto value = PA.get_value() * PB.get_value();
     
     double relPA_err = PA.get_error() / PA.get_value();
-    double relPB_err = PB.get_value() / PB.get_value();
+    double relPB_err = PB.get_error() / PB.get_value();
     
     if(!std::isfinite(relPA_err)) relPA_err = 0.0;
     if(!std::isfinite(relPB_err)) relPB_err = 0.0;
@@ -310,22 +310,9 @@ class raw_wiggle_Pk_component
         wiggle()
       {
       }
-    
-    
-    // CONVERSIONS
-    
-  public:
-    
-//    //! allow direct assignment from a value_type object, in which case there is zero error
-//    raw_wiggle_Pk_component<ValueType>& operator=(value_type v)
-//      {
-//        this->value = std::move(v);
-//        this->error = value_type(0.0);
-//        return *this;
-//      }
 
-
-    // ACCESSOR
+    
+    // ACCESSORS
     
   public:
     
@@ -462,25 +449,25 @@ raw_wiggle_Pk_component<ValueType> operator-(const loop_integral_output<ValueTyp
 template <typename ValueType>
 raw_wiggle_Pk_component<ValueType> operator+(const raw_wiggle_Pk_component<ValueType>& A, const loop_integral_output<ValueType>& B)
   {
-    return raw_wiggle_Pk_component<ValueType>(A.get_raw() + B.get_raw(), A.get_wiggle + B.get_wiggle());
+    return raw_wiggle_Pk_component<ValueType>(A.get_raw() + B.get_raw(), A.get_wiggle() + B.get_wiggle());
   }
 
 template <typename ValueType>
 raw_wiggle_Pk_component<ValueType> operator+(const loop_integral_output<ValueType>& A, const raw_wiggle_Pk_component<ValueType>& B)
   {
-    return raw_wiggle_Pk_component<ValueType>(A.get_raw() + B.get_raw(), A.get_wiggle + B.get_wiggle());
+    return raw_wiggle_Pk_component<ValueType>(A.get_raw() + B.get_raw(), A.get_wiggle() + B.get_wiggle());
   }
 
 template <typename ValueType>
 raw_wiggle_Pk_component<ValueType> operator-(const raw_wiggle_Pk_component<ValueType>& A, const loop_integral_output<ValueType>& B)
   {
-    return raw_wiggle_Pk_component<ValueType>(A.get_raw() - B.get_raw(), A.get_wiggle - B.get_wiggle());
+    return raw_wiggle_Pk_component<ValueType>(A.get_raw() - B.get_raw(), A.get_wiggle() - B.get_wiggle());
   }
 
 template <typename ValueType>
 raw_wiggle_Pk_component<ValueType> operator-(const loop_integral_output<ValueType>& A, const raw_wiggle_Pk_component<ValueType>& B)
   {
-    return raw_wiggle_Pk_component<ValueType>(A.get_raw() - B.get_raw(), A.get_wiggle - B.get_wiggle());
+    return raw_wiggle_Pk_component<ValueType>(A.get_raw() - B.get_raw(), A.get_wiggle() - B.get_wiggle());
   }
 
 
