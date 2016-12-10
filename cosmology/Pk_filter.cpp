@@ -7,10 +7,6 @@
 
 #include "Pk_filter.h"
 
-#include "boost/optional.hpp"
-
-#include "cuba.h"
-
 
 namespace Pk_filter_impl
   {
