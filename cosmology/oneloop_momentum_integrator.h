@@ -63,13 +63,14 @@ class oneloop_momentum_integrator
     template <typename KernelRecord>
     bool kernel_integral(const FRW_model& model, const Mpc_units::energy& k, const Mpc_units::energy& UV_cutoff,
                          const Mpc_units::energy& IR_cutoff, const wiggle_Pk& Pk, integrand_t interand,
-                         KernelRecord& result, loop_integral_type type);
+                         KernelRecord& result, loop_integral_type type, const std::string& name);
     
     //! perform a single kernel integral of either raw or wiggle type, depending on which spline is supplied
     template <typename IntegralRecord>
     bool evaluate_integral(const FRW_model& model, const Mpc_units::energy& k, const Mpc_units::energy& UV_cutoff,
                            const Mpc_units::energy& IR_cutoff, const spline_Pk& Pk, integrand_t integrand,
-                           IntegralRecord& result, loop_integral_type type);
+                           IntegralRecord& result, loop_integral_type type, const std::string& name,
+                           const std::string& wiggle);
 
 
     // INTERNAL DATA
