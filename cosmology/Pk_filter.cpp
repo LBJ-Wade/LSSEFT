@@ -76,7 +76,7 @@ namespace Pk_filter_impl
       };
     
     
-    static int integrand(const int* ndim, const cubareal* x, const int* ncomp, cubareal* f, void* userdata)
+    static int filter_integrand(const int* ndim, const cubareal* x, const int* ncomp, cubareal* f, void* userdata)
       {
         Pk_filter_impl::integrand_data* data = static_cast<Pk_filter_impl::integrand_data*>(userdata);
     
@@ -88,6 +88,18 @@ namespace Pk_filter_impl
         return(0);  // return value irrelevant unless = -999, which means stop integration
       }
     
+    
+    static int window_integrand(const int* ndim, const cubareal* x, const int* ncomp, cubareal* f, void* userdata)
+      {
+        Pk_filter_impl::integrand_data* data = static_cast<Pk_filter_impl::integrand_data*>(userdata);
+        
+        double slog = data->slog_min + data->slog_range*x[0];
+        
+        f[0] = data->jacobian * std::exp(-(data->klog-slog)*(data->klog-slog) / (2.0*data->lambda*data->lambda));
+        
+        return(0);  // return value irrelevant unless = -999, which means stop integration
+      }
+    
   }   // namespace Pk_filter_impl
 
 
@@ -96,14 +108,6 @@ Pk_filter::operator()(const FRW_model& model, const linear_Pk& Pk_lin, const Mpc
   {
     // build reference Eisenstein & Hu power spectrum
     std::unique_ptr<approx_Pk> Papprox = this->eisenstein_hu(model, Pk_lin);
-    
-    cubareal integral[Pk_filter_impl::dimensions];
-    cubareal error[Pk_filter_impl::dimensions];
-    cubareal prob[Pk_filter_impl::dimensions];
-    
-    int regions;
-    int evaluations;
-    int fail;
     
     // get maximum available scale from linear power spectrum
     const Mpc_units::energy k_min = SPLINE_PK_DEFAULT_BOTTOM_CLEARANCE * Pk_lin.get_db().get_k_min();
@@ -117,16 +121,37 @@ Pk_filter::operator()(const FRW_model& model, const linear_Pk& Pk_lin, const Mpc
     // scale 0.25 for lambda suggested by Vlah, Seljak, Chu & Feng p.23 arXiv:1509.02120
     // they also suggested it should grow slightly at large k
     constexpr Mpc_units::energy K_PIV = 0.05 / Mpc_units::Mpc;
-    constexpr double LAMBDA_SLOPE = 0.02;
+    constexpr double LAMBDA_SLOPE = 0.01;
 
-    double lambda = 0.25 * std::pow(k/K_PIV, LAMBDA_SLOPE);
+    const double lambda = 0.25 * std::pow(k/K_PIV, LAMBDA_SLOPE);
     
+    const double filtered_Pk = this->integrate(slog_min, slog_max, klog, lambda, Pk_lin, *Papprox, Pk_filter_impl::filter_integrand);
+    const double volume      = this->integrate(slog_min, slog_max, klog, lambda, Pk_lin, *Papprox, Pk_filter_impl::window_integrand);
+    
+    const Mpc_units::inverse_energy3 P_nw = (*Papprox)(k) * filtered_Pk / volume;
+    const Mpc_units::inverse_energy3 P_w  = Pk_lin(k) - P_nw;
+    
+    return std::make_pair(P_w, (*Papprox)(k));
+  }
+
+
+double Pk_filter::integrate(const double slog_min, const double slog_max, const double klog, const double lambda,
+                            const linear_Pk& Pk_lin, const approx_Pk& Papprox, integrand_t integrand)
+  {
+    cubareal integral[Pk_filter_impl::dimensions];
+    cubareal error[Pk_filter_impl::dimensions];
+    cubareal prob[Pk_filter_impl::dimensions];
+    
+    int regions;
+    int evaluations;
+    int fail;
+
     std::unique_ptr<Pk_filter_impl::integrand_data> data =
-      std::make_unique<Pk_filter_impl::integrand_data>(slog_min, slog_max, klog, lambda, Pk_lin, *Papprox);
+      std::make_unique<Pk_filter_impl::integrand_data>(slog_min, slog_max, klog, lambda, Pk_lin, Papprox);
     
     Cuhre(Pk_filter_impl::dimensions,
           Pk_filter_impl::components,
-          Pk_filter_impl::integrand, data.get(),
+          integrand, data.get(),
           Pk_filter_impl::points_per_invocation,
           this->rel_err, this->abs_err,
           Pk_filter_impl::verbosity_none | Pk_filter_impl::samples_last,
@@ -136,10 +161,7 @@ Pk_filter::operator()(const FRW_model& model, const linear_Pk& Pk_lin, const Mpc
           &regions, &evaluations, &fail,
           integral, error, prob);
     
-    Mpc_units::inverse_energy3 P_nw = (*Papprox)(k) * integral[0] / (std::sqrt(2.0*M_PI) * lambda);
-    Mpc_units::inverse_energy3 P_w  = Pk_lin(k) - P_nw;
-    
-    return std::make_pair(P_w, (*Papprox)(k));
+    return integral[0];
   }
 
 

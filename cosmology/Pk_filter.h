@@ -14,6 +14,8 @@
 
 #include "defaults.h"
 
+#include "cuba.h"
+
 
 class Pk_filter
   {
@@ -48,6 +50,10 @@ class Pk_filter
     
   private:
     
+    //! apply filter to a given integrand
+    double integrate(const double slog_min, const double slog_max, const double klog, const double lambda,
+                     const linear_Pk& Pk_lin, const approx_Pk& Papprox, integrand_t integrand);
+
     //! compute Eisenstein & Hu approximation to the power spectrum
     std::unique_ptr<approx_Pk> eisenstein_hu(const FRW_model& model, const linear_Pk& Pk_lin);
     
