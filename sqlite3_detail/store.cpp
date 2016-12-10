@@ -453,6 +453,15 @@ namespace sqlite3_operations
             store_impl::store_loop_kernel(db, policy.RSD22_C4_table(), rsd22.get_C4(), model, sample);
             store_impl::store_loop_kernel(db, policy.RSD22_D1_table(), rsd22.get_D1(), model, sample);
           }
+        else
+          {
+            std::cerr << "lsseft: loop kernels not stored (model = " << model.get_id()
+                      << ", k = " << sample.get_k_token().get_id()
+                      << ", P(k) = " << sample.get_Pk_token().get_id()
+                      << ", IR cutoff = " << sample.get_IR_token().get_id()
+                      << ", UV cutoff = " << sample.get_UV_token().get_id() << ") "
+                      << "since marked as failed" << '\n';
+          }
       }
     
     
