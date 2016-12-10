@@ -75,7 +75,7 @@ namespace sqlite3_operations
             check_stmt(db, sqlite3_clear_bindings(stmt));
             check_stmt(db, sqlite3_finalize(stmt));
             
-            if(count > 1) throw runtime_exception(exception_type::database_error, ERROR_SQLITE3_LOOP_MOMENTUM_MISREAD);
+            if(count != 1) throw runtime_exception(exception_type::database_error, ERROR_SQLITE3_LOOP_MOMENTUM_MISREAD);
           }
         
         
@@ -165,7 +165,7 @@ namespace sqlite3_operations
             check_stmt(db, sqlite3_clear_bindings(stmt));
             check_stmt(db, sqlite3_finalize(stmt));
             
-            if(count > 1) throw runtime_exception(exception_type::database_error, ERROR_SQLITE3_READ_PK_MISREAD);
+            if(count != 1) throw runtime_exception(exception_type::database_error, ERROR_SQLITE3_READ_PK_MISREAD);
           }
     
     
@@ -228,7 +228,7 @@ namespace sqlite3_operations
             check_stmt(db, sqlite3_clear_bindings(stmt));
             check_stmt(db, sqlite3_finalize(stmt));
     
-            if(count > 1) throw runtime_exception(exception_type::database_error, ERROR_SQLITE3_READ_RSD_PK_MISREAD);
+            if(count != 1) throw runtime_exception(exception_type::database_error, ERROR_SQLITE3_READ_RSD_PK_MISREAD);
           }
           
       }   // namespace find_impl
@@ -460,7 +460,7 @@ namespace sqlite3_operations
         check_stmt(db, sqlite3_clear_bindings(stmt));
         check_stmt(db, sqlite3_finalize(stmt));
     
-        if(count > 1) throw runtime_exception(exception_type::database_error, ERROR_SQLITE3_MATSUBARA_XY_MISREAD);
+        if(count != 1) throw runtime_exception(exception_type::database_error, ERROR_SQLITE3_MATSUBARA_XY_MISREAD);
         
         std::unique_ptr<Matsubara_XY> payload = std::make_unique<Matsubara_XY>(Pk, IR_resum, X, Y);
         
