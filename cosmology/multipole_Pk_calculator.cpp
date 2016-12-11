@@ -13,7 +13,7 @@ namespace multipole_Pk_calculator_impl
     struct mu_to_ell0
       {
         
-        double operator()(mu_power n)
+        constexpr double operator()(mu_power n)
           {
             switch(n)
               {
@@ -94,7 +94,7 @@ namespace multipole_Pk_calculator_impl
     struct mu_to_ell2
       {
         
-        double operator()(mu_power n)
+        constexpr double operator()(mu_power n)
           {
             switch(n)
               {
@@ -178,7 +178,7 @@ namespace multipole_Pk_calculator_impl
     struct mu_to_ell4
       {
         
-        double operator()(mu_power n)
+        constexpr double operator()(mu_power n)
           {
             switch(n)
               {
@@ -270,7 +270,7 @@ namespace multipole_Pk_calculator_impl
           : f(_gf.f),
             // the factor appearing in each subtraction is k^2 (X+Y) P_lin,w
             // here, k^2 (X+Y) is our variable XY
-            // P_lin,w is g^2 Pk.Pk_wiggle
+            // P_lin,w is the wiggle part of the density-density power spectrum
             factor(_XY * _Pk_tree.get_wiggle().get_value())
           {
           }
@@ -298,7 +298,7 @@ namespace multipole_Pk_calculator_impl
     struct null_adjuster
       {
 
-        Dimension operator()(mu_power n)
+        constexpr Dimension operator()(mu_power n)
           {
             switch(n)
               {
@@ -376,52 +376,45 @@ multipole_Pk multipole_Pk_calculator::calculate_Legendre(const Mpc_units::energy
   {
     // construct lambdas to access components of an RSD P(k) record
 
-    auto raw_tree        = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy3 { return data.get_tree().get_raw().get_value(); };
-    auto raw_13          = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy3 { return data.get_13().get_raw().get_value(); };
-    auto raw_22          = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy3 { return data.get_22().get_raw().get_value(); };
-    auto raw_SPT         = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy3 { return data.get_1loop_SPT().get_raw().get_value(); };
-    auto raw_Z2d         = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy  { return data.get_Z2_delta().get_raw().get_value(); };
-    auto raw_Z0v         = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy3 { return data.get_Z0_v().get_raw().get_value(); };
-    auto raw_Z2v         = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy  { return data.get_Z2_v().get_raw().get_value(); };
-    auto raw_Z0vd        = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy3 { return data.get_Z0_vdelta().get_raw().get_value(); };
-    auto raw_Z2vd        = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy  { return data.get_Z2_vdelta().get_raw().get_value(); };
-    auto raw_Z2vv        = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy  { return data.get_Z2_vv().get_raw().get_value(); };
-    auto raw_Z2vvd       = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy  { return data.get_Z2_vvdelta().get_raw().get_value(); };
-    auto raw_Z2vvv       = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy  { return data.get_Z2_vvv().get_raw().get_value(); };
+    auto raw_tree        = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_tree().get_raw().get_value(); };
+    auto raw_13          = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_13().get_raw().get_value(); };
+    auto raw_22          = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_22().get_raw().get_value(); };
+    auto raw_SPT         = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_1loop_SPT().get_raw().get_value(); };
     
-    auto wiggle_tree     = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy3 { return data.get_tree().get_wiggle().get_value(); };
-    auto wiggle_13       = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy3 { return data.get_13().get_wiggle().get_value(); };
-    auto wiggle_22       = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy3 { return data.get_22().get_wiggle().get_value(); };
-    auto wiggle_SPT      = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy3 { return data.get_1loop_SPT().get_wiggle().get_value(); };
-    auto wiggle_Z2d      = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy  { return data.get_Z2_delta().get_wiggle().get_value(); };
-    auto wiggle_Z0v      = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy3 { return data.get_Z0_v().get_wiggle().get_value(); };
-    auto wiggle_Z2v      = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy  { return data.get_Z2_v().get_wiggle().get_value(); };
-    auto wiggle_Z0vd     = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy3 { return data.get_Z0_vdelta().get_wiggle().get_value(); };
-    auto wiggle_Z2vd     = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy  { return data.get_Z2_vdelta().get_wiggle().get_value(); };
-    auto wiggle_Z2vv     = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy  { return data.get_Z2_vv().get_wiggle().get_value(); };
-    auto wiggle_Z2vvd    = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy  { return data.get_Z2_vvdelta().get_wiggle().get_value(); };
-    auto wiggle_Z2vvv    = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy  { return data.get_Z2_vvv().get_wiggle().get_value(); };
+    auto wiggle_tree     = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_tree().get_wiggle().get_value(); };
+    auto wiggle_13       = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_13().get_wiggle().get_value(); };
+    auto wiggle_22       = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_22().get_wiggle().get_value(); };
+    auto wiggle_SPT      = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_1loop_SPT().get_wiggle().get_value(); };
+    auto wiggle_Z2d      = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy  { return pkg.get_Z2_delta().get_wiggle().get_value(); };
+    auto wiggle_Z0v      = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_Z0_v().get_wiggle().get_value(); };
+    auto wiggle_Z2v      = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy  { return pkg.get_Z2_v().get_wiggle().get_value(); };
+    auto wiggle_Z0vd     = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_Z0_vdelta().get_wiggle().get_value(); };
+    auto wiggle_Z2vd     = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy  { return pkg.get_Z2_vdelta().get_wiggle().get_value(); };
+    auto wiggle_Z2vv     = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy  { return pkg.get_Z2_vv().get_wiggle().get_value(); };
+    auto wiggle_Z2vvd    = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy  { return pkg.get_Z2_vvdelta().get_wiggle().get_value(); };
+    auto wiggle_Z2vvv    = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy  { return pkg.get_Z2_vvv().get_wiggle().get_value(); };
     
-    auto nowiggle_tree   = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy3 { return data.get_tree().get_nowiggle().get_value(); };
-    auto nowiggle_13     = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy3 { return data.get_13().get_nowiggle().get_value(); };
-    auto nowiggle_22     = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy3 { return data.get_22().get_nowiggle().get_value(); };
-    auto nowiggle_SPT    = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy3 { return data.get_1loop_SPT().get_nowiggle().get_value(); };
-    auto nowiggle_Z2d    = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy  { return data.get_Z2_delta().get_nowiggle().get_value(); };
-    auto nowiggle_Z0v    = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy3 { return data.get_Z0_v().get_nowiggle().get_value(); };
-    auto nowiggle_Z2v    = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy  { return data.get_Z2_v().get_nowiggle().get_value(); };
-    auto nowiggle_Z0vd   = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy3 { return data.get_Z0_vdelta().get_nowiggle().get_value(); };
-    auto nowiggle_Z2vd   = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy  { return data.get_Z2_vdelta().get_nowiggle().get_value(); };
-    auto nowiggle_Z2vv   = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy  { return data.get_Z2_vv().get_nowiggle().get_value(); };
-    auto nowiggle_Z2vvd  = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy  { return data.get_Z2_vvdelta().get_nowiggle().get_value(); };
-    auto nowiggle_Z2vvv  = [&](const rsd_dd_Pk& data) -> Mpc_units::inverse_energy  { return data.get_Z2_vvv().get_nowiggle().get_value(); };
+    auto nowiggle_tree   = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_tree().get_nowiggle().get_value(); };
+    auto nowiggle_13     = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_13().get_nowiggle().get_value(); };
+    auto nowiggle_22     = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_22().get_nowiggle().get_value(); };
+    auto nowiggle_SPT    = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_1loop_SPT().get_nowiggle().get_value(); };
+    auto nowiggle_Z2d    = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy  { return pkg.get_Z2_delta().get_nowiggle().get_value(); };
+    auto nowiggle_Z0v    = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_Z0_v().get_nowiggle().get_value(); };
+    auto nowiggle_Z2v    = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy  { return pkg.get_Z2_v().get_nowiggle().get_value(); };
+    auto nowiggle_Z0vd   = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_Z0_vdelta().get_nowiggle().get_value(); };
+    auto nowiggle_Z2vd   = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy  { return pkg.get_Z2_vdelta().get_nowiggle().get_value(); };
+    auto nowiggle_Z2vv   = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy  { return pkg.get_Z2_vv().get_nowiggle().get_value(); };
+    auto nowiggle_Z2vvd  = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy  { return pkg.get_Z2_vvdelta().get_nowiggle().get_value(); };
+    auto nowiggle_Z2vvv  = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy  { return pkg.get_Z2_vvv().get_nowiggle().get_value(); };
     
-    // get Matsubara X+Y suppression factor (remember we have to scale up by the linear growth factor,
+    // get Matsubara X+Y suppression factor (remember we have to scale up by the square of the linear growth factor,
     // since we store just the raw integral over the early-time tree-level power spectrum)
     double Matsubara_XY = gf_data.g*gf_data.g * k*k * XY;
     
     double A_coeff = gf_data.f*(gf_data.f+2.0) * Matsubara_XY;
     double B_coeff = Matsubara_XY;
     
+    // set policy objects to adjust the different mu dependences to account for resummation
     multipole_Pk_calculator_impl::resum_adjuster Pk_adj(k, Matsubara_XY, gf_data, data.get_dd().get_tree());
     multipole_Pk_calculator_impl::null_adjuster<Mpc_units::inverse_energy3> Pk_null;
     multipole_Pk_calculator_impl::null_adjuster<Mpc_units::inverse_energy> k2_Pk_null;
