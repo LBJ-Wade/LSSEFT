@@ -76,3 +76,11 @@ rsd_dd_Pk::rsd_dd_Pk()
     Z2_vvv()
   {
   }
+
+
+Pk_value build_Pk_value(const Mpc_units::energy& k, const wiggle_Pk& Pk)
+  {
+    Pk_value_group<Mpc_units::inverse_energy3> Ptree_raw(Pk.Pk_raw(k));
+    Pk_value_group<Mpc_units::inverse_energy3> Ptree_nw(Pk.Pk_nowiggle(k));
+    return Pk_value(Ptree_raw, Ptree_nw);
+  }
