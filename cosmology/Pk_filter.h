@@ -25,8 +25,8 @@ class Pk_filter
   public:
     
     //! constructor is default
-    Pk_filter(double r = LSSEFT_DEFAULT_INTEGRAL_REL_ERR_22,
-              double a = LSSEFT_DEFAULT_INTEGRAL_ABS_ERR_22)
+    Pk_filter(double r = LSSEFT_DEFAULT_FILTER_PK_REL_ERR,
+              double a = LSSEFT_DEFAULT_FILTER_PK_ABS_ERR)
       : rel_err(std::abs(r)),
         abs_err(std::abs(a))
       {

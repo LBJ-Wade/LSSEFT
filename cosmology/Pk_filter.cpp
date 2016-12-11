@@ -117,7 +117,7 @@ Pk_filter::operator()(const FRW_model& model, const linear_Pk& Pk_lin, const Mpc
     // scale 0.25 for lambda suggested by Vlah, Seljak, Chu & Feng p.23 arXiv:1509.02120
     // they also suggested it should grow slightly at large k
     constexpr Mpc_units::energy K_PIV = 0.05 / Mpc_units::Mpc;
-    constexpr double LAMBDA_SLOPE = 0.01;
+    constexpr double LAMBDA_SLOPE = 0.02;
 
     const double lambda = 0.25 * std::pow(k/K_PIV, LAMBDA_SLOPE);
     
