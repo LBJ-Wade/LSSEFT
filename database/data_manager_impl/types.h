@@ -3,14 +3,14 @@
 // Copyright (c) 2015 University of Sussex. All rights reserved.
 //
 
-#ifndef LSSEFT_DATA_MANAGER_IMPL_H
-#define LSSEFT_DATA_MANAGER_IMPL_H
+#ifndef LSSEFT_DATA_MANAGER_TYPES_H
+#define LSSEFT_DATA_MANAGER_TYPES_H
 
 
-#include "k_database.h"
-#include "IR_cutoff_database.h"
-#include "UV_cutoff_database.h"
-#include "IR_resum_database.h"
+#include "database/k_database.h"
+#include "database/IR_cutoff_database.h"
+#include "database/UV_cutoff_database.h"
+#include "database/IR_resum_database.h"
 
 
 namespace data_manager_impl
@@ -45,24 +45,24 @@ namespace data_manager_impl
       }
     
     
-    class Matsubara_A_configuration
+    class Matsubara_XY_configuration
       {
         
       public:
         
-        Matsubara_A_configuration(const IR_resum_database::const_record_iterator& _IR_resum)
+        Matsubara_XY_configuration(const IR_resum_database::const_record_iterator& _IR_resum)
           : IR_resum(_IR_resum)
           {
           }
         
-        ~Matsubara_A_configuration() = default;
+        ~Matsubara_XY_configuration() = default;
         
         const IR_resum_database::const_record_iterator IR_resum;
       };
     
     
     // specialize equality operator
-    inline bool operator==(const Matsubara_A_configuration& A, const Matsubara_A_configuration& B)
+    inline bool operator==(const Matsubara_XY_configuration& A, const Matsubara_XY_configuration& B)
       {
         return A.IR_resum == B.IR_resum;
       }
@@ -160,7 +160,7 @@ namespace std
     
     // specialize std::hash() to Matsubara_configuration so that it can be used with std::unordered_set
     template <>
-    class hash<::data_manager_impl::Matsubara_A_configuration>
+    class hash<::data_manager_impl::Matsubara_XY_configuration>
       {
         
         // CONSTRUCTOR, DESTRUCTOR
@@ -179,7 +179,7 @@ namespace std
       public:
         
         //! hash operation
-        size_t operator()(const ::data_manager_impl::Matsubara_A_configuration& config) const
+        size_t operator()(const ::data_manager_impl::Matsubara_XY_configuration& config) const
           {
             size_t hash = 0;
             hash_impl::hash_combine(hash, config.IR_resum->get_token());
@@ -225,4 +225,4 @@ namespace std
   }   // namespace std
 
 
-#endif //LSSEFT_DATA_MANAGER_IMPL_H
+#endif //LSSEFT_DATA_MANAGER_TYPES_H

@@ -15,15 +15,15 @@
 
 
 template <typename ValueType>
-class loop_integral_output
+class loop_integral_result
   {
-  
+
   public:
     
     typedef ValueType value_type;
     
     //! constructor initializes zero values, which should be overwritten later
-    loop_integral_output()
+    loop_integral_result()
       : value(value_type(0.0)),
         error(value_type(0.0)),
         regions(0),
@@ -31,10 +31,12 @@ class loop_integral_output
         time(0)
       {
       }
+    
+    //! destructor is default
+    ~loop_integral_result() = default;
 
-    
     // DATA
-    
+  
   public:
     
     value_type                    value;
@@ -57,6 +59,65 @@ class loop_integral_output
         ar & evaluations;
         ar & error;
         ar & time;
+      }
+
+  };
+
+
+template <typename ValueType>
+class loop_integral_output
+  {
+  
+  public:
+    
+    typedef ValueType value_type;
+
+    //! constructor initializes result values to zero
+    //! these should be overwritten later
+    loop_integral_output()
+      : raw(),
+        nowiggle()
+      {
+      }
+    
+    //! destructor is default
+    ~loop_integral_output() = default;
+    
+    
+    // ACCESSORS
+    
+  public:
+    
+    //! get raw value
+    loop_integral_result<ValueType>& get_raw() { return this->raw; }
+    const loop_integral_result<ValueType>& get_raw() const { return this->raw; }
+    
+    //! get no-wiggle value
+    loop_integral_result<ValueType>& get_nowiggle() { return this->nowiggle; }
+    const loop_integral_result<ValueType>& get_nowiggle() const { return this->nowiggle; }
+    
+    
+    // INTERNAL DATA
+    
+  private:
+    
+    //! raw result
+    loop_integral_result<ValueType> raw;
+    
+    //! wiggle result
+    loop_integral_result<ValueType> nowiggle;
+    
+  
+  private:
+    
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+    
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & raw;
+        ar & nowiggle;
       }
     
   };
@@ -277,7 +338,13 @@ class rsd_22_integrals
   public:
     
     //! value constructor
-//    rsd_22_integrals() = default;
+    rsd_22_integrals(const inverse_energy3_integral& _A1, const inverse_energy3_integral& _A2,
+                     const inverse_energy3_integral& _A3, const inverse_energy3_integral& _A4,
+                     const inverse_energy3_integral& _A5, const inverse_energy3_integral& _B2,
+                     const inverse_energy3_integral& _B3, const inverse_energy3_integral& _B6,
+                     const inverse_energy3_integral& _B8, const inverse_energy3_integral& _B9,
+                     const inverse_energy3_integral& _C1, const inverse_energy3_integral& _C2,
+                     const inverse_energy3_integral& _C4, const inverse_energy3_integral& _D1);
     
     //! empty constructor for use when overwriting with MPI payloads
     rsd_22_integrals();
@@ -440,7 +507,9 @@ class rsd_13_integrals
   public:
     
     //! value constructor
-//    rsd_13_integrals() = default;
+    rsd_13_integrals(const dimless_integral& _a, const dimless_integral& _b, const dimless_integral& _c,
+                     const dimless_integral& _d, const dimless_integral& _e, const dimless_integral& _f,
+                     const dimless_integral& _g);
     
     //! empty constructor for use when overwriting with MPI payloads
     rsd_13_integrals();
@@ -549,7 +618,7 @@ class loop_integral
   public:
 
     //! value constructor
-    loop_integral(const k_token& kt, const UV_cutoff_token& UVt, const IR_cutoff_token& IRt,
+    loop_integral(const k_token& kt, const linear_Pk_token& Pt, const UV_cutoff_token& UVt, const IR_cutoff_token& IRt,
                   const delta_22_integrals& d22, const delta_13_integrals& d13,
                   const rsd_22_integrals& r22, const rsd_13_integrals& r13);
     
@@ -566,6 +635,9 @@ class loop_integral
 
     //! get wavenumber token
     const k_token& get_k_token() const { return this->k; }
+    
+    //! get linear power spectrum token
+    const linear_Pk_token& get_Pk_token() const { return this->Pk_lin; }
 
     //! get UV cutoff token
     const UV_cutoff_token& get_UV_token() const { return this->UV_cutoff; }
@@ -596,6 +668,9 @@ class loop_integral
 
     //! wavenumber token
     k_token k;
+    
+    //! linear power spectrum token
+    linear_Pk_token Pk_lin;
 
     //! UV cutoff token
     UV_cutoff_token UV_cutoff;

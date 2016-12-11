@@ -42,7 +42,13 @@ class sqlite3_policy
     const std::string& UV_config_table() const { return(this->UV_config); }
     
     //! IR-resummation configuration table
-    const std::string& IR_resum_table() const { return(this->IR_resum); }
+    const std::string& IR_resum_config_table() const { return(this->IR_resum_config); }
+    
+    //! linear power spectrum configuration table
+    const std::string& Pk_linear_config_table() const { return(this->Pk_linear_config); }
+    
+    //! linear power spectrum table
+    const std::string& Pk_linear_table() const { return(this->Pk_linear); }
     
     //! transfer function table
     const std::string& transfer_table() const { return(this->transfer); }
@@ -146,6 +152,9 @@ class sqlite3_policy
     //! 1-loop delta-delta power spectrum table
     const std::string& dd_Pk_table() const { return(this->dd_Pk); }
     
+    //! 1-loop resummed delta-delta power spectrum table
+    const std::string& dd_Pk_resum_table() const { return(this->dd_Pk_resum); }
+    
     //! 1-loop delta-delta rsd power spectrum mu^0 table
     const std::string& dd_rsd_mu0_Pk_table() const { return(this->dd_rsd_mu0_Pk); }
     
@@ -170,8 +179,8 @@ class sqlite3_policy
     //! 1-loop multipole P4 table
     const std::string& P4_table() const { return this->P4; }
     
-    //! Matsubara-A table
-    const std::string& Matsubara_A_table() const { return this->Matsubara_A; }
+    //! Matsubara-XY table
+    const std::string& Matsubara_XY_table() const { return this->Matsubara_XY; }
 
     //! temporary table
     const std::string& temp_table() const { return(this->temp); }
@@ -199,7 +208,13 @@ class sqlite3_policy
     const std::string UV_config;
     
     //! IR-resummation configuration table
-    const std::string IR_resum;
+    const std::string IR_resum_config;
+    
+    //! linear power spectrum P(k) configuration table
+    const std::string Pk_linear_config;
+    
+    //! linear power spectrum data table
+    const std::string Pk_linear;
 
     //! transfer function table
     const std::string transfer;
@@ -303,6 +318,9 @@ class sqlite3_policy
     //! 1-loop delta delta power spectrum table
     const std::string dd_Pk;
     
+    //! 1-loop resummed delta delta power spectrum table
+    const std::string dd_Pk_resum;
+    
     //! 1-loop delta_s delta_s power spectrum table, mu^0 coefficient
     const std::string dd_rsd_mu0_Pk;
     
@@ -327,8 +345,8 @@ class sqlite3_policy
     //! 1-loop multipole P4 table
     const std::string P4;
     
-    //! Matsubara-A coefficients
-    const std::string Matsubara_A;
+    //! Matsubara X & Y coefficients
+    const std::string Matsubara_XY;
 
     //! temporary table name
     const std::string temp;

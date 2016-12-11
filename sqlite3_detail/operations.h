@@ -11,6 +11,7 @@
 #include "FRW_model.h"
 #include "redshift.h"
 #include "wavenumber.h"
+#include "power_spectrum.h"
 #include "temporary_tables.h"
 #include "missing_elements.h"
 #include "store.h"

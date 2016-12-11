@@ -17,7 +17,8 @@ enum class exception_type
     sqlite3_error,
     transaction_error,
     runtime_error,
-    spline_error
+    spline_error,
+    filter_failure
   };
 
 
@@ -28,8 +29,8 @@ class runtime_exception: public std::runtime_error
 
   public:
 
-    //! constructor
-    runtime_exception(exception_type t, const std::string msg)
+    //! constructor with message
+    runtime_exception(exception_type t, const std::string msg="")
       : type(t),
         std::runtime_error(msg)
       {

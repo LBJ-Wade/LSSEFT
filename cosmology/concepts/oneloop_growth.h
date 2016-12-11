@@ -328,7 +328,7 @@ class oneloop_growth
   public:
 
     //! value constructor
-    oneloop_growth(z_database& z);
+    oneloop_growth(const z_database& z);
     
     //! empty constructor used for receiving an MPI payload
     oneloop_growth();

@@ -22,7 +22,7 @@
 #include "cosmology/concepts/transfer_function.h"
 #include "cosmology/concepts/oneloop_growth.h"
 #include "cosmology/concepts/range.h"
-#include "cosmology/concepts/tree_power_spectrum.h"
+#include "cosmology/concepts/power_spectrum.h"
 #include "cosmology/concepts/loop_integral.h"
 
 #include "sqlite3_detail/sqlite3_policy.h"
@@ -31,6 +31,10 @@
 #include "boost/filesystem/operations.hpp"
 
 #include "sqlite3.h"
+
+
+constexpr double FILTER_PK_DEFAULT_BOTTOM_CLEARANCE = 1.25;
+constexpr double FILTER_PK_DEFAULT_TOP_CLEARANCE    = 0.75;
 
 
 class data_manager
@@ -56,6 +60,12 @@ class data_manager
 
     //! generate wavenumber database from a set of samples
     std::unique_ptr<k_database> build_k_db(range<Mpc_units::energy>& sample);
+    
+    //! generate wavenumber database from a linear power spectrum container
+    //! only contains wavenumbers that can actually be evaluated by the container
+    std::unique_ptr<k_database> build_k_db(transaction_manager& mgr, const linear_Pk& Pk_lin,
+                                           double bottom_clearance=SPLINE_PK_DEFAULT_BOTTOM_CLEARANCE,
+                                           double top_clearance=SPLINE_PK_DEFAULT_TOP_CLEARANCE);
 
     //! generate IR cutoff database from a set of samples
     std::unique_ptr<IR_cutoff_database> build_IR_cutoff_db(range<Mpc_units::energy>& sample);
@@ -79,8 +89,8 @@ class data_manager
     //! build a work list representing z-values that are missing from the SQLite backing store
     //! for each k-value in a wavenumber database representing transfer functions.
     //! generates a new transaction on the database; will fail if a transaction is in progress
-    std::unique_ptr<transfer_work_list> build_transfer_work_list(FRW_model_token& model, k_database& k_db,
-                                                                 z_database& z_db);
+    std::unique_ptr<transfer_work_list>
+    build_transfer_work_list(FRW_model_token& model, k_database& k_db, z_database& z_db);
 
     //! build a work list representing z-values that are missing from the SQLite backing store
     //! for each z-value needed for the one-loop growth factors.
@@ -90,32 +100,42 @@ class data_manager
     //! build a work list representing k-values that are missing from the SQLite backing store
     //! for each k-value in a wavenumber database representing the momentum loop integral.
     //! generates a new transaction on the database; will fail if a transaction is in progress
-    std::unique_ptr<loop_momentum_work_list> build_loop_momentum_work_list(FRW_model_token& model, k_database& k_db,
-                                                                           IR_cutoff_database& IR_db, UV_cutoff_database& UV_db,
-                                                                           std::shared_ptr<tree_power_spectrum>& Pk);
+    std::unique_ptr<loop_momentum_work_list>
+    build_loop_momentum_work_list(FRW_model_token& model, k_database& k_db, IR_cutoff_database& IR_db,
+                                  UV_cutoff_database& UV_db, std::shared_ptr<wiggle_Pk>& Pk);
     
     //! build a work list representing (k, z, IR, UV) combinations of the one-loop power spectra
     //! that are missing from the SQLite backing store.
     //! generates a new transaction on the database; will fail if a transaction is in progress
-    std::unique_ptr<one_loop_Pk_work_list> build_one_loop_Pk_work_list(FRW_model_token& model,
-                                                                       z_database& z_db, k_database& k_db,
-                                                                       IR_cutoff_database& IR_db, UV_cutoff_database& UV_db,
-                                                                       std::shared_ptr<tree_power_spectrum>& Pk);
+    std::unique_ptr<one_loop_Pk_work_list>
+    build_one_loop_Pk_work_list(FRW_model_token& model, z_database& z_db, k_database& k_db, IR_cutoff_database& IR_db,
+                                UV_cutoff_database& UV_db, std::shared_ptr<wiggle_Pk>& Pk);
+    
+    //! build a work list represenitng (k, z, IR_cutoff, UV_cutoff, IR_resum) combinations of the one-loop
+    //! power spectrum that are missing from the SQLite backing store
+    //! generates a new transaction on the database; will fail if a transaction is in progress
+    std::unique_ptr<one_loop_resum_Pk_work_list>
+    build_one_loop_resum_Pk_work_list(FRW_model_token& model, z_database& z_db, k_database& k_db,
+                                      IR_cutoff_database& IR_cutoff_db, UV_cutoff_database& UV_cutoff_db,
+                                      IR_resum_database& IR_resum_db, std::shared_ptr<wiggle_Pk>& Pk);
     
     //! build a work list representing (k, z, IR_cutoff, UV_cutoff, IR_resum) combinations of the one-loop
     //! multipole power spectra that are missing from the SQLite backing store.
     //! generates a new transaction on the database; will fail if a transaction is in progress
-    std::unique_ptr<multipole_Pk_work_list> build_multipole_Pk_work_list(FRW_model_token& model,
-                                                                         z_database& z_db, k_database& k_db,
-                                                                         IR_cutoff_database& IR_cutoff_db,
-                                                                         UV_cutoff_database& UV_cutoff_db,
-                                                                         IR_resum_database& IR_resum_db,
-                                                                         std::shared_ptr<tree_power_spectrum>& Pk);
+    std::unique_ptr<multipole_Pk_work_list>
+    build_multipole_Pk_work_list(FRW_model_token& model, z_database& z_db, k_database& k_db,
+                                 IR_cutoff_database& IR_cutoff_db, UV_cutoff_database& UV_cutoff_db,
+                                 IR_resum_database& IR_resum_db, std::shared_ptr<wiggle_Pk>& Pk);
     
-    //! build a work list representing data for calculation of the Matsubara-A coefficient
-    std::unique_ptr<Matsubara_A_work_list> build_Matsubara_A_work_list(FRW_model_token& model,
-                                                                       IR_resum_database& IR_resum_db,
-                                                                       std::shared_ptr<tree_power_spectrum>& Pk);
+    //! build a work list representing data for calculation of the Matsubara- X & Y coefficients
+    std::unique_ptr<Matsubara_XY_work_list>
+    build_Matsubara_XY_work_list(FRW_model_token& model, IR_resum_database& IR_resum_db, std::shared_ptr<wiggle_Pk>& Pk);
+    
+    //! build a work list representing k-modes for which we need to produce a filtered wiggle/no-wiggle power spectrum
+    std::unique_ptr<filter_Pk_work_list> build_filter_Pk_work_list(linear_Pk_token& token, std::shared_ptr<linear_Pk>& Pk_lin);
+
+    //! exchange a linear power spectrum container for a wiggle-Pk container
+    std::unique_ptr<wiggle_Pk> build_wiggle_Pk(const linear_Pk_token& token, const linear_Pk& Pk_lin);
     
   protected:
     
@@ -124,7 +144,7 @@ class data_manager
     
     //! tensor together (k, IR cutoff, UV cutoff, IR resummation scale) combinations for loop integrals
     resum_Pk_configs tensor_product(k_database& k_db, IR_cutoff_database& IR_cutoff_db, UV_cutoff_database& UV_cutoff_db,
-                                 IR_resum_database& IR_resum_db);
+                                    IR_resum_database& IR_resum_db);
 
 
     // TOKENS
@@ -133,17 +153,26 @@ class data_manager
   public:
 
     //! tokenize an FRW model
-    //! generates a new transaction on the database; will fail if a transaction is in progress
+    //! generates a new transaction on the database
     std::unique_ptr<FRW_model_token> tokenize(const FRW_model& obj);
+    std::unique_ptr<FRW_model_token> tokenize(transaction_manager& mgr, const FRW_model& obj);
 
     //! tokenize a redshift
     //! generates a new transaction on the database; will fail if a transaction is in progress
     std::unique_ptr<z_token> tokenize(double z);
+    std::unique_ptr<z_token> tokenize(transaction_manager& mgr, double z);
 
     //! tokenize a wavenumber of the type specified in the template
     //! generates a new transaction on the database; will fail if a transaction is in progress
     template <typename Token>
     std::unique_ptr<Token> tokenize(const Mpc_units::energy& k);
+    template <typename Token>
+    std::unique_ptr<Token> tokenize(transaction_manager& mgr, const Mpc_units::energy& k);
+    
+    //! tokenize a linear power spectrum
+    //! generates a new transaction on the database; will fail if a transaction is in progress
+    std::unique_ptr<linear_Pk_token> tokenize(const FRW_model_token& model, const linear_Pk& Pk_lin);
+    std::unique_ptr<linear_Pk_token> tokenize(transaction_manager& mgr, const FRW_model_token& model, const linear_Pk& Pk_lin);
 
 
     // DATA STORAGE
@@ -163,26 +192,33 @@ class data_manager
     //! extract a sample of a z-dependent but not k-dependent quantity, of the type specified by
     //! the payload
     template <typename PayloadType>
-    PayloadType find(transaction_manager& mgr, const FRW_model_token& model, z_database& z_db);
+    std::unique_ptr<PayloadType> find(transaction_manager& mgr, const FRW_model_token& model, const z_database& z_db);
+    
+    //! extract a sample of a power spectrum-like quantity that depends on k but not z
+    template <typename PayloadType>
+    std::unique_ptr<PayloadType> find(transaction_manager& mgr, const linear_Pk_token& token, const k_database& k_db);
     
     //! extract a sample of a loop integral-like quantity that is k-dependent, UV and IR cutoff-dependent
     //! but not z-dependent
     template <typename PayloadType>
-    PayloadType find(transaction_manager& mgr, const FRW_model_token& model, const k_token& k,
-                     const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
+    std::unique_ptr<loop_integral>
+    find(transaction_manager& mgr, const FRW_model_token& model, const k_token& k, const linear_Pk_token& Pk,
+             const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
     
     //! extract a sample of a P(k)-like quantity that is k-dependent, z-dependent,
     //! and IR/UV-cutoff dependent
     template <typename PayloadType>
-    PayloadType find(transaction_manager& mgr, const FRW_model_token& model,
-                     const k_token& k, const z_token& z,
-                     const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
+    std::unique_ptr<PayloadType>
+    find(transaction_manager& mgr, const FRW_model_token& model, const k_token& k, const z_token& z,
+             const linear_Pk_token& Pk, const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
     
     //! extract a quantity of a IR-resummation-scale dependent quantity
     template <typename PayloadType>
-    PayloadType find(transaction_manager& mgr, const FRW_model_token& model,
-                     const IR_resum_token& IR_resum);
+    std::unique_ptr<PayloadType>
+    find(transaction_manager& mgr, const FRW_model_token& model, const linear_Pk_token& Pk,
+         const IR_resum_token& IR_resum);
 
+    
     // TRANSACTIONS
 
   protected:
@@ -218,8 +254,11 @@ class data_manager
     //! lookup or insert a wavenumber
     template <typename Token>
     unsigned int lookup_or_insert(transaction_manager& mgr, const Mpc_units::energy &k);
-
-
+    
+    //! lookup or insert a linear power spectrum identifier
+    unsigned int lookup_or_insert(transaction_manager& mgr, const FRW_model_token& model, const linear_Pk& Pk_lin);
+    
+    
     // INTERNAL DATA
 
   private:
@@ -267,6 +306,60 @@ void data_manager::store(const FRW_model_token& model, const SampleType& sample)
 
     // commit the transaction
     transaction->commit();
+  }
+
+
+template <typename Token>
+std::unique_ptr< wavenumber_database<Token> > data_manager::build_wavenumber_db(range<Mpc_units::energy>& sample)
+  {
+    // construct an empty wavenumber database
+    std::unique_ptr< wavenumber_database<Token> > k_db = std::make_unique< wavenumber_database<Token> >();
+    
+    // grab the grid of wavenumber samples
+    const std::vector<Mpc_units::energy>& k_samples = sample.grid();
+    
+    for(std::vector<Mpc_units::energy>::const_iterator t = k_samples.begin(); t != k_samples.end(); ++t)
+      {
+        std::unique_ptr<Token> tok = this->tokenize<Token>(*t);
+        k_db->add_record(*t, *tok);
+      }
+    
+    return(k_db);
+  }
+
+
+template <typename Token>
+std::unique_ptr<Token> data_manager::tokenize(const Mpc_units::energy& k)
+  {
+    // open a new transaction on the database
+    std::shared_ptr<transaction_manager> transaction = this->open_transaction();
+    
+    // lookup id for this wavenumber, or generate one if it does not already exist
+    std::unique_ptr<Token> id = this->tokenize<Token>(*transaction, k);
+    
+    // commit the transaction
+    transaction->commit();
+    
+    return std::move(id);
+  }
+
+
+template <typename Token>
+std::unique_ptr<Token> data_manager::tokenize(transaction_manager& mgr, const Mpc_units::energy& k)
+  {
+    // lookup id for this wavenumber, or generate one if it does not already exist
+    unsigned int id = this->lookup_or_insert<Token>(mgr, k);
+    return std::make_unique<Token>(id);
+  }
+
+
+template <typename Token>
+unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const Mpc_units::energy& k)
+  {
+    boost::optional<unsigned int> id = sqlite3_operations::lookup_wavenumber<Token>(this->handle, mgr, k, this->policy, this->k_tol);
+    if(id) return(*id);
+    
+    return sqlite3_operations::insert_wavenumber<Token>(this->handle, mgr, k, this->policy);
   }
 
 

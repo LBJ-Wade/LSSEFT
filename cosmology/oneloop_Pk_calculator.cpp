@@ -6,23 +6,27 @@
 #include "oneloop_Pk_calculator.h"
 
 
-std::list<oneloop_Pk> oneloop_Pk_calculator::calculate(const Mpc_units::energy& k, const k_token& k_tok, const IR_cutoff_token& IR_tok,
-                                                       const UV_cutoff_token& UV_tok, const oneloop_growth& gf_factors,
-                                                       const loop_integral& loop_data, const tree_power_spectrum& Ptree)
+std::list<oneloop_Pk>
+oneloop_Pk_calculator::calculate_dd(const Mpc_units::energy& k, const k_token& k_tok, const IR_cutoff_token& IR_tok,
+                                    const UV_cutoff_token& UV_tok, const oneloop_growth& gf_factors,
+                                    const loop_integral& loop_data, const wiggle_Pk& Ptree)
   {
     std::list<oneloop_Pk> container;
     
+    // use spline to evaluate power spectrum at scale k
+    Pk_value Ptr = build_Pk_value(k, Ptree);
+    
     for(const oneloop_value& val : gf_factors)
       {
-        dd_Pk dd = this->compute_dd(k, val.second, loop_data, Ptree);
+        dd_Pk dd = this->compute_dd(k, val.second, loop_data, Ptr);
 
-        rsd_dd_Pk rsd_mu0 = this->compute_rsd_dd_mu0(k, val.second, loop_data, Ptree);
-        rsd_dd_Pk rsd_mu2 = this->compute_rsd_dd_mu2(k, val.second, loop_data, Ptree);
-        rsd_dd_Pk rsd_mu4 = this->compute_rsd_dd_mu4(k, val.second, loop_data, Ptree);
-        rsd_dd_Pk rsd_mu6 = this->compute_rsd_dd_mu6(k, val.second, loop_data, Ptree);
-        rsd_dd_Pk rsd_mu8 = this->compute_rsd_dd_mu8(k, val.second, loop_data, Ptree);
+        rsd_dd_Pk rsd_mu0 = this->compute_rsd_dd_mu0(k, val.second, loop_data, Ptr);
+        rsd_dd_Pk rsd_mu2 = this->compute_rsd_dd_mu2(k, val.second, loop_data, Ptr);
+        rsd_dd_Pk rsd_mu4 = this->compute_rsd_dd_mu4(k, val.second, loop_data, Ptr);
+        rsd_dd_Pk rsd_mu6 = this->compute_rsd_dd_mu6(k, val.second, loop_data, Ptr);
+        rsd_dd_Pk rsd_mu8 = this->compute_rsd_dd_mu8(k, val.second, loop_data, Ptr);
     
-        container.emplace_back(k_tok, IR_tok, UV_tok, val.first.get_id(), dd,
+        container.emplace_back(k_tok, Ptree.get_token(), IR_tok, UV_tok, val.first.get_id(), dd,
                                rsd_mu0, rsd_mu2, rsd_mu4, rsd_mu6, rsd_mu8);
       }
     
@@ -32,14 +36,12 @@ std::list<oneloop_Pk> oneloop_Pk_calculator::calculate(const Mpc_units::energy& 
 
 dd_Pk
 oneloop_Pk_calculator::compute_dd(const Mpc_units::energy& k, const oneloop_growth_record& val,
-                                  const loop_integral& loop_data, const tree_power_spectrum& Ptree)
+                                  const loop_integral& loop_data, const Pk_value& Ptr)
   {
     delta_22_integrals d22 = loop_data.get_delta22();
     delta_13_integrals d13 = loop_data.get_delta13();
     
     // TREE TERMS
-    
-    auto Ptr = Ptree(k);
     
     Pk_value tree = val.g * val.g * Ptr;
     
@@ -68,8 +70,9 @@ oneloop_Pk_calculator::compute_dd(const Mpc_units::energy& k, const oneloop_grow
   }
 
 
-rsd_dd_Pk oneloop_Pk_calculator::compute_rsd_dd_mu0(const Mpc_units::energy& k, const oneloop_growth_record& val,
-                                                    const loop_integral& loop_data, const tree_power_spectrum& Ptree)
+rsd_dd_Pk
+oneloop_Pk_calculator::compute_rsd_dd_mu0(const Mpc_units::energy& k, const oneloop_growth_record& val,
+                                          const loop_integral& loop_data, const Pk_value& Ptr)
   {
     delta_22_integrals d22 = loop_data.get_delta22();
     delta_13_integrals d13 = loop_data.get_delta13();
@@ -78,8 +81,6 @@ rsd_dd_Pk oneloop_Pk_calculator::compute_rsd_dd_mu0(const Mpc_units::energy& k, 
     rsd_13_integrals rsd13 = loop_data.get_rsd13();
     
     // TREE TERMS
-    
-    auto Ptr = Ptree(k);
     
     Pk_value tree = val.g * val.g * Ptr;
     
@@ -128,8 +129,9 @@ rsd_dd_Pk oneloop_Pk_calculator::compute_rsd_dd_mu0(const Mpc_units::energy& k, 
   }
 
 
-rsd_dd_Pk oneloop_Pk_calculator::compute_rsd_dd_mu2(const Mpc_units::energy& k, const oneloop_growth_record& val,
-                                                    const loop_integral& loop_data, const tree_power_spectrum& Ptree)
+rsd_dd_Pk
+oneloop_Pk_calculator::compute_rsd_dd_mu2(const Mpc_units::energy& k, const oneloop_growth_record& val,
+                                          const loop_integral& loop_data, const Pk_value& Ptr)
   {
     delta_22_integrals d22 = loop_data.get_delta22();
     delta_13_integrals d13 = loop_data.get_delta13();
@@ -139,8 +141,6 @@ rsd_dd_Pk oneloop_Pk_calculator::compute_rsd_dd_mu2(const Mpc_units::energy& k, 
     
     // TREE TERMS
     
-    auto Ptr = Ptree(k);
-
     Pk_value tree = 2.0 * val.g * val.g * val.f * Ptr;
     
     // 13 TERMS
@@ -200,8 +200,9 @@ rsd_dd_Pk oneloop_Pk_calculator::compute_rsd_dd_mu2(const Mpc_units::energy& k, 
   }
 
 
-rsd_dd_Pk oneloop_Pk_calculator::compute_rsd_dd_mu4(const Mpc_units::energy& k, const oneloop_growth_record& val,
-                                                    const loop_integral& loop_data, const tree_power_spectrum& Ptree)
+rsd_dd_Pk
+oneloop_Pk_calculator::compute_rsd_dd_mu4(const Mpc_units::energy& k, const oneloop_growth_record& val,
+                                          const loop_integral& loop_data, const Pk_value& Ptr)
   {
     delta_22_integrals d22 = loop_data.get_delta22();
     delta_13_integrals d13 = loop_data.get_delta13();
@@ -210,8 +211,6 @@ rsd_dd_Pk oneloop_Pk_calculator::compute_rsd_dd_mu4(const Mpc_units::energy& k, 
     rsd_13_integrals rsd13 = loop_data.get_rsd13();
     
     // TREE TERMS
-    auto Ptr = Ptree(k);
-    
     
     Pk_value tree = val.g * val.g * val.f * val.f * Ptr;
     
@@ -278,8 +277,9 @@ rsd_dd_Pk oneloop_Pk_calculator::compute_rsd_dd_mu4(const Mpc_units::energy& k, 
   }
 
 
-rsd_dd_Pk oneloop_Pk_calculator::compute_rsd_dd_mu6(const Mpc_units::energy& k, const oneloop_growth_record& val,
-                                                    const loop_integral& loop_data, const tree_power_spectrum& Ptree)
+rsd_dd_Pk
+oneloop_Pk_calculator::compute_rsd_dd_mu6(const Mpc_units::energy& k, const oneloop_growth_record& val,
+                                          const loop_integral& loop_data, const Pk_value& Ptr)
   {
     delta_22_integrals d22 = loop_data.get_delta22();
     delta_13_integrals d13 = loop_data.get_delta13();
@@ -288,8 +288,6 @@ rsd_dd_Pk oneloop_Pk_calculator::compute_rsd_dd_mu6(const Mpc_units::energy& k, 
     rsd_13_integrals rsd13 = loop_data.get_rsd13();
     
     // TREE TERMS
-    
-    auto Ptr = Ptree(k);
     
     Pk_value tree;  // no tree contribution at mu^6
     
@@ -342,8 +340,9 @@ rsd_dd_Pk oneloop_Pk_calculator::compute_rsd_dd_mu6(const Mpc_units::energy& k, 
   }
 
 
-rsd_dd_Pk oneloop_Pk_calculator::compute_rsd_dd_mu8(const Mpc_units::energy& k, const oneloop_growth_record& val,
-                                                    const loop_integral& loop_data, const tree_power_spectrum& Ptree)
+rsd_dd_Pk
+oneloop_Pk_calculator::compute_rsd_dd_mu8(const Mpc_units::energy& k, const oneloop_growth_record& val,
+                                          const loop_integral& loop_data, const Pk_value& Ptr)
   {
     delta_22_integrals d22 = loop_data.get_delta22();
     delta_13_integrals d13 = loop_data.get_delta13();
@@ -386,4 +385,36 @@ rsd_dd_Pk oneloop_Pk_calculator::compute_rsd_dd_mu8(const Mpc_units::energy& k, 
     k2_Pk_value Z2_vvv;   // no contribution at mu^8
     
     return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv);
+  }
+
+
+oneloop_resum_Pk
+oneloop_Pk_calculator::calculate_resum_dd(const Mpc_units::energy& k, const Matsubara_XY& XY, const oneloop_Pk& data,
+                                          const oneloop_growth_record& gf_data, const wiggle_Pk& Pk_lin)
+  {
+    const auto& input_dd = data.get_dd();
+    const auto& input_tree = input_dd.get_tree();
+    const auto& input_13 = input_dd.get_13();
+    const auto& input_22 = input_dd.get_22();
+    const auto& input_Z2_delta = input_dd.get_Z2_delta();
+    
+    // compute Matsubara suppression factor
+    double MatsubaraA   = k*k * gf_data.g*gf_data.g * XY;
+    double MatsubaraExp = std::exp(-MatsubaraA);
+    
+    resum_Pk_value Ptree       = input_tree.get_nowiggle()     + MatsubaraExp*input_tree.get_wiggle();
+    resum_Pk_value P13         = input_13.get_nowiggle()       + MatsubaraExp*input_13.get_wiggle();
+    resum_Pk_value P22         = input_22.get_nowiggle()       + MatsubaraExp*input_22.get_wiggle();
+    k2_resum_Pk_value Z2_delta = input_Z2_delta.get_nowiggle() + MatsubaraExp*input_Z2_delta.get_wiggle();
+
+    resum_Pk_value SPT_nowiggle = input_tree.get_nowiggle() + input_13.get_nowiggle() + input_22.get_nowiggle();
+    resum_Pk_value SPT_wiggle   = input_tree.get_wiggle()   + input_13.get_wiggle()   + input_22.get_wiggle();
+    resum_Pk_value subtraction  = MatsubaraA * input_tree.get_wiggle();
+    
+    resum_Pk_value P1loop_SPT   = SPT_nowiggle + MatsubaraExp * (SPT_wiggle + subtraction);
+    
+    resum_dd_Pk Pk_resum(Ptree, P13, P22, P1loop_SPT, Z2_delta);
+    
+    return oneloop_resum_Pk(data.get_k_token(), data.get_Pk_token(), data.get_IR_token(), data.get_UV_token(),
+                            data.get_z_token(), XY.get_IR_resum_token(), Pk_resum);
   }

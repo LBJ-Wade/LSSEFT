@@ -16,12 +16,39 @@
 
 #include "units/Mpc_units.h"
 
+#include "exceptions.h"
+#include "localizations/messages.h"
+
 #include "boost/timer/timer.hpp"
 #include "boost/serialization/serialization.hpp"
 #include "boost/serialization/map.hpp"
+#include "boost/filesystem.hpp"
 
 
-class powerspectrum_database
+namespace Pk_database_impl
+  {
+    
+    
+    template<typename Dimension> struct DimensionTraits;
+    
+    template <>
+    struct DimensionTraits<Mpc_units::inverse_energy3>
+      {
+        constexpr Mpc_units::inverse_energy3 unit() const { return Mpc_units::Mpc3; }
+      };
+    
+    template <>
+    struct DimensionTraits<Mpc_units::inverse_energy>
+      {
+        constexpr Mpc_units::inverse_energy unit() const { return Mpc_units::Mpc; }
+      };
+    
+    
+  }   // namespace Pk_database_impl
+
+
+template <typename Dimension>
+class Pk_database
   {
 
   private:
@@ -29,9 +56,9 @@ class powerspectrum_database
     // use a map type to store the ordered power spectrum data
     // so a power spectrum is a map k -> P(k)
     // where k is measured in eV
-    typedef std::map< Mpc_units::energy, Pk_record > database_type;
+    typedef std::map< Mpc_units::energy, Pk_record<Dimension> > database_type;
 
-    typedef Mpc_units::inverse_energy3 Pk_units;
+    typedef Dimension Pk_units;
 
 
     // RECORD-VALUED ITERATORS
@@ -39,33 +66,36 @@ class powerspectrum_database
   public:
 
     // specialize generic_record_iterator<> to obtain const and non-const iterators into the database
-    typedef configuration_database::generic_record_iterator< database_type::iterator, database_type::const_iterator, Pk_record, false > record_iterator;
-    typedef configuration_database::generic_record_iterator< database_type::iterator, database_type::const_iterator, Pk_record, true >  const_record_iterator;
+    typedef configuration_database::generic_record_iterator< typename database_type::iterator, typename database_type::const_iterator, Pk_record<Dimension>, false > record_iterator;
+    typedef configuration_database::generic_record_iterator< typename database_type::iterator, typename database_type::const_iterator, Pk_record<Dimension>, true >  const_record_iterator;
 
-    typedef configuration_database::generic_record_iterator< database_type::reverse_iterator, database_type::const_reverse_iterator, Pk_record, false > reverse_record_iterator;
-    typedef configuration_database::generic_record_iterator< database_type::reverse_iterator, database_type::const_reverse_iterator, Pk_record, true >  const_reverse_record_iterator;
+    typedef configuration_database::generic_record_iterator< typename database_type::reverse_iterator, typename database_type::const_reverse_iterator, Pk_record<Dimension>, false > reverse_record_iterator;
+    typedef configuration_database::generic_record_iterator< typename database_type::reverse_iterator, typename database_type::const_reverse_iterator, Pk_record<Dimension>, true >  const_reverse_record_iterator;
 
 
     // CONFIGURATION-VALUED ITERATORS
 
   public:
 
-    typedef configuration_database::generic_value_iterator< database_type::iterator, database_type::const_iterator, Pk_units, false > value_iterator;
-    typedef configuration_database::generic_value_iterator< database_type::iterator, database_type::const_iterator, Pk_units, true >  const_value_iterator;
+    typedef configuration_database::generic_value_iterator< typename database_type::iterator, typename database_type::const_iterator, Pk_units, false > value_iterator;
+    typedef configuration_database::generic_value_iterator< typename database_type::iterator, typename database_type::const_iterator, Pk_units, true >  const_value_iterator;
 
-    typedef configuration_database::generic_value_iterator< database_type::reverse_iterator, database_type::const_reverse_iterator, Pk_units, false > reverse_value_iterator;
-    typedef configuration_database::generic_value_iterator< database_type::reverse_iterator, database_type::const_reverse_iterator, Pk_units, true >  const_reverse_value_iterator;
+    typedef configuration_database::generic_value_iterator< typename database_type::reverse_iterator, typename database_type::const_reverse_iterator, Pk_units, false > reverse_value_iterator;
+    typedef configuration_database::generic_value_iterator< typename database_type::reverse_iterator, typename database_type::const_reverse_iterator, Pk_units, true >  const_reverse_value_iterator;
 
 
     // CONSTRUCTOR, DESTRUCTOR
 
   public:
 
-    //! constructor
-    powerspectrum_database();
+    //! empty constructor
+    Pk_database();
+    
+    //! construct a power spectrum database from a file in CAMB format
+    Pk_database(const boost::filesystem::path& p);
 
     //! destructor is default
-    ~powerspectrum_database() = default;
+    ~Pk_database() = default;
 
 
     // MANUFACTURE RECORD-VALUED ITERATORS
@@ -117,7 +147,7 @@ class powerspectrum_database
     //! add record to the database
 
     //! the record shouldn't already exist, but no check is made to enforce this
-    void add_record(const Mpc_units::energy& k, const Mpc_units::inverse_energy3& Pk);
+    void add_record(const Mpc_units::energy& k, const Dimension& Pk);
 
 
     // UTILITY FUNCTIONS
@@ -160,6 +190,58 @@ class powerspectrum_database
       }
 
   };
+
+
+template <typename Dimension>
+Pk_database<Dimension>::Pk_database()
+  : k_min(std::numeric_limits<double>::max()),
+    k_max(std::numeric_limits<double>::min())
+  {
+  }
+
+
+template <typename Dimension>
+Pk_database<Dimension>::Pk_database(const boost::filesystem::path& p)
+  : Pk_database<Dimension>()   // forward to empty constructor
+  {
+    std::ifstream in;
+    in.open(p.string());
+    
+    if(!in.good())
+      {
+        std::ostringstream msg;
+        msg << ERROR_POWERSPECTRUM_FILE_NOT_READABLE_A << " " << p << " " << ERROR_POWERSPECTRUM_FILE_NOT_READABLE_B;
+        throw runtime_exception(exception_type::runtime_error, msg.str());
+      }
+    
+    for(std::string line; std::getline(in, line); )
+      {
+        std::stringstream line_stream(line);
+        
+        if(line.front() != '#')   // hash # is CAMB-format comment character
+          {
+            double _k, _Pk;
+            line_stream >> _k >> _Pk;
+    
+            Mpc_units::energy k = _k / Mpc_units::Mpc;
+            Dimension Pk = _Pk * Pk_database_impl::DimensionTraits<Dimension>().unit();
+            this->add_record(k, Pk);
+          }
+      }
+    
+    in.close();
+  }
+
+
+template <typename Dimension>
+void Pk_database<Dimension>::add_record(const Mpc_units::energy& k, const Dimension& Pk)
+  {
+    std::pair<typename database_type::iterator, bool> emplaced_value = this->database.emplace(k, Pk_record<Dimension>(k, Pk));
+    assert(emplaced_value.second);
+    
+    if(k > this->k_max) this->k_max = k;
+    if(k < this->k_min) this->k_min = k;
+  }
 
 
 #endif //LSSEFT_POWERSPECTRUM_DATABASE_H

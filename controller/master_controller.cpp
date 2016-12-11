@@ -13,7 +13,7 @@
 #include "cosmology/FRW_model.h"
 #include "cosmology/oneloop_growth_integrator.h"
 #include "cosmology/concepts/range.h"
-#include "cosmology/concepts/tree_power_spectrum.h"
+#include "cosmology/concepts/power_spectrum.h"
 
 #include "database/data_manager.h"
 
@@ -130,7 +130,7 @@ void master_controller::execute()
     stepping_range<Mpc_units::energy> loop_k_samples(0.005, 0.5, 200, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
     
     // set up a list of IR resummation scales, measured in h/Mpc
-    stepping_range<Mpc_units::energy> IR_resummation(0.1, 0.1, 0, 1.0 / Mpc_units::Mpc, spacing_type::linear);
+    stepping_range<Mpc_units::energy> IR_resummation(0.3, 0.3, 0, 1.0 / Mpc_units::Mpc, spacing_type::linear);
 
     // exchange these sample ranges for iterable databases
     std::unique_ptr<z_database> hi_z_db              = dmgr.build_redshift_db(hi_redshift_samples);
@@ -164,35 +164,68 @@ void master_controller::execute()
     
     if(this->arg_cache.get_powerspectrum_set())
       {
-        // read in tree-level power spectrum in CAMB format;
-        // we manage its lifetime with std::shared_ptr since ownership is shared with the
-        // MPI messaging routines
-        std::shared_ptr<tree_power_spectrum> Pk = std::make_shared<tree_power_spectrum>(this->arg_cache.get_powerspectrum_path());
+        // STEP 1 - FILTER THE POWER SPECTRUM
+        
+        // read in tree-level power spectrum in CAMB format, and ask the database to tokenize it
+        // we manage its lifetime using std::shared_ptr<> because we want to share ownership with
+        // the MPI work records and payloads
+        std::shared_ptr<linear_Pk> Pk_lin_db = std::make_shared<linear_Pk>(this->arg_cache.get_powerspectrum_path());
+        std::unique_ptr<linear_Pk_token> Pk_lin = dmgr.tokenize(*model, *Pk_lin_db);
+        
+        // build a work list for filtering the linear power spectrum in wiggle/no-wiggle components
+        std::shared_ptr<filter_Pk_work_list> filter_work = dmgr.build_filter_Pk_work_list(*Pk_lin, Pk_lin_db);
+        
+        // distribute this work list among the worker processes
+        if(filter_work) this->scatter(cosmology_model, *model, *filter_work, dmgr);
+        
+        // exchange our linear power spectrum for the filtered version;
+        // we manage its lifetime using std::shared_ptr<> since ownership is shared with the
+        // MPI work records and payloads
+        std::shared_ptr<wiggle_Pk> Pk_wig = dmgr.build_wiggle_Pk(*Pk_lin, *Pk_lin_db);
+        
+
+        // STEP 2 - COMPUTE LOOP INTEGRALS
 
         // build a work list for the loop integrals
         std::unique_ptr<loop_momentum_work_list> loop_momentum_work =
-          dmgr.build_loop_momentum_work_list(*model, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, Pk);
+          dmgr.build_loop_momentum_work_list(*model, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, Pk_wig);
 
         // distribute this work list among the worker processes
         if(loop_momentum_work) this->scatter(cosmology_model, *model, *loop_momentum_work, dmgr);
+    
         
-        // build a work list for the individual power spectrum components
-        std::unique_ptr<one_loop_Pk_work_list> Pk_work =
-          dmgr.build_one_loop_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, Pk);
-
-        // distribute this work list among the worker processes
-        if(Pk_work) this->scatter(cosmology_model, *model, *Pk_work, dmgr);
+        // STEP 3 - COMPUTE MATSUBARA X & Y COEFFICIENTS
         
-        // build a work list of the Matsubara A coefficient associated with these resummation scales
-        std::unique_ptr<Matsubara_A_work_list> Matsubara_work =
-          dmgr.build_Matsubara_A_work_list(*model, *IR_resum_db, Pk);
+        // build a work list of the Matsubara X & Y coefficients associated with these resummation scales
+        std::unique_ptr<Matsubara_XY_work_list> Matsubara_work =
+          dmgr.build_Matsubara_XY_work_list(*model, *IR_resum_db, Pk_wig);
     
         // distribute this work list among the worker processes
         if(Matsubara_work) this->scatter(cosmology_model, *model, *Matsubara_work, dmgr);
         
+        
+        // STEP 4 - COMPUTE ONE-LOOP POWER SPECTRA IN REAL AND REDSHIFT SPACE
+        
+        // build a work list for the individual power spectrum components
+        std::unique_ptr<one_loop_Pk_work_list> Pk_work =
+          dmgr.build_one_loop_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, Pk_wig);
+
+        // distribute this work list among the worker processes
+        if(Pk_work) this->scatter(cosmology_model, *model, *Pk_work, dmgr);
+        
+        // build a work list for the resummed power spectrum components
+        std::unique_ptr<one_loop_resum_Pk_work_list> Pk_resum_work =
+          dmgr.build_one_loop_resum_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, *IR_resum_db, Pk_wig);
+        
+        // distribute this work list among the worker processes
+        if(Pk_resum_work) this->scatter(cosmology_model, *model, *Pk_resum_work, dmgr);
+        
+        
+        // STEP 5 - COMPUTE MULTIPOLE DECOMPOSIITON OF REDSHIFT-SPACE POWER SPECTRUM
+        
         // build a work list for the resummed multipole power spectra
         std::unique_ptr<multipole_Pk_work_list> multipole_Pk_work =
-          dmgr.build_multipole_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, *IR_resum_db, Pk);
+          dmgr.build_multipole_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, *IR_resum_db, Pk_wig);
     
         // distribute this work list among the worker processes
         if(multipole_Pk_work) this->scatter(cosmology_model, *model, *multipole_Pk_work, dmgr);

@@ -73,6 +73,14 @@ class slave_controller
 
     //! integrate a given transfer function
     void process_item(MPI_detail::new_transfer_integration& payload);
+    
+    
+    // LINEAR POWER SPECTRUM TASKS
+    
+  protected:
+    
+    //! filter a linear power spectrum into wiggle/no-wiggle components
+    void process_item(MPI_detail::new_filter_Pk& payload);
 
 
     // LOOP MOMENTUM TASKS
@@ -82,11 +90,19 @@ class slave_controller
     //! integrate a given loop
     void process_item(MPI_detail::new_loop_momentum_integration& payload);
     
+    
+    // ONE-LOOP POWER SPECTRUM TASKS
+    
+  protected:
+    
+    //! compute Matsubara's resummation X & Y coefficients
+    void process_item(MPI_detail::new_Matsubara_XY& payload);
+    
     //! combine loop integral and growth-factor data to produce a 1-loop power spectrum
     void process_item(MPI_detail::new_one_loop_Pk& payload);
     
-    //! compute Matsubara's resummation A coefficient
-    void process_item(MPI_detail::new_Matsubara_A& payload);
+    //! process the 1-loop power spectrum to produce a resummed version
+    void process_item(MPI_detail::new_one_loop_resum_Pk& payload);
     
     //! combine 1-loop power spectrum data to produce multipole power spectra
     void process_item(MPI_detail::new_multipole_Pk& payload);

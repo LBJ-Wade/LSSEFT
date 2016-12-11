@@ -10,9 +10,11 @@
 constexpr auto SQLITE3_DEFAULT_FRW_TABLE_NAME                 = "models";
 constexpr auto SQLITE3_DEFAULT_REDSHIFT_CONFIGURATION_TABLE   = "z_config";
 constexpr auto SQLITE3_DEFAULT_WAVENUMBER_CONFIGURATION_TABLE = "k_config";
-constexpr auto SQLITE3_DEFAULT_IR_CUTOFF_CONFIGURATION_TABLE  = "IR_cutoff";
-constexpr auto SQLITE3_DEFAULT_UV_CUTOFF_CONFIGURATION_TABLE  = "UV_cutoff";
-constexpr auto SQLITE3_DEFAULT_IR_RESUM_CONFIGURATION_TABLE   = "IR_resum";
+constexpr auto SQLITE3_DEFAULT_IR_CUTOFF_CONFIGURATION_TABLE  = "IR_cutoff_config";
+constexpr auto SQLITE3_DEFAULT_UV_CUTOFF_CONFIGURATION_TABLE  = "UV_cutoff_config";
+constexpr auto SQLITE3_DEFAULT_IR_RESUM_CONFIGURATION_TABLE   = "IR_resum_config";
+constexpr auto SQLITE3_DEFAULT_LINEAR_PK_CONFIGURATION_TABLE  = "Pk_linear_config";
+constexpr auto SQLITE3_DEFAULT_LINEAR_PK_DATA_TABLE           = "Pk_linear";
 constexpr auto SQLITE3_DEFAULT_TRANSFER_TABLE                 = "transfer";
 constexpr auto SQLITE3_DEFAULT_GROWTH_G_TABLE                 = "g_factors";
 constexpr auto SQLITE3_DEFAULT_GROWTH_F_TABLE                 = "f_factors";
@@ -47,6 +49,7 @@ constexpr auto SQLITE3_DEFAULT_LOOP_RSD22_C2_TABLE            = "rsd22_C2";
 constexpr auto SQLITE3_DEFAULT_LOOP_RSD22_C4_TABLE            = "rsd22_C4";
 constexpr auto SQLITE3_DEFAULT_LOOP_RSD22_D1_TABLE            = "rsd22_D1";
 constexpr auto SQLITE3_DEFAULT_LOOP_DD_TABLE                  = "dd_Pk";
+constexpr auto SQLITE3_DEFAULT_LOOP_DD_RESUM_TABLE            = "dd_Pk_resum";
 constexpr auto SQLITE3_DEFAULT_LOOP_DD_RSD_MU0_TABLE          = "dd_rsd_mu0_Pk";
 constexpr auto SQLITE3_DEFAULT_LOOP_DD_RSD_MU2_TABLE          = "dd_rsd_mu2_Pk";
 constexpr auto SQLITE3_DEFAULT_LOOP_DD_RSD_MU4_TABLE          = "dd_rsd_mu4_Pk";
@@ -55,7 +58,7 @@ constexpr auto SQLITE3_DEFAULT_LOOP_DD_RSD_MU8_TABLE          = "dd_rsd_mu8_Pk";
 constexpr auto SQLITE3_DEFAULT_LOOP_P0_TABLE                  = "dd_P0";
 constexpr auto SQLITE3_DEFAULT_LOOP_P2_TABLE                  = "dd_P2";
 constexpr auto SQLITE3_DEFAULT_LOOP_P4_TABLE                  = "dd_P4";
-constexpr auto SQLITE3_DEFAULT_MATSUBARA_A_TABLE              = "Matsubara_A";
+constexpr auto SQLITE3_DEFAULT_MATSUBARA_XY_TABLE             = "Matsubara_XY";
 
 constexpr auto SQLITE3_DEFAULT_TEMPORARY_TABLE                = "temp";
 

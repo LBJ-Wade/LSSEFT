@@ -326,11 +326,48 @@ class IR_resum_token: public generic_token
   };
 
 
-// specialize tokenization for this
+// specialize tokenization for IR-resummation-scale tokens
 template <>
 inline const std::string& tokenization_table<IR_resum_token>(const sqlite3_policy& policy)
   {
-    return(policy.IR_resum_table());
+    return(policy.IR_resum_config_table());
+  }
+
+
+//! token representing a linear power spectrum P(k)
+class linear_Pk_token: public generic_token
+  {
+    
+    // CONSTRUCTOR, DESTRUCTOR
+  
+  public:
+    
+    //! constructor
+    linear_Pk_token(unsigned int i);
+    
+    //! destructor is default
+    virtual ~linear_Pk_token() = default;
+  
+  
+  private:
+    
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+    
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & boost::serialization::base_object<generic_token>(*this);
+      }
+    
+  };
+
+
+// specialize tokenization for linear P(k) tokens
+template <>
+inline const std::string& tokenization_table<linear_Pk_token>(const sqlite3_policy& policy)
+  {
+    return(policy.Pk_linear_config_table());
   }
 
 
@@ -503,6 +540,35 @@ namespace std
         
         //! hash function
         size_t operator()(const IR_resum_token& tok) const
+          {
+            std::hash<generic_token> hasher;
+            return hasher(tok);
+          }
+        
+      };
+    
+    
+    template<>
+    class hash<linear_Pk_token>
+      {
+        
+        // CONSTRUCTOR, DESTRUCTOR
+      
+      public:
+        
+        //! constructor is default
+        hash() = default;
+        
+        //! destrucotr is default
+        ~hash() = default;
+        
+        
+        // IMPLEMENTATION
+      
+      public:
+        
+        //! hash function
+        size_t operator()(const linear_Pk_token& tok) const
           {
             std::hash<generic_token> hasher;
             return hasher(tok);

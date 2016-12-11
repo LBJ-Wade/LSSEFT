@@ -11,8 +11,8 @@
 #include "concepts/oneloop_growth.h"
 #include "concepts/oneloop_Pk.h"
 #include "concepts/multipole_Pk.h"
-#include "concepts/Matsubara_A.h"
-#include "concepts/tree_power_spectrum.h"
+#include "cosmology/concepts/Matsubara_XY.h"
+#include "cosmology/concepts/power_spectrum.h"
 
 #include "database/tokens.h"
 
@@ -30,12 +30,7 @@ class multipole_Pk_calculator
   public:
     
     //! constructor
-    multipole_Pk_calculator(double r = LSSEFT_DEFAULT_INTEGRAL_REL_ERR_22,
-                            double a = LSSEFT_DEFAULT_INTEGRAL_ABS_ERR_22)
-      : rel_err(r),
-        abs_err(a)
-      {
-      }
+    multipole_Pk_calculator() = default;
     
     //! destructor is default
     ~multipole_Pk_calculator() = default;
@@ -47,37 +42,20 @@ class multipole_Pk_calculator
     
     //! calculate power spectra decomposition into Legendre modes
     multipole_Pk
-    calculate_Legendre(const Mpc_units::energy& k, const Matsubara_A& A,
-                       const oneloop_Pk& data, const oneloop_growth_record& gf_data, const tree_power_spectrum& Ptree);
-    
-    //! calculate Matsubara-A coefficient
-    Matsubara_A
-    calculate_Matsubara_A(const Mpc_units::energy& IR_resum, const IR_resum_token& IR_resum_tok,
-                          const tree_power_spectrum& Ptree);
+    calculate_Legendre(const Mpc_units::energy& k, const Matsubara_XY& XY,
+                       const oneloop_Pk& data, const oneloop_growth_record& gf_data, const wiggle_Pk& Ptree);
     
   private:
     
     //! decompose into Legendre modes using a specified decomposer functional and for a specified ell mode
     template <typename Accessor, typename Decomposer>
-    decltype(std::declval<Accessor>()(std::declval<const rsd_dd_Pk&>()))
-    decompose(Accessor extract, const oneloop_Pk& data, Decomposer decomp);
+    auto decompose(Accessor extract, const oneloop_Pk& data, Decomposer decomp);
     
-    //! decompose into Legendre modes using a specified decomposer, including the additive correction
+    //! decompose into Legendre modes using resummation of the wiggle part, including subtractions
     //! to prevent double-counting after resummation
-    template <typename Decomposer>
-    Mpc_units::inverse_energy3
-    decompose_1loop_resummed(const oneloop_Pk& data, double Matsubara_A, const oneloop_growth_record& gf_data,
-                             Decomposer decomp, const Mpc_units::energy& k, const tree_power_spectrum& Ptree);
-    
-    // INTERNAL DATA
-    
-  private:
-    
-    //! relative error
-    double rel_err;
-    
-    //! absolute error
-    double abs_err;
+    template <typename WiggleAccessor, typename NoWiggleAccessor, typename ResumAdjuster, typename RawDecomposer, typename XYDecomposer>
+    auto decompose(WiggleAccessor wiggle, NoWiggleAccessor nowiggle, const oneloop_Pk& data,
+                   ResumAdjuster adjust, RawDecomposer raw_decomp, XYDecomposer XY_decomp);
     
   };
 

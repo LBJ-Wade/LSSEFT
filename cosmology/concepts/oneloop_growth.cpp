@@ -6,7 +6,7 @@
 #include "oneloop_growth.h"
 
 
-oneloop_growth::oneloop_growth(z_database& z)
+oneloop_growth::oneloop_growth(const z_database& z)
   : z_db(std::make_unique<z_database>(z))
   {
     g_linear = std::make_unique< std::vector<double> >();

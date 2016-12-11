@@ -4,8 +4,14 @@ PROJECT(LSSEFT)
 LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/)
 INCLUDE(BuildDeps)
 
+# find MPI libraries
 FIND_PACKAGE(MPI REQUIRED)
+
+# find Boost libraries
 FIND_PACKAGE(Boost REQUIRED COMPONENTS system filesystem timer date_time mpi program_options serialization)
+
+# find OpenSSL libraries
+FIND_PACKAGE(OpenSSL REQUIRED)
 
 # pull in bundled SPLINTER sources; on most platforms will need to switch default build to 64-bit
 SET(ARCH "x86-64")
@@ -38,7 +44,8 @@ SET(LOCALIZATION_EN_GB
   localizations/en_GB/range.h
   localizations/en_GB/format.h
   localizations/en_GB/master_controller.h
-  localizations/en_GB/tree_power_spectrum.h)
+  localizations/en_GB/power_spectrum.h
+  localizations/en_GB/Pk_filter.h)
 
 SET(TOP_LEVEL_SOURCE_FILES
   main.cpp
@@ -81,36 +88,53 @@ SET(COSMOLOGY_SOURCE_FILES
   cosmology/concepts/range_detail/aggregation.h
   cosmology/concepts/oneloop_growth.cpp cosmology/concepts/oneloop_growth.h
   cosmology/concepts/transfer_function.cpp cosmology/concepts/transfer_function.h
-  cosmology/concepts/tree_power_spectrum.cpp cosmology/concepts/tree_power_spectrum.h
+  cosmology/concepts/loop_integral.cpp cosmology/concepts/loop_integral.h
+  cosmology/concepts/power_spectrum_detail/generic.h
+  cosmology/concepts/power_spectrum_detail/types.h
+  cosmology/concepts/power_spectrum_detail/linear.cpp cosmology/concepts/power_spectrum_detail/linear.h
+  cosmology/concepts/power_spectrum_detail/wiggle.cpp cosmology/concepts/power_spectrum_detail/wiggle.h
+  cosmology/concepts/power_spectrum_detail/spline.cpp cosmology/concepts/power_spectrum_detail/spline.h
+  cosmology/concepts/power_spectrum.h
   cosmology/concepts/multipole_Pk.cpp cosmology/concepts/multipole_Pk.h
   cosmology/concepts/oneloop_Pk.cpp cosmology/concepts/oneloop_Pk.h
-  cosmology/concepts/Matsubara_A.cpp cosmology/concepts/Matsubara_A.h
+  cosmology/concepts/oneloop_resum_Pk.cpp cosmology/concepts/oneloop_resum_Pk.h
+  cosmology/concepts/Matsubara_XY.cpp cosmology/concepts/Matsubara_XY.h
+  cosmology/concepts/filtered_Pk.cpp cosmology/concepts/filtered_Pk.h
   cosmology/oneloop_integrands/shared.h
   cosmology/oneloop_integrands/delta_13.h
   cosmology/oneloop_integrands/delta_22.h
   cosmology/oneloop_integrands/delta_rsd_13.h
   cosmology/oneloop_integrands/delta_rsd_22.h
   cosmology/oneloop_momentum_integrator.cpp cosmology/oneloop_momentum_integrator.h
-  cosmology/concepts/loop_integral.cpp cosmology/concepts/loop_integral.h
   cosmology/transfer_integrator.cpp cosmology/transfer_integrator.h
   cosmology/oneloop_growth_integrator.cpp cosmology/oneloop_growth_integrator.h
   cosmology/oneloop_Pk_calculator.cpp cosmology/oneloop_Pk_calculator.h
-  cosmology/multipole_Pk_calculator.cpp cosmology/multipole_Pk_calculator.h)
+  cosmology/multipole_Pk_calculator.cpp cosmology/multipole_Pk_calculator.h
+  cosmology/Pk_filter.cpp cosmology/Pk_filter.h
+  cosmology/Matsubara_XY_calculator.cpp cosmology/Matsubara_XY_calculator.h)
 
 SET(UNITS_SOURCE_FILES
   units/Mpc_units.h)
 
 SET(DATABASE_SOURCE_FILES
-  database/data_manager.cpp database/data_manager.h database/data_manager_impl.h
+  database/data_manager_impl/data_manager.cpp database/data_manager.h
+  database/data_manager_impl/types.h
+  database/data_manager_impl/build_database.cpp
+  database/data_manager_impl/tokenize.cpp
+  database/data_manager_impl/lookup_insert.cpp
+  database/data_manager_impl/work_lists.cpp
+  database/data_manager_impl/find.cpp
+  database/data_manager_impl/services.cpp
+  database/data_manager_impl/transactions.cpp
   database/tokens.cpp database/tokens.h
   database/transaction_manager.cpp database/transaction_manager.h
   database/wavenumber_database.h
   database/z_database.cpp database/z_database.h
   database/generic_record_iterator.h database/generic_value_iterator.h
-  database/powerspectrum_database.cpp database/powerspectrum_database.h
+  database/Pk_database.h
   database/z_record.cpp database/z_record.h
   database/wavenumber_record.h
-  database/powerspectrum_record.cpp database/powerspectrum_record.h
+  database/powerspectrum_record.h
   database/k_database.h
   database/IR_cutoff_database.h
   database/UV_cutoff_database.h
@@ -128,7 +152,8 @@ SET(SQLITE3_DETAIL_SOURCE_FILES
   sqlite3_detail/temporary_tables.cpp sqlite3_detail/temporary_tables.h
   sqlite3_detail/missing_elements.cpp sqlite3_detail/missing_elements.h
   sqlite3_detail/store.cpp sqlite3_detail/store.h
-  sqlite3_detail/find.cpp sqlite3_detail/find.h)
+  sqlite3_detail/find.cpp sqlite3_detail/find.h
+  sqlite3_detail/power_spectrum.cpp sqlite3_detail/power_spectrum.h)
 
 SET(SOURCE_FILES
   ${TOP_LEVEL_SOURCE_FILES}
@@ -142,7 +167,7 @@ SET(SOURCE_FILES
   ${DATABASE_SOURCE_FILES}
   ${SQLITE3_DETAIL_SOURCE_FILES}
   ${LOCALIZATION}
-  ${LOCALIZATION_EN_GB} cosmology/concepts/Matsubara_A.cpp cosmology/concepts/Matsubara_A.h)
+  ${LOCALIZATION_EN_GB})
 
 ADD_EXECUTABLE(lsseft
   main.cpp
@@ -159,22 +184,33 @@ ADD_EXECUTABLE(lsseft
   cosmology/concepts/transfer_function.cpp
   cosmology/concepts/oneloop_growth.cpp
   cosmology/concepts/loop_integral.cpp
-  cosmology/concepts/tree_power_spectrum.cpp
   cosmology/concepts/oneloop_Pk.cpp
+  cosmology/concepts/oneloop_resum_Pk.cpp
   cosmology/concepts/multipole_Pk.cpp
-  cosmology/concepts/Matsubara_A.cpp
+  cosmology/concepts/Matsubara_XY.cpp
+  cosmology/concepts/filtered_Pk.cpp
+  cosmology/concepts/power_spectrum_detail/linear.cpp
+  cosmology/concepts/power_spectrum_detail/wiggle.cpp
+  cosmology/concepts/power_spectrum_detail/spline.cpp
   cosmology/transfer_integrator.cpp
   cosmology/oneloop_growth_integrator.cpp
   cosmology/oneloop_momentum_integrator.cpp
   cosmology/oneloop_Pk_calculator.cpp
   cosmology/multipole_Pk_calculator.cpp
-  database/data_manager.cpp
+  cosmology/Pk_filter.cpp
+  cosmology/Matsubara_XY_calculator.cpp
+  database/data_manager_impl/data_manager.cpp
+  database/data_manager_impl/build_database.cpp
+  database/data_manager_impl/tokenize.cpp
+  database/data_manager_impl/lookup_insert.cpp
+  database/data_manager_impl/work_lists.cpp
+  database/data_manager_impl/find.cpp
+  database/data_manager_impl/services.cpp
+  database/data_manager_impl/transactions.cpp
   database/tokens.cpp
   database/transaction_manager.cpp
   database/z_database.cpp
-  database/powerspectrum_database.cpp
   database/z_record.cpp
-  database/powerspectrum_record.cpp
   MPI_detail/mpi_payloads.cpp
   sqlite3_detail/utilities.cpp
   sqlite3_detail/create.cpp
@@ -184,11 +220,12 @@ ADD_EXECUTABLE(lsseft
   sqlite3_detail/missing_elements.cpp
   sqlite3_detail/store.cpp
   sqlite3_detail/find.cpp
+  sqlite3_detail/power_spectrum.cpp
   sqlite3_detail/sqlite3_policy.cpp)
 
 ADD_DEPENDENCIES(lsseft DEPS)
 
-TARGET_LINK_LIBRARIES(lsseft sqlite3 cuba ${Boost_LIBRARIES} ${MPI_LIBRARIES} ${SPLINTER_LIBRARIES})
+TARGET_LINK_LIBRARIES(lsseft sqlite3 cuba ${Boost_LIBRARIES} ${MPI_LIBRARIES} ${SPLINTER_LIBRARIES} ${OPENSSL_LIBRARIES})
 
 TARGET_COMPILE_OPTIONS(lsseft PRIVATE -std=c++14)
 
@@ -197,6 +234,7 @@ TARGET_INCLUDE_DIRECTORIES(lsseft PRIVATE
   ${CMAKE_CURRENT_BINARY_DIR}
   ${SPLINTER_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
+  ${OPENSSL_INCLUDE_DIR}
   ${MPI_CXX_INCLUDE_PATH}
   ${CUBA_INCLUDE_DIR})
 

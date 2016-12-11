@@ -22,7 +22,11 @@ class FRW_model
     //! constructor
     //! cosmological parameters refer to their values today; if none are provided, then we use
     //! Planck values as sensible defaults
-    FRW_model(double om= Planck2013::omega_m, double occ= Planck2013::omega_cc, double h_= Planck2013::h, Mpc_units::energy tc= Planck2013::T_CMB, double ne= Planck2013::Neff);
+    FRW_model(double om = Planck2013::omega_m, double occ = Planck2013::omega_cc, double h_ = Planck2013::h,
+              Mpc_units::energy tc = Planck2013::T_CMB, double ne = Planck2013::Neff,
+              double fb = Planck2013::f_baryon, double zs = Planck2013::z_star, double zd = Planck2013::z_drag,
+              double ze = Planck2013::z_eq, double Ac = Planck2013::Acurv, double n = Planck2013::ns,
+              Mpc_units::energy kp = Planck2013::kpiv);
 
     //! destructor is default
     ~FRW_model() = default;
@@ -46,6 +50,27 @@ class FRW_model
 
     //! get value of Neff
     double get_Neff() const { return(this->Neff); }
+    
+    //! get value of f_baryon
+    double get_f_baryon() const { return this->f_baryon; }
+    
+    //! get zstar
+    double get_z_star() const { return this->z_star; }
+    
+    //! get zdrag
+    double get_z_drag() const { return this->z_drag; }
+    
+    //! get zeq
+    double get_z_eq() const { return this->z_eq; }
+    
+    //! get value of A_curv
+    double get_A_curv() const { return this->A_curv; }
+    
+    //! get value of n_s
+    double get_ns() const { return this->ns; }
+    
+    //! get value of k_piv
+    Mpc_units::energy get_k_piv() const { return this->k_piv; }
 
 
     // INTERNAL DATA
@@ -66,6 +91,27 @@ class FRW_model
 
     //! number of effective relativistic degrees of freedom
     double Neff;
+    
+    //! baryon fraction
+    double f_baryon;
+    
+    //! z*
+    double z_star;
+    
+    //! drag epoch
+    double z_drag;
+    
+    //! matter-radiation equality
+    double z_eq;
+    
+    //! amplitude of curvature perturbations
+    double A_curv;
+    
+    //! spectral index of curvature perturbations
+    double ns;
+    
+    //! pivot scale
+    Mpc_units::energy k_piv;
 
 
     // enable boost::serialization support, and hence automated packing for transmission over MPI
@@ -79,6 +125,13 @@ class FRW_model
         ar & h;
         ar & T_CMB;
         ar & Neff;
+        ar & f_baryon;
+        ar & z_star;
+        ar & z_drag;
+        ar & z_eq;
+        ar & A_curv;
+        ar & ns;
+        ar & k_piv;
       }
 
   };
