@@ -366,12 +366,7 @@ typedef raw_wiggle_Pk_component<Mpc_units::inverse_energy>  k2_Pk_value;
 
 
 // build Pk_value from a wiggle_Pk
-Pk_value build_Pk_value(const Mpc_units::energy& k, const wiggle_Pk& Pk)
-  {
-    Pk_value_group<Mpc_units::inverse_energy3> Ptree_raw(Pk.Pk_raw(k));
-    Pk_value_group<Mpc_units::inverse_energy3> Ptree_nw(Pk.Pk_nowiggle(k));
-    return Pk_value(Ptree_raw, Ptree_nw);
-  }
+Pk_value build_Pk_value(const Mpc_units::energy& k, const wiggle_Pk& Pk);
 
 
 //! overload + and - so that power spectrum and counterterm values can be added

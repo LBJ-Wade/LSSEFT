@@ -14,7 +14,7 @@ oneloop_Pk_calculator::calculate_dd(const Mpc_units::energy& k, const k_token& k
     std::list<oneloop_Pk> container;
     
     // use spline to evaluate power spectrum at scale k
-    Pk_value Ptr = build_Pk_value(Ptree);
+    Pk_value Ptr = build_Pk_value(k, Ptree);
     
     for(const oneloop_value& val : gf_factors)
       {
