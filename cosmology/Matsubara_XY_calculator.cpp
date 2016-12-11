@@ -116,11 +116,11 @@ Matsubara_XY_calculator::calculate_Matsubara_XY(const Mpc_units::energy& IR_resu
   {
     // extract database for power spectra
     const auto& raw_db = Pk_lin.get_raw_db();
-    const auto& wiggle_db = Pk_lin.get_wiggle_db();
+    const auto& nowiggle_db = Pk_lin.get_nowiggle_db();
     
     // use standard clearance above lower limit of spline to avoid unwanted effects associated
     // with inaccuracies in the fit there
-    const auto k_min = SPLINE_PK_DEFAULT_BOTTOM_CLEARANCE * std::min(raw_db.get_k_min(), wiggle_db.get_k_min());
+    const auto k_min = SPLINE_PK_DEFAULT_BOTTOM_CLEARANCE * std::min(raw_db.get_k_min(), nowiggle_db.get_k_min());
     
     wiggle_Pk_nowiggle_adapter nowiggle(Pk_lin);
     

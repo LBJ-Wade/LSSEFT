@@ -11,7 +11,7 @@
 
 
 // define convenience types for resummed versions of the basic power spectrum (~ 1/k^3) and k^2 * basic power spectrum (~ 1/k)
-// these differ from Pk_value and k2_Pk_value by dropping the need to keep raw & wiggle information
+// these differ from Pk_value and k2_Pk_value by dropping the need to keep raw & nowiggle information
 typedef Pk_value_group<Mpc_units::inverse_energy3> resum_Pk_value;
 typedef Pk_value_group<Mpc_units::inverse_energy>  k2_resum_Pk_value;
 

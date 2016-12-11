@@ -40,7 +40,7 @@ class Pk_filter
     
   public:
     
-    //! filter a linear power spectrum; returns estimate of the wiggle component and
+    //! filter a linear power spectrum; returns estimate of the no-wiggle component and
     //! the reference power spectrum for the same scale
     std::pair< Mpc_units::inverse_energy3, Mpc_units::inverse_energy3 >
     operator()(const FRW_model& model, const linear_Pk& Pk_lin, const Mpc_units::energy& k);

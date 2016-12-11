@@ -20,7 +20,7 @@ class filtered_Pk
   public:
     
     //! value constructor
-    filtered_Pk(const k_token& kt, const linear_Pk_token& Pt, Mpc_units::inverse_energy3 _Pk_w,
+    filtered_Pk(const k_token& kt, const linear_Pk_token& Pt, Mpc_units::inverse_energy3 _Pk_nw,
                 Mpc_units::inverse_energy3 _Pk_raw, Mpc_units::inverse_energy3 _Pk_ref);
     
     //! empty constructor, used only for receiving MPI payloads
@@ -41,7 +41,7 @@ class filtered_Pk
     const linear_Pk_token& get_Pk_token() const { return this->Pk_tok; }
     
     //! get no-wiggle power spectrum
-    const Mpc_units::inverse_energy3 get_Pk_w() const { return this->Pk_w; }
+    const Mpc_units::inverse_energy3 get_Pk_nowiggle() const { return this->Pk_nw; }
     
     //! get raw power spectrum
     const Mpc_units::inverse_energy3 get_Pk_raw() const { return this->Pk_raw; }
@@ -66,7 +66,7 @@ class filtered_Pk
     // PAYLOAD DATA
     
     //! no-wiggle power spectrum
-    Mpc_units::inverse_energy3 Pk_w;
+    Mpc_units::inverse_energy3 Pk_nw;
     
     //! raw power spectrum
     Mpc_units::inverse_energy3 Pk_raw;
@@ -83,7 +83,7 @@ class filtered_Pk
       {
         ar & k_tok;
         ar & Pk_tok;
-        ar & Pk_w;
+        ar & Pk_nw;
         ar & Pk_raw;
         ar & Pk_ref;
       }

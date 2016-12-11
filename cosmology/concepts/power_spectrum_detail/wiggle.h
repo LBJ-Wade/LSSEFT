@@ -19,7 +19,7 @@ class wiggle_Pk
   public:
     
     //! constructor -- populate with existing data
-    wiggle_Pk(const linear_Pk_token& t, const tree_Pk_w::database_type& w, const tree_Pk::database_type& r);
+    wiggle_Pk(const linear_Pk_token& t, const tree_Pk_w::database_type& nw, const tree_Pk::database_type& r);
     
     //! destructor is default
     ~wiggle_Pk() = default;
@@ -30,14 +30,13 @@ class wiggle_Pk
   public:
     
     //! get underlying power spectrum database for wiggle Pk
-    const tree_Pk_w::database_type& get_wiggle_db() const { return this->wiggle.get_db(); }
+    const tree_Pk_w::database_type& get_nowiggle_db() const { return this->nowiggle.get_db(); }
     
     //! get underlying power spectrum database for raw Pk
     const tree_Pk::database_type& get_raw_db() const { return this->raw.get_db(); }
     
     //! ask spline to determine whether a given k-mode is acceptable for evaluation
-    bool is_valid(const Mpc_units::energy& k) const { return this->wiggle.is_valid(k, 0, 0) && this->raw.is_valid(k, 0,
-                                                                                                                  0); }
+    bool is_valid(const Mpc_units::energy& k) const;
     
     
     // TOKEN MANAGEMENT
@@ -53,13 +52,13 @@ class wiggle_Pk
   public:
     
     //! evaluate spline for wiggle Pk
-    Mpc_units::inverse_energy3 Pk_wiggle(const Mpc_units::energy& k) const { return this->wiggle(k); }
+    Mpc_units::inverse_energy3 Pk_wiggle(const Mpc_units::energy& k) const { return this->raw(k) - this->nowiggle(k); }
     
     //! evaluate spline for raw Pk
     Mpc_units::inverse_energy3 Pk_raw(const Mpc_units::energy& k) const { return this->raw(k); }
     
     //! evluate spline for no-wiggle Pk
-    Mpc_units::inverse_energy3 Pk_nowiggle(const Mpc_units::energy& k) const { return this->raw(k) - this->wiggle(k); }
+    Mpc_units::inverse_energy3 Pk_nowiggle(const Mpc_units::energy& k) const { return this->nowiggle(k); }
     
     
     // INTERNAL DATA
@@ -70,7 +69,7 @@ class wiggle_Pk
     linear_Pk_token tok;
     
     //! wiggle Pk container
-    tree_Pk_w wiggle;
+    tree_Pk_w nowiggle;
     
     //! raw Pk container
     tree_Pk raw;
@@ -97,7 +96,7 @@ namespace boost
         inline void save_construct_data(Archive& ar, const wiggle_Pk* t, const unsigned int file_version)
           {
             ar << t->get_token();
-            ar << t->get_wiggle_db();
+            ar << t->get_nowiggle_db();
             ar << t->get_raw_db();
           }
     
@@ -106,14 +105,14 @@ namespace boost
         inline void load_construct_data(Archive& ar, wiggle_Pk* t, const unsigned int file_version)
           {
             linear_Pk_token tok(0);
-            tree_Pk_w::database_type wiggle;
+            tree_Pk_w::database_type nowiggle;
             tree_Pk::database_type raw;
 
             ar >> tok;
-            ar >> wiggle;
+            ar >> nowiggle;
             ar >> raw;
             
-            ::new(t) wiggle_Pk(tok, wiggle, raw);
+            ::new(t) wiggle_Pk(tok, nowiggle, raw);
           }
         
       }   // namespace serialization

@@ -76,7 +76,7 @@ namespace sqlite3_operations
             insert_stmt
               << "INSERT INTO " << table_name << " VALUES (@mid, @kid, @Pk_id, @IR_id, @UV_id, "
               << "@raw_value, @raw_regions, @raw_evals, @raw_err, @raw_time, "
-              << "@wiggle_value, @wiggle_regions, @wiggle_evals, @wiggle_err, @wiggle_time);";
+              << "@nw_value, @nw_regions, @nw_evals, @nw_err, @nw_time);";
             
             // prepare statement
             sqlite3_stmt* stmt;
@@ -96,12 +96,12 @@ namespace sqlite3_operations
             check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@raw_err"), dimensionless_error(raw)));
             check_stmt(db, sqlite3_bind_int64(stmt, sqlite3_bind_parameter_index(stmt, "@raw_time"), raw.time));
     
-            auto wiggle = kernel.get_wiggle();
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@wiggle_value"), dimensionless_value(wiggle)));
-            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@wiggle_regions"),wiggle.regions));
-            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@wiggle_evals"), wiggle.evaluations));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@wiggle_err"), dimensionless_error(wiggle)));
-            check_stmt(db, sqlite3_bind_int64(stmt, sqlite3_bind_parameter_index(stmt, "@wiggle_time"), wiggle.time));
+            auto nw = kernel.get_nowiggle();
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@nw_value"), dimensionless_value(nw)));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@nw_regions"),nw.regions));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@nw_evals"), nw.evaluations));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@nw_err"), dimensionless_error(nw)));
+            check_stmt(db, sqlite3_bind_int64(stmt, sqlite3_bind_parameter_index(stmt, "@nw_time"), nw.time));
     
             // perform insertion
             check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_LOOP_MOMENTUM_FAIL, SQLITE_DONE);
@@ -112,35 +112,35 @@ namespace sqlite3_operations
           }
         
         
-        // store Pk-value, including raw & wiggle parts, with error information
+        // store Pk-value, including raw & nowiggle parts, with error information
         template <typename ValueType>
         void store_Pk_value(sqlite3* db, sqlite3_stmt* stmt, const std::string& value_raw, const std::string& error_raw,
-                            const std::string& value_wiggle, const std::string& error_wiggle, const ValueType& item)
+                            const std::string& value_nw, const std::string& error_nw, const ValueType& item)
           {
             const auto& raw = item.get_raw();
-            const auto& wiggle = item.get_wiggle();
+            const auto& nw = item.get_nowiggle();
             
             check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, value_raw.c_str()), dimensionless_value(raw)));
             check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, error_raw.c_str()), dimensionless_error(raw)));
     
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, value_wiggle.c_str()), dimensionless_value(wiggle)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, error_wiggle.c_str()), dimensionless_error(wiggle)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, value_nw.c_str()), dimensionless_value(nw)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, error_nw.c_str()), dimensionless_error(nw)));
           }
     
     
-        // store Pk-value, including raw & wiggle parts, with no error information
+        // store Pk-value, including raw & nowiggle parts, with no error information
         template <typename ValueType, typename ValueType::container_type* = nullptr>
-        void store_Pk_value(sqlite3* db, sqlite3_stmt* stmt, const std::string& value_raw, const std::string& value_wiggle, const ValueType& item)
+        void store_Pk_value(sqlite3* db, sqlite3_stmt* stmt, const std::string& value_raw, const std::string& value_nw, const ValueType& item)
           {
             const auto& raw = item.get_raw();
-            const auto& wiggle = item.get_wiggle();
+            const auto& nw = item.get_nowiggle();
 
             check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, value_raw.c_str()), dimensionless_value(raw)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, value_wiggle.c_str()), dimensionless_value(wiggle)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, value_nw.c_str()), dimensionless_value(nw)));
           }
         
         
-        // store Pk-value, including error information, but no raw/wiggle parts
+        // store Pk-value, including error information, but no raw/nowiggle parts
         template <typename ValueType, typename ValueType::error_type* = nullptr>
         void store_Pk_value(sqlite3* db, sqlite3_stmt* stmt, const std::string& value, const std::string& error, const ValueType& item)
           {
@@ -157,7 +157,7 @@ namespace sqlite3_operations
             insert_stmt
               << "INSERT INTO " << table_name << " VALUES (@mid, @zid, @kid, @Pk_id, @IR_id, @UV_id, "
               << "@Ptree_raw, @err_tree_raw, @P13_raw, @err_13_raw, @P22_raw, @err_22_raw, @P1loopSPT_raw, @err_1loopSPT_raw, @Z2_delta_raw, "
-              << "@Ptree_wiggle, @err_tree_wiggle, @P13_wiggle, @err_13_wiggle, @P22_wiggle, @err_22_wiggle, @P1loopSPT_wiggle, @err_1loopSPT_wiggle, @Z2_delta_wiggle"
+              << "@Ptree_nw, @err_tree_nw, @P13_nw, @err_13_nw, @P22_nw, @err_22_nw, @P1loopSPT_nw, @err_1loopSPT_nw, @Z2_delta_nw"
               << ");";
     
             // prepare statement
@@ -172,11 +172,11 @@ namespace sqlite3_operations
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_id"), sample.get_IR_token().get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@UV_id"), sample.get_UV_token().get_id()));
     
-            store_Pk_value(db, stmt, "@Ptree_raw", "@err_tree_raw", "@Ptree_wiggle", "@err_tree_wiggle", value.get_tree());
-            store_Pk_value(db, stmt, "@P13_raw", "@err_13_raw", "@P13_wiggle", "@err_13_wiggle", value.get_13());
-            store_Pk_value(db, stmt, "@P22_raw", "@err_22_raw", "@P22_wiggle", "@err_22_wiggle", value.get_22());
-            store_Pk_value(db, stmt, "@P1loopSPT_raw", "@err_1loopSPT_raw", "@P1loopSPT_wiggle", "@err_1loopSPT_wiggle", value.get_1loop_SPT());
-            store_Pk_value(db, stmt, "@Z2_delta_raw", "@Z2_delta_wiggle", value.get_Z2_delta());
+            store_Pk_value(db, stmt, "@Ptree_raw", "@err_tree_raw", "@Ptree_nw", "@err_tree_nw", value.get_tree());
+            store_Pk_value(db, stmt, "@P13_raw", "@err_13_raw", "@P13_nw", "@err_13_nw", value.get_13());
+            store_Pk_value(db, stmt, "@P22_raw", "@err_22_raw", "@P22_nw", "@err_22_nw", value.get_22());
+            store_Pk_value(db, stmt, "@P1loopSPT_raw", "@err_1loopSPT_raw", "@P1loopSPT_nw", "@err_1loopSPT_nw", value.get_1loop_SPT());
+            store_Pk_value(db, stmt, "@Z2_delta_raw", "@Z2_delta_nw", value.get_Z2_delta());
             
             // perform insertion
             check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_ONELOOP_PK_FAIL, SQLITE_DONE);
@@ -195,7 +195,7 @@ namespace sqlite3_operations
             insert_stmt
               << "INSERT INTO " << table_name << " VALUES (@mid, @zid, @kid, @Pk_id, @IR_id, @UV_id, "
               << "@Ptree_raw, @err_tree_raw, @P13_raw, @err_13_raw, @P22_raw, @err_22_raw, @P1loopSPT_raw, @err_1loopSPT_raw, @Z2_delta_raw, @Z0_v_raw, @Z2_v_raw, @Z0_vdelta_raw, @Z2_vdelta_raw, @Z2_vv_raw, @Z2_vvdelta_raw, @Z2_vvv_raw, "
-              << "@Ptree_wiggle, @err_tree_wiggle, @P13_wiggle, @err_13_wiggle, @P22_wiggle, @err_22_wiggle, @P1loopSPT_wiggle, @err_1loopSPT_wiggle, @Z2_delta_wiggle, @Z0_v_wiggle, @Z2_v_wiggle, @Z0_vdelta_wiggle, @Z2_vdelta_wiggle, @Z2_vv_wiggle, @Z2_vvdelta_wiggle, @Z2_vvv_wiggle"
+              << "@Ptree_nw, @err_tree_nw, @P13_nw, @err_13_nw, @P22_nw, @err_22_nw, @P1loopSPT_nw, @err_1loopSPT_nw, @Z2_delta_nw, @Z0_v_nw, @Z2_v_nw, @Z0_vdelta_nw, @Z2_vdelta_nw, @Z2_vv_nw, @Z2_vvdelta_nw, @Z2_vvv_nw"
               << ");";
         
             // prepare statement
@@ -210,18 +210,18 @@ namespace sqlite3_operations
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_id"), sample.get_IR_token().get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@UV_id"), sample.get_UV_token().get_id()));
 
-            store_Pk_value(db, stmt, "@Ptree_raw", "@err_tree_raw", "@Ptree_wiggle", "@err_tree_wiggle", value.get_tree());
-            store_Pk_value(db, stmt, "@P13_raw", "@err_13_raw", "@P13_wiggle", "@err_13_wiggle", value.get_13());
-            store_Pk_value(db, stmt, "@P22_raw", "@err_22_raw", "@P22_wiggle", "@err_22_wiggle", value.get_22());
-            store_Pk_value(db, stmt, "@P1loopSPT_raw", "@err_1loopSPT_raw", "@P1loopSPT_wiggle", "@err_1loopSPT_wiggle", value.get_1loop_SPT());
-            store_Pk_value(db, stmt, "@Z2_delta_raw", "@Z2_delta_wiggle", value.get_Z2_delta());
-            store_Pk_value(db, stmt, "@Z0_v_raw", "@Z0_v_wiggle", value.get_Z0_v());
-            store_Pk_value(db, stmt, "@Z2_v_raw", "@Z2_v_wiggle", value.get_Z2_v());
-            store_Pk_value(db, stmt, "@Z0_vdelta_raw", "@Z0_vdelta_wiggle", value.get_Z0_vdelta());
-            store_Pk_value(db, stmt, "@Z2_vdelta_raw", "@Z2_vdelta_wiggle", value.get_Z2_vdelta());
-            store_Pk_value(db, stmt, "@Z2_vv_raw", "@Z2_vv_wiggle", value.get_Z2_vv());
-            store_Pk_value(db, stmt, "@Z2_vvdelta_raw", "@Z2_vvdelta_wiggle", value.get_Z2_vvdelta());
-            store_Pk_value(db, stmt, "@Z2_vvv_raw", "@Z2_vvv_wiggle", value.get_Z2_vvv());
+            store_Pk_value(db, stmt, "@Ptree_raw", "@err_tree_raw", "@Ptree_nw", "@err_tree_nw", value.get_tree());
+            store_Pk_value(db, stmt, "@P13_raw", "@err_13_raw", "@P13_nw", "@err_13_nw", value.get_13());
+            store_Pk_value(db, stmt, "@P22_raw", "@err_22_raw", "@P22_nw", "@err_22_nw", value.get_22());
+            store_Pk_value(db, stmt, "@P1loopSPT_raw", "@err_1loopSPT_raw", "@P1loopSPT_nw", "@err_1loopSPT_nw", value.get_1loop_SPT());
+            store_Pk_value(db, stmt, "@Z2_delta_raw", "@Z2_delta_nw", value.get_Z2_delta());
+            store_Pk_value(db, stmt, "@Z0_v_raw", "@Z0_v_nw", value.get_Z0_v());
+            store_Pk_value(db, stmt, "@Z2_v_raw", "@Z2_v_nw", value.get_Z2_v());
+            store_Pk_value(db, stmt, "@Z0_vdelta_raw", "@Z0_vdelta_nw", value.get_Z0_vdelta());
+            store_Pk_value(db, stmt, "@Z2_vdelta_raw", "@Z2_vdelta_nw", value.get_Z2_vdelta());
+            store_Pk_value(db, stmt, "@Z2_vv_raw", "@Z2_vv_nw", value.get_Z2_vv());
+            store_Pk_value(db, stmt, "@Z2_vvdelta_raw", "@Z2_vvdelta_nw", value.get_Z2_vvdelta());
+            store_Pk_value(db, stmt, "@Z2_vvv_raw", "@Z2_vvv_nw", value.get_Z2_vvv());
             
             // perform insertion
             check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_ONELOOP_RSD_PK_FAIL, SQLITE_DONE);
@@ -527,7 +527,7 @@ namespace sqlite3_operations
         
         std::ostringstream insert_stmt;
         insert_stmt
-          << "INSERT INTO " << policy.Pk_linear_table() << " VALUES (@Pk_id, @kid, @Pk_raw, @Pk_w, @Pk_ref);";
+          << "INSERT INTO " << policy.Pk_linear_table() << " VALUES (@Pk_id, @kid, @Pk_raw, @Pk_nw, @Pk_ref);";
     
         // prepare statement
         sqlite3_stmt* stmt;
@@ -537,7 +537,7 @@ namespace sqlite3_operations
         check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_id"), sample.get_Pk_token().get_id()));
         check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@kid"), sample.get_k_token().get_id()));
         check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_raw"), store_impl::make_dimensionless(sample.get_Pk_raw())));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_w"), store_impl::make_dimensionless(sample.get_Pk_w())));
+        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_nw"), store_impl::make_dimensionless(sample.get_Pk_nowiggle())));
         check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_ref"), store_impl::make_dimensionless(sample.get_Pk_ref())));
     
         // perform insertion

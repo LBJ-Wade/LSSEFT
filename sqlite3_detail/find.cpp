@@ -24,7 +24,7 @@ namespace sqlite3_operations
           {
             std::ostringstream read_stmt;
             read_stmt
-              << "SELECT raw_value, raw_regions, raw_evals, raw_err, raw_time, wiggle_value, wiggle_regions, wiggle_evals, wiggle_err, wiggle_time FROM "
+              << "SELECT raw_value, raw_regions, raw_evals, raw_err, raw_time, nw_value, nw_regions, nw_evals, nw_err, nw_time FROM "
               << table << " WHERE mid=@mid AND kid=@kid AND Pk_id=@Pk_id AND UV_id=@UV_id AND IR_id=@IR_id;";
             
             // prepare statement
@@ -46,7 +46,7 @@ namespace sqlite3_operations
                 if(result == SQLITE_ROW)
                   {
                     auto& raw = kernel.get_raw();
-                    auto& wiggle = kernel.get_wiggle();
+                    auto& nw = kernel.get_nowiggle();
                     
                     raw.value = sqlite3_column_double(stmt, 0) * dimensionful_unit<typename KernelType::value_type>();
                     raw.regions = sqlite3_column_int(stmt, 1);
@@ -54,11 +54,11 @@ namespace sqlite3_operations
                     raw.error = sqlite3_column_double(stmt, 3) * dimensionful_unit<typename KernelType::value_type>();
                     raw.time = sqlite3_column_int64(stmt, 4);
     
-                    wiggle.value = sqlite3_column_double(stmt, 5) * dimensionful_unit<typename KernelType::value_type>();
-                    wiggle.regions = sqlite3_column_int(stmt, 6);
-                    wiggle.evaluations = sqlite3_column_int(stmt, 7);
-                    wiggle.error = sqlite3_column_double(stmt, 8) * dimensionful_unit<typename KernelType::value_type>();
-                    wiggle.time = sqlite3_column_int64(stmt, 9);
+                    nw.value = sqlite3_column_double(stmt, 5) * dimensionful_unit<typename KernelType::value_type>();
+                    nw.regions = sqlite3_column_int(stmt, 6);
+                    nw.evaluations = sqlite3_column_int(stmt, 7);
+                    nw.error = sqlite3_column_double(stmt, 8) * dimensionful_unit<typename KernelType::value_type>();
+                    nw.time = sqlite3_column_int64(stmt, 9);
     
                     ++count;
                   }
@@ -80,7 +80,7 @@ namespace sqlite3_operations
         
         
         template <typename DataType>
-        void read_Pk_value(sqlite3_stmt* stmt, unsigned int value_raw, unsigned int err_raw, unsigned int value_wiggle,
+        void read_Pk_value(sqlite3_stmt* stmt, unsigned int value_raw, unsigned int err_raw, unsigned int value_nw,
                            unsigned int err_wiggle, DataType& data)
           {
             using value_type = typename DataType::value_type;
@@ -88,28 +88,28 @@ namespace sqlite3_operations
             value_type v_raw = sqlite3_column_double(stmt, value_raw) * dimensionful_unit<value_type>();
             value_type e_raw = sqlite3_column_double(stmt, err_raw) * dimensionful_unit<value_type>();
     
-            value_type v_wiggle = sqlite3_column_double(stmt, value_wiggle) * dimensionful_unit<value_type>();
-            value_type e_wiggle = sqlite3_column_double(stmt, err_wiggle) * dimensionful_unit<value_type>();
+            value_type v_nw = sqlite3_column_double(stmt, value_nw) * dimensionful_unit<value_type>();
+            value_type e_nw = sqlite3_column_double(stmt, err_wiggle) * dimensionful_unit<value_type>();
             
             using container = typename DataType::container_type;
             
             data.set_raw(container(v_raw, e_raw));
-            data.set_wiggle(container(v_wiggle, e_wiggle));
+            data.set_nowiggle(container(v_nw, e_nw));
           }
     
     
         template <typename DataType>
-        void read_Pk_value(sqlite3_stmt* stmt, unsigned int value_raw, unsigned int value_wiggle, DataType& data)
+        void read_Pk_value(sqlite3_stmt* stmt, unsigned int value_raw, unsigned int value_nw, DataType& data)
           {
             using value_type = typename DataType::value_type;
 
             value_type v_raw = sqlite3_column_double(stmt, value_raw) * dimensionful_unit<value_type>();
-            value_type v_wiggle = sqlite3_column_double(stmt, value_wiggle) * dimensionful_unit<value_type>();
+            value_type v_nw = sqlite3_column_double(stmt, value_nw) * dimensionful_unit<value_type>();
     
             using container = typename DataType::container_type;
     
             data.set_raw(container(v_raw, value_type(0.0)));
-            data.set_wiggle(container(v_wiggle, value_type(0.0)));
+            data.set_nowiggle(container(v_nw, value_type(0.0)));
           }
     
     
@@ -121,7 +121,7 @@ namespace sqlite3_operations
             read_stmt
               << "SELECT "
               << "Ptree_raw, err_tree_raw, P13_raw, err_13_raw, P22_raw, err_22_raw, P1loopSPT_raw, err_1loopSPT_raw, Z2_delta_raw, "
-              << "Ptree_wiggle, err_tree_wiggle, P13_wiggle, err_13_wiggle, P22_wiggle, err_22_wiggle, P1loopSPT_wiggle, err_1loopSPT_wiggle, Z2_delta_wiggle "
+              << "Ptree_nw, err_tree_nw, P13_nw, err_13_nw, P22_nw, err_22_nw, P1loopSPT_nw, err_1loopSPT_nw, Z2_delta_nw "
               << "FROM " << table << " "
               << "WHERE mid=@mid AND zid=@zid AND kid=@kid AND Pk_id=@Pk_id AND IR_id=@IR_id AND UV_id=@UV_id;";
             
@@ -177,7 +177,7 @@ namespace sqlite3_operations
             read_stmt
               << "SELECT "
               << "Ptree_raw, err_tree_raw, P13_raw, err_13_raw, P22_raw, err_22_raw, P1loopSPT_raw, err_1loopSPT_raw, Z2_delta_raw, Z0_v_raw, Z2_v_raw, Z0_vdelta_raw, Z2_vdelta_raw, Z2_vv_raw, Z2_vvdelta_raw, Z2_vvv_raw, "
-              << "Ptree_wiggle, err_tree_wiggle, P13_wiggle, err_13_wiggle, P22_wiggle, err_22_wiggle, P1loopSPT_wiggle, err_1loopSPT_wiggle, Z2_delta_wiggle, Z0_v_wiggle, Z2_v_wiggle, Z0_vdelta_wiggle, Z2_vdelta_wiggle, Z2_vv_wiggle, Z2_vvdelta_wiggle, Z2_vvv_wiggle "
+              << "Ptree_nw, err_tree_nw, P13_nw, err_13_nw, P22_nw, err_22_nw, P1loopSPT_nw, err_1loopSPT_nw, Z2_delta_nw, Z0_v_nw, Z2_v_nw, Z0_vdelta_nw, Z2_vdelta_nw, Z2_vv_nw, Z2_vvdelta_nw, Z2_vvv_nw "
               << "FROM " << table << " "
               << "WHERE mid=@mid AND zid=@zid AND kid=@kid AND Pk_id=@Pk_id AND IR_id=@IR_id AND UV_id=@UV_id;";
     
@@ -476,7 +476,7 @@ namespace sqlite3_operations
         std::string ktab = k_table(db, mgr, policy, k_db);
         
         std::ostringstream read_stmt;
-        read_stmt << "SELECT sample.Pk_raw, sample.Pk_w "
+        read_stmt << "SELECT sample.Pk_raw, sample.Pk_nw "
                   << "FROM " << ktab << " "
                   << "INNER JOIN (SELECT * FROM " << policy.Pk_linear_table() << " WHERE Pk_id=@Pk_id) sample "
                   << "ON " << ktab << ".id = sample.kid "
@@ -491,7 +491,7 @@ namespace sqlite3_operations
         
         // set up databases to hold the result
         tree_Pk::database_type raw_db;
-        tree_Pk_w::database_type wiggle_db;
+        tree_Pk_w::database_type nw_db;
     
         // perform read
         int result = 0;
@@ -501,10 +501,10 @@ namespace sqlite3_operations
             if(result == SQLITE_ROW)
               {
                 Mpc_units::inverse_energy3 raw = sqlite3_column_double(stmt, 0) * dimensionful_unit<Mpc_units::inverse_energy3>();
-                Mpc_units::inverse_energy3 wiggle = sqlite3_column_double(stmt, 1) * dimensionful_unit<Mpc_units::inverse_energy3>();
+                Mpc_units::inverse_energy3 nw  = sqlite3_column_double(stmt, 1) * dimensionful_unit<Mpc_units::inverse_energy3>();
                 
                 raw_db.add_record(*(*t), raw);
-                wiggle_db.add_record(*(*t), wiggle);
+                nw_db.add_record(*(*t), nw);
                 
                 ++t;
               }
@@ -513,7 +513,7 @@ namespace sqlite3_operations
                 check_stmt(db, sqlite3_clear_bindings(stmt));
                 check_stmt(db, sqlite3_finalize(stmt));
             
-                throw runtime_exception(exception_type::database_error, ERROR_SQLITE3_READ_WIGGLE_PK_FAIL);
+                throw runtime_exception(exception_type::database_error, ERROR_SQLITE3_READ_FILTERED_PK_FAIL);
               }
           }
     
@@ -524,9 +524,9 @@ namespace sqlite3_operations
         // drop temporary table
         drop_temp(db, mgr, ktab);
     
-        if(t != k_db.record_cend()) throw runtime_exception(exception_type::database_error, ERROR_SQLITE3_WIGGLE_PK_MISREAD);
+        if(t != k_db.record_cend()) throw runtime_exception(exception_type::database_error, ERROR_SQLITE3_FILTERED_PK_MISREAD);
         
-        std::unique_ptr<wiggle_Pk> payload = std::make_unique<wiggle_Pk>(token, wiggle_db, raw_db);
+        std::unique_ptr<wiggle_Pk> payload = std::make_unique<wiggle_Pk>(token, nw_db, raw_db);
         
         return std::move(payload);
       }

@@ -12,6 +12,8 @@
 #include "database/tokens.h"
 #include "units/Mpc_units.h"
 
+#include "power_spectrum.h"
+
 #include "boost/timer/timer.hpp"
 #include "boost/serialization/serialization.hpp"
 
@@ -298,16 +300,16 @@ class raw_wiggle_Pk_component
     
     //! value constructor; error is zero if not specified which allows
     //! assignment-on-construction to a fixed number
-    raw_wiggle_Pk_component(Pk_value_group<ValueType> r, Pk_value_group<ValueType> w)
+    raw_wiggle_Pk_component(Pk_value_group<ValueType> r, Pk_value_group<ValueType> nw)
       : raw(std::move(r)),
-        wiggle(std::move(w))
+        nowiggle(std::move(nw))
       {
       }
     
     //! empty constructor
     raw_wiggle_Pk_component()
       : raw(),
-        wiggle()
+        nowiggle()
       {
       }
 
@@ -320,16 +322,16 @@ class raw_wiggle_Pk_component
     const Pk_value_group<ValueType>& get_raw() const { return this->raw; }
     
     //! get wiggle data
-    const Pk_value_group<ValueType>& get_wiggle() const { return this->wiggle; }
+    const Pk_value_group<ValueType> get_wiggle() const { return this->raw - this->nowiggle; }
     
     //! get no-wiggle data
-    const Pk_value_group<ValueType> get_nowiggle() const { return this->raw - this->wiggle; }
+    const Pk_value_group<ValueType>& get_nowiggle() const { return this->nowiggle; }
     
     //! set raw data
     void set_raw(Pk_value_group<ValueType> r) { this->raw = r; }
     
     //! set wiggle data
-    void set_wiggle(Pk_value_group<ValueType> w) { this->wiggle = w; }
+    void set_nowiggle(Pk_value_group<ValueType> w) { this->nowiggle = w; }
     
     
     // DATA
@@ -340,7 +342,7 @@ class raw_wiggle_Pk_component
     Pk_value_group<ValueType> raw;
     
     //! wiggle data
-    Pk_value_group<ValueType> wiggle;
+    Pk_value_group<ValueType> nowiggle;
   
   
   private:
@@ -352,7 +354,7 @@ class raw_wiggle_Pk_component
     void serialize(Archive& ar, unsigned int version)
       {
         ar & raw;
-        ar & wiggle;
+        ar & nowiggle;
       }
     
   };
@@ -363,17 +365,26 @@ typedef raw_wiggle_Pk_component<Mpc_units::inverse_energy3> Pk_value;
 typedef raw_wiggle_Pk_component<Mpc_units::inverse_energy>  k2_Pk_value;
 
 
+// build Pk_value from a wiggle_Pk
+Pk_value build_Pk_value(const Mpc_units::energy& k, const wiggle_Pk& Pk)
+  {
+    Pk_value_group<Mpc_units::inverse_energy3> Ptree_raw(Pk.Pk_raw(k));
+    Pk_value_group<Mpc_units::inverse_energy3> Ptree_nw(Pk.Pk_nowiggle(k));
+    return Pk_value(Ptree_raw, Ptree_nw);
+  }
+
+
 //! overload + and - so that power spectrum and counterterm values can be added
 template <typename ValueType>
 raw_wiggle_Pk_component<ValueType> operator+(const raw_wiggle_Pk_component<ValueType>& A, const raw_wiggle_Pk_component<ValueType>& B)
   {
-    return raw_wiggle_Pk_component<ValueType>(A.get_raw() + B.get_raw(), A.get_wiggle() + B.get_wiggle());
+    return raw_wiggle_Pk_component<ValueType>(A.get_raw() + B.get_raw(), A.get_nowiggle() + B.get_nowiggle());
   }
 
 template <typename ValueType>
 raw_wiggle_Pk_component<ValueType> operator-(const raw_wiggle_Pk_component<ValueType>& A, const raw_wiggle_Pk_component<ValueType>& B)
   {
-    return raw_wiggle_Pk_component<ValueType>(A.get_raw() - B.get_raw(), A.get_wiggle() - B.get_wiggle());
+    return raw_wiggle_Pk_component<ValueType>(A.get_raw() - B.get_raw(), A.get_nowiggle() - B.get_nowiggle());
   }
 
 
@@ -381,13 +392,13 @@ raw_wiggle_Pk_component<ValueType> operator-(const raw_wiggle_Pk_component<Value
 template <typename ScalarType, typename PkType, typename std::enable_if_t< !std::is_integral<ScalarType>::value >* = nullptr>
 auto operator*(const ScalarType& S, const raw_wiggle_Pk_component<PkType>& P) -> raw_wiggle_Pk_component<decltype(S*P.get_raw().get_value())>
   {
-    return raw_wiggle_Pk_component<decltype(S*P.get_raw().get_value())>(S * P.get_raw(), S * P.get_wiggle());
+    return raw_wiggle_Pk_component<decltype(S*P.get_raw().get_value())>(S * P.get_raw(), S * P.get_nowiggle());
   }
 
 template <typename ScalarType, typename PkType, typename std::enable_if_t< !std::is_integral<ScalarType>::value >* = nullptr>
 auto operator*(const raw_wiggle_Pk_component<PkType>& P, const ScalarType& S) -> raw_wiggle_Pk_component<decltype(S*P.get_raw().get_value())>
   {
-    return raw_wiggle_Pk_component<decltype(S*P.get_raw().get_value())>(S * P.get_raw(), S * P.get_wiggle());
+    return raw_wiggle_Pk_component<decltype(S*P.get_raw().get_value())>(S * P.get_raw(), S * P.get_nowiggle());
   }
 
 
@@ -395,7 +406,7 @@ auto operator*(const raw_wiggle_Pk_component<PkType>& P, const ScalarType& S) ->
 template <typename ScalarType, typename PkType, typename std::enable_if_t< !std::is_integral<ScalarType>::value >* = nullptr>
 auto operator/(const raw_wiggle_Pk_component<PkType>& P, const ScalarType& S) -> raw_wiggle_Pk_component<decltype(P.get_raw().get_value()/S)>
   {
-    return raw_wiggle_Pk_component<decltype(P.get_raw().get_value()/S)>(P.get_raw() / S, P.get_wiggle() / S);
+    return raw_wiggle_Pk_component<decltype(P.get_raw().get_value()/S)>(P.get_raw() / S, P.get_nowiggle() / S);
   }
 
 
@@ -407,13 +418,13 @@ auto operator/(const raw_wiggle_Pk_component<PkType>& P, const ScalarType& S) ->
 template <typename ScalarType, typename LoopType, typename std::enable_if_t< !std::is_integral<ScalarType>::value >* = nullptr>
 auto operator*(const ScalarType& S, const loop_integral_output<LoopType>& P) -> raw_wiggle_Pk_component<decltype(S*P.get_raw().value)>
   {
-    return raw_wiggle_Pk_component<decltype(S*P.get_raw().value)>(S * P.get_raw(), S * P.get_wiggle());
+    return raw_wiggle_Pk_component<decltype(S*P.get_raw().value)>(S * P.get_raw(), S * P.get_nowiggle());
   }
 
 template <typename ScalarType, typename LoopType, typename std::enable_if_t< !std::is_integral<ScalarType>::value >* = nullptr>
 auto operator*(const loop_integral_output<LoopType>& P, const ScalarType& S) -> raw_wiggle_Pk_component<decltype(S*P.get_raw().value)>
   {
-    return raw_wiggle_Pk_component<decltype(S*P.get_raw().value)>(S * P.get_raw(), S * P.get_wiggle());
+    return raw_wiggle_Pk_component<decltype(S*P.get_raw().value)>(S * P.get_raw(), S * P.get_nowiggle());
   }
 
 
@@ -421,13 +432,13 @@ auto operator*(const loop_integral_output<LoopType>& P, const ScalarType& S) -> 
 template <typename LoopType, typename PkType>
 auto operator*(const raw_wiggle_Pk_component<PkType>& P, const loop_integral_output<LoopType>& L) -> raw_wiggle_Pk_component<decltype(P.get_raw().get_value()*L.get_raw().value)>
   {
-    return raw_wiggle_Pk_component<decltype(P.get_raw().get_value()*L.get_raw().value)>(P.get_raw() * L.get_raw(), P.get_wiggle() * L.get_wiggle());
+    return raw_wiggle_Pk_component<decltype(P.get_raw().get_value()*L.get_raw().value)>(P.get_raw() * L.get_raw(), P.get_nowiggle() * L.get_nowiggle());
   }
 
 template <typename LoopType, typename PkType>
 auto operator*(const loop_integral_output<LoopType>& L, const raw_wiggle_Pk_component<PkType>& P) -> raw_wiggle_Pk_component<decltype(P.get_raw().get_value()*L.get_raw().value)>
   {
-    return raw_wiggle_Pk_component<decltype(P.get_raw().get_value()*L.get_raw().value)>(P.get_raw() * L.get_raw(), P.get_wiggle() * L.get_wiggle());
+    return raw_wiggle_Pk_component<decltype(P.get_raw().get_value()*L.get_raw().value)>(P.get_raw() * L.get_raw(), P.get_nowiggle() * L.get_nowiggle());
   }
 
   
@@ -435,13 +446,13 @@ auto operator*(const loop_integral_output<LoopType>& L, const raw_wiggle_Pk_comp
 template <typename ValueType>
 raw_wiggle_Pk_component<ValueType> operator+(const loop_integral_output<ValueType>& A, const loop_integral_output<ValueType>& B)
   {
-    return raw_wiggle_Pk_component<ValueType>(A.get_raw() + B.get_raw(), A.get_wiggle() + B.get_wiggle());
+    return raw_wiggle_Pk_component<ValueType>(A.get_raw() + B.get_raw(), A.get_nowiggle() + B.get_nowiggle());
   }
 
 template <typename ValueType>
 raw_wiggle_Pk_component<ValueType> operator-(const loop_integral_output<ValueType>& A, const loop_integral_output<ValueType>& B)
   {
-    return raw_wiggle_Pk_component<ValueType>(A.get_raw() - B.get_raw(), A.get_wiggle() - B.get_wiggle());
+    return raw_wiggle_Pk_component<ValueType>(A.get_raw() - B.get_raw(), A.get_nowiggle() - B.get_nowiggle());
   }
 
 
@@ -449,25 +460,25 @@ raw_wiggle_Pk_component<ValueType> operator-(const loop_integral_output<ValueTyp
 template <typename ValueType>
 raw_wiggle_Pk_component<ValueType> operator+(const raw_wiggle_Pk_component<ValueType>& A, const loop_integral_output<ValueType>& B)
   {
-    return raw_wiggle_Pk_component<ValueType>(A.get_raw() + B.get_raw(), A.get_wiggle() + B.get_wiggle());
+    return raw_wiggle_Pk_component<ValueType>(A.get_raw() + B.get_raw(), A.get_nowiggle() + B.get_nowiggle());
   }
 
 template <typename ValueType>
 raw_wiggle_Pk_component<ValueType> operator+(const loop_integral_output<ValueType>& A, const raw_wiggle_Pk_component<ValueType>& B)
   {
-    return raw_wiggle_Pk_component<ValueType>(A.get_raw() + B.get_raw(), A.get_wiggle() + B.get_wiggle());
+    return raw_wiggle_Pk_component<ValueType>(A.get_raw() + B.get_raw(), A.get_nowiggle() + B.get_nowiggle());
   }
 
 template <typename ValueType>
 raw_wiggle_Pk_component<ValueType> operator-(const raw_wiggle_Pk_component<ValueType>& A, const loop_integral_output<ValueType>& B)
   {
-    return raw_wiggle_Pk_component<ValueType>(A.get_raw() - B.get_raw(), A.get_wiggle() - B.get_wiggle());
+    return raw_wiggle_Pk_component<ValueType>(A.get_raw() - B.get_raw(), A.get_nowiggle() - B.get_nowiggle());
   }
 
 template <typename ValueType>
 raw_wiggle_Pk_component<ValueType> operator-(const loop_integral_output<ValueType>& A, const raw_wiggle_Pk_component<ValueType>& B)
   {
-    return raw_wiggle_Pk_component<ValueType>(A.get_raw() - B.get_raw(), A.get_wiggle() - B.get_wiggle());
+    return raw_wiggle_Pk_component<ValueType>(A.get_raw() - B.get_raw(), A.get_nowiggle() - B.get_nowiggle());
   }
 
 
@@ -475,7 +486,7 @@ raw_wiggle_Pk_component<ValueType> operator-(const loop_integral_output<ValueTyp
 template <typename PkTypeA, typename PkTypeB>
 auto operator*(const raw_wiggle_Pk_component<PkTypeA> PA, const raw_wiggle_Pk_component<PkTypeB>& PB) -> raw_wiggle_Pk_component<decltype(PA.get_raw().get_value()*PB.get_raw().get_value())>
   {
-    return raw_wiggle_Pk_component<decltype(PA.get_raw().get_value()*PB.get_raw().get_value())>(PA.get_raw() * PB.get_raw(), PA.get_wiggle() * PB.get_wiggle());
+    return raw_wiggle_Pk_component<decltype(PA.get_raw().get_value()*PB.get_raw().get_value())>(PA.get_raw() * PB.get_raw(), PA.get_nowiggle() * PB.get_nowiggle());
   }
 
 
@@ -600,7 +611,7 @@ generic_dd_Pk<PkValueType, k2PkValueType>::generic_dd_Pk()
   }
 
 
-// the general one-loop delta-delta power spectrum uses raw/wiggle parts
+// the general one-loop delta-delta power spectrum uses raw/nowiggle parts
 typedef generic_dd_Pk<Pk_value, k2_Pk_value> dd_Pk;
 
 

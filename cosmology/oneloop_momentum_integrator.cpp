@@ -110,12 +110,12 @@ bool oneloop_momentum_integrator::kernel_integral(const FRW_model& model, const 
     cubacores(0, oneloop_momentum_impl::pcores);
     
     wiggle_Pk_raw_adapter raw(Pk);
-    wiggle_Pk_wiggle_adapter wiggle(Pk);
+    wiggle_Pk_nowiggle_adapter nw(Pk);
     
-    bool fail_raw    = this->evaluate_integral(model, k, UV_cutoff, IR_cutoff, raw, integrand, result.get_raw(), type, name, "raw");
-    bool fail_wiggle = this->evaluate_integral(model, k, UV_cutoff, IR_cutoff, wiggle, integrand, result.get_wiggle(), type, name, "wiggle");
+    bool fail_raw = this->evaluate_integral(model, k, UV_cutoff, IR_cutoff, raw, integrand, result.get_raw(), type, name, "raw");
+    bool fail_nw  = this->evaluate_integral(model, k, UV_cutoff, IR_cutoff, nw, integrand, result.get_nowiggle(), type, name, "no-wiggle");
     
-    return fail_raw || fail_wiggle;
+    return fail_raw || fail_nw;
   }
 
 
@@ -125,7 +125,7 @@ bool oneloop_momentum_integrator::evaluate_integral(const FRW_model& model, cons
                                                     const Mpc_units::energy& IR_cutoff, const spline_Pk& Pk,
                                                     integrand_t integrand, IntegralRecord& result,
                                                     loop_integral_type type, const std::string& name,
-                                                    const std::string& wiggle)
+                                                    const std::string& component)
   {
     cubareal integral[oneloop_momentum_impl::dimensions];
     cubareal error[oneloop_momentum_impl::dimensions];
@@ -153,7 +153,7 @@ bool oneloop_momentum_integrator::evaluate_integral(const FRW_model& model, cons
         if(tries > 0)
           {
             re = re * 4.0;
-            std::cout << "lsseft: relaxing error tolerance for kernel = " << name << " (" << wiggle << "), attempt "
+            std::cout << "lsseft: relaxing error tolerance for kernel = " << name << " (" << component << "), attempt "
                       << tries << ", now abstol = " << ae << ", reltol = " << re << '\n';
           }
 
@@ -187,7 +187,7 @@ bool oneloop_momentum_integrator::evaluate_integral(const FRW_model& model, cons
       }
     
     if(tries >= max_tries)
-      std::cerr << "lsseft: integration failure: kernel = " << name << " (" << wiggle << "), "
+      std::cerr << "lsseft: integration failure: kernel = " << name << " (" << component << "), "
                 << "regions = " << regions << ", evaluations = " << evaluations << ", fail = "
                 << fail << ", value = " << integral[0] << ", error = " << error[0] << ", probability = " << prob[0]
                 << '\n';

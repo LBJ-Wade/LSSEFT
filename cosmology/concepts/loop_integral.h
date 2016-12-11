@@ -76,7 +76,7 @@ class loop_integral_output
     //! these should be overwritten later
     loop_integral_output()
       : raw(),
-        wiggle()
+        nowiggle()
       {
       }
     
@@ -92,9 +92,9 @@ class loop_integral_output
     loop_integral_result<ValueType>& get_raw() { return this->raw; }
     const loop_integral_result<ValueType>& get_raw() const { return this->raw; }
     
-    //! get wiggle value
-    loop_integral_result<ValueType>& get_wiggle() { return this->wiggle; }
-    const loop_integral_result<ValueType>& get_wiggle() const { return this->wiggle; }
+    //! get no-wiggle value
+    loop_integral_result<ValueType>& get_nowiggle() { return this->nowiggle; }
+    const loop_integral_result<ValueType>& get_nowiggle() const { return this->nowiggle; }
     
     
     // INTERNAL DATA
@@ -105,7 +105,7 @@ class loop_integral_output
     loop_integral_result<ValueType> raw;
     
     //! wiggle result
-    loop_integral_result<ValueType> wiggle;
+    loop_integral_result<ValueType> nowiggle;
     
   
   private:
@@ -117,7 +117,7 @@ class loop_integral_output
     void serialize(Archive& ar, unsigned int version)
       {
         ar & raw;
-        ar & wiggle;
+        ar & nowiggle;
       }
     
   };
