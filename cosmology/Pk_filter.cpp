@@ -121,12 +121,22 @@ Pk_filter::operator()(const FRW_model& model, const linear_Pk& Pk_lin, const Mpc
 
     const double lambda = 0.25 * std::pow(k/K_PIV, LAMBDA_SLOPE);
     
-    const double filtered_Pk = this->integrate(slog_min, slog_max, klog, lambda, Pk_lin, *Papprox, Pk_filter_impl::filter_integrand);
-    const double volume      = this->integrate(slog_min, slog_max, klog, lambda, Pk_lin, *Papprox, Pk_filter_impl::window_integrand);
+    try
+      {
+        const double filtered_Pk = this->integrate(slog_min, slog_max, klog, lambda, Pk_lin, *Papprox, Pk_filter_impl::filter_integrand);
+        const double volume      = this->integrate(slog_min, slog_max, klog, lambda, Pk_lin, *Papprox, Pk_filter_impl::window_integrand);
     
-    const Mpc_units::inverse_energy3 P_nw = (*Papprox)(k) * filtered_Pk / volume;
+        const Mpc_units::inverse_energy3 P_nw = (*Papprox)(k) * filtered_Pk / volume;
     
-    return std::make_pair(P_nw, (*Papprox)(k));
+        return std::make_pair(P_nw, (*Papprox)(k));
+      }
+    catch(runtime_exception& xe)
+      {
+      }
+    
+    std::ostringstream msg;
+    msg << LSSEFT_PK_FILTER_FAIL << " k = " << k * Mpc_units::Mpc << " h/Mpc";
+    throw runtime_exception(exception_type::filter_failure, msg.str());
   }
 
 
@@ -155,6 +165,8 @@ double Pk_filter::integrate(const double slog_min, const double slog_max, const 
           nullptr, nullptr,
           &regions, &evaluations, &fail,
           integral, error, prob);
+    
+    if(fail != 0) throw runtime_exception(exception_type::filter_failure);
     
     return integral[0];
   }

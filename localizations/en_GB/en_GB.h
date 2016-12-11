@@ -16,7 +16,8 @@
 #include "range.h"
 #include "format.h"
 #include "master_controller.h"
-#include "tree_power_spectrum.h"
+#include "power_spectrum.h"
+#include "Pk_filter.h"
 
 // note this sqlite3.h is the messages file in the same subdirectory, not the main sqlite3.h include
 #include "sqlite3.h"
