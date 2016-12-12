@@ -189,6 +189,7 @@ void slave_controller::process_item(MPI_detail::new_filter_Pk& payload)
         if(xe.get_exception_code() == exception_type::filter_failure)
           {
             std::cerr << "lsseft: " << xe.what() << '\n';
+            sample = filtered_Pk(k_tok, Pk_tok, 0.0, Pk_lin(k), 0.0);
             sample.mark_failed();
           }
         else
