@@ -34,6 +34,13 @@ class filtered_Pk
   
   public:
     
+    //! get failure state
+    bool get_fail() const { return this->fail; }
+    
+    //! set failed flag
+    void mark_failed() { this->fail = true; }
+    
+    
     //! get wavenumber token
     const k_token& get_k_token() const { return this->k_tok; }
     
@@ -53,6 +60,10 @@ class filtered_Pk
     // INTERNAL DATA
     
   private:
+    
+    //! failure state
+    bool fail;
+    
     
     // CONFIGURATION DATA
     
@@ -81,6 +92,7 @@ class filtered_Pk
     template <typename Archive>
     void serialize(Archive& ar, unsigned int version)
       {
+        ar & fail;
         ar & k_tok;
         ar & Pk_tok;
         ar & Pk_nw;

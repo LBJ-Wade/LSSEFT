@@ -8,7 +8,8 @@
 
 filtered_Pk::filtered_Pk(const k_token& kt, const linear_Pk_token& Pt, Mpc_units::inverse_energy3 _Pk_nw,
                          Mpc_units::inverse_energy3 _Pk_raw, Mpc_units::inverse_energy3 _Pk_ref)
-  : k_tok(kt),
+  : fail(false),
+    k_tok(kt),
     Pk_tok(Pt),
     Pk_nw(std::move(_Pk_nw)),
     Pk_raw(std::move(_Pk_raw)),
@@ -18,7 +19,8 @@ filtered_Pk::filtered_Pk(const k_token& kt, const linear_Pk_token& Pt, Mpc_units
 
 
 filtered_Pk::filtered_Pk()
-  : k_tok(0),
+  : fail(false),
+    k_tok(0),
     Pk_tok(0),
     Pk_nw(0.0),
     Pk_raw(0.0),

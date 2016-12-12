@@ -417,43 +417,7 @@ namespace sqlite3_operations
         const rsd_22_integrals& rsd22     = sample.get_rsd22();
         const rsd_13_integrals& rsd13     = sample.get_rsd13();
 
-        if(!delta22.get_fail() && !delta13.get_fail() && !rsd22.get_fail() && !rsd13.get_fail())
-          {
-            store_impl::store_loop_kernel(db, policy.AA_table(), delta22.get_AA(), model, sample);
-            store_impl::store_loop_kernel(db, policy.AB_table(), delta22.get_AB(), model, sample);
-            store_impl::store_loop_kernel(db, policy.BB_table(), delta22.get_BB(), model, sample);
-    
-            store_impl::store_loop_kernel(db, policy.D_table(), delta13.get_D(), model, sample);
-            store_impl::store_loop_kernel(db, policy.E_table(), delta13.get_E(), model, sample);
-            store_impl::store_loop_kernel(db, policy.F_table(), delta13.get_F(), model, sample);
-            store_impl::store_loop_kernel(db, policy.G_table(), delta13.get_G(), model, sample);
-            store_impl::store_loop_kernel(db, policy.J1_table(), delta13.get_J1(), model, sample);
-            store_impl::store_loop_kernel(db, policy.J2_table(), delta13.get_J2(), model, sample);
-            
-            store_impl::store_loop_kernel(db, policy.RSD13_a_table(), rsd13.get_a(), model, sample);
-            store_impl::store_loop_kernel(db, policy.RSD13_b_table(), rsd13.get_b(), model, sample);
-            store_impl::store_loop_kernel(db, policy.RSD13_c_table(), rsd13.get_c(), model, sample);
-            store_impl::store_loop_kernel(db, policy.RSD13_d_table(), rsd13.get_d(), model, sample);
-            store_impl::store_loop_kernel(db, policy.RSD13_e_table(), rsd13.get_e(), model, sample);
-            store_impl::store_loop_kernel(db, policy.RSD13_f_table(), rsd13.get_f(), model, sample);
-            store_impl::store_loop_kernel(db, policy.RSD13_g_table(), rsd13.get_g(), model, sample);
-    
-            store_impl::store_loop_kernel(db, policy.RSD22_A1_table(), rsd22.get_A1(), model, sample);
-            store_impl::store_loop_kernel(db, policy.RSD22_A2_table(), rsd22.get_A2(), model, sample);
-            store_impl::store_loop_kernel(db, policy.RSD22_A3_table(), rsd22.get_A3(), model, sample);
-            store_impl::store_loop_kernel(db, policy.RSD22_A4_table(), rsd22.get_A4(), model, sample);
-            store_impl::store_loop_kernel(db, policy.RSD22_A5_table(), rsd22.get_A5(), model, sample);
-            store_impl::store_loop_kernel(db, policy.RSD22_B2_table(), rsd22.get_B2(), model, sample);
-            store_impl::store_loop_kernel(db, policy.RSD22_B3_table(), rsd22.get_B3(), model, sample);
-            store_impl::store_loop_kernel(db, policy.RSD22_B6_table(), rsd22.get_B6(), model, sample);
-            store_impl::store_loop_kernel(db, policy.RSD22_B8_table(), rsd22.get_B8(), model, sample);
-            store_impl::store_loop_kernel(db, policy.RSD22_B9_table(), rsd22.get_B9(), model, sample);
-            store_impl::store_loop_kernel(db, policy.RSD22_C1_table(), rsd22.get_C1(), model, sample);
-            store_impl::store_loop_kernel(db, policy.RSD22_C2_table(), rsd22.get_C2(), model, sample);
-            store_impl::store_loop_kernel(db, policy.RSD22_C4_table(), rsd22.get_C4(), model, sample);
-            store_impl::store_loop_kernel(db, policy.RSD22_D1_table(), rsd22.get_D1(), model, sample);
-          }
-        else
+        if(delta22.get_fail() || delta13.get_fail() || rsd22.get_fail() || rsd13.get_fail())
           {
             std::cerr << "lsseft: loop kernels not stored (model = " << model.get_id()
                       << ", k = " << sample.get_k_token().get_id()
@@ -461,7 +425,42 @@ namespace sqlite3_operations
                       << ", IR cutoff = " << sample.get_IR_token().get_id()
                       << ", UV cutoff = " << sample.get_UV_token().get_id() << ") "
                       << "since marked as failed" << '\n';
+            return;
           }
+        
+        store_impl::store_loop_kernel(db, policy.AA_table(), delta22.get_AA(), model, sample);
+        store_impl::store_loop_kernel(db, policy.AB_table(), delta22.get_AB(), model, sample);
+        store_impl::store_loop_kernel(db, policy.BB_table(), delta22.get_BB(), model, sample);
+
+        store_impl::store_loop_kernel(db, policy.D_table(), delta13.get_D(), model, sample);
+        store_impl::store_loop_kernel(db, policy.E_table(), delta13.get_E(), model, sample);
+        store_impl::store_loop_kernel(db, policy.F_table(), delta13.get_F(), model, sample);
+        store_impl::store_loop_kernel(db, policy.G_table(), delta13.get_G(), model, sample);
+        store_impl::store_loop_kernel(db, policy.J1_table(), delta13.get_J1(), model, sample);
+        store_impl::store_loop_kernel(db, policy.J2_table(), delta13.get_J2(), model, sample);
+        
+        store_impl::store_loop_kernel(db, policy.RSD13_a_table(), rsd13.get_a(), model, sample);
+        store_impl::store_loop_kernel(db, policy.RSD13_b_table(), rsd13.get_b(), model, sample);
+        store_impl::store_loop_kernel(db, policy.RSD13_c_table(), rsd13.get_c(), model, sample);
+        store_impl::store_loop_kernel(db, policy.RSD13_d_table(), rsd13.get_d(), model, sample);
+        store_impl::store_loop_kernel(db, policy.RSD13_e_table(), rsd13.get_e(), model, sample);
+        store_impl::store_loop_kernel(db, policy.RSD13_f_table(), rsd13.get_f(), model, sample);
+        store_impl::store_loop_kernel(db, policy.RSD13_g_table(), rsd13.get_g(), model, sample);
+
+        store_impl::store_loop_kernel(db, policy.RSD22_A1_table(), rsd22.get_A1(), model, sample);
+        store_impl::store_loop_kernel(db, policy.RSD22_A2_table(), rsd22.get_A2(), model, sample);
+        store_impl::store_loop_kernel(db, policy.RSD22_A3_table(), rsd22.get_A3(), model, sample);
+        store_impl::store_loop_kernel(db, policy.RSD22_A4_table(), rsd22.get_A4(), model, sample);
+        store_impl::store_loop_kernel(db, policy.RSD22_A5_table(), rsd22.get_A5(), model, sample);
+        store_impl::store_loop_kernel(db, policy.RSD22_B2_table(), rsd22.get_B2(), model, sample);
+        store_impl::store_loop_kernel(db, policy.RSD22_B3_table(), rsd22.get_B3(), model, sample);
+        store_impl::store_loop_kernel(db, policy.RSD22_B6_table(), rsd22.get_B6(), model, sample);
+        store_impl::store_loop_kernel(db, policy.RSD22_B8_table(), rsd22.get_B8(), model, sample);
+        store_impl::store_loop_kernel(db, policy.RSD22_B9_table(), rsd22.get_B9(), model, sample);
+        store_impl::store_loop_kernel(db, policy.RSD22_C1_table(), rsd22.get_C1(), model, sample);
+        store_impl::store_loop_kernel(db, policy.RSD22_C2_table(), rsd22.get_C2(), model, sample);
+        store_impl::store_loop_kernel(db, policy.RSD22_C4_table(), rsd22.get_C4(), model, sample);
+        store_impl::store_loop_kernel(db, policy.RSD22_D1_table(), rsd22.get_D1(), model, sample);
       }
     
     
@@ -525,6 +524,14 @@ namespace sqlite3_operations
       {
         assert(db != nullptr);
         
+        if(sample.get_fail())
+          {
+            std::cerr << "lsseft: filtered Pk not stored (Pk_id = " << sample.get_Pk_token().get_id() << ", "
+                      << "kid = " << sample.get_k_token().get_id() << ") "
+                      << "since marked as failed" << '\n';
+            return;
+          }
+
         std::ostringstream insert_stmt;
         insert_stmt
           << "INSERT INTO " << policy.Pk_linear_table() << " VALUES (@Pk_id, @kid, @Pk_raw, @Pk_nw, @Pk_ref);";

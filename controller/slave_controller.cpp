@@ -177,9 +177,25 @@ void slave_controller::process_item(MPI_detail::new_filter_Pk& payload)
     const k_token& k_tok = payload.get_k_token();
     const linear_Pk_token& Pk_tok = payload.get_Pk_token();
     
-    Pk_filter filter;
-    auto out = filter(model, Pk_lin, k);
-    filtered_Pk sample(k_tok, Pk_tok, out.first, Pk_lin(k), out.second);
+    filtered_Pk sample;
+    try
+      {
+        Pk_filter filter;
+        auto out = filter(model, Pk_lin, k);
+        sample = filtered_Pk(k_tok, Pk_tok, out.first, Pk_lin(k), out.second);
+      }
+    catch(runtime_exception& xe)
+      {
+        if(xe.get_exception_code() == exception_type::filter_failure)
+          {
+            std::cerr << "lsseft: " << xe.what() << '\n';
+            sample.mark_failed();
+          }
+        else
+          {
+            throw;
+          }
+      }
     
     // inform master process we have finished work on this calculation
     MPI_detail::filter_Pk_ready return_payload(sample);
