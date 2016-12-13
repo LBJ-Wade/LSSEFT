@@ -117,7 +117,7 @@ Pk_filter::operator()(const FRW_model& model, const linear_Pk& Pk_lin, const Mpc
     // scale 0.25 for lambda suggested by Vlah, Seljak, Chu & Feng p.23 arXiv:1509.02120
     // they also suggested it should grow slightly at large k
     constexpr Mpc_units::energy K_PIV = 0.05 / Mpc_units::Mpc;
-    constexpr double LAMBDA_SLOPE = 0.02;
+    constexpr double LAMBDA_SLOPE = 0.04;
 
     const double lambda = 0.25 * std::pow(k/K_PIV, LAMBDA_SLOPE);
     
@@ -166,7 +166,8 @@ double Pk_filter::integrate(const double slog_min, const double slog_max, const 
           &regions, &evaluations, &fail,
           integral, error, prob);
     
-    if(fail != 0) throw runtime_exception(exception_type::filter_failure);
+    if(fail != 0 || !std::isfinite(integral[0]) || !std::isfinite(error[0]))
+      throw runtime_exception(exception_type::filter_failure);
     
     return integral[0];
   }
