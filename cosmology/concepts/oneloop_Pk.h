@@ -172,6 +172,7 @@ Pk_value_group<ValueType> operator+(const Pk_value_group<ValueType>& A, const lo
     return Pk_value_group<ValueType>(value, ValueType(error));
   }
 
+
 template <typename ValueType>
 Pk_value_group<ValueType> operator+(const loop_integral_result<ValueType>& A, const Pk_value_group<ValueType>& B)
   {
@@ -184,6 +185,7 @@ Pk_value_group<ValueType> operator+(const loop_integral_result<ValueType>& A, co
     return Pk_value_group<ValueType>(value, ValueType(error));
   }
 
+
 template <typename ValueType>
 Pk_value_group<ValueType> operator-(const Pk_value_group<ValueType>& A, const loop_integral_result<ValueType>& B)
   {
@@ -195,6 +197,7 @@ Pk_value_group<ValueType> operator-(const Pk_value_group<ValueType>& A, const lo
     
     return Pk_value_group<ValueType>(value, ValueType(error));
   }
+
 
 template <typename ValueType>
 Pk_value_group<ValueType> operator-(const loop_integral_result<ValueType>& A, const Pk_value_group<ValueType>& B)
@@ -209,26 +212,13 @@ Pk_value_group<ValueType> operator-(const loop_integral_result<ValueType>& A, co
   }
 
 
-// multiplication of a loop integral result by a scalar converts to a Pk_value_group<>
-template <typename ValueType>
-Pk_value_group<ValueType> operator*(double A, const loop_integral_result<ValueType>& B)
-  {
-    return Pk_value_group<ValueType>(A * B.value, std::abs(A) * B.error);
-  }
-
-template <typename ValueType>
-Pk_value_group<ValueType> operator*(const loop_integral_result<ValueType>& A, double B)
-  {
-    return Pk_value_group<ValueType>(B * A.value, std::abs(B) * A.error);
-  }
-
-
 // allow multiplication of loop integral results by scalar-type objects
 template <typename ScalarType, typename LoopType, typename std::enable_if_t< !std::is_integral<ScalarType>::value >* = nullptr>
 auto operator*(const ScalarType& S, const loop_integral_result<LoopType>& L) -> Pk_value_group<decltype(S*L.value)>
 {
     return Pk_value_group<decltype(S*L.value)>(S * L.value, std::abs(S) * L.error);
   };
+
 
 template <typename ScalarType, typename LoopType, typename std::enable_if_t< !std::is_integral<ScalarType>::value >* = nullptr>
 auto operator*(const loop_integral_result<LoopType>& L, const ScalarType& S) -> Pk_value_group<decltype(S*L.value)>
@@ -253,6 +243,7 @@ auto operator*(const Pk_value_group<PkType> P, const loop_integral_result<LoopTy
     
     return Pk_value_group<decltype(value)>(value, std::abs(value) * quadrature);
   };
+
 
 template <typename PkType, typename LoopType>
 auto operator*(const loop_integral_result<LoopType>& L, const Pk_value_group<PkType> P) -> Pk_value_group<decltype(P.get_value()*L.value)>
