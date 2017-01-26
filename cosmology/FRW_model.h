@@ -22,11 +22,11 @@ class FRW_model
     //! constructor
     //! cosmological parameters refer to their values today; if none are provided, then we use
     //! Planck values as sensible defaults
-    FRW_model(double om = Planck2013::omega_m, double occ = Planck2013::omega_cc, double h_ = Planck2013::h,
-              Mpc_units::energy tc = Planck2013::T_CMB, double ne = Planck2013::Neff,
-              double fb = Planck2013::f_baryon, double zs = Planck2013::z_star, double zd = Planck2013::z_drag,
-              double ze = Planck2013::z_eq, double Ac = Planck2013::Acurv, double n = Planck2013::ns,
-              Mpc_units::energy kp = Planck2013::kpiv);
+    FRW_model(double om = Planck2015::omega_m, double occ = Planck2015::omega_cc, double h_ = Planck2015::h,
+              Mpc_units::energy tc = Planck2015::T_CMB, double ne = Planck2015::Neff,
+              double fb = Planck2015::f_baryon, double zs = Planck2015::z_star, double zd = Planck2015::z_drag,
+              double ze = Planck2015::z_eq, double Ac = Planck2015::Acurv, double n = Planck2015::ns,
+              Mpc_units::energy kp = Planck2015::kpiv);
 
     //! destructor is default
     ~FRW_model() = default;

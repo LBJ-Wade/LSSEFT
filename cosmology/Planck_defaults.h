@@ -17,7 +17,7 @@ namespace Planck2013
     constexpr double            omega_cc = 0.6817;
     constexpr double            omega_m  = 1.0 - omega_cc;
     constexpr double            h        = 0.6704;
-    constexpr double            f_baryon = 0.15;   // Planck+WP best fit value is 0.154706
+    constexpr double            f_baryon = 0.15401;
     constexpr Mpc_units::energy H0       = 100 * h * Mpc_units::Kilometre / (Mpc_units::Second * Mpc_units::Mpc);
     constexpr Mpc_units::energy T_CMB    = 2.7255 * Mpc_units::Kelvin;
     constexpr double            Neff     = 3.046;   // Standard Model value
@@ -33,7 +33,33 @@ namespace Planck2013
     constexpr double z_drag = 1059.25;
     constexpr double z_eq   = 3403;
 
-  }   // namespace Planck
+  }   // namespace Planck2013
+
+
+// Planck 2015 TT+TE+EE+lowP+lensing+ext parameters from Table 4 on p.31 of arXiv:1502.01589
+namespace Planck2015
+  {
+    
+    constexpr double            omega_cc = 0.6911;
+    constexpr double            omega_m  = 1.0 - omega_cc;
+    constexpr double            h        = 0.6774;
+    constexpr double            f_baryon = 0.156821;
+    constexpr Mpc_units::energy H0       = 100 * h * Mpc_units::Kilometre / (Mpc_units::Second * Mpc_units::Mpc);
+    constexpr Mpc_units::energy T_CMB    = 2.7255 * Mpc_units::Kelvin;
+    constexpr double            Neff     = 3.046;   // Standard Model value
+    
+    // fluctuation two-point function
+    constexpr double Acurv           = 2.1420E-9;
+    constexpr double ns              = 0.9667;
+    constexpr Mpc_units::energy kpiv = 0.05 / Mpc_units::Mpc;
+    constexpr double sigma8          = 0.8159;
+    
+    // CMB-related redshifts
+    constexpr double z_star = 1089.90;
+    constexpr double z_drag = 1059.68;
+    constexpr double z_eq   = 3371;
+    
+  }
 
 
 #endif //LSSEFT_PLANCK_DEFAULTS_H

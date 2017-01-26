@@ -247,7 +247,7 @@ double transfer_functor::find_init_z()
 
     double z_init = std::pow((3.0/(g_star*radiation_constant)) * Mp_over_T_CMB * k_over_T_CMB * superhorizon_factor, 1.0/3.0) - 1.0;
 
-    if(z_init < Planck2013::z_eq) z_init = Planck2013::z_eq * superhorizon_factor;
+    if(z_init < Planck2015::z_eq) z_init = Planck2015::z_eq * superhorizon_factor;
 
     return(z_init);
   }
