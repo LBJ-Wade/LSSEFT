@@ -184,6 +184,7 @@ Matsubara_XY_calculator::compute_XY(const Mpc_units::energy& IR_resum, const Mpc
           &regions, &evaluations, &fail,
           integral, error, prob);
     
-    // phase space factor is Matsubara's 1/6pi^2 multiplied by 4pi coming from the q integral angular average
+    // phase space factor is the smae as Matsubara's 1/6pi^2, from 1/3 in raw definition of X and Y multiplied
+    // by an explicit 1/2 in the exponential
     return integral[0] * Mpc_units::Mpc2 / (6.0 * M_PI * M_PI);
   }
