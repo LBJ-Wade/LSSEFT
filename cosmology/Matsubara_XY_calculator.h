@@ -62,7 +62,7 @@ class Matsubara_XY_calculator
     //! calculate Matsubara X & Y coefficients
     Matsubara_XY
     calculate_Matsubara_XY(const Mpc_units::energy& IR_resum, const IR_resum_token& IR_resum_tok,
-                           const wiggle_Pk& Pk_lin);
+                           const initial_filtered_Pk& Pk_lin);
 
     
     // INTERNAL API

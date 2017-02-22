@@ -68,7 +68,7 @@ class oneloop_momentum_integrator
     loop_integral integrate(const FRW_model& model, const Mpc_units::energy& k, const k_token& k_tok,
                             const Mpc_units::energy& UV_cutoff, const UV_cutoff_token& UV_tok,
                             const Mpc_units::energy& IR_cutoff, const IR_cutoff_token& IR_tok,
-                            const wiggle_Pk& Pk);
+                            const initial_filtered_Pk& Pk);
 
     //! output integrands for inspection
     void write_integrands(const FRW_model& model, const Mpc_units::energy& k,
@@ -82,7 +82,7 @@ class oneloop_momentum_integrator
     //! perform a kernel integral, both raw and wiggle parts
     template <typename KernelRecord>
     bool kernel_integral(const FRW_model& model, const Mpc_units::energy& k, const Mpc_units::energy& UV_cutoff,
-                         const Mpc_units::energy& IR_cutoff, const wiggle_Pk& Pk, integrand_t interand,
+                         const Mpc_units::energy& IR_cutoff, const initial_filtered_Pk& Pk, integrand_t interand,
                          KernelRecord& result, loop_integral_type type, const std::string& name);
     
     //! perform a single kernel integral of either raw or wiggle type, depending on which spline is supplied

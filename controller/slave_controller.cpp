@@ -192,24 +192,24 @@ void slave_controller::process_item(MPI_detail::new_filter_Pk& payload)
   {
     const FRW_model& model = payload.get_model();
     const Mpc_units::energy& k = payload.get_k();
-    const linear_Pk& Pk_lin = payload.get_Pk_linear();
+    const filterable_Pk& Pk_lin = payload.get_Pk_linear();
     
     const k_token& k_tok = payload.get_k_token();
     const linear_Pk_token& Pk_tok = payload.get_Pk_token();
     
-    filtered_Pk sample;
+    filtered_Pk_value sample;
     try
       {
         Pk_filter filter;
         auto out = filter(model, Pk_lin, k);
-        sample = filtered_Pk(k_tok, Pk_tok, out.first, Pk_lin(k), out.second);
+        sample = filtered_Pk_value(k_tok, Pk_tok, out.first, Pk_lin(k), out.second);
       }
     catch(runtime_exception& xe)
       {
         if(xe.get_exception_code() == exception_type::filter_failure)
           {
             std::cerr << "lsseft: " << xe.what() << '\n';
-            sample = filtered_Pk(k_tok, Pk_tok, 0.0, Pk_lin(k), 0.0);
+            sample = filtered_Pk_value(k_tok, Pk_tok, 0.0, Pk_lin(k), 0.0);
             sample.mark_failed();
           }
         else
@@ -235,7 +235,7 @@ void slave_controller::process_item(MPI_detail::new_loop_momentum_integration& p
     const k_token& k_tok = payload.get_k_token();
     const UV_cutoff_token& UV_tok = payload.get_UV_token();
     const IR_cutoff_token& IR_tok = payload.get_IR_token();
-    const wiggle_Pk& Pk = payload.get_tree_power_spectrum();
+    const initial_filtered_Pk& Pk = payload.get_tree_power_spectrum();
     
 //    std::cout << "Worker " << this->worker_number() << " processing loop integral item: k-id = " << k_tok.get_id()
 //              << " for k = " << k * Mpc_units::Mpc << " h/Mpc, IR cutoff = " << IR_cutoff * Mpc_units::Mpc
@@ -254,7 +254,7 @@ void slave_controller::process_item(MPI_detail::new_loop_momentum_integration& p
 void slave_controller::process_item(MPI_detail::new_Matsubara_XY& payload)
   {
     const Mpc_units::energy& IR_resum = payload.get_IR_resum();
-    const wiggle_Pk& Pk = payload.get_tree_power_spectrum();
+    const initial_filtered_Pk& Pk = payload.get_tree_power_spectrum();
     
     const IR_resum_token& IR_resum_tok = payload.get_IR_resum_token();
     
@@ -273,7 +273,7 @@ void slave_controller::process_item(MPI_detail::new_one_loop_Pk& payload)
     const Mpc_units::energy& k = payload.get_k();
     const oneloop_growth& gf_factors = payload.get_gf_factors();
     const loop_integral& loop_data = payload.get_loop_data();
-    const wiggle_Pk& Pk = payload.get_tree_power_spectrum();
+    const initial_filtered_Pk& Pk = payload.get_tree_power_spectrum();
     
     const k_token& k_tok = loop_data.get_k_token();
     const IR_cutoff_token& IR_tok = loop_data.get_IR_token();
@@ -303,7 +303,7 @@ void slave_controller::process_item(MPI_detail::new_one_loop_resum_Pk& payload)
     const Matsubara_XY& XY = payload.get_Matsubara_XY();
     const oneloop_Pk& oneloop_data = payload.get_oneloop_Pk_data();
     const oneloop_growth_record& gf_data = payload.get_gf_data();
-    const wiggle_Pk& Pk = payload.get_tree_power_spectrum();
+    const initial_filtered_Pk& Pk = payload.get_tree_power_spectrum();
     
     oneloop_Pk_calculator calculator;
     oneloop_resum_Pk sample = calculator.calculate_resum_dd(k, XY, oneloop_data, gf_data, Pk);
@@ -321,7 +321,7 @@ void slave_controller::process_item(MPI_detail::new_multipole_Pk& payload)
     const Matsubara_XY& XY = payload.get_Matsubara_XY();
     const oneloop_Pk& oneloop_data = payload.get_oneloop_Pk_data();
     const oneloop_growth_record& gf_data = payload.get_gf_data();
-    const wiggle_Pk& Pk = payload.get_tree_power_spectrum();
+    const initial_filtered_Pk& Pk = payload.get_tree_power_spectrum();
     
 //    std::cout << "Worker " << this->worker_number() << " processing multipole P(k) for"
 //              << " k-id = " << oneloop_data.get_k_token().get_id()

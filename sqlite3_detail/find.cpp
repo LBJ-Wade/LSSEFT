@@ -252,6 +252,7 @@ namespace sqlite3_operations
           }
           
       }   // namespace find_impl
+
     
     std::unique_ptr<oneloop_growth> find(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
                                          const FRW_model_token& model, const z_database& z_db)
@@ -483,70 +484,6 @@ namespace sqlite3_operations
         if(count != 1) throw runtime_exception(exception_type::database_error, ERROR_SQLITE3_MATSUBARA_XY_MISREAD);
         
         std::unique_ptr<Matsubara_XY> payload = std::make_unique<Matsubara_XY>(Pk, IR_resum, X, Y);
-        
-        return std::move(payload);
-      }
-    
-    
-    std::unique_ptr<wiggle_Pk>
-    find(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const linear_Pk_token& token,
-         const k_database& k_db)
-      {
-        // set up temporary table of desired k identifiers
-        std::string ktab = k_table(db, mgr, policy, k_db);
-        
-        std::ostringstream read_stmt;
-        read_stmt << "SELECT sample.Pk_raw, sample.Pk_nw "
-                  << "FROM " << ktab << " "
-                  << "INNER JOIN (SELECT * FROM " << policy.Pk_linear_table() << " WHERE Pk_id=@Pk_id) sample "
-                  << "ON " << ktab << ".id = sample.kid "
-                  << "ORDER BY " << ktab << ".ROWID ASC;";
-    
-        // prepare statement
-        sqlite3_stmt* stmt;
-        check_stmt(db, sqlite3_prepare_v2(db, read_stmt.str().c_str(), read_stmt.str().length()+1, &stmt, nullptr));
-    
-        // bind parameter values
-        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_id"), token.get_id()));
-        
-        // set up databases to hold the result
-        tree_Pk::database_type raw_db;
-        tree_Pk_w::database_type nw_db;
-    
-        // perform read
-        int result = 0;
-        k_database::const_record_iterator t = k_db.record_cbegin();
-        while((result = sqlite3_step(stmt)) != SQLITE_DONE && t != k_db.record_cend())
-          {
-            if(result == SQLITE_ROW)
-              {
-                Mpc_units::inverse_energy3 raw = sqlite3_column_double(stmt, 0) * dimensionful_unit<Mpc_units::inverse_energy3>();
-                Mpc_units::inverse_energy3 nw  = sqlite3_column_double(stmt, 1) * dimensionful_unit<Mpc_units::inverse_energy3>();
-                
-                raw_db.add_record(*(*t), raw);
-                nw_db.add_record(*(*t), nw);
-                
-                ++t;
-              }
-            else
-              {
-                check_stmt(db, sqlite3_clear_bindings(stmt));
-                check_stmt(db, sqlite3_finalize(stmt));
-            
-                throw runtime_exception(exception_type::database_error, ERROR_SQLITE3_READ_FILTERED_PK_FAIL);
-              }
-          }
-    
-        // clear bindings and release
-        check_stmt(db, sqlite3_clear_bindings(stmt));
-        check_stmt(db, sqlite3_finalize(stmt));
-        
-        // drop temporary table
-        drop_temp(db, mgr, ktab);
-    
-        if(t != k_db.record_cend()) throw runtime_exception(exception_type::database_error, ERROR_SQLITE3_FILTERED_PK_MISREAD);
-        
-        std::unique_ptr<wiggle_Pk> payload = std::make_unique<wiggle_Pk>(token, nw_db, raw_db);
         
         return std::move(payload);
       }

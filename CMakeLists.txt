@@ -91,7 +91,7 @@ SET(COSMOLOGY_SOURCE_FILES
   cosmology/concepts/loop_integral.cpp cosmology/concepts/loop_integral.h
   cosmology/concepts/power_spectrum_detail/generic.h
   cosmology/concepts/power_spectrum_detail/types.h
-  cosmology/concepts/power_spectrum_detail/linear.cpp cosmology/concepts/power_spectrum_detail/linear.h
+  cosmology/concepts/power_spectrum_detail/linear.h
   cosmology/concepts/power_spectrum_detail/wiggle.cpp cosmology/concepts/power_spectrum_detail/wiggle.h
   cosmology/concepts/power_spectrum_detail/spline.cpp cosmology/concepts/power_spectrum_detail/spline.h
   cosmology/concepts/power_spectrum.h
@@ -99,7 +99,7 @@ SET(COSMOLOGY_SOURCE_FILES
   cosmology/concepts/oneloop_Pk.cpp cosmology/concepts/oneloop_Pk.h
   cosmology/concepts/oneloop_resum_Pk.cpp cosmology/concepts/oneloop_resum_Pk.h
   cosmology/concepts/Matsubara_XY.cpp cosmology/concepts/Matsubara_XY.h
-  cosmology/concepts/filtered_Pk.cpp cosmology/concepts/filtered_Pk.h
+  cosmology/concepts/filtered_Pk_value.cpp cosmology/concepts/filtered_Pk_value.h
   cosmology/oneloop_integrands/shared.h
   cosmology/oneloop_integrands/delta_13.h
   cosmology/oneloop_integrands/delta_22.h
@@ -124,7 +124,6 @@ SET(DATABASE_SOURCE_FILES
   database/data_manager_impl/lookup_insert.cpp
   database/data_manager_impl/work_lists.cpp
   database/data_manager_impl/find.cpp
-  database/data_manager_impl/services.cpp
   database/data_manager_impl/transactions.cpp
   database/tokens.cpp database/tokens.h
   database/transaction_manager.cpp database/transaction_manager.h
@@ -153,7 +152,7 @@ SET(SQLITE3_DETAIL_SOURCE_FILES
   sqlite3_detail/missing_elements.cpp sqlite3_detail/missing_elements.h
   sqlite3_detail/store.cpp sqlite3_detail/store.h
   sqlite3_detail/find.cpp sqlite3_detail/find.h
-  sqlite3_detail/power_spectrum.cpp sqlite3_detail/power_spectrum.h)
+  sqlite3_detail/power_spectrum.h)
 
 SET(SOURCE_FILES
   ${TOP_LEVEL_SOURCE_FILES}
@@ -188,8 +187,7 @@ ADD_EXECUTABLE(lsseft
   cosmology/concepts/oneloop_resum_Pk.cpp
   cosmology/concepts/multipole_Pk.cpp
   cosmology/concepts/Matsubara_XY.cpp
-  cosmology/concepts/filtered_Pk.cpp
-  cosmology/concepts/power_spectrum_detail/linear.cpp
+  cosmology/concepts/filtered_Pk_value.cpp
   cosmology/concepts/power_spectrum_detail/wiggle.cpp
   cosmology/concepts/power_spectrum_detail/spline.cpp
   cosmology/transfer_integrator.cpp
@@ -205,7 +203,6 @@ ADD_EXECUTABLE(lsseft
   database/data_manager_impl/lookup_insert.cpp
   database/data_manager_impl/work_lists.cpp
   database/data_manager_impl/find.cpp
-  database/data_manager_impl/services.cpp
   database/data_manager_impl/transactions.cpp
   database/tokens.cpp
   database/transaction_manager.cpp
@@ -220,7 +217,6 @@ ADD_EXECUTABLE(lsseft
   sqlite3_detail/missing_elements.cpp
   sqlite3_detail/store.cpp
   sqlite3_detail/find.cpp
-  sqlite3_detail/power_spectrum.cpp
   sqlite3_detail/sqlite3_policy.cpp)
 
 ADD_DEPENDENCIES(lsseft DEPS)

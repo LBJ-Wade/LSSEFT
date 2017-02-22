@@ -392,7 +392,7 @@ multipole_Pk_calculator::decompose(WiggleAccessor wiggle, NoWiggleAccessor nowig
 
 multipole_Pk multipole_Pk_calculator::calculate_Legendre(const Mpc_units::energy& k, const Matsubara_XY& XY,
                                                          const oneloop_Pk& data, const oneloop_growth_record& gf_data,
-                                                         const wiggle_Pk& Ptree)
+                                                         const initial_filtered_Pk& Ptree)
   {
     // construct lambdas to access components of an RSD P(k) record
 

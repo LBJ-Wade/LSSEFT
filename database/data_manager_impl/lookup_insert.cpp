@@ -62,12 +62,3 @@ unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, double z)
     
     return sqlite3_operations::insert_redshift(this->handle, mgr, z, this->policy);
   }
-
-
-unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const FRW_model_token& model, const linear_Pk& Pk_lin)
-  {
-    boost::optional<unsigned int> id = sqlite3_operations::lookup_Pk_linear(this->handle, mgr, model, Pk_lin, this->policy);
-    if(id) return(*id);
-    
-    return sqlite3_operations::insert_Pk_linear(this->handle, mgr, model, Pk_lin, this->policy);
-  }

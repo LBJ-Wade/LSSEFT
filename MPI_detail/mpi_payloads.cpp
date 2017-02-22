@@ -34,12 +34,6 @@ namespace MPI_detail
       {
         return new_transfer_integration(model, *(*t), t->get_token(), t->get_z_db());
       }
-    
-    
-    new_filter_Pk build_payload(const FRW_model& model, filter_Pk_work_list::const_iterator& t)
-      {
-        return new_filter_Pk(model, *(*t), t->get_k_token(), t->get_Pk_token(), t->get_linear_Pk());
-      }
 
 
     new_loop_momentum_integration build_payload(const FRW_model& model, loop_momentum_work_list::const_iterator& t)
@@ -48,6 +42,12 @@ namespace MPI_detail
                                              t->get_UV_cutoff(), t->get_UV_token(),
                                              t->get_IR_cutoff(), t->get_IR_token(),
                                              t->get_tree_Pk_db());
+      }
+
+
+    new_filter_Pk build_payload(const FRW_model& model, filter_Pk_work_list::const_iterator& t)
+      {
+        return new_filter_Pk(model, *(*t), t->get_k_token(), t->get_Pk_token(), t->get_linear_Pk());
       }
     
     

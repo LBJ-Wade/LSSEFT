@@ -540,7 +540,7 @@ namespace sqlite3_operations
     
     
     void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token&,
-               const filtered_Pk& sample)
+               const filtered_Pk_value& sample)
       {
         assert(db != nullptr);
         

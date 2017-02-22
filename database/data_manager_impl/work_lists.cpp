@@ -172,7 +172,7 @@ std::unique_ptr<z_database> data_manager::build_oneloop_work_list(FRW_model_toke
 std::unique_ptr<loop_momentum_work_list>
 data_manager::build_loop_momentum_work_list(FRW_model_token& model, k_database& k_db,
                                             IR_cutoff_database& IR_db, UV_cutoff_database& UV_db,
-                                            std::shared_ptr<wiggle_Pk>& Pk)
+                                            std::shared_ptr<initial_filtered_Pk>& Pk)
   {
     // start timer
     boost::timer::cpu_timer timer;
@@ -216,7 +216,7 @@ data_manager::build_loop_momentum_work_list(FRW_model_token& model, k_database& 
 std::unique_ptr<one_loop_Pk_work_list>
 data_manager::build_one_loop_Pk_work_list(FRW_model_token& model, z_database& z_db, k_database& k_db,
                                           IR_cutoff_database& IR_db, UV_cutoff_database& UV_db,
-                                          std::shared_ptr<wiggle_Pk>& Pk)
+                                          std::shared_ptr<initial_filtered_Pk>& Pk)
   {
     // start timer
     boost::timer::cpu_timer timer;
@@ -272,7 +272,7 @@ data_manager::build_one_loop_Pk_work_list(FRW_model_token& model, z_database& z_
 std::unique_ptr<one_loop_resum_Pk_work_list>
 data_manager::build_one_loop_resum_Pk_work_list(FRW_model_token& model, z_database& z_db, k_database& k_db,
                                                 IR_cutoff_database& IR_cutoff_db, UV_cutoff_database& UV_cutoff_db,
-                                                IR_resum_database& IR_resum_db, std::shared_ptr<wiggle_Pk>& Pk)
+                                                IR_resum_database& IR_resum_db, std::shared_ptr<initial_filtered_Pk>& Pk)
   {
     // start timer
     boost::timer::cpu_timer timer;
@@ -336,7 +336,7 @@ data_manager::build_one_loop_resum_Pk_work_list(FRW_model_token& model, z_databa
 std::unique_ptr<multipole_Pk_work_list>
 data_manager::build_multipole_Pk_work_list(FRW_model_token& model, z_database& z_db, k_database& k_db,
                                            IR_cutoff_database& IR_cutoff_db, UV_cutoff_database& UV_cutoff_db,
-                                           IR_resum_database& IR_resum_db, std::shared_ptr<wiggle_Pk>& Pk)
+                                           IR_resum_database& IR_resum_db, std::shared_ptr<initial_filtered_Pk>& Pk)
   {
     // start timer
     boost::timer::cpu_timer timer;
@@ -399,7 +399,7 @@ data_manager::build_multipole_Pk_work_list(FRW_model_token& model, z_database& z
 
 std::unique_ptr<Matsubara_XY_work_list>
 data_manager::build_Matsubara_XY_work_list(FRW_model_token& model, IR_resum_database& IR_resum_db,
-                                           std::shared_ptr<wiggle_Pk>& Pk)
+                                           std::shared_ptr<initial_filtered_Pk>& Pk)
   {
     // start timer
     boost::timer::cpu_timer timer;
@@ -435,13 +435,13 @@ data_manager::build_Matsubara_XY_work_list(FRW_model_token& model, IR_resum_data
 
 
 std::unique_ptr<filter_Pk_work_list>
-data_manager::build_filter_Pk_work_list(linear_Pk_token& token, std::shared_ptr<linear_Pk>& Pk_lin)
+data_manager::build_filter_Pk_work_list(linear_Pk_token& token, std::shared_ptr<filterable_Pk>& Pk_lin)
   {
     // start timer
     boost::timer::cpu_timer timer;
     
     // construct an empty work list
-    std::unique_ptr<filter_Pk_work_list> work_list = std::make_unique<filter_Pk_work_list>();
+    auto work_list = std::make_unique<filter_Pk_work_list>();
     
     // open a transaction on the database
     std::shared_ptr<transaction_manager> mgr = this->open_transaction();
@@ -477,4 +477,3 @@ data_manager::build_filter_Pk_work_list(linear_Pk_token& token, std::shared_ptr<
     
     return work_list;
   }
-

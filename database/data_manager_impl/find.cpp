@@ -51,9 +51,16 @@ std::unique_ptr<oneloop_growth> data_manager::find<oneloop_growth>(transaction_m
 
 
 template <>
-std::unique_ptr<wiggle_Pk> data_manager::find<wiggle_Pk>(transaction_manager& mgr, const linear_Pk_token& token, const k_database& k_db)
+std::unique_ptr<initial_filtered_Pk> data_manager::find<initial_filtered_Pk>(transaction_manager& mgr, const linear_Pk_token& token, const k_database& k_db)
   {
-    return sqlite3_operations::find(this->handle, mgr, this->policy, token, k_db);
+    return sqlite3_operations::find<initial_filtered_Pk>(this->handle, mgr, this->policy, token, k_db);
+  }
+
+
+template <>
+std::unique_ptr<final_filtered_Pk> data_manager::find<final_filtered_Pk>(transaction_manager& mgr, const linear_Pk_token& token, const k_database& k_db)
+  {
+    return sqlite3_operations::find<final_filtered_Pk>(this->handle, mgr, this->policy, token, k_db);
   }
 
 

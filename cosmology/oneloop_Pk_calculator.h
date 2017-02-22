@@ -64,13 +64,13 @@ class oneloop_Pk_calculator
     std::list<oneloop_Pk>
     calculate_dd(const Mpc_units::energy& k, const k_token& k_tok, const IR_cutoff_token& IR_tok,
                  const UV_cutoff_token& UV_tok,
-                 const oneloop_growth& gf_factors, const loop_integral& loop_data, const wiggle_Pk& Ptree);
+                 const oneloop_growth& gf_factors, const loop_integral& loop_data, const initial_filtered_Pk& Ptree);
     
     //! calculate resummed power spectrum
     
     oneloop_resum_Pk
     calculate_resum_dd(const Mpc_units::energy& k, const Matsubara_XY& XY, const oneloop_Pk& data,
-                       const oneloop_growth_record& gf_data, const wiggle_Pk& Pk_lin);
+                       const oneloop_growth_record& gf_data, const initial_filtered_Pk& Pk_lin);
 
     
     // INTERNAL API

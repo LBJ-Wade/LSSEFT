@@ -48,7 +48,7 @@ namespace MPI_detail
       };
     
     
-    template <> struct work_item_traits<filter_Pk_work_record>
+    template <> struct work_item_traits< filter_Pk_work_record >
       {
         typedef new_filter_Pk   outgoing_payload_type;
         typedef filter_Pk_ready incoming_payload_type;

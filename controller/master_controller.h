@@ -91,8 +91,8 @@ class master_controller
   protected:
 
     //! execute a job specified by a work list
-    template <typename WorkItem>
-    void scatter(const FRW_model& model, const FRW_model_token& token, std::list<WorkItem>& work, data_manager& dmgr);
+    template <typename WorkItemList>
+    void scatter(const FRW_model& model, const FRW_model_token& token, WorkItemList& work, data_manager& dmgr);
 
     //! store a payload returned by a worker
     template <typename WorkItem>

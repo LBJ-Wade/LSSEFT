@@ -48,6 +48,8 @@
 #include "sqlite3_detail/sqlite3_policy.h"
 #include "sqlite3_detail/operations.h"
 
+#include "utilities/formatter.h"
+
 #include "boost/filesystem/operations.hpp"
 
 #include "sqlite3.h"
@@ -83,7 +85,8 @@ class data_manager
     
     //! generate wavenumber database from a linear power spectrum container
     //! only contains wavenumbers that can actually be evaluated by the container
-    std::unique_ptr<k_database> build_k_db(transaction_manager& mgr, const linear_Pk& Pk_lin,
+    template <typename PkContainer>
+    std::unique_ptr<k_database> build_k_db(transaction_manager& mgr, const PkContainer& Pk_lin,
                                            double bottom_clearance=SPLINE_PK_DEFAULT_BOTTOM_CLEARANCE,
                                            double top_clearance=SPLINE_PK_DEFAULT_TOP_CLEARANCE);
 
@@ -122,14 +125,14 @@ class data_manager
     //! generates a new transaction on the database; will fail if a transaction is in progress
     std::unique_ptr<loop_momentum_work_list>
     build_loop_momentum_work_list(FRW_model_token& model, k_database& k_db, IR_cutoff_database& IR_db,
-                                  UV_cutoff_database& UV_db, std::shared_ptr<wiggle_Pk>& Pk);
+                                  UV_cutoff_database& UV_db, std::shared_ptr<initial_filtered_Pk>& Pk);
     
     //! build a work list representing (k, z, IR, UV) combinations of the one-loop power spectra
     //! that are missing from the SQLite backing store.
     //! generates a new transaction on the database; will fail if a transaction is in progress
     std::unique_ptr<one_loop_Pk_work_list>
     build_one_loop_Pk_work_list(FRW_model_token& model, z_database& z_db, k_database& k_db, IR_cutoff_database& IR_db,
-                                UV_cutoff_database& UV_db, std::shared_ptr<wiggle_Pk>& Pk);
+                                UV_cutoff_database& UV_db, std::shared_ptr<initial_filtered_Pk>& Pk);
     
     //! build a work list represenitng (k, z, IR_cutoff, UV_cutoff, IR_resum) combinations of the one-loop
     //! power spectrum that are missing from the SQLite backing store
@@ -137,7 +140,7 @@ class data_manager
     std::unique_ptr<one_loop_resum_Pk_work_list>
     build_one_loop_resum_Pk_work_list(FRW_model_token& model, z_database& z_db, k_database& k_db,
                                       IR_cutoff_database& IR_cutoff_db, UV_cutoff_database& UV_cutoff_db,
-                                      IR_resum_database& IR_resum_db, std::shared_ptr<wiggle_Pk>& Pk);
+                                      IR_resum_database& IR_resum_db, std::shared_ptr<initial_filtered_Pk>& Pk);
     
     //! build a work list representing (k, z, IR_cutoff, UV_cutoff, IR_resum) combinations of the one-loop
     //! multipole power spectra that are missing from the SQLite backing store.
@@ -145,17 +148,19 @@ class data_manager
     std::unique_ptr<multipole_Pk_work_list>
     build_multipole_Pk_work_list(FRW_model_token& model, z_database& z_db, k_database& k_db,
                                  IR_cutoff_database& IR_cutoff_db, UV_cutoff_database& UV_cutoff_db,
-                                 IR_resum_database& IR_resum_db, std::shared_ptr<wiggle_Pk>& Pk);
+                                 IR_resum_database& IR_resum_db, std::shared_ptr<initial_filtered_Pk>& Pk);
     
     //! build a work list representing data for calculation of the Matsubara- X & Y coefficients
     std::unique_ptr<Matsubara_XY_work_list>
-    build_Matsubara_XY_work_list(FRW_model_token& model, IR_resum_database& IR_resum_db, std::shared_ptr<wiggle_Pk>& Pk);
+    build_Matsubara_XY_work_list(FRW_model_token& model, IR_resum_database& IR_resum_db, std::shared_ptr<initial_filtered_Pk>& Pk);
     
     //! build a work list representing k-modes for which we need to produce a filtered wiggle/no-wiggle power spectrum
-    std::unique_ptr<filter_Pk_work_list> build_filter_Pk_work_list(linear_Pk_token& token, std::shared_ptr<linear_Pk>& Pk_lin);
+    std::unique_ptr<filter_Pk_work_list>
+    build_filter_Pk_work_list(linear_Pk_token& token, std::shared_ptr<filterable_Pk>& Pk_lin);
 
     //! exchange a linear power spectrum container for a wiggle-Pk container
-    std::unique_ptr<wiggle_Pk> build_wiggle_Pk(const linear_Pk_token& token, const linear_Pk& Pk_lin);
+    template <typename PkContainer>
+    std::unique_ptr<typename PkContainer::filtered_Pk_type> build_wiggle_Pk(const linear_Pk_token& token, const PkContainer& Pk_lin);
     
   protected:
     
@@ -191,8 +196,10 @@ class data_manager
     
     //! tokenize a linear power spectrum
     //! generates a new transaction on the database; will fail if a transaction is in progress
-    std::unique_ptr<linear_Pk_token> tokenize(const FRW_model_token& model, const linear_Pk& Pk_lin);
-    std::unique_ptr<linear_Pk_token> tokenize(transaction_manager& mgr, const FRW_model_token& model, const linear_Pk& Pk_lin);
+    template <typename PkContainer>
+    std::unique_ptr<linear_Pk_token> tokenize(const FRW_model_token& model, const PkContainer& Pk_lin);
+    template <typename PkContainer>
+    std::unique_ptr<linear_Pk_token> tokenize(transaction_manager& mgr, const FRW_model_token& model, const PkContainer& Pk_lin);
 
 
     // DATA STORAGE
@@ -223,14 +230,14 @@ class data_manager
     template <typename PayloadType>
     std::unique_ptr<loop_integral>
     find(transaction_manager& mgr, const FRW_model_token& model, const k_token& k, const linear_Pk_token& Pk,
-             const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
+         const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
     
     //! extract a sample of a P(k)-like quantity that is k-dependent, z-dependent,
     //! and IR/UV-cutoff dependent
     template <typename PayloadType>
     std::unique_ptr<PayloadType>
     find(transaction_manager& mgr, const FRW_model_token& model, const k_token& k, const z_token& z,
-             const linear_Pk_token& Pk, const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
+         const linear_Pk_token& Pk, const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
     
     //! extract a quantity of a IR-resummation-scale dependent quantity
     template <typename PayloadType>
@@ -276,7 +283,8 @@ class data_manager
     unsigned int lookup_or_insert(transaction_manager& mgr, const Mpc_units::energy &k);
     
     //! lookup or insert a linear power spectrum identifier
-    unsigned int lookup_or_insert(transaction_manager& mgr, const FRW_model_token& model, const linear_Pk& Pk_lin);
+    template <typename PkContainer>
+    unsigned int lookup_or_insert(transaction_manager& mgr, const FRW_model_token& model, const PkContainer& Pk_lin);
     
     
     // INTERNAL DATA
@@ -348,6 +356,31 @@ std::unique_ptr< wavenumber_database<Token> > data_manager::build_wavenumber_db(
   }
 
 
+template <typename PkContainer>
+std::unique_ptr<k_database> data_manager::build_k_db(transaction_manager& mgr, const PkContainer& Pk_lin,
+                                                     double bottom_clearance, double top_clearance)
+  {
+    // construct an empty wavenumber database
+    std::unique_ptr<k_database> k_db = std::make_unique<k_database>();
+    
+    // get power spectrum database underlying this container
+    const tree_Pk::database_type& Pk_db = Pk_lin.get_db();
+    
+    for(tree_Pk::database_type::const_record_iterator t = Pk_db.record_cbegin(); t != Pk_db.record_cend(); ++t)
+      {
+        // ask initial_Pk container whether this P(k) value is acceptable
+        const Mpc_units::energy& k = t->get_wavenumber();
+        if(Pk_lin.is_valid(k, bottom_clearance, top_clearance))
+          {
+            std::unique_ptr<k_token> tok = this->tokenize<k_token>(mgr, k);
+            k_db->add_record(k, *tok);
+          }
+      }
+    
+    return k_db;
+  }
+
+
 template <typename Token>
 std::unique_ptr<Token> data_manager::tokenize(const Mpc_units::energy& k)
   {
@@ -373,6 +406,33 @@ std::unique_ptr<Token> data_manager::tokenize(transaction_manager& mgr, const Mp
   }
 
 
+template <typename PkContainer>
+std::unique_ptr<linear_Pk_token>
+data_manager::tokenize(const FRW_model_token& model, const PkContainer& Pk_lin)
+  {
+    // open a new transaction on the database
+    std::shared_ptr<transaction_manager> transaction = this->open_transaction();
+    
+    // lookup id for this power spectrum, or generate one if it doesn't already exist
+    std::unique_ptr<linear_Pk_token> id = this->tokenize(*transaction, model, Pk_lin);
+    
+    // commit the transaction
+    transaction->commit();
+    
+    return std::move(id);
+  }
+
+
+template <typename PkContainer>
+std::unique_ptr<linear_Pk_token>
+data_manager::tokenize(transaction_manager& mgr, const FRW_model_token& model, const PkContainer& Pk_lin)
+  {
+    // lookup id for this power spectrum, or generate one if it doesn't already exist
+    unsigned int id = this->lookup_or_insert(mgr, model, Pk_lin);
+    return std::make_unique<linear_Pk_token>(id);
+  }
+
+
 template <typename Token>
 unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const Mpc_units::energy& k)
   {
@@ -380,6 +440,35 @@ unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const Mpc_
     if(id) return(*id);
     
     return sqlite3_operations::insert_wavenumber<Token>(this->handle, mgr, k, this->policy);
+  }
+
+
+template <typename PkContainer>
+unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const FRW_model_token& model, const PkContainer& Pk_lin)
+  {
+    boost::optional<unsigned int> id = sqlite3_operations::lookup_Pk_linear(this->handle, mgr, model, Pk_lin, this->policy);
+    if(id) return(*id);
+    
+    return sqlite3_operations::insert_Pk_linear(this->handle, mgr, model, Pk_lin, this->policy);
+  }
+
+
+template <typename PkContainer>
+std::unique_ptr<typename PkContainer::filtered_Pk_type> data_manager::build_wiggle_Pk(const linear_Pk_token& token, const PkContainer& Pk_lin)
+  {
+    // open a transaction on the database
+    std::shared_ptr<transaction_manager> mgr = this->open_transaction();
+    
+    // extract database of wavenumber configurations from linear power spectrum container
+    std::unique_ptr<k_database> k_db = this->build_k_db(*mgr, Pk_lin, FILTER_PK_DEFAULT_BOTTOM_CLEARANCE, FILTER_PK_DEFAULT_TOP_CLEARANCE);
+    
+    // extract initial_filtered_Pk container
+    std::unique_ptr<typename PkContainer::filtered_Pk_type> payload = this->find<typename PkContainer::filtered_Pk_type>(*mgr, token, *k_db);
+    
+    // close transaction
+    mgr->commit();
+    
+    return std::move(payload);
   }
 
 

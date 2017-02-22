@@ -29,7 +29,7 @@
 std::list<oneloop_Pk>
 oneloop_Pk_calculator::calculate_dd(const Mpc_units::energy& k, const k_token& k_tok, const IR_cutoff_token& IR_tok,
                                     const UV_cutoff_token& UV_tok, const oneloop_growth& gf_factors,
-                                    const loop_integral& loop_data, const wiggle_Pk& Ptree)
+                                    const loop_integral& loop_data, const initial_filtered_Pk& Ptree)
   {
     std::list<oneloop_Pk> container;
     
@@ -410,7 +410,7 @@ oneloop_Pk_calculator::compute_rsd_dd_mu8(const Mpc_units::energy& k, const onel
 
 oneloop_resum_Pk
 oneloop_Pk_calculator::calculate_resum_dd(const Mpc_units::energy& k, const Matsubara_XY& XY, const oneloop_Pk& data,
-                                          const oneloop_growth_record& gf_data, const wiggle_Pk& Pk_lin)
+                                          const oneloop_growth_record& gf_data, const initial_filtered_Pk& Pk_lin)
   {
     const auto& input_dd = data.get_dd();
     const auto& input_tree = input_dd.get_tree();

@@ -70,7 +70,8 @@ void master_controller::process_arguments(int argc, char* argv[])
     configuration.add_options()
       (LSSEFT_SWITCH_VERBOSE, LSSEFT_HELP_VERBOSE)
       (LSSEFT_SWITCH_DATABASE, boost::program_options::value<std::string>(), LSSEFT_HELP_DATABASE)
-      (LSSEFT_SWITCH_POWERSPEC, boost::program_options::value<std::string>(), LSSEFT_HELP_POWERSPEC);
+      (LSSEFT_SWITCH_INITIAL_POWERSPEC, boost::program_options::value<std::string>(), LSSEFT_HELP_INITIAL_POWERSPEC)
+      (LSSEFT_SWITCH_FINAL_POWERSPEC, boost::program_options::value<std::string>(), LSSEFT_HELP_FINAL_POWERSPEC);
 
     boost::program_options::options_description hidden("Hidden options");
     hidden.add_options()
@@ -109,9 +110,14 @@ void master_controller::process_arguments(int argc, char* argv[])
         this->arg_cache.set_database_path(option_map[LSSEFT_SWITCH_DATABASE_LONG].as<std::string>());
       }
 
-    if(option_map.count(LSSEFT_SWITCH_POWERSPEC_LONG))
+    if(option_map.count(LSSEFT_SWITCH_INITIAL_POWERSPEC_LONG))
       {
-        this->arg_cache.set_powerspectrum_path(option_map[LSSEFT_SWITCH_POWERSPEC_LONG].as<std::string>());
+        this->arg_cache.set_initial_powerspectrum_path(option_map[LSSEFT_SWITCH_INITIAL_POWERSPEC_LONG].as<std::string>());
+      }
+    
+    if(option_map.count(LSSEFT_SWITCH_FINAL_POWERSPEC_LONG))
+      {
+        this->arg_cache.set_final_powerspectrum_path(option_map[LSSEFT_SWITCH_FINAL_POWERSPEC_LONG].as<std::string>());
       }
   }
 
@@ -182,33 +188,54 @@ void master_controller::execute()
     // compute linear and one-loop growth functions, if needed; can be done on master process since there is only one integration
     if(loop_growth_work) this->integrate_oneloop(cosmology_model, *model, *loop_growth_work, dmgr);
     
-    if(this->arg_cache.get_powerspectrum_set())
+    if(this->arg_cache.is_initial_powerspectrum_set())
       {
-        // STEP 1 - FILTER THE POWER SPECTRUM
+        // STEP 1 - READ IN AND FILTER LINEAR POWER SPECTRA
         
-        // read in tree-level power spectrum in CAMB format, and ask the database to tokenize it
+        // read in initial linear power spectrum in CAMB format, and ask the database to tokenize it
         // we manage its lifetime using std::shared_ptr<> because we want to share ownership with
         // the MPI work records and payloads
-        std::shared_ptr<linear_Pk> Pk_lin_db = std::make_shared<linear_Pk>(this->arg_cache.get_powerspectrum_path());
-        std::unique_ptr<linear_Pk_token> Pk_lin = dmgr.tokenize(*model, *Pk_lin_db);
-        
+        std::shared_ptr<initial_Pk> init_Pk_lin_db = std::make_shared<initial_Pk>(this->arg_cache.get_initial_powerspectrum_path());
+        std::unique_ptr<linear_Pk_token> init_Pk_lin = dmgr.tokenize(*model, *init_Pk_lin_db);
+    
         // build a work list for filtering the linear power spectrum in wiggle/no-wiggle components
-        std::shared_ptr<filter_Pk_work_list> filter_work = dmgr.build_filter_Pk_work_list(*Pk_lin, Pk_lin_db);
-        
+        std::shared_ptr<filterable_Pk> filterable_init_Pk_lin_db = make_filterable(*init_Pk_lin_db);
+        auto init_filter_work = dmgr.build_filter_Pk_work_list(*init_Pk_lin, filterable_init_Pk_lin_db);
+    
         // distribute this work list among the worker processes
-        if(filter_work) this->scatter(cosmology_model, *model, *filter_work, dmgr);
+        if(init_filter_work) this->scatter(cosmology_model, *model, *init_filter_work, dmgr);
         
         // exchange our linear power spectrum for the filtered version;
         // we manage its lifetime using std::shared_ptr<> since ownership is shared with the
         // MPI work records and payloads
-        std::shared_ptr<wiggle_Pk> Pk_wig = dmgr.build_wiggle_Pk(*Pk_lin, *Pk_lin_db);
-        
+        std::shared_ptr<initial_filtered_Pk> initial_Pk_wig = dmgr.build_wiggle_Pk(*init_Pk_lin, *init_Pk_lin_db);
+    
+        // if a final linear power spectrum has been specified, then read this in too, tokenize it,
+        // and obtain a container
+        std::shared_ptr<final_filtered_Pk> final_Pk_wig;
+        if(this->arg_cache.is_final_powerspectrum_set())
+          {
+            // read in final power spectrum and tokenize it
+            std::shared_ptr<final_Pk> final_Pk_lin_db = std::make_shared<final_Pk>(this->arg_cache.get_final_powerspectrum_path());
+            std::unique_ptr<linear_Pk_token> final_Pk_lin = dmgr.tokenize(*model, *final_Pk_lin_db);
+            
+            // build a work list for filtering
+            std::shared_ptr<filterable_Pk> filterable_final_Pk_lin_db = make_filterable(*final_Pk_lin_db);
+            auto final_filter_work = dmgr.build_filter_Pk_work_list(*final_Pk_lin, filterable_final_Pk_lin_db);
+            
+            // distribute this work list among the worker processes
+            if(final_filter_work) this->scatter(cosmology_model, *model, *final_filter_work, dmgr);
+            
+            // get filtered version of power spectrum
+            final_Pk_wig = dmgr.build_wiggle_Pk(*final_Pk_lin, *final_Pk_lin_db);
+          }
 
+        
         // STEP 2 - COMPUTE LOOP INTEGRALS
 
         // build a work list for the loop integrals
         std::unique_ptr<loop_momentum_work_list> loop_momentum_work =
-          dmgr.build_loop_momentum_work_list(*model, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, Pk_wig);
+          dmgr.build_loop_momentum_work_list(*model, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, initial_Pk_wig);
 
         // distribute this work list among the worker processes
         if(loop_momentum_work) this->scatter(cosmology_model, *model, *loop_momentum_work, dmgr);
@@ -218,7 +245,7 @@ void master_controller::execute()
         
         // build a work list of the Matsubara X & Y coefficients associated with these resummation scales
         std::unique_ptr<Matsubara_XY_work_list> Matsubara_work =
-          dmgr.build_Matsubara_XY_work_list(*model, *IR_resum_db, Pk_wig);
+          dmgr.build_Matsubara_XY_work_list(*model, *IR_resum_db, initial_Pk_wig);
     
         // distribute this work list among the worker processes
         if(Matsubara_work) this->scatter(cosmology_model, *model, *Matsubara_work, dmgr);
@@ -228,14 +255,14 @@ void master_controller::execute()
         
         // build a work list for the individual power spectrum components
         std::unique_ptr<one_loop_Pk_work_list> Pk_work =
-          dmgr.build_one_loop_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, Pk_wig);
+          dmgr.build_one_loop_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, initial_Pk_wig);
 
         // distribute this work list among the worker processes
         if(Pk_work) this->scatter(cosmology_model, *model, *Pk_work, dmgr);
         
         // build a work list for the resummed power spectrum components
         std::unique_ptr<one_loop_resum_Pk_work_list> Pk_resum_work =
-          dmgr.build_one_loop_resum_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, *IR_resum_db, Pk_wig);
+          dmgr.build_one_loop_resum_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, *IR_resum_db, initial_Pk_wig);
         
         // distribute this work list among the worker processes
         if(Pk_resum_work) this->scatter(cosmology_model, *model, *Pk_resum_work, dmgr);
@@ -245,7 +272,7 @@ void master_controller::execute()
         
         // build a work list for the resummed multipole power spectra
         std::unique_ptr<multipole_Pk_work_list> multipole_Pk_work =
-          dmgr.build_multipole_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, *IR_resum_db, Pk_wig);
+          dmgr.build_multipole_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, *IR_resum_db, initial_Pk_wig);
     
         // distribute this work list among the worker processes
         if(multipole_Pk_work) this->scatter(cosmology_model, *model, *multipole_Pk_work, dmgr);
@@ -256,9 +283,11 @@ void master_controller::execute()
   }
 
 
-template <typename WorkItem>
-void master_controller::scatter(const FRW_model& model, const FRW_model_token& token, std::list<WorkItem>& work, data_manager& dmgr)
+template <typename WorkItemList>
+void master_controller::scatter(const FRW_model& model, const FRW_model_token& token, WorkItemList& work, data_manager& dmgr)
   {
+    using WorkItem = typename WorkItemList::value_type;
+    
     boost::timer::cpu_timer timer;
 
     if(this->mpi_world.size() == 1) throw runtime_exception(exception_type::runtime_error, ERROR_TOO_FEW_WORKERS);
@@ -267,25 +296,25 @@ void master_controller::scatter(const FRW_model& model, const FRW_model_token& t
     std::unique_ptr<scheduler> sch = this->set_up_workers(MPI_detail::work_item_traits<WorkItem>::new_task_message());
 
     bool sent_closedown = false;
-    typename std::list<WorkItem>::const_iterator next_work_item = work.begin();
+    auto next_work_item = work.cbegin();
 
     while(!sch->all_inactive())
       {
         // check whether all work is exhausted
-        if(next_work_item == work.end() && !sent_closedown)
+        if(next_work_item == work.cend() && !sent_closedown)
           {
             sent_closedown = true;
             this->close_down_workers();
           }
 
         // check whether any workers are waiting for assignments
-        if(next_work_item != work.end() && sch->is_assignable())
+        if(next_work_item != work.cend() && sch->is_assignable())
           {
             std::vector<unsigned int> unassigned_list = sch->make_assignment();
             std::vector<boost::mpi::request> requests;
 
             for(std::vector<unsigned int>::const_iterator t = unassigned_list.begin();
-                next_work_item != work.end() && t != unassigned_list.end(); ++t)
+                next_work_item != work.cend() && t != unassigned_list.end(); ++t)
               {
                 // assign next work item to this worker
                 requests.push_back(this->mpi_world.isend(this->worker_rank(*t),

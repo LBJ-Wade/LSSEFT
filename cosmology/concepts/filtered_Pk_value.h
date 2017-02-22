@@ -32,7 +32,7 @@
 
 #include "boost/serialization/serialization.hpp"
 
-class filtered_Pk
+class filtered_Pk_value
   {
     
     // CONSTRUCTOR, DESTRUCTOR
@@ -40,14 +40,14 @@ class filtered_Pk
   public:
     
     //! value constructor
-    filtered_Pk(const k_token& kt, const linear_Pk_token& Pt, Mpc_units::inverse_energy3 _Pk_nw,
+    filtered_Pk_value(const k_token& kt, const linear_Pk_token& Pt, Mpc_units::inverse_energy3 _Pk_nw,
                 Mpc_units::inverse_energy3 _Pk_raw, Mpc_units::inverse_energy3 _Pk_ref);
     
     //! empty constructor, used only for receiving MPI payloads
-    filtered_Pk();
+    filtered_Pk_value();
     
     //! destructor is default
-    ~filtered_Pk() = default;
+    ~filtered_Pk_value() = default;
     
     
     // INTERFACE

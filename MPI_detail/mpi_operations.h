@@ -36,7 +36,7 @@
 #include "cosmology/concepts/oneloop_resum_Pk.h"
 #include "cosmology/concepts/multipole_Pk.h"
 #include "cosmology/concepts/Matsubara_XY.h"
-#include "cosmology/concepts/filtered_Pk.h"
+#include "cosmology/concepts/filtered_Pk_value.h"
 
 #include "units/Mpc_units.h"
 #include "database/z_database.h"
@@ -238,7 +238,7 @@ namespace MPI_detail
            
         //! value constructor, used to construct and send a payload
         new_filter_Pk(const FRW_model& m, const Mpc_units::energy& _k, const k_token& kt,
-                      const linear_Pk_token& Pt, const std::shared_ptr<linear_Pk>& _Pk)
+                      const linear_Pk_token& Pt, const std::shared_ptr<filterable_Pk>& _Pk)
           : model(m),
             k(_k),
             k_tok(kt),
@@ -268,7 +268,7 @@ namespace MPI_detail
         const linear_Pk_token& get_Pk_token() const { return this->Pk_tok; }
         
         //! get linear power specturm container
-        const linear_Pk& get_Pk_linear() const { return *this->Pk_lin; }
+        const filterable_Pk& get_Pk_linear() const { return *this->Pk_lin; }
     
     
         // INTERNAL DATA
@@ -288,7 +288,7 @@ namespace MPI_detail
         linear_Pk_token Pk_tok;
         
         //! linear power spectrum container
-        std::shared_ptr<linear_Pk> Pk_lin;
+        std::shared_ptr<filterable_Pk> Pk_lin;
     
     
         // enable boost::serialization support, and hence automated packing for transmission over MPI
@@ -321,7 +321,7 @@ namespace MPI_detail
           }
         
         //! value constructor: used to construct and send a payload
-        filter_Pk_ready(const filtered_Pk& f)
+        filter_Pk_ready(const filtered_Pk_value& f)
           : data(f)
           {
           }
@@ -334,7 +334,7 @@ namespace MPI_detail
   
       public:
     
-        const filtered_Pk& get_data() const { return this->data; }
+        const filtered_Pk_value& get_data() const { return this->data; }
     
     
         // INTERNAL DATA
@@ -342,7 +342,7 @@ namespace MPI_detail
       private:
     
         //! loop integral container
-        filtered_Pk data;
+        filtered_Pk_value data;
     
     
         // enable boost::serialization support, and hence automated packing for transmission over MPI
@@ -384,7 +384,7 @@ namespace MPI_detail
         new_loop_momentum_integration(const FRW_model& m, const Mpc_units::energy& _k, const k_token& kt,
                                       const Mpc_units::energy& UV, const UV_cutoff_token& UVt,
                                       const Mpc_units::energy& IR, const IR_cutoff_token& IRt,
-                                      const std::shared_ptr<wiggle_Pk>& _Pk)
+                                      const std::shared_ptr<initial_filtered_Pk>& _Pk)
           : model(m),
             k(_k),
             UV_cutoff(UV),
@@ -426,7 +426,7 @@ namespace MPI_detail
         const IR_cutoff_token& get_IR_token() const { return(this->IR_tok); }
 
         //! get tree-level power spectrum
-        const wiggle_Pk& get_tree_power_spectrum() const { return *this->Pk; }
+        const initial_filtered_Pk& get_tree_power_spectrum() const { return *this->Pk; }
 
 
         // INTERNAL DATA
@@ -455,7 +455,7 @@ namespace MPI_detail
         IR_cutoff_token IR_tok;
 
         //! tree-level power spectrum
-        std::shared_ptr<wiggle_Pk> Pk;
+        std::shared_ptr<initial_filtered_Pk> Pk;
 
 
         // enable boost::serialization support, and hence automated packing for transmission over MPI
@@ -546,7 +546,7 @@ namespace MPI_detail
         
         //! value constructor: used to construct and send a payload
         new_Matsubara_XY(const Mpc_units::energy& _IR, const IR_resum_token& _IRt,
-                        const std::shared_ptr<wiggle_Pk>& _Pk)
+                        const std::shared_ptr<initial_filtered_Pk>& _Pk)
           : IR_resum(_IR),
             IR_resum_tok(_IRt),
             Pk(_Pk)
@@ -568,7 +568,7 @@ namespace MPI_detail
         const IR_resum_token& get_IR_resum_token() const { return this->IR_resum_tok; }
     
         //! get tree-level power spectrum
-        const wiggle_Pk& get_tree_power_spectrum() const { return *this->Pk; }
+        const initial_filtered_Pk& get_tree_power_spectrum() const { return *this->Pk; }
     
     
         // INTERNAL DATA
@@ -582,7 +582,7 @@ namespace MPI_detail
         IR_resum_token IR_resum_tok;
     
         //! tree-level power spectrum
-        std::shared_ptr<wiggle_Pk> Pk;
+        std::shared_ptr<initial_filtered_Pk> Pk;
     
     
         // enable boost::serialization support, and hence automated packing for transmission over MPI
@@ -672,7 +672,7 @@ namespace MPI_detail
         //! value constructor: used to construct and send a payload
         new_one_loop_Pk(const Mpc_units::energy& _k,
                         const std::shared_ptr<oneloop_growth>& gf, const std::shared_ptr<loop_integral>& k,
-                        const std::shared_ptr<wiggle_Pk>& _Pk)
+                        const std::shared_ptr<initial_filtered_Pk>& _Pk)
           : k(_k),
             gf_factors(gf),
             loop_data(k),
@@ -698,7 +698,7 @@ namespace MPI_detail
         const loop_integral& get_loop_data() const { return *this->loop_data; }
     
         //! get tree-level power spectrum
-        const wiggle_Pk& get_tree_power_spectrum() const { return *this->Pk; }
+        const initial_filtered_Pk& get_tree_power_spectrum() const { return *this->Pk; }
 
         
         // INTERNAL DATA
@@ -715,7 +715,7 @@ namespace MPI_detail
         std::shared_ptr<loop_integral> loop_data;
     
         //! tree-level power spectrum
-        std::shared_ptr<wiggle_Pk> Pk;
+        std::shared_ptr<initial_filtered_Pk> Pk;
     
     
         // enable boost::serialization support, and hence automated packing for transmission over MPI
@@ -804,7 +804,7 @@ namespace MPI_detail
         new_one_loop_resum_Pk(const Mpc_units::energy& _k, const Matsubara_XY& _XY,
                               const std::shared_ptr<oneloop_Pk>& _data,
                               const oneloop_growth_record& _gf_data,
-                              const std::shared_ptr<wiggle_Pk>& _Pk)
+                              const std::shared_ptr<initial_filtered_Pk>& _Pk)
           : k(_k),
             XY(_XY),
             data(_data),
@@ -834,7 +834,7 @@ namespace MPI_detail
         const oneloop_growth_record& get_gf_data() const { return this->gf_data; }
     
         //! get tree-level power spectrum
-        const wiggle_Pk& get_tree_power_spectrum() const { return *this->Pk; }
+        const initial_filtered_Pk& get_tree_power_spectrum() const { return *this->Pk; }
     
     
         // INTERNAL DATA
@@ -856,7 +856,7 @@ namespace MPI_detail
         oneloop_growth_record gf_data;
     
         //! tree-level power spectrum
-        std::shared_ptr<wiggle_Pk> Pk;
+        std::shared_ptr<initial_filtered_Pk> Pk;
     
     
         // enable boost::serialization support, and hence automated packing for transmission over MPI
@@ -945,7 +945,7 @@ namespace MPI_detail
         new_multipole_Pk(const Mpc_units::energy& _k, const Matsubara_XY& _XY,
                          const std::shared_ptr<oneloop_Pk>& _data,
                          const oneloop_growth_record& _gf_data,
-                         const std::shared_ptr<wiggle_Pk>& _Pk)
+                         const std::shared_ptr<initial_filtered_Pk>& _Pk)
           : k(_k),
             XY(_XY),
             data(_data),
@@ -975,7 +975,7 @@ namespace MPI_detail
         const oneloop_growth_record& get_gf_data() const { return this->gf_data; }
         
         //! get tree-level power spectrum
-        const wiggle_Pk& get_tree_power_spectrum() const { return *this->Pk; }
+        const initial_filtered_Pk& get_tree_power_spectrum() const { return *this->Pk; }
     
     
         // INTERNAL DATA
@@ -997,7 +997,7 @@ namespace MPI_detail
         oneloop_growth_record gf_data;
     
         //! tree-level power spectrum
-        std::shared_ptr<wiggle_Pk> Pk;
+        std::shared_ptr<initial_filtered_Pk> Pk;
     
     
         // enable boost::serialization support, and hence automated packing for transmission over MPI

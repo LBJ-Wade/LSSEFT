@@ -376,8 +376,8 @@ typedef raw_wiggle_Pk_component<Mpc_units::inverse_energy3> Pk_value;
 typedef raw_wiggle_Pk_component<Mpc_units::inverse_energy>  k2_Pk_value;
 
 
-// build Pk_value from a wiggle_Pk
-Pk_value build_Pk_value(const Mpc_units::energy& k, const wiggle_Pk& Pk);
+// build Pk_value from a initial_filtered_Pk
+Pk_value build_Pk_value(const Mpc_units::energy& k, const initial_filtered_Pk& Pk);
 
 
 //! overload + and - so that power spectrum and counterterm values can be added

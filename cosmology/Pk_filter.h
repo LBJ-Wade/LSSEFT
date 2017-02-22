@@ -63,7 +63,7 @@ class Pk_filter
     //! filter a linear power spectrum; returns estimate of the no-wiggle component and
     //! the reference power spectrum for the same scale
     std::pair< Mpc_units::inverse_energy3, Mpc_units::inverse_energy3 >
-    operator()(const FRW_model& model, const linear_Pk& Pk_lin, const Mpc_units::energy& k);
+    operator()(const FRW_model& model, const filterable_Pk& Pk_lin, const Mpc_units::energy& k);
     
     
     // INTERNAL API
@@ -72,10 +72,10 @@ class Pk_filter
     
     //! apply filter to a given integrand
     double integrate(const double slog_min, const double slog_max, const double klog, const double lambda,
-                     const linear_Pk& Pk_lin, const approx_Pk& Papprox, integrand_t integrand);
+                     const filterable_Pk& Pk_lin, const approx_Pk& Papprox, integrand_t integrand);
 
     //! compute Eisenstein & Hu approximation to the power spectrum
-    std::unique_ptr<approx_Pk> eisenstein_hu(const FRW_model& model, const linear_Pk& Pk_lin);
+    std::unique_ptr<approx_Pk> eisenstein_hu(const FRW_model& model, const filterable_Pk& Pk_lin);
     
     
     // INTERNAL DATA
