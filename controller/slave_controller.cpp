@@ -273,7 +273,8 @@ void slave_controller::process_item(MPI_detail::new_one_loop_Pk& payload)
     const Mpc_units::energy& k = payload.get_k();
     const oneloop_growth& gf_factors = payload.get_gf_factors();
     const loop_integral& loop_data = payload.get_loop_data();
-    const initial_filtered_Pk& Pk = payload.get_tree_power_spectrum();
+    const initial_filtered_Pk& Pk_init = payload.get_init_linear_Pk();
+    boost::optional<const final_filtered_Pk&> Pk_final = payload.get_final_linear_Pk();
     
     const k_token& k_tok = loop_data.get_k_token();
     const IR_cutoff_token& IR_tok = loop_data.get_IR_token();
@@ -284,7 +285,8 @@ void slave_controller::process_item(MPI_detail::new_one_loop_Pk& payload)
 //              << "; " << gf_factors.size() << " redshifts to process" << '\n';
     
     oneloop_Pk_calculator calculator;
-    std::list<oneloop_Pk> sample = calculator.calculate_dd(k, k_tok, IR_tok, UV_tok, gf_factors, loop_data, Pk);
+    std::list<oneloop_Pk> sample = calculator.calculate_dd(k, k_tok, IR_tok, UV_tok, gf_factors, loop_data,
+                                                           Pk_init, Pk_final);
     
     // inform master process that the calculation is finished
     std::list<boost::mpi::request> acks;
@@ -303,10 +305,11 @@ void slave_controller::process_item(MPI_detail::new_one_loop_resum_Pk& payload)
     const Matsubara_XY& XY = payload.get_Matsubara_XY();
     const oneloop_Pk& oneloop_data = payload.get_oneloop_Pk_data();
     const oneloop_growth_record& gf_data = payload.get_gf_data();
-    const initial_filtered_Pk& Pk = payload.get_tree_power_spectrum();
+    const initial_filtered_Pk& Pk_init = payload.get_init_linear_Pk();
+    boost::optional<const final_filtered_Pk&> Pk_final = payload.get_final_linear_Pk();
     
     oneloop_Pk_calculator calculator;
-    oneloop_resum_Pk sample = calculator.calculate_resum_dd(k, XY, oneloop_data, gf_data, Pk);
+    oneloop_resum_Pk sample = calculator.calculate_resum_dd(k, XY, oneloop_data, gf_data, Pk_init, Pk_final);
     
     // inform master process that the calculation is finished
     MPI_detail::one_loop_resum_Pk_ready return_payload(sample);
@@ -321,7 +324,8 @@ void slave_controller::process_item(MPI_detail::new_multipole_Pk& payload)
     const Matsubara_XY& XY = payload.get_Matsubara_XY();
     const oneloop_Pk& oneloop_data = payload.get_oneloop_Pk_data();
     const oneloop_growth_record& gf_data = payload.get_gf_data();
-    const initial_filtered_Pk& Pk = payload.get_tree_power_spectrum();
+    const initial_filtered_Pk& Pk_init = payload.get_init_linear_Pk();
+    boost::optional<const final_filtered_Pk&> Pk_final = payload.get_final_linear_Pk();
     
 //    std::cout << "Worker " << this->worker_number() << " processing multipole P(k) for"
 //              << " k-id = " << oneloop_data.get_k_token().get_id()
@@ -331,7 +335,7 @@ void slave_controller::process_item(MPI_detail::new_multipole_Pk& payload)
 //              << ", IR-resum-id = " << IR_resum_tok.get_id() << '\n';
     
     multipole_Pk_calculator calculator;
-    multipole_Pk sample = calculator.calculate_Legendre(k, XY, oneloop_data, gf_data, Pk);
+    multipole_Pk sample = calculator.calculate_Legendre(k, XY, oneloop_data, gf_data, Pk_init, Pk_final);
     
     // inform master process that the calculation is finished
     MPI_detail::multipole_Pk_ready return_payload(sample);

@@ -191,11 +191,13 @@ class one_loop_Pk_work_record
     //! constructor
     one_loop_Pk_work_record(const Mpc_units::energy _k,
                             const std::shared_ptr<oneloop_growth>& gf, const std::shared_ptr<loop_integral>& k,
-                            const std::shared_ptr<initial_filtered_Pk>& _Pk)
+                            const std::shared_ptr<initial_filtered_Pk>& _Pk_init,
+                            const std::shared_ptr<final_filtered_Pk>& _Pk_final)
       : k(_k),
         gf_factors(gf),
         loop_data(k),
-        Pk(_Pk)
+        Pk_init(_Pk_init),
+        Pk_final(_Pk_final)
       {
       }
     
@@ -213,8 +215,11 @@ class one_loop_Pk_work_record
     //! get loop kernels
     const std::shared_ptr<loop_integral>& get_loop_data() const { return this->loop_data; }
     
-    //! get tree-level power spectrum
-    const std::shared_ptr<initial_filtered_Pk>& get_tree_Pk_db() const { return this->Pk; }
+    //! get initial linear power spectrum
+    const std::shared_ptr<initial_filtered_Pk>& get_init_linear_Pk() const { return this->Pk_init; }
+    
+    //! get final linear power spectrum
+    const std::shared_ptr<final_filtered_Pk>& get_final_linear_Pk() const { return this->Pk_final; }
     
     
     // INTERNAL DATA
@@ -232,8 +237,11 @@ class one_loop_Pk_work_record
     //! loop momentum kernels for this (k, IR, UV) combination
     std::shared_ptr<loop_integral> loop_data;
     
-    //! tree-level power spectrum
-    std::shared_ptr<initial_filtered_Pk> Pk;
+    //! initial linear power spectrum
+    std::shared_ptr<initial_filtered_Pk> Pk_init;
+    
+    //! final linear power spectrum, if provided
+    std::shared_ptr<final_filtered_Pk> Pk_final;
 
   };
 
@@ -306,12 +314,14 @@ class one_loop_resum_Pk_work_record
     one_loop_resum_Pk_work_record(const Mpc_units::energy& _k, const Matsubara_XY& _XY,
                                   const std::shared_ptr<oneloop_Pk>& _data,
                                   const oneloop_growth_record& _gf_data,
-                                  const std::shared_ptr<initial_filtered_Pk>& _Pk)
+                                  const std::shared_ptr<initial_filtered_Pk>& _Pk_init,
+                                  const std::shared_ptr<final_filtered_Pk>& _Pk_final)
       : k(_k),
         XY(_XY),
         data(_data),
         gf_data(_gf_data),
-        Pk(_Pk)
+        Pk_init(_Pk_init),
+        Pk_final(_Pk_final)
       {
       }
     
@@ -335,8 +345,11 @@ class one_loop_resum_Pk_work_record
     //! get gf growth factors
     const oneloop_growth_record& get_gf_data() const { return this->gf_data; }
     
-    //! get tree-level power spectrum
-    const std::shared_ptr<initial_filtered_Pk>& get_tree_Pk_db() const { return this->Pk; }
+    //! get initial linear power spectrum
+    const std::shared_ptr<initial_filtered_Pk>& get_init_linear_Pk() const { return this->Pk_init; }
+    
+    //! get final linear power spectrum
+    const std::shared_ptr<final_filtered_Pk>& get_final_linear_Pk() const { return this->Pk_final; }
     
     
     // INTERNAL DATA
@@ -357,8 +370,11 @@ class one_loop_resum_Pk_work_record
     //! gf growth factors
     oneloop_growth_record gf_data;
     
-    //! tree-level power spectrum
-    std::shared_ptr<initial_filtered_Pk> Pk;
+    //! initial linear power spectrum
+    std::shared_ptr<initial_filtered_Pk> Pk_init;
+    
+    //! final linear power spectrum
+    std::shared_ptr<final_filtered_Pk> Pk_final;
     
   };
 
@@ -376,14 +392,15 @@ class multipole_Pk_work_record
     
     //! constructor
     multipole_Pk_work_record(const Mpc_units::energy& _k, const Matsubara_XY& _XY,
-                             const std::shared_ptr<oneloop_Pk>& _data,
-                             const oneloop_growth_record& _gf_data,
-                             const std::shared_ptr<initial_filtered_Pk>& _Pk)
+                             const std::shared_ptr<oneloop_Pk>& _data, const oneloop_growth_record& _gf_data,
+                             const std::shared_ptr<initial_filtered_Pk>& _Pk_init,
+                             const std::shared_ptr<final_filtered_Pk>& _Pk_final)
       : k(_k),
         XY(_XY),
         data(_data),
         gf_data(_gf_data),
-        Pk(_Pk)
+        Pk_init(_Pk_init),
+        Pk_final(_Pk_final)
       {
       }
     
@@ -404,8 +421,11 @@ class multipole_Pk_work_record
     //! get gf growth factors
     const oneloop_growth_record& get_gf_data() const { return this->gf_data; }
     
-    //! get tree-level power spectrum
-    const std::shared_ptr<initial_filtered_Pk>& get_tree_Pk_db() const { return this->Pk; }
+    //! get initial linear power spectrum
+    const std::shared_ptr<initial_filtered_Pk>& get_init_linear_Pk() const { return this->Pk_init; }
+    
+    //! get final linear power spectrum
+    const std::shared_ptr<final_filtered_Pk>& get_final_linear_Pk() const { return this->Pk_final; }
     
     
     // INTERNAL DATA
@@ -426,8 +446,11 @@ class multipole_Pk_work_record
     //! gf growth factors
     oneloop_growth_record gf_data;
     
-    //! tree-level power spectrum
-    std::shared_ptr<initial_filtered_Pk> Pk;
+    //! initial linear power spectrum
+    std::shared_ptr<initial_filtered_Pk> Pk_init;
+    
+    //! final linear power spectrum
+    std::shared_ptr<final_filtered_Pk> Pk_final;
     
   };
 

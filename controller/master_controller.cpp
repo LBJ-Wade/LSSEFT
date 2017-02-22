@@ -45,6 +45,7 @@
 #include "localizations/messages.h"
 
 #include "boost/program_options.hpp"
+#include "boost/optional.hpp"
 
 
 master_controller::master_controller(boost::mpi::environment& me, boost::mpi::communicator& mw, argument_cache& ac)
@@ -212,12 +213,13 @@ void master_controller::execute()
     
         // if a final linear power spectrum has been specified, then read this in too, tokenize it,
         // and obtain a container
+        std::unique_ptr<linear_Pk_token> final_Pk_lin;
         std::shared_ptr<final_filtered_Pk> final_Pk_wig;
         if(this->arg_cache.is_final_powerspectrum_set())
           {
             // read in final power spectrum and tokenize it
             std::shared_ptr<final_Pk> final_Pk_lin_db = std::make_shared<final_Pk>(this->arg_cache.get_final_powerspectrum_path());
-            std::unique_ptr<linear_Pk_token> final_Pk_lin = dmgr.tokenize(*model, *final_Pk_lin_db);
+            final_Pk_lin = dmgr.tokenize(*model, *final_Pk_lin_db);
             
             // build a work list for filtering
             std::shared_ptr<filterable_Pk> filterable_final_Pk_lin_db = make_filterable(*final_Pk_lin_db);
@@ -229,7 +231,7 @@ void master_controller::execute()
             // get filtered version of power spectrum
             final_Pk_wig = dmgr.build_wiggle_Pk(*final_Pk_lin, *final_Pk_lin_db);
           }
-
+        
         
         // STEP 2 - COMPUTE LOOP INTEGRALS
 
@@ -255,14 +257,16 @@ void master_controller::execute()
         
         // build a work list for the individual power spectrum components
         std::unique_ptr<one_loop_Pk_work_list> Pk_work =
-          dmgr.build_one_loop_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, initial_Pk_wig);
+          dmgr.build_one_loop_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db,
+                                           initial_Pk_wig, final_Pk_wig);
 
         // distribute this work list among the worker processes
         if(Pk_work) this->scatter(cosmology_model, *model, *Pk_work, dmgr);
         
         // build a work list for the resummed power spectrum components
         std::unique_ptr<one_loop_resum_Pk_work_list> Pk_resum_work =
-          dmgr.build_one_loop_resum_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, *IR_resum_db, initial_Pk_wig);
+          dmgr.build_one_loop_resum_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db,
+                                                 *IR_resum_db, initial_Pk_wig, final_Pk_wig);
         
         // distribute this work list among the worker processes
         if(Pk_resum_work) this->scatter(cosmology_model, *model, *Pk_resum_work, dmgr);
@@ -272,7 +276,8 @@ void master_controller::execute()
         
         // build a work list for the resummed multipole power spectra
         std::unique_ptr<multipole_Pk_work_list> multipole_Pk_work =
-          dmgr.build_multipole_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, *IR_resum_db, initial_Pk_wig);
+          dmgr.build_multipole_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db,
+                                            *IR_resum_db, initial_Pk_wig, final_Pk_wig);
     
         // distribute this work list among the worker processes
         if(multipole_Pk_work) this->scatter(cosmology_model, *model, *multipole_Pk_work, dmgr);

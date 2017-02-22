@@ -26,12 +26,13 @@
 #include "oneloop_Pk.h"
 
 
-oneloop_Pk::oneloop_Pk(const k_token& kt, const linear_Pk_token& Pkt, const IR_cutoff_token& IRt,
-                       const UV_cutoff_token& UVt, const z_token& zt,
+oneloop_Pk::oneloop_Pk(const k_token& kt, const linear_Pk_token& Pkt_i, const boost::optional<linear_Pk_token>& Pkt_f,
+                       const IR_cutoff_token& IRt, const UV_cutoff_token& UVt, const z_token& zt,
                        const dd_Pk& _dd, const rsd_dd_Pk& _rsd_mu0, const rsd_dd_Pk& _rsd_mu2, const rsd_dd_Pk& _rsd_mu4,
                        const rsd_dd_Pk& _rsd_mu6, const rsd_dd_Pk& _rsd_mu8)
   : k(kt),
-    Pk_lin(Pkt),
+    init_Pk(Pkt_i),
+    final_Pk(Pkt_f),
     UV_cutoff(UVt),
     IR_cutoff(IRt),
     z(zt),
@@ -47,7 +48,8 @@ oneloop_Pk::oneloop_Pk(const k_token& kt, const linear_Pk_token& Pkt, const IR_c
 
 oneloop_Pk::oneloop_Pk()
   : k(0),
-    Pk_lin(0),
+    init_Pk(0),
+    final_Pk(boost::none),
     UV_cutoff(0),
     IR_cutoff(0),
     z(0),
@@ -95,12 +97,4 @@ rsd_dd_Pk::rsd_dd_Pk()
     Z2_vvdelta(),
     Z2_vvv()
   {
-  }
-
-
-Pk_value build_Pk_value(const Mpc_units::energy& k, const initial_filtered_Pk& Pk)
-  {
-    Pk_value_group<Mpc_units::inverse_energy3> Ptree_raw(Pk.Pk_raw(k));
-    Pk_value_group<Mpc_units::inverse_energy3> Ptree_nw(Pk.Pk_nowiggle(k));
-    return Pk_value(Ptree_raw, Ptree_nw);
   }

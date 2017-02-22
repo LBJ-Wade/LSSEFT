@@ -63,8 +63,9 @@ namespace sqlite3_operations
     //! extract P(k) data for a given wavenumber, z-value, linear power spectrum, UV-cutoff and IR-cutoff combination
     std::unique_ptr<oneloop_Pk>
     find(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model,
-             const k_token& k, const z_token& z, const linear_Pk_token& Pk_lin, const IR_cutoff_token& IR_cutoff,
-             const UV_cutoff_token& UV_cutoff);
+         const k_token& k, const z_token& z, const linear_Pk_token& init_Pk_lin,
+         const boost::optional<linear_Pk_token>& final_Pk_lin,
+         const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
     
     //! extract Matsubara X & Y coefficient sfor a given linear power spectrum and IR resummation scale
     std::unique_ptr<Matsubara_XY>

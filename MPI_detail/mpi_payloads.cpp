@@ -59,19 +59,21 @@ namespace MPI_detail
     
     new_one_loop_Pk build_payload(const FRW_model&, one_loop_Pk_work_list::const_iterator& t)
       {
-        return new_one_loop_Pk(*(*t), t->get_gf_factors(), t->get_loop_data(), t->get_tree_Pk_db());
+        return new_one_loop_Pk(*(*t), t->get_gf_factors(), t->get_loop_data(), t->get_init_linear_Pk(), t->get_final_linear_Pk());
       }
     
     
     new_one_loop_resum_Pk build_payload(const FRW_model&, one_loop_resum_Pk_work_list::const_iterator& t)
       {
-        return new_one_loop_resum_Pk(*(*t), t->get_Matsubara_XY(), t->get_Pk_data(), t->get_gf_data(), t->get_tree_Pk_db());
+        return new_one_loop_resum_Pk(*(*t), t->get_Matsubara_XY(), t->get_Pk_data(), t->get_gf_data(),
+                                     t->get_init_linear_Pk(), t->get_final_linear_Pk());
       }
     
     
     new_multipole_Pk build_payload(const FRW_model&, multipole_Pk_work_list::const_iterator& t)
       {
-        return new_multipole_Pk(*(*t), t->get_Matsubara_XY(), t->get_Pk_data(), t->get_gf_data(), t->get_tree_Pk_db());
+        return new_multipole_Pk(*(*t), t->get_Matsubara_XY(), t->get_Pk_data(), t->get_gf_data(),
+                                t->get_init_linear_Pk(), t->get_final_linear_Pk());
       }
     
   }

@@ -218,9 +218,9 @@ class multipole_Pk
   public:
     
     //! value constructor
-    multipole_Pk(const k_token& kt, const linear_Pk_token& Pkt, const IR_cutoff_token& IRt, const UV_cutoff_token& UVt,
-                 const z_token& zt, const IR_resum_token& IRrt, const Pk_ell& _P0, const Pk_ell& _P2,
-                 const Pk_ell& _P4);
+    multipole_Pk(const k_token& kt, const linear_Pk_token& Pkt_i, const boost::optional<linear_Pk_token>& Pkt_f,
+                 const IR_cutoff_token& IRt, const UV_cutoff_token& UVt, const z_token& zt, const IR_resum_token& IRrt,
+                 const Pk_ell& _P0, const Pk_ell& _P2, const Pk_ell& _P4);
     
     //! empty constructor used for receiving MPI payloads
     multipole_Pk();
@@ -248,8 +248,11 @@ class multipole_Pk
     //! get IR resummation scale token
     const IR_resum_token& get_IR_resum_token() const { return this->IR_resum; }
     
-    //! get linear power spectrum token
-    const linear_Pk_token& get_Pk_token() const { return this->Pk; }
+    //! get initial linear power spectrum token
+    const linear_Pk_token& get_init_Pk_token() const { return this->init_Pk; }
+    
+    //! get final power spectrum token, if provided
+    const boost::optional<linear_Pk_token>& get_final_Pk_token() const { return this->final_Pk; }
     
     
     // ACCESSORS
@@ -275,8 +278,11 @@ class multipole_Pk
     //! wavenumber token
     k_token k;
     
-    //! linear power spectrum token
-    linear_Pk_token Pk;
+    //! initial linear power spectrum token
+    linear_Pk_token init_Pk;
+    
+    //! final linear power spectrum token, if provided
+    boost::optional<linear_Pk_token> final_Pk;
     
     //! UV cutoff token
     UV_cutoff_token UV_cutoff;
@@ -310,7 +316,7 @@ class multipole_Pk
     void serialize(Archive& ar, unsigned int version)
       {
         ar & k;
-        ar & Pk;
+        ar & init_Pk;
         ar & UV_cutoff;
         ar & IR_cutoff;
         ar & z;

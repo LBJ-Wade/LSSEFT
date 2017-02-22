@@ -210,7 +210,8 @@ namespace sqlite3_operations
               << "mid INTEGER, "
               << "zid INTEGER, "
               << "kid INTEGER, "
-              << "Pk_id INTEGER, "
+              << "init_Pk_id INTEGER, "
+              << "final_Pk_id INTEGER, "
               << "IR_id INTEGER, "
               << "UV_id INTEGER, "
               << "Ptree_raw DOUBLE, "
@@ -233,11 +234,12 @@ namespace sqlite3_operations
               << "Z2_delta_nw DOUBLE"
 #ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
               << ", "
-              << "PRIMARY KEY (mid, zid, kid, Pk_id, IR_id, UV_id), "
+              << "PRIMARY KEY (mid, zid, kid, init_Pk_id, final_Pk_id, IR_id, UV_id), "
               << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
               << "FOREIGN KEY (kid) REFERENCES " << policy.wavenumber_config_table() << "(id), "
               << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id), "
-              << "FOREIGN KEY (Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
+              << "FOREIGN KEY (init_Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
+              << "FOREIGN KEY (final_Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
               << "FOREIGN KEY (IR_id) REFERENCES " << policy.IR_config_table() << "(id), "
               << "FOREIGN KEY (UV_id) REFERENCES " << policy.UV_config_table() << "(id));";
 #else
@@ -256,7 +258,8 @@ namespace sqlite3_operations
               << "mid INTEGER, "
               << "zid INTEGER, "
               << "kid INTEGER, "
-              << "Pk_id INTEGER, "
+              << "init_Pk_id INTEGER, "
+              << "final_Pk_id INTEGER, "
               << "IR_cutoff_id INTEGER, "
               << "UV_cutoff_id INTEGER, "
               << "IR_resum_id INTEGER, "
@@ -272,11 +275,12 @@ namespace sqlite3_operations
               << "err_Z2_delta DOUBLE"
 #ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
               << ", "
-              << "PRIMARY KEY (mid, zid, kid, Pk_id, IR_cutoff_id, UV_cutoff_id, IR_resum_id), "
+              << "PRIMARY KEY (mid, zid, kid, init_Pk_id, final_Pk_id, IR_cutoff_id, UV_cutoff_id, IR_resum_id), "
               << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
               << "FOREIGN KEY (kid) REFERENCES " << policy.wavenumber_config_table() << "(id), "
               << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id), "
-              << "FOREIGN KEY (Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
+              << "FOREIGN KEY (init_Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
+              << "FOREIGN KEY (final_Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
               << "FOREIGN KEY (IR_cutoff_id) REFERENCES " << policy.IR_config_table() << "(id), "
               << "FOREIGN KEY (UV_cutoff_id) REFERENCES " << policy.UV_config_table() << "(id), "
               << "FOREIGN KEY (IR_resum_id) REFERENCES " << policy.IR_resum_config_table() << "(id));";
@@ -286,7 +290,6 @@ namespace sqlite3_operations
     
             exec(db, stmt.str());
           }
-      
         
         
         void oneloop_rsd_Pk_table(sqlite3* db, const std::string& table_name, const sqlite3_policy& policy)
@@ -297,7 +300,8 @@ namespace sqlite3_operations
               << "mid INTEGER, "
               << "zid INTEGER, "
               << "kid INTEGER, "
-              << "Pk_id INTEGER, "
+              << "init_Pk_id INTEGER, "
+              << "final_Pk_id INTEGER, "
               << "IR_id INTEGER, "
               << "UV_id INTEGER, "
               << "Ptree_raw DOUBLE, "
@@ -334,11 +338,12 @@ namespace sqlite3_operations
               << "Z2_vvv_nw DOUBLE"
 #ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
               << ", "
-              << "PRIMARY KEY (mid, zid, kid, Pk_id, IR_id, UV_id), "
+              << "PRIMARY KEY (mid, zid, kid, init_Pk_id, final_Pk_id, IR_id, UV_id), "
               << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
               << "FOREIGN KEY (kid) REFERENCES " << policy.wavenumber_config_table() << "(id), "
               << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id), "
-              << "FOREIGN KEY (Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
+              << "FOREIGN KEY (init_Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
+              << "FOREIGN KEY (final_Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
               << "FOREIGN KEY (IR_id) REFERENCES " << policy.IR_config_table() << "(id), "
               << "FOREIGN KEY (UV_id) REFERENCES " << policy.UV_config_table() << "(id));";
 #else
@@ -357,7 +362,8 @@ namespace sqlite3_operations
               << "mid INTEGER, "
               << "zid INTEGER, "
               << "kid INTEGER, "
-              << "Pk_id INTEGER, "
+              << "init_Pk_id INTEGER, "
+              << "final_Pk_id INTEGER, "
               << "IR_cutoff_id INTEGER, "
               << "UV_cutoff_id INTEGER, "
               << "IR_resum_id INTEGER, "
@@ -379,11 +385,12 @@ namespace sqlite3_operations
               << "Z2_vvv DOUBLE"
 #ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
               << ", "
-              << "PRIMARY KEY (mid, zid, kid, Pk_id, IR_cutoff_id, UV_cutoff_id, IR_resum_id), "
+              << "PRIMARY KEY (mid, zid, kid, init_Pk_id, final_Pk_id, IR_cutoff_id, UV_cutoff_id, IR_resum_id), "
               << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
               << "FOREIGN KEY (kid) REFERENCES " << policy.wavenumber_config_table() << "(id), "
               << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id), "
-              << "FOREIGN KEY (Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
+              << "FOREIGN KEY (init_Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
+              << "FOREIGN KEY (final_Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
               << "FOREIGN KEY (IR_cutoff_id) REFERENCES " << policy.IR_config_table() << "(id), "
               << "FOREIGN KEY (UV_cutoff_id) REFERENCES " << policy.UV_config_table() << "(id) "
               << "FOREIGN KEY (IR_resum_id) REFERENCES " << policy.IR_resum_config_table() << "(id));";

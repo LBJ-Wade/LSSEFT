@@ -66,7 +66,8 @@ std::unique_ptr<final_filtered_Pk> data_manager::find<final_filtered_Pk>(transac
 
 template <>
 std::unique_ptr<loop_integral>
-data_manager::find<loop_integral>(transaction_manager& mgr, const FRW_model_token& model, const k_token& k, const linear_Pk_token& Pk,
+data_manager::find<loop_integral>(transaction_manager& mgr, const FRW_model_token& model,
+                                  const k_token& k, const linear_Pk_token& Pk,
                                   const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff)
   {
     return sqlite3_operations::find(this->handle, mgr, this->policy, model, k, Pk, IR_cutoff, UV_cutoff);
@@ -76,9 +77,10 @@ data_manager::find<loop_integral>(transaction_manager& mgr, const FRW_model_toke
 template <>
 std::unique_ptr<oneloop_Pk>
 data_manager::find<oneloop_Pk>(transaction_manager& mgr, const FRW_model_token& model, const k_token& k, const z_token& z,
-                               const linear_Pk_token& Pk, const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff)
+                               const linear_Pk_token& Pk_init, const boost::optional<linear_Pk_token>& Pk_final,
+                               const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff)
   {
-    return sqlite3_operations::find(this->handle, mgr, this->policy, model, k, z, Pk, IR_cutoff, UV_cutoff);
+    return sqlite3_operations::find(this->handle, mgr, this->policy, model, k, z, Pk_init, Pk_final, IR_cutoff, UV_cutoff);
   }
 
 

@@ -131,24 +131,30 @@ class data_manager
     //! that are missing from the SQLite backing store.
     //! generates a new transaction on the database; will fail if a transaction is in progress
     std::unique_ptr<one_loop_Pk_work_list>
-    build_one_loop_Pk_work_list(FRW_model_token& model, z_database& z_db, k_database& k_db, IR_cutoff_database& IR_db,
-                                UV_cutoff_database& UV_db, std::shared_ptr<initial_filtered_Pk>& Pk);
+    build_one_loop_Pk_work_list(FRW_model_token& model, z_database& z_db, k_database& k_db,
+                                IR_cutoff_database& IR_db, UV_cutoff_database& UV_db,
+                                std::shared_ptr<initial_filtered_Pk>& Pk_init,
+                                std::shared_ptr<final_filtered_Pk>& Pk_final);
     
     //! build a work list represenitng (k, z, IR_cutoff, UV_cutoff, IR_resum) combinations of the one-loop
     //! power spectrum that are missing from the SQLite backing store
     //! generates a new transaction on the database; will fail if a transaction is in progress
     std::unique_ptr<one_loop_resum_Pk_work_list>
     build_one_loop_resum_Pk_work_list(FRW_model_token& model, z_database& z_db, k_database& k_db,
-                                      IR_cutoff_database& IR_cutoff_db, UV_cutoff_database& UV_cutoff_db,
-                                      IR_resum_database& IR_resum_db, std::shared_ptr<initial_filtered_Pk>& Pk);
+                                          IR_cutoff_database& IR_cutoff_db, UV_cutoff_database& UV_cutoff_db,
+                                          IR_resum_database& IR_resum_db,
+                                          std::shared_ptr<initial_filtered_Pk>& Pk_init,
+                                          std::shared_ptr<final_filtered_Pk>& Pk_final);
     
     //! build a work list representing (k, z, IR_cutoff, UV_cutoff, IR_resum) combinations of the one-loop
     //! multipole power spectra that are missing from the SQLite backing store.
     //! generates a new transaction on the database; will fail if a transaction is in progress
     std::unique_ptr<multipole_Pk_work_list>
     build_multipole_Pk_work_list(FRW_model_token& model, z_database& z_db, k_database& k_db,
-                                 IR_cutoff_database& IR_cutoff_db, UV_cutoff_database& UV_cutoff_db,
-                                 IR_resum_database& IR_resum_db, std::shared_ptr<initial_filtered_Pk>& Pk);
+                                     IR_cutoff_database& IR_cutoff_db, UV_cutoff_database& UV_cutoff_db,
+                                     IR_resum_database& IR_resum_db,
+                                     std::shared_ptr<initial_filtered_Pk>& Pk_init,
+                                     std::shared_ptr<final_filtered_Pk>& Pk_final);
     
     //! build a work list representing data for calculation of the Matsubara- X & Y coefficients
     std::unique_ptr<Matsubara_XY_work_list>
@@ -228,7 +234,7 @@ class data_manager
     //! extract a sample of a loop integral-like quantity that is k-dependent, UV and IR cutoff-dependent
     //! but not z-dependent
     template <typename PayloadType>
-    std::unique_ptr<loop_integral>
+    std::unique_ptr<PayloadType>
     find(transaction_manager& mgr, const FRW_model_token& model, const k_token& k, const linear_Pk_token& Pk,
          const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
     
@@ -237,7 +243,8 @@ class data_manager
     template <typename PayloadType>
     std::unique_ptr<PayloadType>
     find(transaction_manager& mgr, const FRW_model_token& model, const k_token& k, const z_token& z,
-         const linear_Pk_token& Pk, const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
+         const linear_Pk_token& Pk_init, const boost::optional<linear_Pk_token>& Pk_final,
+         const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
     
     //! extract a quantity of a IR-resummation-scale dependent quantity
     template <typename PayloadType>

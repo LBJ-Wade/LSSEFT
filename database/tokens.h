@@ -104,6 +104,32 @@ class generic_token
 BOOST_SERIALIZATION_ASSUME_ABSTRACT(generic_token)
 
 
+namespace boost
+  {
+    
+    // generic_token has no default constructor, so we have to specialize load/store methods
+    
+    namespace serialization
+      {
+
+        template <typename Archive>
+        inline void save_construct_data(Archive& ar, const generic_token* t, const unsigned int file_version)
+          {
+          }
+        
+        
+        template <typename Archive>
+        inline void load_construct_data(Archive& ar, generic_token* t, const unsigned int file_version)
+          {
+            // invoke in-place constructor with blank id; will be overwritten later during deserialization
+            ::new(t) generic_token(0);
+          }
+        
+      }   // namespace serialization
+    
+  }   // namespace boost
+
+
 namespace std
   {
     
@@ -389,6 +415,117 @@ inline const std::string& tokenization_table<linear_Pk_token>(const sqlite3_poli
   {
     return(policy.Pk_linear_config_table());
   }
+
+
+namespace boost
+  {
+    
+    // generic_token has no default constructor, so we have to specialize load/store methods
+    
+    namespace serialization
+      {
+        
+        template <typename Archive>
+        inline void save_construct_data(Archive& ar, const FRW_model_token* t, const unsigned int file_version)
+          {
+          }
+        
+        
+        template <typename Archive>
+        inline void load_construct_data(Archive& ar, FRW_model_token* t, const unsigned int file_version)
+          {
+            // invoke in-place constructor with blank id; will be overwritten later during deserialization
+            ::new(t) FRW_model_token(0);
+          }
+    
+    
+        template <typename Archive>
+        inline void save_construct_data(Archive& ar, const z_token* t, const unsigned int file_version)
+          {
+          }
+    
+    
+        template <typename Archive>
+        inline void load_construct_data(Archive& ar, z_token* t, const unsigned int file_version)
+          {
+            // invoke in-place constructor with blank id; will be overwritten later during deserialization
+            ::new(t) z_token(0);
+          }
+    
+    
+        template <typename Archive>
+        inline void save_construct_data(Archive& ar, const k_token* t, const unsigned int file_version)
+          {
+          }
+    
+    
+        template <typename Archive>
+        inline void load_construct_data(Archive& ar, k_token* t, const unsigned int file_version)
+          {
+            // invoke in-place constructor with blank id; will be overwritten later during deserialization
+            ::new(t) k_token(0);
+          }
+    
+    
+        template <typename Archive>
+        inline void save_construct_data(Archive& ar, const IR_cutoff_token* t, const unsigned int file_version)
+          {
+          }
+    
+    
+        template <typename Archive>
+        inline void load_construct_data(Archive& ar, IR_cutoff_token* t, const unsigned int file_version)
+          {
+            // invoke in-place constructor with blank id; will be overwritten later during deserialization
+            ::new(t) IR_cutoff_token(0);
+          }
+    
+    
+        template <typename Archive>
+        inline void save_construct_data(Archive& ar, const UV_cutoff_token* t, const unsigned int file_version)
+          {
+          }
+    
+    
+        template <typename Archive>
+        inline void load_construct_data(Archive& ar, UV_cutoff_token* t, const unsigned int file_version)
+          {
+            // invoke in-place constructor with blank id; will be overwritten later during deserialization
+            ::new(t) UV_cutoff_token(0);
+          }
+    
+    
+        template <typename Archive>
+        inline void save_construct_data(Archive& ar, const IR_resum_token* t, const unsigned int file_version)
+          {
+          }
+    
+    
+        template <typename Archive>
+        inline void load_construct_data(Archive& ar, IR_resum_token* t, const unsigned int file_version)
+          {
+            // invoke in-place constructor with blank id; will be overwritten later during deserialization
+            ::new(t) IR_resum_token(0);
+          }
+    
+    
+        template <typename Archive>
+        inline void save_construct_data(Archive& ar, const linear_Pk_token* t, const unsigned int file_version)
+          {
+          }
+    
+    
+        template <typename Archive>
+        inline void load_construct_data(Archive& ar, linear_Pk_token* t, const unsigned int file_version)
+          {
+            // invoke in-place constructor with blank id; will be overwritten later during deserialization
+            ::new(t) linear_Pk_token(0);
+          }
+    
+    
+      }   // namespace serialization
+    
+  }   // namespace boost
 
 
 namespace std

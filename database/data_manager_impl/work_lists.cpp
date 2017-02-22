@@ -216,7 +216,8 @@ data_manager::build_loop_momentum_work_list(FRW_model_token& model, k_database& 
 std::unique_ptr<one_loop_Pk_work_list>
 data_manager::build_one_loop_Pk_work_list(FRW_model_token& model, z_database& z_db, k_database& k_db,
                                           IR_cutoff_database& IR_db, UV_cutoff_database& UV_db,
-                                          std::shared_ptr<initial_filtered_Pk>& Pk)
+                                          std::shared_ptr<initial_filtered_Pk>& Pk_init,
+                                          std::shared_ptr<final_filtered_Pk>& Pk_final)
   {
     // start timer
     boost::timer::cpu_timer timer;
@@ -233,12 +234,15 @@ data_manager::build_one_loop_Pk_work_list(FRW_model_token& model, z_database& z_
     // tensor together the desired k-values with the UV and IR cutoffs
     loop_configs required_configs = this->tensor_product(k_db, IR_db, UV_db);
     
+    boost::optional<linear_Pk_token> final_tok;
+    if(Pk_final) final_tok = Pk_final->get_token();
+
     for(const loop_configs::value_type& record : required_configs)
       {
         // find redshifts that are missing for this configuration, if any
         std::unique_ptr<z_database> missing_zs =
-          sqlite3_operations::missing_one_loop_Pk_redshifts(this->handle, *mgr, this->policy, model, Pk->get_token(),
-                                                            z_table, z_db, record);
+          sqlite3_operations::missing_one_loop_Pk_redshifts(this->handle, *mgr, this->policy, model,
+                                                            Pk_init->get_token(), final_tok, z_table, z_db, record);
         
         // schedule a task to compute any missing redshifts
         if(missing_zs)
@@ -246,10 +250,10 @@ data_manager::build_one_loop_Pk_work_list(FRW_model_token& model, z_database& z_
             std::shared_ptr<oneloop_growth> g = this->find<oneloop_growth>(*mgr, model, z_db);
             
             std::shared_ptr<loop_integral> l =
-              this->find<loop_integral>(*mgr, model, record.k->get_token(), Pk->get_token(),
+              this->find<loop_integral>(*mgr, model, record.k->get_token(), Pk_init->get_token(),
                                         record.IR_cutoff->get_token(), record.UV_cutoff->get_token());
             
-            work_list->emplace_back(*(*record.k), g, l, Pk);
+            work_list->emplace_back(*(*record.k), g, l, Pk_init, Pk_final);
           }
       }
     
@@ -272,7 +276,9 @@ data_manager::build_one_loop_Pk_work_list(FRW_model_token& model, z_database& z_
 std::unique_ptr<one_loop_resum_Pk_work_list>
 data_manager::build_one_loop_resum_Pk_work_list(FRW_model_token& model, z_database& z_db, k_database& k_db,
                                                 IR_cutoff_database& IR_cutoff_db, UV_cutoff_database& UV_cutoff_db,
-                                                IR_resum_database& IR_resum_db, std::shared_ptr<initial_filtered_Pk>& Pk)
+                                                IR_resum_database& IR_resum_db,
+                                                std::shared_ptr<initial_filtered_Pk>& Pk_init,
+                                                std::shared_ptr<final_filtered_Pk>& Pk_final)
   {
     // start timer
     boost::timer::cpu_timer timer;
@@ -289,12 +295,15 @@ data_manager::build_one_loop_resum_Pk_work_list(FRW_model_token& model, z_databa
     // tensor together the desired k-values with the UV and IR cutoffs
     resum_Pk_configs required_configs = this->tensor_product(k_db, IR_cutoff_db, UV_cutoff_db, IR_resum_db);
     
+    boost::optional<linear_Pk_token> final_tok;
+    if(Pk_final) final_tok = Pk_final->get_token();
+
     for(const resum_Pk_configs::value_type& record : required_configs)
       {
         // find redshifts that are missing for this configuration, if any
         std::unique_ptr<z_database> missing_zs =
           sqlite3_operations::missing_one_loop_resum_Pk_redshifts(this->handle, *mgr, this->policy, model,
-                                                                  Pk->get_token(), z_table, z_db, record);
+                                                                  Pk_init->get_token(), final_tok, z_table, z_db, record);
         
         // schedule a task to compute any missing redshifts
         if(missing_zs)
@@ -305,14 +314,14 @@ data_manager::build_one_loop_resum_Pk_work_list(FRW_model_token& model, z_databa
               {
                 // lookup one-loop data for this redshift and loop configuration
                 std::shared_ptr<oneloop_Pk> loop_data =
-                  this->find<oneloop_Pk>(*mgr, model, record.k->get_token(), (*t).first, Pk->get_token(),
-                                         record.IR_cutoff->get_token(), record.UV_cutoff->get_token());
+                  this->find<oneloop_Pk>(*mgr, model, record.k->get_token(), (*t).first, Pk_init->get_token(),
+                                         final_tok, record.IR_cutoff->get_token(), record.UV_cutoff->get_token());
                 
                 // lookup Matsubara X & Y coefficients for this IR resummation scale
                 std::unique_ptr<Matsubara_XY> XY_coeffs =
-                  this->find<Matsubara_XY>(*mgr, model, Pk->get_token(), record.IR_resum->get_token());
+                  this->find<Matsubara_XY>(*mgr, model, Pk_init->get_token(), record.IR_resum->get_token());
                 
-                work_list->emplace_back(*(*record.k), *XY_coeffs, loop_data, (*t).second, Pk);
+                work_list->emplace_back(*(*record.k), *XY_coeffs, loop_data, (*t).second, Pk_init, Pk_final);
               }
           }
       }
@@ -336,7 +345,9 @@ data_manager::build_one_loop_resum_Pk_work_list(FRW_model_token& model, z_databa
 std::unique_ptr<multipole_Pk_work_list>
 data_manager::build_multipole_Pk_work_list(FRW_model_token& model, z_database& z_db, k_database& k_db,
                                            IR_cutoff_database& IR_cutoff_db, UV_cutoff_database& UV_cutoff_db,
-                                           IR_resum_database& IR_resum_db, std::shared_ptr<initial_filtered_Pk>& Pk)
+                                           IR_resum_database& IR_resum_db,
+                                           std::shared_ptr<initial_filtered_Pk>& Pk_init,
+                                           std::shared_ptr<final_filtered_Pk>& Pk_final)
   {
     // start timer
     boost::timer::cpu_timer timer;
@@ -353,12 +364,15 @@ data_manager::build_multipole_Pk_work_list(FRW_model_token& model, z_database& z
     // tensor together the desired k-values with the UV and IR cutoffs
     resum_Pk_configs required_configs = this->tensor_product(k_db, IR_cutoff_db, UV_cutoff_db, IR_resum_db);
     
+    boost::optional<linear_Pk_token> final_tok;
+    if(Pk_final) final_tok = Pk_final->get_token();
+    
     for(const resum_Pk_configs::value_type& record : required_configs)
       {
         // find redshifts that are missing for this configuration, if any
         std::unique_ptr<z_database> missing_zs =
-          sqlite3_operations::missing_multipole_Pk_redshifts(this->handle, *mgr, this->policy, model, Pk->get_token(),
-                                                             z_table, z_db, record);
+          sqlite3_operations::missing_multipole_Pk_redshifts(this->handle, *mgr, this->policy, model,
+                                                             Pk_init->get_token(), final_tok, z_table, z_db, record);
         
         // schedule a task to compute any missing redshifts
         if(missing_zs)
@@ -369,14 +383,14 @@ data_manager::build_multipole_Pk_work_list(FRW_model_token& model, z_database& z
               {
                 // lookup one-loop data for this redshift and loop configuration
                 std::shared_ptr<oneloop_Pk> loop_data =
-                  this->find<oneloop_Pk>(*mgr, model, record.k->get_token(), (*t).first, Pk->get_token(),
-                                         record.IR_cutoff->get_token(), record.UV_cutoff->get_token());
+                  this->find<oneloop_Pk>(*mgr, model, record.k->get_token(), (*t).first, Pk_init->get_token(),
+                                         final_tok, record.IR_cutoff->get_token(), record.UV_cutoff->get_token());
                 
                 // lookup Matsubara X & Y coefficients for this IR resummation scale
                 std::unique_ptr<Matsubara_XY> XY_coeffs =
-                  this->find<Matsubara_XY>(*mgr, model, Pk->get_token(), record.IR_resum->get_token());
+                  this->find<Matsubara_XY>(*mgr, model, Pk_init->get_token(), record.IR_resum->get_token());
                 
-                work_list->emplace_back(*(*record.k), *XY_coeffs, loop_data, (*t).second, Pk);
+                work_list->emplace_back(*(*record.k), *XY_coeffs, loop_data, (*t).second, Pk_init, Pk_final);
               }
           }
       }
