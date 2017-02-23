@@ -102,6 +102,9 @@ class generic_wiggle_Pk
     template <typename Archive>
     void serialize(Archive& ar, unsigned int version)
       {
+        ar & tok;
+        ar & nowiggle;
+        ar & raw;
       }
     
   };
@@ -132,23 +135,17 @@ namespace boost
         template <typename Archive, typename Tag>
         inline void save_construct_data(Archive& ar, const generic_wiggle_Pk<Tag>* t, const unsigned int file_version)
           {
-            ar << t->get_token();
-            ar << t->get_nowiggle_db();
-            ar << t->get_raw_db();
           }
     
     
         template <typename Archive, typename Tag>
         inline void load_construct_data(Archive& ar, generic_wiggle_Pk<Tag>* t, const unsigned int file_version)
           {
+            // construct an object with empty databases; these will be overwritten by the standard
+            // deserialization
             linear_Pk_token tok(0);
             tree_Pk_w::database_type nowiggle;
             tree_Pk::database_type raw;
-
-            ar >> tok;
-            ar >> nowiggle;
-            ar >> raw;
-            
             ::new(t) generic_wiggle_Pk<Tag>(tok, nowiggle, raw);
           }
         

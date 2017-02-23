@@ -34,6 +34,8 @@
 #include "wiggle.h"
 
 #include "boost/filesystem.hpp"
+#include "boost/serialization/serialization.hpp"
+#include "boost/serialization/split_member.hpp"
 
 #include "openssl/md5.h"
 
@@ -146,9 +148,25 @@ class generic_linear_Pk
     friend class boost::serialization::access;
     
     template <typename Archive>
-    void serialize(Archive& ar, unsigned int version)
+    void save(Archive& ar, unsigned int version) const
       {
+        ar << path.string();
+        ar << container;
+        ar << md5_hash;
       }
+    
+    template <typename Archive>
+    void load(Archive& ar, unsigned int version)
+      {
+        std::string path_string;
+        ar >> path_string;
+        ar >> container;
+        ar >> md5_hash;
+        
+        path = path_string;
+      }
+    
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
     
   };
 
@@ -236,23 +254,17 @@ namespace boost
         template <typename Archive, typename Tag, typename FilterPartnerType>
         inline void save_construct_data(Archive& ar, const generic_linear_Pk<Tag, FilterPartnerType>* t, const unsigned int file_version)
           {
-            ar << t->get_path().string();
-            ar << t->get_db();
-            ar << t->get_MD5_hash();
           }
         
         
         template <typename Archive, typename Tag, typename FilterPartnerType>
         inline void load_construct_data(Archive& ar, generic_linear_Pk<Tag, FilterPartnerType>* t, const unsigned int file_version)
           {
+            // create an empty object with null contents; these contents will later be overwritte
+            // by standard deserialization
             std::string path;
             std::string hash;
             tree_Pk::database_type db;
-            
-            ar >> path;
-            ar >> db;
-            ar >> hash;
-            
             ::new(t) generic_linear_Pk<Tag, FilterPartnerType>(path, db, hash);
           }
         

@@ -84,6 +84,8 @@ class Pk_record
     template <typename Archive>
     void serialize(Archive& ar, unsigned int version)
       {
+        ar & k;
+        ar & Pk;
       }
 
   };
@@ -109,22 +111,17 @@ namespace boost
         template <typename Archive, typename Dimension>
         inline void save_construct_data(Archive& ar, const Pk_record<Dimension>* t, const unsigned int file_version)
           {
-            const Mpc_units::energy& k = t->get_wavenumber();
-            const Dimension& value = t->get_Pk();
-
-            ar << k;
-            ar << value;
           }
 
 
         template <typename Archive, typename Dimension>
         inline void load_construct_data(Archive& ar, Pk_record<Dimension>* t, const unsigned int file_version)
           {
+            // construct an empty Pk_record<Dimension>() object; its values will be populated by
+            // standard deserialization
             Mpc_units::energy k(0.0);
             Dimension value(0.0);
-
-            ar >> k;
-            ar >> value;
+            ::new(t) Pk_record<Dimension>(k, value);
           }
 
 

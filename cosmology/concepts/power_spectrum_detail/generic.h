@@ -36,6 +36,7 @@
 
 #include "boost/filesystem/operations.hpp"
 #include "boost/serialization/serialization.hpp"
+#include "boost/serialization/split_member.hpp"
 
 #include "SPLINTER/datatable.h"
 #include "SPLINTER/bspline.h"
@@ -94,6 +95,7 @@ class generic_Pk
     
   private:
     
+    //! internal: evaluate spline
     Dimension evaluate(const Mpc_units::energy& k) const;
 
 
@@ -123,9 +125,19 @@ class generic_Pk
 
 
     template <typename Archive>
-    void serialize(Archive& ar, unsigned int version)
+    void save(Archive& ar, unsigned int version) const
       {
+        ar << database;
       }
+    
+    template <typename Archive>
+    void load(Archive& ar, unsigned int version)
+      {
+        ar >> database;
+        if(database.size() > 0) this->recalculate_spline();
+      }
+    
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
 
   };
 
@@ -134,7 +146,7 @@ template <typename Tag, typename Dimension, bool protect>
 generic_Pk<Tag, Dimension, protect>::generic_Pk(const Pk_database<Dimension>& db)
   : database(db)
   {
-    this->recalculate_spline();
+    if(database.size() > 0) this->recalculate_spline();
   }
 
 
@@ -230,16 +242,15 @@ namespace boost
         template <typename Archive, typename Tag, typename Dimension, bool protect>
         inline void save_construct_data(Archive& ar, const generic_Pk<Tag, Dimension, protect>* t, const unsigned int file_version)
           {
-            ar << t->get_db();
           }
 
 
         template <typename Archive, typename Tag, typename Dimension, bool protect>
         inline void load_construct_data(Archive& ar, generic_Pk<Tag, Dimension, protect>* t, const unsigned int file_version)
           {
+            // create an empty generic_Pk object with a null database;
+            // this null database will be overwritten by standard deserialization
             Pk_database<Dimension> db;
-            ar >> db;
-
             ::new(t) generic_Pk<Tag, Dimension, protect>(db);
           }
 

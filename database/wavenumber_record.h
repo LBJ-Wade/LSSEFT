@@ -78,6 +78,8 @@ class wavenumber_record
     template <typename Archive>
     void serialize(Archive& ar, unsigned int version)
       {
+        ar & k;
+        ar & token;
       }
 
   };
@@ -103,25 +105,16 @@ namespace boost
         template <typename Archive, typename Token>
         inline void save_construct_data(Archive& ar, const wavenumber_record<Token>* t, const unsigned int file_version)
           {
-            ar << *(*t);                    // store wavenumber value
-            ar << t->get_token().get_id();  // store token identifier
           }
 
 
         template <typename Archive, typename Token>
         inline void load_construct_data(Archive& ar, wavenumber_record<Token>* t, const unsigned int file_version)
           {
-            double k;
-            unsigned int id;
-
-            ar >> k;    // unpack wavenumber value
-            ar >> id;   // unpack token identifier
-
-            Mpc_units::energy k_in_eV(k);
-
-            // invoke in-place constructor
-
-            ::new(t) wavenumber_record<Token>(k_in_eV, Token(id));
+            // construct empty object; values will be populated by standard deserialization
+            Mpc_units::energy k(0.0);
+            Token tk(0);
+            ::new(t) wavenumber_record<Token>(k, tk);
           }
 
 
