@@ -136,7 +136,7 @@ namespace sqlite3_operations
         select_stmt
           << "SELECT id FROM " << z_table << " "
           << "WHERE id NOT IN "
-          << "(SELECT zid FROM " << table << " WHERE mid=@mid AND kid=@kid AND init_Pk_id=@init_Pk_id AND final_Pk_id=@final_Pk_id AND IR_id=@IR_id AND UV_id=@UV_id) "
+          << "(SELECT zid FROM " << table << " WHERE mid=@mid AND kid=@kid AND init_Pk_id=@init_Pk_id AND ((@final_Pk_id IS NULL AND final_Pk_id IS NULL) OR final_Pk_id=@final_Pk_id) AND IR_id=@IR_id AND UV_id=@UV_id) "
           << "ORDER BY id;";
         
         // prepare statement
@@ -185,7 +185,7 @@ namespace sqlite3_operations
         select_stmt
           << "SELECT id FROM " << z_table << " "
           << "WHERE id NOT IN "
-          << "(SELECT zid FROM " << table << " WHERE mid=@mid AND kid=@kid AND init_Pk_id=@init_Pk_id AND final_Pk_id=@final_Pk_id "
+          << "(SELECT zid FROM " << table << " WHERE mid=@mid AND kid=@kid AND init_Pk_id=@init_Pk_id AND ((@final_Pk_id IS NULL AND final_Pk_id IS NULL) OR final_Pk_id=@final_Pk_id) "
           << "AND IR_cutoff_id=@IR_cutoff_id AND UV_cutoff_id=@UV_cutoff_id AND IR_resum_id=@IR_resum_id) "
           << "ORDER BY id;";
         
@@ -388,7 +388,7 @@ namespace sqlite3_operations
           {
             std::ostringstream drop_stmt;
             drop_stmt
-              << "DELETE FROM " << table << " WHERE mid=@mid AND zid=@zid AND kid=@kid AND init_Pk_id=@init_Pk_id AND final_Pk_id=@final_Pk_id "
+              << "DELETE FROM " << table << " WHERE mid=@mid AND zid=@zid AND kid=@kid AND init_Pk_id=@init_Pk_id AND ((@final_Pk_id IS NULL AND final_Pk_id IS NULL) OR final_Pk_id=@final_Pk_id) "
               << "AND IR_id=@IR_id AND UV_id=@UV_id;";
         
             // prepare statement
@@ -435,7 +435,7 @@ namespace sqlite3_operations
           {
             std::ostringstream drop_stmt;
             drop_stmt
-              << "DELETE FROM " << table << " WHERE mid=@mid AND zid=@zid AND kid=@kid AND init_Pk_id=@init_Pk_id AND final_Pk_id=@final_Pk_id "
+              << "DELETE FROM " << table << " WHERE mid=@mid AND zid=@zid AND kid=@kid AND init_Pk_id=@init_Pk_id AND ((@final_Pk_id IS NULL AND final_Pk_id IS NULL) OR final_Pk_id=@final_Pk_id) "
               << "AND IR_cutoff_id=@IR_cutoff_id AND UV_cutoff_id=@UV_cutoff_id AND IR_resum_id=@IR_resum_id;";
             
             // prepare statement
