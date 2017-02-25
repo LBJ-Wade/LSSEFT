@@ -1,14 +1,34 @@
 //
 // Created by David Seery on 17/08/2015.
-// Copyright (c) 2015 University of Sussex. All rights reserved.
+// --@@ // Copyright (c) 2017 University of Sussex. All rights reserved.
+//
+// This file is part of the Sussex Effective Field Theory for
+// Large-Scale Structure platform (LSSEFT).
+//
+// LSSEFT is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 2 of the License, or
+// (at your option) any later version.
+//
+// LSSEFT is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with LSSEFT.  If not, see <http://www.gnu.org/licenses/>.
+//
+// @license: GPL-2
+// @contributor: David Seery <D.Seery@sussex.ac.uk>
+// --@@
 //
 
 #ifndef LSSEFT_COSMOLOGY_CONSTANTS_H
 #define LSSEFT_COSMOLOGY_CONSTANTS_H
 
 
-// g_star = 2 + (7.0/8.0) * 6 * std::pow(4.0/11.0, 4.0/3.0)
-constexpr double g_star = 3.36264390596;
+// g_star = 2, either for two polarization states of the photon or two spin states of a neutrino
+constexpr double g_star = 2.0;
 
 // radiation constant = pi^2/30
 constexpr double radiation_constant = 0.32898681337;

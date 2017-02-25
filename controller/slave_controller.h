@@ -1,6 +1,26 @@
 //
 // Created by David Seery on 10/08/2015.
-// Copyright (c) 2015 University of Sussex. All rights reserved.
+// --@@ // Copyright (c) 2017 University of Sussex. All rights reserved.
+//
+// This file is part of the Sussex Effective Field Theory for
+// Large-Scale Structure platform (LSSEFT).
+//
+// LSSEFT is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 2 of the License, or
+// (at your option) any later version.
+//
+// LSSEFT is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with LSSEFT.  If not, see <http://www.gnu.org/licenses/>.
+//
+// @license: GPL-2
+// @contributor: David Seery <D.Seery@sussex.ac.uk>
+// --@@
 //
 
 #ifndef LSSEFT_SLAVE_CONTROLLER_H
@@ -62,16 +82,50 @@ class slave_controller
 
   protected:
 
-    //! process transfer function task
-    void process_transfer_task();
+    //! process task corresponding to given work item type
+    template <typename WorkItem>
+    void process_task();
 
 
     // TRANSFER FUNCTION TASKS
 
   protected:
 
-    //! integrate a given transfer function task
-    void transfer_integration(MPI_detail::new_transfer_integration& payload);
+    //! integrate a given transfer function
+    void process_item(MPI_detail::new_transfer_integration& payload);
+    
+    
+    // LINEAR POWER SPECTRUM TASKS
+    
+  protected:
+    
+    //! filter a linear power spectrum into wiggle/no-wiggle components
+    void process_item(MPI_detail::new_filter_Pk& payload);
+
+
+    // LOOP MOMENTUM TASKS
+
+  protected:
+
+    //! integrate a given loop
+    void process_item(MPI_detail::new_loop_momentum_integration& payload);
+    
+    
+    // ONE-LOOP POWER SPECTRUM TASKS
+    
+  protected:
+    
+    //! compute Matsubara's resummation X & Y coefficients
+    void process_item(MPI_detail::new_Matsubara_XY& payload);
+    
+    //! combine loop integral and growth-factor data to produce a 1-loop power spectrum
+    void process_item(MPI_detail::new_one_loop_Pk& payload);
+    
+    //! process the 1-loop power spectrum to produce a resummed version
+    void process_item(MPI_detail::new_one_loop_resum_Pk& payload);
+    
+    //! combine 1-loop power spectrum data to produce multipole power spectra
+    void process_item(MPI_detail::new_multipole_Pk& payload);
 
 
     // INTERNAL DATA

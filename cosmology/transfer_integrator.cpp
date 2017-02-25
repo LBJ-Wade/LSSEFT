@@ -1,6 +1,26 @@
 //
 // Created by David Seery on 15/08/2015.
-// Copyright (c) 2015 University of Sussex. All rights reserved.
+// --@@ // Copyright (c) 2017 University of Sussex. All rights reserved.
+//
+// This file is part of the Sussex Effective Field Theory for
+// Large-Scale Structure platform (LSSEFT).
+//
+// LSSEFT is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 2 of the License, or
+// (at your option) any later version.
+//
+// LSSEFT is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with LSSEFT.  If not, see <http://www.gnu.org/licenses/>.
+//
+// @license: GPL-2
+// @contributor: David Seery <D.Seery@sussex.ac.uk>
+// --@@
 //
 
 
@@ -37,7 +57,7 @@ class transfer_functor
   public:
 
     //! constructor
-    transfer_functor(const FRW_model& m, const eV_units::energy& _k);
+    transfer_functor(const FRW_model& m, const Mpc_units::energy& _k);
 
     //! destructor is default
     ~transfer_functor() = default;
@@ -66,7 +86,7 @@ class transfer_functor
 
     //! wavenumber object representing k-mode for which we are integrating;
     //! this is the comoving k measured in units of 1/Mpc, not h/Mpc
-    const eV_units::energy k_com;
+    const Mpc_units::energy k_com;
 
     //! cache rho_cc in eV
     double rho_cc;
@@ -132,13 +152,13 @@ class transfer_observer
 // TRANSFER_FUNCTOR METHODS
 
 
-transfer_functor::transfer_functor(const FRW_model& m, const eV_units::energy& _k)
+transfer_functor::transfer_functor(const FRW_model& m, const Mpc_units::energy& _k)
   : model(m),
     k_com(m.get_h()*_k)
   {
     // cache value of H0 and rho_cc
-    constexpr double Mp = static_cast<double>(eV_units::PlanckMass);
-    eV_units::energy H0_value = model.get_h() * 100.0 * eV_units::Kilometre / eV_units::Second / eV_units::Mpc;
+    constexpr double Mp = static_cast<double>(Mpc_units::PlanckMass);
+    Mpc_units::energy H0_value = model.get_h() * 100.0 * Mpc_units::Kilometre / Mpc_units::Second / Mpc_units::Mpc;
 
     H0 = static_cast<double>(H0_value);
     rho_cc = 3.0 * H0*H0 * Mp*Mp * model.get_omega_cc();
@@ -147,7 +167,7 @@ transfer_functor::transfer_functor(const FRW_model& m, const eV_units::energy& _
 
 void transfer_functor::operator()(const state_vector& x, state_vector& dxdz, double z)
   {
-    constexpr double Mp = static_cast<double>(eV_units::PlanckMass);
+    constexpr double Mp = static_cast<double>(Mpc_units::PlanckMass);
 
     double rho = x[RHO_M] + x[RHO_R] + this->rho_cc;
     double H   = std::sqrt(rho / (3.0*Mp*Mp));
@@ -200,7 +220,7 @@ void transfer_functor::operator()(const state_vector& x, state_vector& dxdz, dou
 
 void transfer_functor::ics(state_vector& x, double z)
   {
-    constexpr double Mp = static_cast<double>(eV_units::PlanckMass);
+    constexpr double Mp = static_cast<double>(Mpc_units::PlanckMass);
 
     // compute (a0/a)^3 and (a0/a)^4
     double a_three = (1.0+z)*(1.0+z)*(1.0+z);
@@ -210,7 +230,7 @@ void transfer_functor::ics(state_vector& x, double z)
     // for radiation, we need the Stefan-Boltzman law and the present day CMB temperature
     double rho_m0 = this->model.get_omega_m() * (3.0*this->H0*this->H0*Mp*Mp);
 
-    eV_units::energy T_CMB = this->model.get_T_CMB();
+    Mpc_units::energy T_CMB = this->model.get_T_CMB();
     double T_CMB_in_eV = static_cast<double>(T_CMB);
     double rho_r0 = g_star * radiation_constant * T_CMB_in_eV*T_CMB_in_eV*T_CMB_in_eV*T_CMB_in_eV;
 
@@ -242,12 +262,12 @@ double transfer_functor::find_init_z()
     // superhorizon_factor = exp(10)
     constexpr double superhorizon_factor = 22026.4657948;
 
-    double Mp_over_T_CMB = eV_units::PlanckMass / this->model.get_T_CMB();
+    double Mp_over_T_CMB = Mpc_units::PlanckMass / this->model.get_T_CMB();
     double k_over_T_CMB  = this->k_com / this->model.get_T_CMB();
 
     double z_init = std::pow((3.0/(g_star*radiation_constant)) * Mp_over_T_CMB * k_over_T_CMB * superhorizon_factor, 1.0/3.0) - 1.0;
 
-    if(z_init < Planck2013::z_eq) z_init = Planck2013::z_eq * superhorizon_factor;
+    if(z_init < Planck2015::z_eq) z_init = Planck2015::z_eq * superhorizon_factor;
 
     return(z_init);
   }
@@ -301,17 +321,17 @@ void transfer_observer::operator()(const state_vector& x, double z)
 
 
 transfer_integrator::transfer_integrator(double a, double r)
-  : abs_err(a),
-    rel_err(r)
+  : abs_err(std::fabs(a)),
+    rel_err(std::fabs(r))
   {
   }
 
 
-transfer_function transfer_integrator::integrate(const FRW_model& model, const eV_units::energy& k,
-                                                 const wavenumber_token& tok, std::shared_ptr<redshift_database>& z_db)
+transfer_function transfer_integrator::integrate(const FRW_model& model, const Mpc_units::energy& k,
+                                                 const k_token& tok, const z_database& z_db)
   {
     // set up an empty transfer_function container
-    transfer_function ctr(k, tok, z_db);
+    transfer_function ctr(k, tok, std::make_shared<z_database>(z_db));
 
     // set up a functor for the ODE system
     transfer_functor rhs(model, k);
@@ -326,7 +346,7 @@ transfer_function transfer_integrator::integrate(const FRW_model& model, const e
     // is sufficiently superhorizon
 
     // first, get earliest time required
-    redshift_database::reverse_value_iterator max_z = z_db->value_rbegin();
+    z_database::const_reverse_value_iterator max_z = z_db.value_crbegin();
     double largest_z = *max_z;
     double init_z    = rhs.find_init_z();
 
@@ -335,7 +355,7 @@ transfer_function transfer_integrator::integrate(const FRW_model& model, const e
 
     // set up vector of sample times
     std::vector<double> z_sample{ std::max(largest_z, init_z) };
-    std::copy(z_db->value_rbegin(), z_db->value_rend(), std::back_inserter(z_sample));
+    std::copy(z_db.value_crbegin(), z_db.value_crend(), std::back_inserter(z_sample));
 
     auto stepper = boost::numeric::odeint::make_dense_output< boost::numeric::odeint::runge_kutta_dopri5<state_vector> >(this->abs_err, this->rel_err);
 

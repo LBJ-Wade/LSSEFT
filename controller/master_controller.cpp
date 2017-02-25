@@ -1,27 +1,51 @@
 //
 // Created by David Seery on 10/08/2015.
-// Copyright (c) 2015 University of Sussex. All rights reserved.
+// --@@ // Copyright (c) 2017 University of Sussex. All rights reserved.
+//
+// This file is part of the Sussex Effective Field Theory for
+// Large-Scale Structure platform (LSSEFT).
+//
+// LSSEFT is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 2 of the License, or
+// (at your option) any later version.
+//
+// LSSEFT is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with LSSEFT.  If not, see <http://www.gnu.org/licenses/>.
+//
+// @license: GPL-2
+// @contributor: David Seery <D.Seery@sussex.ac.uk>
+// --@@
 //
 
 
+#include <MPI_detail/mpi_traits.h>
 #include "core.h"
 
 #include "master_controller.h"
 #include "scheduler.h"
 
 #include "cosmology/FRW_model.h"
-#include "cosmology/oneloop_integrator.h"
+#include "cosmology/oneloop_growth_integrator.h"
 #include "cosmology/concepts/range.h"
+#include "cosmology/concepts/power_spectrum.h"
 
 #include "database/data_manager.h"
 
-#include "MPI_detail/mpi_operations.h"
+#include "MPI_detail/mpi_traits.h"
+#include "MPI_detail/mpi_payloads.h"
 
 #include "utilities/formatter.h"
 
 #include "localizations/messages.h"
 
 #include "boost/program_options.hpp"
+#include "boost/optional.hpp"
 
 
 master_controller::master_controller(boost::mpi::environment& me, boost::mpi::communicator& mw, argument_cache& ac)
@@ -46,7 +70,9 @@ void master_controller::process_arguments(int argc, char* argv[])
     boost::program_options::options_description configuration("Configuration options");
     configuration.add_options()
       (LSSEFT_SWITCH_VERBOSE, LSSEFT_HELP_VERBOSE)
-      (LSSEFT_SWITCH_DATABASE, boost::program_options::value<std::string>(), LSSEFT_HELP_DATABASE);
+      (LSSEFT_SWITCH_DATABASE, boost::program_options::value<std::string>(), LSSEFT_HELP_DATABASE)
+      (LSSEFT_SWITCH_INITIAL_POWERSPEC, boost::program_options::value<std::string>(), LSSEFT_HELP_INITIAL_POWERSPEC)
+      (LSSEFT_SWITCH_FINAL_POWERSPEC, boost::program_options::value<std::string>(), LSSEFT_HELP_FINAL_POWERSPEC);
 
     boost::program_options::options_description hidden("Hidden options");
     hidden.add_options()
@@ -84,6 +110,16 @@ void master_controller::process_arguments(int argc, char* argv[])
       {
         this->arg_cache.set_database_path(option_map[LSSEFT_SWITCH_DATABASE_LONG].as<std::string>());
       }
+
+    if(option_map.count(LSSEFT_SWITCH_INITIAL_POWERSPEC_LONG))
+      {
+        this->arg_cache.set_initial_powerspectrum_path(option_map[LSSEFT_SWITCH_INITIAL_POWERSPEC_LONG].as<std::string>());
+      }
+    
+    if(option_map.count(LSSEFT_SWITCH_FINAL_POWERSPEC_LONG))
+      {
+        this->arg_cache.set_final_powerspectrum_path(option_map[LSSEFT_SWITCH_FINAL_POWERSPEC_LONG].as<std::string>());
+      }
   }
 
 
@@ -97,78 +133,198 @@ void master_controller::execute()
 
     // set up
     data_manager dmgr(this->arg_cache.get_database_path());
-    FRW_model cosmology_model;
 
+    // fix the background cosmological model
+    FRW_model cosmology_model;
     std::unique_ptr<FRW_model_token> model = dmgr.tokenize(cosmology_model);
 
-    // set up a list of wavenumber to sample, measured in h/Mpc
-    stepping_range<eV_units::energy> wavenumber_samples(0.05, 0.3, 30, 1.0 / eV_units::Mpc, spacing_type::linear);
+    // set up a list of wavenumbers to sample for the transfer functions, measured in h/Mpc
+    stepping_range<Mpc_units::energy> transfer_k_samples(0.01, 0.8, 30, 1.0 / Mpc_units::Mpc, spacing_type::linear);
 
-    // set up a list of redshifts at which to sample to transfer function
-    stepping_range<double> hi_redshift_samples(1000.0, 1500.0, 5.0, 1.0, spacing_type::linear);
+    // set up a list of redshifts at which to sample the transfer functions
+    stepping_range<double> hi_redshift_samples(1000.0, 1500.0, 5, 1.0, spacing_type::linear);
 
     // set up a list of redshifts at which to sample the late-time growth functions
-    stepping_range<double> lo_redshift_samples(0.01, 1000.0, 250, 1.0, spacing_type::logarithmic_bottom);
+    stepping_range<double> lo_redshift_samples(0.0, 50.0, 250, 1.0, spacing_type::logarithmic_bottom);
+
+    // set up a list of UV cutoffs, measured in h/Mpc, to be used with the loop integrals
+    stepping_range<Mpc_units::energy> UV_cutoffs(0.8, 0.8, 0, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
+
+    // set up a list of IR cutoffs, measured in h/Mpc, to be used with the loop integrals
+    stepping_range<Mpc_units::energy> IR_cutoffs(1E-4, 1E-4, 0, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
+
+    // set up a list of k at which to compute the loop integrals
+    stepping_range<Mpc_units::energy> loop_k_samples(0.005, 0.5, 200, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
+    
+    // set up a list of IR resummation scales, measured in h/Mpc
+    stepping_range<Mpc_units::energy> IR_resummation(0.3, 0.3, 0, 1.0 / Mpc_units::Mpc, spacing_type::linear);
 
     // exchange these sample ranges for iterable databases
-    std::unique_ptr<redshift_database> hi_z_db = dmgr.build_db(hi_redshift_samples);
-    std::unique_ptr<redshift_database> lo_z_db = dmgr.build_db(lo_redshift_samples);
-    std::unique_ptr<wavenumber_database> k_db = dmgr.build_db(wavenumber_samples);
+    std::unique_ptr<z_database> hi_z_db              = dmgr.build_redshift_db(hi_redshift_samples);
+    std::unique_ptr<z_database> lo_z_db              = dmgr.build_redshift_db(lo_redshift_samples);
+    std::unique_ptr<k_database> transfer_k_db        = dmgr.build_k_db(transfer_k_samples);
 
-    // generate targets
+    std::unique_ptr<UV_cutoff_database> UV_cutoff_db = dmgr.build_UV_cutoff_db(UV_cutoffs);
+    std::unique_ptr<IR_cutoff_database> IR_cutoff_db = dmgr.build_IR_cutoff_db(IR_cutoffs);
+    std::unique_ptr<IR_resum_database>  IR_resum_db  = dmgr.build_IR_resum_db(IR_resummation);
+    std::unique_ptr<k_database>         loop_k_db    = dmgr.build_k_db(loop_k_samples);
+
+    
+    // GENERATE TARGETS
+
     // for 1-loop calculation, we need the linear transfer function at the initial redshift,
+    // (although we can also ingest a linear power spectrum generated by some other means, eg. with CAMB; see below)
     // plus the time-dependent 1-loop kernels through the subsequent evolution
 
     // build a work list for transfer functions
-    std::unique_ptr<transfer_work_list> transfer_work_list = dmgr.build_transfer_work_list(*model, *k_db, *hi_z_db);
+    std::unique_ptr<transfer_work_list> transfer_work = dmgr.build_transfer_work_list(*model, *transfer_k_db, *hi_z_db);
+    
+    // distribute this work list among the worker processes
+    if(transfer_work) this->scatter(cosmology_model, *model, *transfer_work, dmgr);
 
-    // distribute this work list among the slave processes
-    this->scatter(cosmology_model, *model, *transfer_work_list, dmgr);
+    // build a work list for linear and one-loop growth functions (and their growth rates);
+    // we inherit ownership of its lifetime using std::unique_ptr<>
+    std::unique_ptr<z_database> loop_growth_work = dmgr.build_oneloop_work_list(*model, *lo_z_db);
 
-    // build a work list for late-time growth functions
-    std::shared_ptr<redshift_database> oneloop_work_list = dmgr.build_oneloop_work_list(*model, *lo_z_db);
+    // compute linear and one-loop growth functions, if needed; can be done on master process since there is only one integration
+    if(loop_growth_work) this->integrate_oneloop(cosmology_model, *model, *loop_growth_work, dmgr);
+    
+    if(this->arg_cache.is_initial_powerspectrum_set())
+      {
+        // STEP 1 - READ IN AND FILTER LINEAR POWER SPECTRA
+        
+        // read in initial linear power spectrum in CAMB format, and ask the database to tokenize it
+        // we manage its lifetime using std::shared_ptr<> because we want to share ownership with
+        // the MPI work records and payloads
+        std::shared_ptr<initial_Pk> init_Pk_lin_db = std::make_shared<initial_Pk>(this->arg_cache.get_initial_powerspectrum_path());
+        std::unique_ptr<linear_Pk_token> init_Pk_lin = dmgr.tokenize(*model, *init_Pk_lin_db);
+    
+        // build a work list for filtering the linear power spectrum in wiggle/no-wiggle components
+        std::shared_ptr<filterable_Pk> filterable_init_Pk_lin_db = make_filterable(*init_Pk_lin_db);
+        auto init_filter_work = dmgr.build_filter_Pk_work_list(*init_Pk_lin, filterable_init_Pk_lin_db);
+    
+        // distribute this work list among the worker processes
+        if(init_filter_work) this->scatter(cosmology_model, *model, *init_filter_work, dmgr);
+        
+        // exchange our linear power spectrum for the filtered version;
+        // we manage its lifetime using std::shared_ptr<> since ownership is shared with the
+        // MPI work records and payloads
+        std::shared_ptr<initial_filtered_Pk> initial_Pk_wig = dmgr.build_wiggle_Pk(*init_Pk_lin, *init_Pk_lin_db);
+    
+        // if a final linear power spectrum has been specified, then read this in too, tokenize it,
+        // and obtain a container
+        std::unique_ptr<linear_Pk_token> final_Pk_lin;
+        std::shared_ptr<final_filtered_Pk> final_Pk_wig;
+        if(this->arg_cache.is_final_powerspectrum_set())
+          {
+            // read in final power spectrum and tokenize it
+            std::shared_ptr<final_Pk> final_Pk_lin_db = std::make_shared<final_Pk>(this->arg_cache.get_final_powerspectrum_path());
+            final_Pk_lin = dmgr.tokenize(*model, *final_Pk_lin_db);
+            
+            // build a work list for filtering
+            std::shared_ptr<filterable_Pk> filterable_final_Pk_lin_db = make_filterable(*final_Pk_lin_db);
+            auto final_filter_work = dmgr.build_filter_Pk_work_list(*final_Pk_lin, filterable_final_Pk_lin_db);
+            
+            // distribute this work list among the worker processes
+            if(final_filter_work) this->scatter(cosmology_model, *model, *final_filter_work, dmgr);
+            
+            // get filtered version of power spectrum
+            final_Pk_wig = dmgr.build_wiggle_Pk(*final_Pk_lin, *final_Pk_lin_db);
+          }
+        
+        
+        // STEP 2 - COMPUTE LOOP INTEGRALS
 
-    // compute one-loop functions, if needed; can be done on master process since there is only one integration
-    if(oneloop_work_list) this->integrate_oneloop(cosmology_model, *model, oneloop_work_list, dmgr);
+        // build a work list for the loop integrals
+        std::unique_ptr<loop_momentum_work_list> loop_momentum_work =
+          dmgr.build_loop_momentum_work_list(*model, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, initial_Pk_wig);
+
+        // distribute this work list among the worker processes
+        if(loop_momentum_work) this->scatter(cosmology_model, *model, *loop_momentum_work, dmgr);
+    
+        
+        // STEP 3 - COMPUTE MATSUBARA X & Y COEFFICIENTS
+        
+        // build a work list of the Matsubara X & Y coefficients associated with these resummation scales
+        std::unique_ptr<Matsubara_XY_work_list> Matsubara_work =
+          dmgr.build_Matsubara_XY_work_list(*model, *IR_resum_db, initial_Pk_wig);
+    
+        // distribute this work list among the worker processes
+        if(Matsubara_work) this->scatter(cosmology_model, *model, *Matsubara_work, dmgr);
+        
+        
+        // STEP 4 - COMPUTE ONE-LOOP POWER SPECTRA IN REAL AND REDSHIFT SPACE
+        
+        // build a work list for the individual power spectrum components
+        std::unique_ptr<one_loop_Pk_work_list> Pk_work =
+          dmgr.build_one_loop_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db,
+                                           initial_Pk_wig, final_Pk_wig);
+
+        // distribute this work list among the worker processes
+        if(Pk_work) this->scatter(cosmology_model, *model, *Pk_work, dmgr);
+        
+        // build a work list for the resummed power spectrum components
+        std::unique_ptr<one_loop_resum_Pk_work_list> Pk_resum_work =
+          dmgr.build_one_loop_resum_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db,
+                                                 *IR_resum_db, initial_Pk_wig, final_Pk_wig);
+        
+        // distribute this work list among the worker processes
+        if(Pk_resum_work) this->scatter(cosmology_model, *model, *Pk_resum_work, dmgr);
+        
+        
+        // STEP 5 - COMPUTE MULTIPOLE DECOMPOSIITON OF REDSHIFT-SPACE POWER SPECTRUM
+        
+        // build a work list for the resummed multipole power spectra
+        std::unique_ptr<multipole_Pk_work_list> multipole_Pk_work =
+          dmgr.build_multipole_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db,
+                                            *IR_resum_db, initial_Pk_wig, final_Pk_wig);
+    
+        // distribute this work list among the worker processes
+        if(multipole_Pk_work) this->scatter(cosmology_model, *model, *multipole_Pk_work, dmgr);
+      }
 
     // instruct slave processes to terminate
     this->terminate_workers();
   }
 
 
-void master_controller::scatter(const FRW_model& model, const FRW_model_token& token, transfer_work_list& work,
-                                data_manager& dmgr)
+template <typename WorkItemList>
+void master_controller::scatter(const FRW_model& model, const FRW_model_token& token, WorkItemList& work, data_manager& dmgr)
   {
+    using WorkItem = typename WorkItemList::value_type;
+    
+    boost::timer::cpu_timer timer;
+
     if(this->mpi_world.size() == 1) throw runtime_exception(exception_type::runtime_error, ERROR_TOO_FEW_WORKERS);
 
     // instruct slave processes to await transfer function tasks
-    std::unique_ptr<scheduler> sch = this->set_up_workers(MPI_detail::MESSAGE_NEW_TRANSFER_TASK);
+    std::unique_ptr<scheduler> sch = this->set_up_workers(MPI_detail::work_item_traits<WorkItem>::new_task_message());
 
     bool sent_closedown = false;
-    transfer_work_list::iterator next_work_item = work.begin();
+    auto next_work_item = work.cbegin();
 
     while(!sch->all_inactive())
       {
         // check whether all work is exhausted
-        if(next_work_item == work.end() && !sent_closedown)
+        if(next_work_item == work.cend() && !sent_closedown)
           {
             sent_closedown = true;
             this->close_down_workers();
           }
 
         // check whether any workers are waiting for assignments
-        if(next_work_item != work.end() && sch->is_assignable())
+        if(next_work_item != work.cend() && sch->is_assignable())
           {
             std::vector<unsigned int> unassigned_list = sch->make_assignment();
             std::vector<boost::mpi::request> requests;
 
             for(std::vector<unsigned int>::const_iterator t = unassigned_list.begin();
-                next_work_item != work.end() && t != unassigned_list.end(); ++t)
+                next_work_item != work.cend() && t != unassigned_list.end(); ++t)
               {
                 // assign next work item to this worker
-                MPI_detail::new_transfer_integration payload(model, *(*next_work_item), next_work_item->get_token(),
-                                                             next_work_item->get_z_db());
-                requests.push_back(this->mpi_world.isend(this->worker_rank(*t), MPI_detail::MESSAGE_NEW_TRANSFER_INTEGRATION, payload));
+                requests.push_back(this->mpi_world.isend(this->worker_rank(*t),
+                                                         MPI_detail::work_item_traits<WorkItem>::new_item_message(),
+                                                         MPI_detail::build_payload(model, next_work_item)));
 
                 sch->mark_assigned(*t);
                 ++next_work_item;
@@ -185,12 +341,10 @@ void master_controller::scatter(const FRW_model& model, const FRW_model_token& t
           {
             switch(stat->tag())
               {
-                case MPI_detail::MESSAGE_TRANSFER_INTEGRATION_READY:
+                case MPI_detail::MESSAGE_WORK_PRODUCT_READY:
                   {
-                    MPI_detail::transfer_integration_ready payload;
-                    this->mpi_world.recv(stat->source(), MPI_detail::MESSAGE_TRANSFER_INTEGRATION_READY, payload);
+                    this->store_payload<WorkItem>(token, stat->source(), dmgr);
                     sch->mark_unassigned(this->worker_number(stat->source()));
-                    dmgr.store(token, payload.get_data());
                     break;
                   }
 
@@ -202,12 +356,27 @@ void master_controller::scatter(const FRW_model& model, const FRW_model_token& t
                   }
 
                 default:
-                  assert(false);
+                  {
+                    assert(false);
+                  }
               }
 
             stat = this->mpi_world.iprobe();
           }
       }
+
+    timer.stop();
+    std::cout << "lsseft: completed work in time " << format_time(timer.elapsed().wall) << '\n';
+  }
+
+
+template <typename WorkItem>
+void master_controller::store_payload(const FRW_model_token& token, unsigned int source, data_manager& dmgr)
+  {
+    typename MPI_detail::work_item_traits<WorkItem>::incoming_payload_type payload;
+
+    this->mpi_world.recv(source, MPI_detail::MESSAGE_WORK_PRODUCT_READY, payload);
+    dmgr.store(token, payload.get_data());
   }
 
 
@@ -238,7 +407,7 @@ std::unique_ptr<scheduler> master_controller::set_up_workers(unsigned int tag)
     boost::mpi::wait_all(requests.begin(), requests.end());
 
     // create scheduler object
-    std::unique_ptr<scheduler> sch(new scheduler(this->mpi_world.size() - 1));
+    std::unique_ptr<scheduler> sch = std::make_unique<scheduler>(this->mpi_world.size() - 1);
 
     // wait for messages from workers reporting that they are correctly set up
     while(!sch->is_ready())
@@ -273,10 +442,12 @@ void master_controller::close_down_workers()
   }
 
 
-void master_controller::integrate_oneloop(const FRW_model& model, const FRW_model_token& token, std::shared_ptr<redshift_database>& z_db,
+void master_controller::integrate_oneloop(const FRW_model& model, const FRW_model_token& token, z_database& z_db,
                                           data_manager& dmgr)
   {
-    oneloop_integrator integrator;
-    oneloop sample = integrator.integrate(model, z_db);
-    dmgr.store(token, sample);
+    oneloop_growth_integrator integrator;
+
+    growth_integrator_data data = integrator.integrate(model, z_db);
+
+    dmgr.store(token, *data.container);
   }

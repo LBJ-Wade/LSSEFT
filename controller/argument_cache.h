@@ -1,6 +1,26 @@
 //
 // Created by David Seery on 31/07/2015.
-// Copyright (c) 2015 University of Sussex. All rights reserved.
+// --@@ // Copyright (c) 2017 University of Sussex. All rights reserved.
+//
+// This file is part of the Sussex Effective Field Theory for
+// Large-Scale Structure platform (LSSEFT).
+//
+// LSSEFT is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 2 of the License, or
+// (at your option) any later version.
+//
+// LSSEFT is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with LSSEFT.  If not, see <http://www.gnu.org/licenses/>.
+//
+// @license: GPL-2
+// @contributor: David Seery <D.Seery@sussex.ac.uk>
+// --@@
 //
 
 #ifndef LSSEFT_ARGUMENT_CACHE_H
@@ -32,6 +52,8 @@ class argument_cache
 
 
     // INTERFACE -- CONFIGURATION OPTIONS
+    
+  public:
 
     //! get verbose output setting
     bool get_verbose() const { return(this->verbose); }
@@ -47,6 +69,8 @@ class argument_cache
 
 
     // INTERFACE -- DATABASE
+    
+  public:
 
     //! get database path
     const boost::filesystem::path& get_database_path() const { return(this->database); }
@@ -56,6 +80,29 @@ class argument_cache
 
     //! determine if a database has been set
     bool get_database_set() const { return(!this->database.empty()); }
+    
+    
+    // INTERFACE -- INITIAL AND FINAL POWER SPECTRA
+    
+  public:
+
+    //! get initial linear power spectrum path
+    const boost::filesystem::path& get_initial_powerspectrum_path() const { return(this->init_linear_Pk); }
+
+    //! set initial linear power spectrum path
+    void set_initial_powerspectrum_path(const std::string& p) { this->init_linear_Pk = p; }
+
+    //! determine whether an initial linear power spectrum has been set
+    bool is_initial_powerspectrum_set() const { return(!this->init_linear_Pk.empty()); }
+    
+    //! get final linear power spectrum path
+    const boost::filesystem::path& get_final_powerspectrum_path() const { return(this->final_linear_Pk); }
+    
+    //! set final linear linear power spectrum path
+    void set_final_powerspectrum_path(const std::string& p) { this->final_linear_Pk = p; }
+    
+    //! determine whether a final linear power spectrum has been set
+    bool is_final_powerspectrum_set() const { return(!this->final_linear_Pk.empty()); }
 
 
     // INTERNAL DATA
@@ -71,6 +118,13 @@ class argument_cache
     //! database path
     boost::filesystem::path database;
 
+    //! path for initial linear power spectrum
+    boost::filesystem::path init_linear_Pk;
+    
+    //! path for final linear power spectrum
+    boost::filesystem::path final_linear_Pk;
+
+    
     // enable boost::serialization support, and hence automated packing for transmission over MPI
     friend class boost::serialization::access;
 
@@ -80,6 +134,8 @@ class argument_cache
         ar & verbose;
         ar & colour_output;
         ar & database;
+        ar & init_linear_Pk;
+        ar & final_linear_Pk;
       }
 
   };

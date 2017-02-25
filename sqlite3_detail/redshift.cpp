@@ -1,12 +1,36 @@
 //
 // Created by David Seery on 12/08/2015.
-// Copyright (c) 2015 University of Sussex. All rights reserved.
+// --@@ // Copyright (c) 2017 University of Sussex. All rights reserved.
+//
+// This file is part of the Sussex Effective Field Theory for
+// Large-Scale Structure platform (LSSEFT).
+//
+// LSSEFT is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 2 of the License, or
+// (at your option) any later version.
+//
+// LSSEFT is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with LSSEFT.  If not, see <http://www.gnu.org/licenses/>.
+//
+// @license: GPL-2
+// @contributor: David Seery <D.Seery@sussex.ac.uk>
+// --@@
 //
 
 #include <sstream>
 #include <assert.h>
 
+#include <cmath>
+
 #include "redshift.h"
+
+#include "database/tokens.h"
 
 #include "utilities.h"
 
@@ -22,10 +46,21 @@ namespace sqlite3_operations
       {
         assert(db != nullptr);
 
+        constexpr double USE_RELATIVE_ERROR = 1E-10;
+        
         std::ostringstream select_stmt;
-        select_stmt
-          << "SELECT id FROM " << policy.redshift_config_table() << " WHERE "
-          << "ABS((z-@z)/z)<@tol;";
+        if(std::abs(z) > USE_RELATIVE_ERROR)
+          {
+            select_stmt
+              << "SELECT id FROM " << tokenization_table<z_token>(policy) << " WHERE "
+              << "ABS((z-@z)/z)<@tol;";
+          }
+        else
+          {
+            select_stmt
+              << "SELECT id FROM " << tokenization_table<z_token>(policy) << " WHERE "
+              << "ABS(z-@z)<@tol;";
+          }
 
         // prepare SQL statement
         sqlite3_stmt* stmt;
@@ -61,11 +96,11 @@ namespace sqlite3_operations
         assert(db != nullptr);
 
         // get number of rows in table; this will be the identifier for the new redshift
-        unsigned int new_id = count(db, policy.redshift_config_table());
+        unsigned int new_id = count(db, tokenization_table<z_token>(policy));
 
         std::ostringstream insert_stmt;
         insert_stmt
-          << "INSERT INTO " << policy.redshift_config_table() << " VALUES (@id, @z);";
+          << "INSERT INTO " << tokenization_table<z_token>(policy) << " VALUES (@id, @z);";
 
         // prepare SQL statement
         sqlite3_stmt* stmt;
