@@ -67,7 +67,7 @@ namespace Pk_filter_impl
       
       public:
         
-        integrand_data(double sl_min, double sl_max, double kl, double lm, const linear_Pk& _Pk, const approx_Pk& _Pka)
+        integrand_data(double sl_min, double sl_max, double kl, double lm, const filterable_Pk& _Pk, const approx_Pk& _Pka)
           : slog_min(sl_min),
             slog_max(sl_max),
             klog(kl),
@@ -84,7 +84,7 @@ namespace Pk_filter_impl
         const double klog;
         const double lambda;
 
-        const linear_Pk& Pk;
+        const filterable_Pk& Pk;
         const approx_Pk& Pk_approx;
 
         const double jacobian;
@@ -120,7 +120,7 @@ namespace Pk_filter_impl
 
 
 std::pair< Mpc_units::inverse_energy3, Mpc_units::inverse_energy3 >
-Pk_filter::operator()(const FRW_model& model, const linear_Pk& Pk_lin, const Mpc_units::energy& k)
+Pk_filter::operator()(const FRW_model& model, const filterable_Pk& Pk_lin, const Mpc_units::energy& k)
   {
     // build reference Eisenstein & Hu power spectrum
     std::unique_ptr<approx_Pk> Papprox = this->eisenstein_hu(model, Pk_lin);
@@ -161,7 +161,7 @@ Pk_filter::operator()(const FRW_model& model, const linear_Pk& Pk_lin, const Mpc
 
 
 double Pk_filter::integrate(const double slog_min, const double slog_max, const double klog, const double lambda,
-                            const linear_Pk& Pk_lin, const approx_Pk& Papprox, integrand_t integrand)
+                            const filterable_Pk& Pk_lin, const approx_Pk& Papprox, integrand_t integrand)
   {
     cubareal integral[Pk_filter_impl::dimensions];
     cubareal error[Pk_filter_impl::dimensions];
@@ -193,7 +193,7 @@ double Pk_filter::integrate(const double slog_min, const double slog_max, const 
   }
 
 
-std::unique_ptr<approx_Pk> Pk_filter::eisenstein_hu(const FRW_model& model, const linear_Pk& Pk_lin)
+std::unique_ptr<approx_Pk> Pk_filter::eisenstein_hu(const FRW_model& model, const filterable_Pk& Pk_lin)
   {
     // extract database of power spectrum sample points
     const tree_Pk::database_type& db = Pk_lin.get_db();

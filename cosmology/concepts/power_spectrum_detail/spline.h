@@ -66,7 +66,7 @@ class wiggle_Pk_raw_adapter: public spline_Pk
   public:
     
     //! constructor captures wiggle_Pk container
-    wiggle_Pk_raw_adapter(const wiggle_Pk& w);
+    wiggle_Pk_raw_adapter(const initial_filtered_Pk& w);
     
     //! destructor is default
     ~wiggle_Pk_raw_adapter() = default;
@@ -85,7 +85,7 @@ class wiggle_Pk_raw_adapter: public spline_Pk
   private:
     
     //! capture wiggle_Pk container
-    const wiggle_Pk& container;
+    const initial_filtered_Pk& container;
     
   };
 
@@ -98,7 +98,7 @@ class wiggle_Pk_wiggle_adapter: public spline_Pk
   public:
     
     //! constructor captures wiggle_Pk container
-    wiggle_Pk_wiggle_adapter(const wiggle_Pk& w);
+    wiggle_Pk_wiggle_adapter(const initial_filtered_Pk& w);
     
     //! destructor is default
     ~wiggle_Pk_wiggle_adapter() = default;
@@ -117,7 +117,7 @@ class wiggle_Pk_wiggle_adapter: public spline_Pk
   private:
     
     //! capture wiggle_Pk container
-    const wiggle_Pk& container;
+    const initial_filtered_Pk& container;
     
   };
 
@@ -130,7 +130,7 @@ class wiggle_Pk_nowiggle_adapter: public spline_Pk
   public:
     
     //! constructor captures wiggle_Pk container
-    wiggle_Pk_nowiggle_adapter(const wiggle_Pk& w);
+    wiggle_Pk_nowiggle_adapter(const initial_filtered_Pk& w);
     
     //! destructor is default
     ~wiggle_Pk_nowiggle_adapter() = default;
@@ -149,7 +149,7 @@ class wiggle_Pk_nowiggle_adapter: public spline_Pk
   private:
     
     //! capture wiggle_Pk container
-    const wiggle_Pk& container;
+    const initial_filtered_Pk& container;
     
   };
 

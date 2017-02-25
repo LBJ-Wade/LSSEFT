@@ -23,10 +23,10 @@
 // --@@
 //
 
-#include "filtered_Pk.h"
+#include "filtered_Pk_value.h"
 
 
-filtered_Pk::filtered_Pk(const k_token& kt, const linear_Pk_token& Pt, Mpc_units::inverse_energy3 _Pk_nw,
+filtered_Pk_value::filtered_Pk_value(const k_token& kt, const linear_Pk_token& Pt, Mpc_units::inverse_energy3 _Pk_nw,
                          Mpc_units::inverse_energy3 _Pk_raw, Mpc_units::inverse_energy3 _Pk_ref)
   : fail(false),
     k_tok(kt),
@@ -38,7 +38,7 @@ filtered_Pk::filtered_Pk(const k_token& kt, const linear_Pk_token& Pt, Mpc_units
   }
 
 
-filtered_Pk::filtered_Pk()
+filtered_Pk_value::filtered_Pk_value()
   : fail(false),
     k_tok(0),
     Pk_tok(0),

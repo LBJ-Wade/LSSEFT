@@ -132,7 +132,7 @@ namespace Matsubara_XY_calculator_impl
 
 Matsubara_XY
 Matsubara_XY_calculator::calculate_Matsubara_XY(const Mpc_units::energy& IR_resum, const IR_resum_token& IR_resum_tok,
-                                                const wiggle_Pk& Pk_lin)
+                                                const initial_filtered_Pk& Pk_lin)
   {
     // extract database for power spectra
     const auto& raw_db = Pk_lin.get_raw_db();

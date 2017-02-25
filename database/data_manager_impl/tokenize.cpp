@@ -92,28 +92,3 @@ std::unique_ptr<z_token> data_manager::tokenize(transaction_manager& mgr, double
     unsigned int id = this->lookup_or_insert(mgr, z);
     return std::make_unique<z_token>(id);
   }
-
-
-std::unique_ptr<linear_Pk_token>
-data_manager::tokenize(const FRW_model_token& model, const linear_Pk& Pk_lin)
-  {
-    // open a new transaction on the database
-    std::shared_ptr<transaction_manager> transaction = this->open_transaction();
-    
-    // lookup id for this power spectrum, or generate one if it doesn't already exist
-    std::unique_ptr<linear_Pk_token> id = this->tokenize(*transaction, model, Pk_lin);
-    
-    // commit the transaction
-    transaction->commit();
-    
-    return std::move(id);
-  }
-
-
-std::unique_ptr<linear_Pk_token>
-data_manager::tokenize(transaction_manager& mgr, const FRW_model_token& model, const linear_Pk& Pk_lin)
-  {
-    // lookup id for this power spectrum, or generate one if it doesn't already exist
-    unsigned int id = this->lookup_or_insert(mgr, model, Pk_lin);
-    return std::make_unique<linear_Pk_token>(id);
-  }

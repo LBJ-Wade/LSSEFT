@@ -76,6 +76,8 @@ class z_record
     template <typename Archive>
     void serialize(Archive& ar, unsigned int version)
       {
+        ar & z;
+        ar & token;
       }
 
   };
@@ -93,22 +95,15 @@ namespace boost
         template <typename Archive>
         inline void save_construct_data(Archive& ar, const z_record* t, const unsigned int file_version)
           {
-            ar << *(*t);                    // store value of z
-            ar << t->get_token().get_id();  // store token identifier
           }
 
 
         template <typename Archive>
         inline void load_construct_data(Archive& ar, z_record* t, const unsigned int file_version)
           {
-            double z;
-            unsigned int id;
-
-            ar >> z;      // unpack z
-            ar >> id;     // unpack token identifier
-
-            // invoke in-place constructor
-            ::new(t) z_record(z, z_token(id));
+            // construct empty object; values will be populated later by standard deserialization
+            z_token tk(0);
+            ::new(t) z_record(0.0, tk);
           }
 
 

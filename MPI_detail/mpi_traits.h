@@ -48,7 +48,7 @@ namespace MPI_detail
       };
     
     
-    template <> struct work_item_traits<filter_Pk_work_record>
+    template <> struct work_item_traits< filter_Pk_work_record >
       {
         typedef new_filter_Pk   outgoing_payload_type;
         typedef filter_Pk_ready incoming_payload_type;
@@ -90,6 +90,9 @@ namespace MPI_detail
     
     template <> struct work_item_traits<one_loop_resum_Pk_work_record>
       {
+        work_item_traits() {}
+    
+    
         typedef new_one_loop_resum_Pk   outgoing_payload_type;
         typedef one_loop_resum_Pk_ready incoming_payload_type;
     
@@ -100,6 +103,9 @@ namespace MPI_detail
     
     template <> struct work_item_traits<multipole_Pk_work_record>
       {
+        work_item_traits() {}
+    
+    
         typedef new_multipole_Pk   outgoing_payload_type;
         typedef multipole_Pk_ready incoming_payload_type;
         

@@ -86,27 +86,3 @@ std::unique_ptr<IR_resum_database> data_manager::build_IR_resum_db(range<Mpc_uni
   {
     return this->build_wavenumber_db<IR_resum_token>(sample);
   }
-
-
-std::unique_ptr<k_database> data_manager::build_k_db(transaction_manager& mgr, const linear_Pk& Pk_lin,
-                                                     double bottom_clearance, double top_clearance)
-  {
-    // construct an empty wavenumber database
-    std::unique_ptr<k_database> k_db = std::make_unique<k_database>();
-    
-    // get power spectrum database underlying this container
-    const tree_Pk::database_type& Pk_db = Pk_lin.get_db();
-    
-    for(tree_Pk::database_type::const_record_iterator t = Pk_db.record_cbegin(); t != Pk_db.record_cend(); ++t)
-      {
-        // ask linear_Pk container whether this P(k) value is acceptable
-        const Mpc_units::energy& k = t->get_wavenumber();
-        if(Pk_lin.is_valid(k, bottom_clearance, top_clearance))
-          {
-            std::unique_ptr<k_token> tok = this->tokenize<k_token>(mgr, k);
-            k_db->add_record(k, *tok);
-          }
-      }
-    
-    return k_db;
-  }

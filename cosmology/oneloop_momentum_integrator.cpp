@@ -53,7 +53,7 @@ oneloop_momentum_integrator::oneloop_momentum_integrator(double a_13, double r_1
 loop_integral oneloop_momentum_integrator::integrate(const FRW_model& model, const Mpc_units::energy& k,
                                                      const k_token& k_tok, const Mpc_units::energy& UV_cutoff,
                                                      const UV_cutoff_token& UV_tok, const Mpc_units::energy& IR_cutoff,
-                                                     const IR_cutoff_token& IR_tok, const wiggle_Pk& Pk)
+                                                     const IR_cutoff_token& IR_tok, const initial_filtered_Pk& Pk)
   {
     delta_13_integrals delta13;
     delta_22_integrals delta22;
@@ -119,7 +119,7 @@ loop_integral oneloop_momentum_integrator::integrate(const FRW_model& model, con
 template <typename KernelRecord>
 bool oneloop_momentum_integrator::kernel_integral(const FRW_model& model, const Mpc_units::energy& k,
                                                   const Mpc_units::energy& UV_cutoff,
-                                                  const Mpc_units::energy& IR_cutoff, const wiggle_Pk& Pk,
+                                                  const Mpc_units::energy& IR_cutoff, const initial_filtered_Pk& Pk,
                                                   integrand_t integrand, KernelRecord& result, loop_integral_type type,
                                                   const std::string& name)
   {

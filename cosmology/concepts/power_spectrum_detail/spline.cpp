@@ -26,7 +26,7 @@
 #include "spline.h"
 
 
-wiggle_Pk_raw_adapter::wiggle_Pk_raw_adapter(const wiggle_Pk& w)
+wiggle_Pk_raw_adapter::wiggle_Pk_raw_adapter(const initial_filtered_Pk& w)
   : container(w)
   {
   }
@@ -38,7 +38,7 @@ Mpc_units::inverse_energy3 wiggle_Pk_raw_adapter::operator()(const Mpc_units::en
   }
 
 
-wiggle_Pk_wiggle_adapter::wiggle_Pk_wiggle_adapter(const wiggle_Pk& w)
+wiggle_Pk_wiggle_adapter::wiggle_Pk_wiggle_adapter(const initial_filtered_Pk& w)
   : container(w)
   {
   }
@@ -50,7 +50,7 @@ Mpc_units::inverse_energy3 wiggle_Pk_wiggle_adapter::operator()(const Mpc_units:
   }
 
 
-wiggle_Pk_nowiggle_adapter::wiggle_Pk_nowiggle_adapter(const wiggle_Pk& w)
+wiggle_Pk_nowiggle_adapter::wiggle_Pk_nowiggle_adapter(const initial_filtered_Pk& w)
   : container(w)
   {
   }

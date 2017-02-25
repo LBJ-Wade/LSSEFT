@@ -75,11 +75,12 @@ Pk_ell::Pk_ell()
   }
 
 
-multipole_Pk::multipole_Pk(const k_token& kt, const linear_Pk_token& Pkt, const IR_cutoff_token& IRt,
-                           const UV_cutoff_token& UVt, const z_token& zt, const IR_resum_token& IRrt, const Pk_ell& _P0,
-                           const Pk_ell& _P2, const Pk_ell& _P4)
+multipole_Pk::multipole_Pk(const k_token& kt, const linear_Pk_token& Pkt_i, const boost::optional<linear_Pk_token>& Pkt_f,
+                           const IR_cutoff_token& IRt, const UV_cutoff_token& UVt, const z_token& zt, const IR_resum_token& IRrt,
+                           const Pk_ell& _P0, const Pk_ell& _P2, const Pk_ell& _P4)
   : k(kt),
-    Pk(Pkt),
+    init_Pk(Pkt_i),
+    final_Pk(Pkt_f),
     IR_cutoff(IRt),
     UV_cutoff(UVt),
     z(zt),
@@ -93,7 +94,8 @@ multipole_Pk::multipole_Pk(const k_token& kt, const linear_Pk_token& Pkt, const 
 
 multipole_Pk::multipole_Pk()
   : k(0),
-    Pk(0),
+    init_Pk(0),
+    final_Pk(boost::none),
     IR_cutoff(0),
     UV_cutoff(0),
     z(0),

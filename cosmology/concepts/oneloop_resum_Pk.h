@@ -29,6 +29,9 @@
 
 #include "oneloop_Pk.h"
 
+#include "boost/serialization/serialization.hpp"
+#include "boost/serialization/optional.hpp"
+
 
 // define convenience types for resummed versions of the basic power spectrum (~ 1/k^3) and k^2 * basic power spectrum (~ 1/k)
 // these differ from Pk_value and k2_Pk_value by dropping the need to keep raw & nowiggle information
@@ -47,9 +50,9 @@ class oneloop_resum_Pk
   public:
     
     //! value constructor
-    oneloop_resum_Pk(const k_token& kt, const linear_Pk_token& Pkt, const IR_cutoff_token& IRt,
-                     const UV_cutoff_token& UVt, const z_token& zt, const IR_resum_token& IRrt,
-                     const resum_dd_Pk& Pkr);
+    oneloop_resum_Pk(const k_token& kt, const linear_Pk_token& Pkt_i, const boost::optional<linear_Pk_token>& Pkt_f,
+                     const IR_cutoff_token& IRt, const UV_cutoff_token& UVt, const z_token& zt,
+                     const IR_resum_token& IRrt, const resum_dd_Pk& Pkr);
     
     //! empty constructor, used when receiving an MPI payload
     oneloop_resum_Pk();
@@ -65,8 +68,11 @@ class oneloop_resum_Pk
     //! get wavenumber token
     const k_token& get_k_token() const { return this->k; }
     
-    //! get power spectrum token
-    const linear_Pk_token& get_Pk_token() const { return this->Pk_lin; }
+    //! get initial power spectrum token
+    const linear_Pk_token& get_init_Pk_token() const { return this->init_Pk; }
+    
+    //! get final power spectrum token, if provided
+    const boost::optional<linear_Pk_token>& get_final_Pk_token() const { return this->final_Pk; }
     
     //! get UV cutoff token
     const UV_cutoff_token& get_UV_cutoff_token() const { return this->UV_cutoff; }
@@ -93,8 +99,11 @@ class oneloop_resum_Pk
     //! wavenumber token
     k_token k;
     
-    //! power spectrum token
-    linear_Pk_token Pk_lin;
+    //! initial power spectrum token
+    linear_Pk_token init_Pk;
+    
+    //! final power spectrum token, if provided
+    boost::optional<linear_Pk_token> final_Pk;
     
     //! UV cutoff token
     UV_cutoff_token UV_cutoff;
@@ -122,7 +131,8 @@ class oneloop_resum_Pk
     void serialize(Archive& ar, unsigned int version)
       {
         ar & k;
-        ar & Pk_lin;
+        ar & init_Pk;
+        ar & final_Pk;
         ar & UV_cutoff;
         ar & IR_cutoff;
         ar & z;

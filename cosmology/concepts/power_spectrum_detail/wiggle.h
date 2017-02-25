@@ -31,7 +31,8 @@
 #include "database/tokens.h"
 
 
-class wiggle_Pk
+template <typename Tag>
+class generic_wiggle_Pk
   {
     
     // CONSTRUCTOR, DESTRUCTOR
@@ -39,10 +40,10 @@ class wiggle_Pk
   public:
     
     //! constructor -- populate with existing data
-    wiggle_Pk(const linear_Pk_token& t, const tree_Pk_w::database_type& nw, const tree_Pk::database_type& r);
+    generic_wiggle_Pk(const linear_Pk_token& t, const tree_Pk_w::database_type& nw, const tree_Pk::database_type& r);
     
     //! destructor is default
-    ~wiggle_Pk() = default;
+    ~generic_wiggle_Pk() = default;
     
     
     // DATABASE SERVICES
@@ -101,9 +102,28 @@ class wiggle_Pk
     template <typename Archive>
     void serialize(Archive& ar, unsigned int version)
       {
+        ar & tok;
+        ar & nowiggle;
+        ar & raw;
       }
     
   };
+
+
+template <typename Tag>
+generic_wiggle_Pk<Tag>::generic_wiggle_Pk(const linear_Pk_token& t, const tree_Pk_w::database_type& w, const tree_Pk::database_type& r)
+  : tok(t),
+    nowiggle(w),
+    raw(r)
+  {
+  }
+
+
+template <typename Tag>
+bool generic_wiggle_Pk<Tag>::is_valid(const Mpc_units::energy& k) const
+  {
+    return this->nowiggle.is_valid(k, 0, 0) && this->raw.is_valid(k, 0, 0);
+  }
 
 
 namespace boost
@@ -112,32 +132,46 @@ namespace boost
     namespace serialization
       {
         
-        template <typename Archive>
-        inline void save_construct_data(Archive& ar, const wiggle_Pk* t, const unsigned int file_version)
+        template <typename Archive, typename Tag>
+        inline void save_construct_data(Archive& ar, const generic_wiggle_Pk<Tag>* t, const unsigned int file_version)
           {
-            ar << t->get_token();
-            ar << t->get_nowiggle_db();
-            ar << t->get_raw_db();
           }
     
     
-        template <typename Archive>
-        inline void load_construct_data(Archive& ar, wiggle_Pk* t, const unsigned int file_version)
+        template <typename Archive, typename Tag>
+        inline void load_construct_data(Archive& ar, generic_wiggle_Pk<Tag>* t, const unsigned int file_version)
           {
+            // construct an object with empty databases; these will be overwritten by the standard
+            // deserialization
             linear_Pk_token tok(0);
             tree_Pk_w::database_type nowiggle;
             tree_Pk::database_type raw;
-
-            ar >> tok;
-            ar >> nowiggle;
-            ar >> raw;
-            
-            ::new(t) wiggle_Pk(tok, nowiggle, raw);
+            ::new(t) generic_wiggle_Pk<Tag>(tok, nowiggle, raw);
           }
         
       }   // namespace serialization
     
   }   // namespace boost
+
+
+namespace generic_wiggle_Pk_impl
+  {
+    
+    template <int m>
+    struct WigglePowerSpectrumTag
+      {
+        enum { WigglePowerSpectrumClass = m };
+      };
+    
+    typedef WigglePowerSpectrumTag<0> InitialTag;
+    typedef WigglePowerSpectrumTag<1> FinalTag;
+    
+  }   // namespace generic_wiggle_Pk_impl
+
+
+// convenience types for initial and final power spectrum
+typedef generic_wiggle_Pk< generic_wiggle_Pk_impl::InitialTag > initial_filtered_Pk;
+typedef generic_wiggle_Pk< generic_wiggle_Pk_impl::FinalTag > final_filtered_Pk;
 
 
 #endif //LSSEFT_POWER_SPECTRUM_WIGGLE_H

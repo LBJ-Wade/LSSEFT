@@ -390,9 +390,9 @@ multipole_Pk_calculator::decompose(WiggleAccessor wiggle, NoWiggleAccessor nowig
   }
 
 
-multipole_Pk multipole_Pk_calculator::calculate_Legendre(const Mpc_units::energy& k, const Matsubara_XY& XY,
-                                                         const oneloop_Pk& data, const oneloop_growth_record& gf_data,
-                                                         const wiggle_Pk& Ptree)
+multipole_Pk multipole_Pk_calculator::calculate_Legendre(const Mpc_units::energy& k, const Matsubara_XY& XY, const oneloop_Pk& data,
+                                                         const oneloop_growth_record& gf_data, const initial_filtered_Pk& Pk_init,
+                                                         const boost::optional<const final_filtered_Pk&>& Pk_final)
   {
     // construct lambdas to access components of an RSD P(k) record
 
@@ -516,6 +516,6 @@ multipole_Pk multipole_Pk_calculator::calculate_Legendre(const Mpc_units::energy
     Pk_ell P4(P4_tree, P4_tree_rs, P4_13, P4_13_rs, P4_22, P4_22_rs, P4_SPT, P4_SPT_rs,
               P4_Z2d_rs, P4_Z0v_rs, P4_Z2v_rs, P4_Z0vd_rs, P4_Z2vd_rs, P4_Z2vv_rs, P4_Z2vvd_rs, P4_Z2vvv_rs);
     
-    return multipole_Pk(data.get_k_token(), data.get_Pk_token(), data.get_IR_token(), data.get_UV_token(),
-                        data.get_z_token(), XY.get_IR_resum_token(), P0, P2, P4);
+    return multipole_Pk(data.get_k_token(), data.get_init_Pk_token(), data.get_final_Pk_token(), data.get_IR_token(),
+                        data.get_UV_token(), data.get_z_token(), XY.get_IR_resum_token(), P0, P2, P4);
   }
