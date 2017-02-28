@@ -59,6 +59,12 @@ class generic_wiggle_Pk
     //! ask spline to determine whether a given k-mode is acceptable for evaluation
     bool is_valid(const Mpc_units::energy& k) const;
     
+    //! get smallest k-value we can evaluate
+    Mpc_units::energy get_min_k() const;
+    
+    //! get largest k-value we can evalute
+    Mpc_units::energy get_max_k() const;
+
     
     // TOKEN MANAGEMENT
     
@@ -66,6 +72,19 @@ class generic_wiggle_Pk
     
     //! get token for linear power spectrum
     const linear_Pk_token& get_token() const { return this->tok; }
+    
+    
+    // RESCALING
+    
+  public:
+    
+    //! set rescaling factor
+    generic_wiggle_Pk<Tag>& set_rescaling(double f=1.0)
+      {
+        this->nowiggle.set_rescaling(f);
+        this->raw.set_rescaling(f);
+        return *this;
+      }
     
     
     // EVALUATION
@@ -78,7 +97,7 @@ class generic_wiggle_Pk
     //! evaluate spline for raw Pk
     Mpc_units::inverse_energy3 Pk_raw(const Mpc_units::energy& k) const { return this->raw(k); }
     
-    //! evluate spline for no-wiggle Pk
+    //! evaluate spline for no-wiggle Pk
     Mpc_units::inverse_energy3 Pk_nowiggle(const Mpc_units::energy& k) const { return this->nowiggle(k); }
     
     
@@ -122,7 +141,21 @@ generic_wiggle_Pk<Tag>::generic_wiggle_Pk(const linear_Pk_token& t, const tree_P
 template <typename Tag>
 bool generic_wiggle_Pk<Tag>::is_valid(const Mpc_units::energy& k) const
   {
-    return this->nowiggle.is_valid(k, 0, 0) && this->raw.is_valid(k, 0, 0);
+    return this->nowiggle.is_valid(k) && this->raw.is_valid(k);
+  }
+
+
+template <typename Tag>
+Mpc_units::energy generic_wiggle_Pk<Tag>::get_min_k() const
+  {
+    return std::min(this->nowiggle.get_min_k(), this->raw.get_min_k());
+  }
+
+
+template <typename Tag>
+Mpc_units::energy generic_wiggle_Pk<Tag>::get_max_k() const
+  {
+    return std::max(this->nowiggle.get_min_k(), this->raw.get_min_k());
   }
 
 

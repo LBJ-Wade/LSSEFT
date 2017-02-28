@@ -168,6 +168,10 @@ class data_manager
     template <typename PkContainer>
     std::unique_ptr<typename PkContainer::filtered_Pk_type> build_wiggle_Pk(const linear_Pk_token& token, const PkContainer& Pk_lin);
     
+    //! compute how to rescale a final power spectrum to the same amplitude as an initial power spectrum
+    template <typename PkContainer>
+    PkContainer& rescale_final_Pk(const FRW_model_token& model, PkContainer& Pk, const z_database& z_db);
+    
   protected:
     
     //! tensor together (k, IR cutoff, UV cutoff) combinations for loop integrals
@@ -182,31 +186,40 @@ class data_manager
     // tokens are the basic unit of currency used when interacting with the database
 
   public:
-
+    
     //! tokenize an FRW model
-    //! generates a new transaction on the database
     std::unique_ptr<FRW_model_token> tokenize(const FRW_model& obj);
-    std::unique_ptr<FRW_model_token> tokenize(transaction_manager& mgr, const FRW_model& obj);
 
     //! tokenize a redshift
-    //! generates a new transaction on the database; will fail if a transaction is in progress
     std::unique_ptr<z_token> tokenize(double z);
-    std::unique_ptr<z_token> tokenize(transaction_manager& mgr, double z);
 
     //! tokenize a wavenumber of the type specified in the template
-    //! generates a new transaction on the database; will fail if a transaction is in progress
     template <typename Token>
     std::unique_ptr<Token> tokenize(const Mpc_units::energy& k);
+    
+    //! tokenize a linear power spectrum
+    template <typename PkContainer>
+    std::unique_ptr<linear_Pk_token> tokenize(const FRW_model_token& model, const PkContainer& Pk_lin);
+  
+  protected:
+    
+    //! tokenize an FRW model
+    //! generates a new transaction on the database
+    std::unique_ptr<FRW_model_token> tokenize(transaction_manager& mgr, const FRW_model& obj);
+    
+    //! tokenize a redshift
+    //! generates a new transaction on the database; will fail if a transaction is in progress
+    std::unique_ptr<z_token> tokenize(transaction_manager& mgr, double z);
+    
+    //! tokenize a wavenumber of the type specified in the template
+    //! generates a new transaction on the database; will fail if a transaction is in progress
     template <typename Token>
     std::unique_ptr<Token> tokenize(transaction_manager& mgr, const Mpc_units::energy& k);
     
     //! tokenize a linear power spectrum
     //! generates a new transaction on the database; will fail if a transaction is in progress
     template <typename PkContainer>
-    std::unique_ptr<linear_Pk_token> tokenize(const FRW_model_token& model, const PkContainer& Pk_lin);
-    template <typename PkContainer>
     std::unique_ptr<linear_Pk_token> tokenize(transaction_manager& mgr, const FRW_model_token& model, const PkContainer& Pk_lin);
-
 
     // DATA STORAGE
 
@@ -220,7 +233,7 @@ class data_manager
     
     // DATA EXTRACTION
     
-  public:
+  protected:
     
     //! extract a sample of a z-dependent but not k-dependent quantity, of the type specified by
     //! the payload
@@ -476,6 +489,30 @@ std::unique_ptr<typename PkContainer::filtered_Pk_type> data_manager::build_wigg
     mgr->commit();
     
     return std::move(payload);
+  }
+
+
+template <typename PkContainer>
+PkContainer& data_manager::rescale_final_Pk(const FRW_model_token& model, PkContainer& Pk, const z_database& z_db)
+  {
+    // open a transaction on the database
+    std::shared_ptr<transaction_manager> mgr = this->open_transaction();
+    
+    // extract growth functions for the redshift database
+    std::unique_ptr<oneloop_growth> data = this->find<oneloop_growth>(*mgr, model, z_db);
+    
+    oneloop_value z_init = *data->begin();
+    oneloop_value z_final = *(--data->end());
+    
+    double rescale = z_init.second.g / z_final.second.g;
+    
+    // rescaling for power spectrum goes like the square of the growth factor
+    Pk.set_rescaling(rescale*rescale);
+    
+    // close transaction
+    mgr->commit();
+    
+    return Pk;
   }
 
 

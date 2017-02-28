@@ -71,7 +71,7 @@ oneloop_Pk_calculator::compute_dd(const Mpc_units::energy& k, const oneloop_grow
     
     // TREE TERMS
     
-    Pk_value tree = Ptr_final ? *Ptr_final : val.g * val.g * Ptr_init;
+    Pk_value tree = val.g * val.g * (Ptr_final ? *Ptr_final : Ptr_init);
     
     // 13 TERMS
     
@@ -111,7 +111,7 @@ oneloop_Pk_calculator::compute_rsd_dd_mu0(const Mpc_units::energy& k, const onel
     
     // TREE TERMS
     
-    Pk_value tree = Ptr_final ? *Ptr_final : val.g * val.g * Ptr_init;
+    Pk_value tree = val.g * val.g * (Ptr_final ? *Ptr_final : Ptr_init);
     
     // 13 TERMS
     
@@ -171,7 +171,7 @@ oneloop_Pk_calculator::compute_rsd_dd_mu2(const Mpc_units::energy& k, const onel
     
     // TREE TERMS
     
-    Pk_value tree = 2.0 * val.f * (Ptr_final ? *Ptr_final : val.g * val.g * Ptr_init);
+    Pk_value tree = 2.0 * val.f * (val.g * val.g * (Ptr_final ? *Ptr_final : Ptr_init));
     
     // 13 TERMS
     
@@ -243,7 +243,7 @@ oneloop_Pk_calculator::compute_rsd_dd_mu4(const Mpc_units::energy& k, const onel
     
     // TREE TERMS
     
-    Pk_value tree = val.f * val.f * (Ptr_final ? *Ptr_final : val.g * val.g * Ptr_init);
+    Pk_value tree = val.f * val.f * (val.g * val.g * (Ptr_final ? *Ptr_final : Ptr_init));
     
     // 13 TERMS
     
