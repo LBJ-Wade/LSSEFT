@@ -230,6 +230,9 @@ void master_controller::execute()
             
             // get filtered version of power spectrum
             final_Pk_wig = dmgr.build_wiggle_Pk(*final_Pk_lin, *final_Pk_lin_db);
+            
+            // rescale final power spectrum
+            dmgr.rescale_final_Pk(*model, *final_Pk_wig, *lo_z_db);
           }
         
         
