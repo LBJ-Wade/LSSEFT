@@ -75,12 +75,12 @@ oneloop_Pk_calculator::compute_dd(const Mpc_units::energy& k, const oneloop_grow
     
     // 13 TERMS
     
-    Pk_value P13 = Ptr_init * val.g * ( (val.D - val.J)    * d13.get_D()
-                                    + val.E           * d13.get_E()
-                                    + (val.F + val.J) * d13.get_F()
-                                    + val.G           * d13.get_G()
-                                    - val.J           * d13.get_J1()
-                                    + val.J           * d13.get_J2() / 2.0 );
+    Pk_value P13 = Ptr_init * val.g * ( (val.D - val.J) * d13.get_D()
+                                      + val.E           * d13.get_E()
+                                      + (val.F + val.J) * d13.get_F()
+                                      + val.G           * d13.get_G()
+                                      - val.J           * d13.get_J1()
+                                      + val.J           * d13.get_J2() / 2.0 );
     
     // 22 TERMS
     
@@ -115,12 +115,12 @@ oneloop_Pk_calculator::compute_rsd_dd_mu0(const Mpc_units::energy& k, const onel
     
     // 13 TERMS
     
-    Pk_value P13_simple = Ptr_init * val.g * ( (val.D - val.J)   * d13.get_D()
-                                          + val.E           * d13.get_E()
-                                          + (val.F + val.J) * d13.get_F()
-                                          + val.G           * d13.get_G()
-                                          - val.J           * d13.get_J1()
-                                          + val.J           * d13.get_J2() / 2.0 );
+    Pk_value P13_simple = Ptr_init * val.g * ( (val.D - val.J) * d13.get_D()
+                                             + val.E           * d13.get_E()
+                                             + (val.F + val.J) * d13.get_F()
+                                             + val.G           * d13.get_G()
+                                             - val.J           * d13.get_J1()
+                                             + val.J           * d13.get_J2() / 2.0 );
     
     Pk_value P13_tensor;    // no tensor term at mu^0
     
@@ -247,12 +247,12 @@ oneloop_Pk_calculator::compute_rsd_dd_mu4(const Mpc_units::energy& k, const onel
     
     // 13 TERMS
     
-    Pk_value P13_simple = Ptr_init * val.g * ( val.f*(val.D*val.fD - val.fJ*val.J)                                                * d13.get_D()
-                                          + val.E*val.fE*val.f                                                               * d13.get_E()
-                                          + val.f*(val.fF*val.F - val.A*val.f*val.g + val.fJ*val.J)                          * d13.get_F()
-                                          + val.f*(-val.B*val.f*val.g + val.fG*val.G)                                        * d13.get_G()
-                                          + val.f*(val.A*(-val.fA+val.f)*val.g + val.f*val.g*val.g*val.g - 2.0*val.fJ*val.J) * d13.get_J1() / 2.0
-                                          + val.f*(val.B*(-val.fB+val.f)*val.g + val.fJ*val.J)                               * d13.get_J2() / 2.0 );
+    Pk_value P13_simple = Ptr_init * val.g * ( val.f*(val.D*val.fD - val.fJ*val.J)                                              * d13.get_D()
+                                             + val.E*val.fE*val.f                                                               * d13.get_E()
+                                             + val.f*(val.fF*val.F - val.A*val.f*val.g + val.fJ*val.J)                          * d13.get_F()
+                                             + val.f*(-val.B*val.f*val.g + val.fG*val.G)                                        * d13.get_G()
+                                             + val.f*(val.A*(-val.fA+val.f)*val.g + val.f*val.g*val.g*val.g - 2.0*val.fJ*val.J) * d13.get_J1() / 2.0
+                                             + val.f*(val.B*(-val.fB+val.f)*val.g + val.fJ*val.J)                               * d13.get_J2() / 2.0 );
     
     Pk_value P13_tensor_a = Ptr_init * val.f * (1.0+val.f) * val.g*val.g * (val.A*val.fA + val.B*val.fB - val.f*val.g*val.g) * rsd13.get_a() / 2.0;
     Pk_value P13_tensor_b = Ptr_init * 2.0 * (-1.0+val.f) * val.f * val.g*val.g * (val.A*val.fA + val.B*val.fB - val.f*val.g*val.g) * rsd13.get_b();
