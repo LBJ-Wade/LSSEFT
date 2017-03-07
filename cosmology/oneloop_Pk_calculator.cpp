@@ -210,19 +210,19 @@ oneloop_Pk_calculator::compute_rsd_dd_mu2(const Mpc_units::energy& k, const onel
     
     // COUNTERTERMS
     
-    k2_Pk_value Z2_delta = 2.0 * val.g * (18.0*val.D*(val.fD + val.f) + 28.0*val.E*(val.fE + val.f) - 7.0*(val.fF +val.f)*val.F - 2.0*(val.fG + val.f)*val.G - 13.0*(val.fJ + val.f)*val.J) * k*k * Ptr_init;
+    k2_Pk_value Z2_delta = 2*val.g*(18*val.D*(val.fD + val.f) + 28*val.E*(val.fE + val.f) - 7*val.fF*val.F - 7*val.f*val.F - 2*val.fG*val.G - 2*val.f*val.G - 13*(val.fJ + val.f)*val.J)*k*k * Ptr_init;
     
-    Pk_value Z0_v = -2.0 * val.g*val.g * (-2.0*val.B*val.fB + 2.0*val.B*val.f + val.A*(-val.fA + val.f) + val.f*val.g*val.g) * Ptr_init;
+    Pk_value Z0_v = -2*val.g*val.g*(-2*val.B*val.fB + 2*val.B*val.f + val.A*(-val.fA + val.f) + val.f*val.g*val.g) * Ptr_init;
     
-    k2_Pk_value Z2_v = 2.0 * val.g*val.g * (-12.0*val.A*val.fA - 12.0*val.B*val.fB + 5.0*val.A*val.f + 10.0*val.B*val.f + 12.0*val.f*val.g*val.g) * k*k * Ptr_init;
+    k2_Pk_value Z2_v = -2*val.g*val.g*(-12*val.A*val.fA - 12*val.B*val.fB + 5*val.A*val.f + 10*val.B*val.f + 12*val.f*val.g*val.g)*k*k * Ptr_init;
     
-    Pk_value Z0_vdelta = -2.0 * val.g*val.g * (-2.0*val.B*val.fB + 2.0*val.B*val.f + val.A*(-val.fA + val.f) + val.f*val.g*val.g) * Ptr_init;
+    Pk_value Z0_vdelta = 2*val.g*val.g*(-2*val.B*val.fB + 2*val.B*val.f + val.A*(-val.fA + val.f) + val.f*val.g*val.g) * Ptr_init;
     
-    k2_Pk_value Z2_vdelta = 2.0 * val.g*val.g * (-12.0*val.A*val.fA - 12.0*val.B*val.fB + 5.0*val.A*val.f + 10.0*val.B*val.f + 12.0*val.f*val.g*val.g) * k*k * Ptr_init;
+    k2_Pk_value Z2_vdelta = 2*val.g*val.g*(-12*val.A*val.fA - 12*val.B*val.fB + 5*val.A*val.f + 10*val.B*val.f + 12*val.f*val.g*val.g)*k*k * Ptr_init;
     
-    k2_Pk_value Z2_vv = -16.0 * val.f*val.g*val.g * (-val.A*val.fA - val.B*val.fB + val.f*val.g*val.g) * k*k * Ptr_init;
+    k2_Pk_value Z2_vv = -16*val.f*val.g*val.g*(-(val.A*val.fA) - val.B*val.fB + val.f*val.g*val.g)*k*k * Ptr_init;
     
-    k2_Pk_value Z2_vvdelta = 5.0 * val.f*val.f * val.g*val.g*val.g*val.g * k*k * Ptr_init;
+    k2_Pk_value Z2_vvdelta = 5*val.f*val.f*val.g*val.g*val.g*val.g*k*k * Ptr_init;
     
     k2_Pk_value Z2_vvv;   // no contribution at mu^2
     
@@ -287,22 +287,21 @@ oneloop_Pk_calculator::compute_rsd_dd_mu4(const Mpc_units::energy& k, const onel
     
     // COUNTERTERMS
     
-    k2_Pk_value Z2_delta = 2.0 * val.f * val.g * (18.0*val.D*val.fD + 28.0*val.E*val.fE - 7.0*val.fF*val.F - 2.0*val.fG*val.G - 13.0*val.fJ*val.J) * k*k * Ptr_init;
+    k2_Pk_value Z2_delta = 2*val.f*val.g*(18*val.D*val.fD + 28*val.E*val.fE - 7*val.fF*val.F - 2*val.fG*val.G - 13*val.fJ*val.J)*k*k * Ptr_init;
     
-    Pk_value Z0_v = -2.0 * val.f * val.g*val.g * (-2.0*val.B*val.fB + 2.0*val.B*val.f + val.A*(-val.fA + val.f) + val.f*val.g*val.g) * Ptr_init;
+    Pk_value Z0_v = -2*val.f*val.g*val.g*(-2*val.B*val.fB + 2*val.B*val.f + val.A*(-val.fA + val.f) + val.f*val.g*val.g) * Ptr_init;
     
-    k2_Pk_value Z2_v = 2.0 * val.f * val.g*val.g * (-12.0*val.A*val.fA - 12.0*val.B*val.fB + 5.0*val.A*val.f + 10.0*val.B*val.f + 12.0*val.f*val.g*val.g) * k*k * Ptr_init;
+    k2_Pk_value Z2_v = -2*val.f*val.g*val.g*(-12*val.A*val.fA - 12*val.B*val.fB + 5*val.A*val.f + 10*val.B*val.f + 12*val.f*val.g*val.g)*k*k * Ptr_init;
     
-    Pk_value Z0_vdelta = -2.0 * val.f * val.g*val.g * (-2.0*val.B*val.fB + 2.0*val.B*val.f + val.A*(-val.fA + val.f) + val.f*val.g*val.g) * Ptr_init;
+    Pk_value Z0_vdelta = 2*val.f*val.g*val.g*(-2*val.B*val.fB + 2*val.B*val.f + val.A*(-val.fA + val.f) + val.f*val.g*val.g) * Ptr_init;
     
-    k2_Pk_value Z2_vdelta = 2.0 * val.f * val.g*val.g * (-12.0*val.A*val.fA - 12.0*val.B*val.fB + 5.0*val.A*val.f + 10.0*val.B*val.f + 12.0*val.f*val.g*val.g) * k*k * Ptr_init;
+    k2_Pk_value Z2_vdelta = 2*val.f*val.g*val.g*(-12*val.A*val.fA - 12*val.B*val.fB + 5*val.A*val.f + 10*val.B*val.f + 12*val.f*val.g*val.g)*k*k * Ptr_init;
     
-    k2_Pk_value Z2_vv = 2.0 * val.f * val.g*val.g * (2.0*val.B*val.fB*(3.0 + 4.0*val.f) + val.A*(val.fA + 8.0*val.fA*val.f)
-                                                     - val.f*(1.0 + 8.0*val.f)*val.g*val.g) * k*k * Ptr_init;
+    k2_Pk_value Z2_vv = 2*val.f*val.g*val.g*(2*val.B*val.fB*(3 + 4*val.f) + val.A*(val.fA + 8*val.fA*val.f) - val.f*(1 + 8*val.f)*val.g*val.g)*k*k * Ptr_init;
     
-    k2_Pk_value Z2_vvdelta = 5.0 * val.f*val.f*val.f * val.g*val.g*val.g*val.g * k*k * Ptr_init;
+    k2_Pk_value Z2_vvdelta = 5*val.f*val.f*val.f*val.g*val.g*val.g*val.g*k*k * Ptr_init;
     
-    k2_Pk_value Z2_vvv = 5.0 * val.f*val.f*val.f * val.g*val.g*val.g*val.g * k*k * Ptr_init;
+    k2_Pk_value Z2_vvv = 5 * val.f*val.f*val.f * val.g*val.g*val.g*val.g * k*k * Ptr_init;
     
     return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv);
   }
@@ -362,11 +361,11 @@ oneloop_Pk_calculator::compute_rsd_dd_mu6(const Mpc_units::energy& k, const onel
     
     k2_Pk_value Z2_vdelta;    // no contribution at mu^6
     
-    k2_Pk_value Z2_vv = 2.0 * val.f*val.f * val.g*val.g * (val.A*val.fA + 6.0*val.B*val.fB - val.f*val.g*val.g) * k*k * Ptr_init;
+    k2_Pk_value Z2_vv = 2*val.f*val.f*val.g*val.g*(val.A*val.fA + 6*val.B*val.fB - val.f*val.g*val.g)*k*k * Ptr_init;
     
     k2_Pk_value Z2_vvdelta;   // no contribution at mu^6
     
-    k2_Pk_value Z2_vvv = 5.0 * val.f*val.f*val.f*val.f * val.g*val.g*val.g*val.g * k*k * Ptr_init;
+    k2_Pk_value Z2_vvv = 5 * val.f*val.f*val.f*val.f * val.g*val.g*val.g*val.g * k*k * Ptr_init;
     
     return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv);
   }
