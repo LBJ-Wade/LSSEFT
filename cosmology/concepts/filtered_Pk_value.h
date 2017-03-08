@@ -41,7 +41,7 @@ class filtered_Pk_value
     
     //! value constructor
     filtered_Pk_value(const k_token& kt, const linear_Pk_token& Pt, Mpc_units::inverse_energy3 _Pk_nw,
-                Mpc_units::inverse_energy3 _Pk_raw, Mpc_units::inverse_energy3 _Pk_ref);
+                      Mpc_units::inverse_energy3 _Pk_raw, Mpc_units::inverse_energy3 _Pk_ref);
     
     //! empty constructor, used only for receiving MPI payloads
     filtered_Pk_value();

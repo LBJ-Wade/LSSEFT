@@ -47,8 +47,10 @@ namespace multipole_Pk_calculator_impl
         
       };
     
-    struct mu_to_ell0_expXY
+    class mu_to_ell0_expXY
       {
+      
+      public:
         
         mu_to_ell0_expXY(double _A, double _B)
           : A(_A),
@@ -106,6 +108,8 @@ namespace multipole_Pk_calculator_impl
               }
           }
         
+      private:
+        
         double A;
         double B;
         
@@ -128,8 +132,10 @@ namespace multipole_Pk_calculator_impl
         
       };
     
-    struct mu_to_ell2_expXY
+    class mu_to_ell2_expXY
       {
+      
+      public:
         
         mu_to_ell2_expXY(double _A, double _B)
           : A(_A),
@@ -190,6 +196,8 @@ namespace multipole_Pk_calculator_impl
               }
           }
         
+      private:
+        
         double A;
         double B;
         
@@ -212,8 +220,10 @@ namespace multipole_Pk_calculator_impl
         
       };
     
-    struct mu_to_ell4_expXY
+    class mu_to_ell4_expXY
       {
+      
+      public:
         
         mu_to_ell4_expXY(double _A, double _B)
           : A(_A),
@@ -276,6 +286,8 @@ namespace multipole_Pk_calculator_impl
               }
           }
         
+      private:
+        
         double A;
         double B;
         
@@ -283,8 +295,10 @@ namespace multipole_Pk_calculator_impl
     
     
     // subtractions for resummation of full 1-loop power spectrum
-    struct resum_adjuster
+    class resum_adjuster
       {
+      
+      public:
 
         resum_adjuster(const Mpc_units::energy& _k, double _XY, const oneloop_growth_record& _gf, const Pk_value& _Pk_tree)
           : f(_gf.f),
@@ -306,6 +320,8 @@ namespace multipole_Pk_calculator_impl
                 case mu_power::mu8: return 0.0;
               }
           }
+        
+      private:
         
         double f;
         Mpc_units::inverse_energy3 factor;
@@ -332,100 +348,231 @@ namespace multipole_Pk_calculator_impl
         
       };
     
+    
+    // perform multipole decomposition
+    template <typename MultipletType, typename PlainDecomposeMultiplet, typename ExpDecomposeMultiplet>
+    class decomposer
+      {
+      
+      public:
+        
+        // element_type will be Pk_element or k2_Pk_element or similar -- a container holding a value and an error
+        typedef typename MultipletType::value_type::element_type element_type;
+        
+        // resum_type will be a container such as Pk_resum or k2_Pk_resum holding two element_types
+        typedef typename MultipletType::value_type resum_type;
+        
+        //! constructor
+        //! PlainDecomposer should be a triple of decomposers for the Legendre modes ell = 0, ell = 2, ell = 4
+        //! ExpDecomposer should be a triple of decomposer for the Legendre modes ell = 0, ell = 2, ell = 4
+        decomposer(const oneloop_Pk& d, PlainDecomposeMultiplet p, ExpDecomposeMultiplet e)
+          : data(d),
+            plain_decompose(std::move(p)),
+            exp_decompose(std::move(e))
+          {
+          }
+        
+        // perform decomposition into a Legendre multiplet
+        template <typename Accessor, typename ResumAdjuster>
+        MultipletType compute(Accessor& a, ResumAdjuster& r)
+          {
+            // set up value groups for the raw and resummed components of each ell mode
+            element_type raw_ell0 = this->decompose(a, std::get<0>(this->plain_decompose));
+            element_type raw_ell2 = this->decompose(a, std::get<1>(this->plain_decompose));
+            element_type raw_ell4 = this->decompose(a, std::get<2>(this->plain_decompose));
+            
+            element_type resum_ell0 = this->decompose(a, r, std::get<0>(this->plain_decompose), std::get<0>(this->exp_decompose));
+            element_type resum_ell2 = this->decompose(a, r, std::get<1>(this->plain_decompose), std::get<1>(this->exp_decompose));
+            element_type resum_ell4 = this->decompose(a, r, std::get<2>(this->plain_decompose), std::get<2>(this->exp_decompose));
+            
+            resum_type ell0(raw_ell0, resum_ell0);
+            resum_type ell2(raw_ell2, resum_ell2);
+            resum_type ell4(raw_ell4, resum_ell4);
+            
+            return MultipletType(ell0, ell2, ell4);
+          }
+        
+        
+        // perform decomposition without resummation
+        template <typename Accessor, typename PlainDecompose>
+        element_type decompose(Accessor& a, PlainDecompose& plain)
+          {
+            // use accessor to extract raw values
+            const element_type& mu0 = a(this->data.get_dd_rsd_mu0()).get_raw();
+            const element_type& mu2 = a(this->data.get_dd_rsd_mu2()).get_raw();
+            const element_type& mu4 = a(this->data.get_dd_rsd_mu4()).get_raw();
+            const element_type& mu6 = a(this->data.get_dd_rsd_mu6()).get_raw();
+            const element_type& mu8 = a(this->data.get_dd_rsd_mu8()).get_raw();
+            
+            element_type raw = mu0 * plain(mu_power::mu0) + mu2 * plain(mu_power::mu2) + mu4 * plain(mu_power::mu4)
+                               + mu6 * plain(mu_power::mu6) + mu8 * plain(mu_power::mu8);
+            
+            return raw;
+          };
+        
+        
+        // perform decomposition with resummation
+        template <typename Accessor, typename ResumAdjuster, typename PlainDecompose, typename ExpDecompose>
+        element_type decompose(Accessor& a, ResumAdjuster& r, PlainDecompose& plain, ExpDecompose& exp)
+          {
+            // use accessor to extract wiggle components
+            const element_type w_mu0 = a(this->data.get_dd_rsd_mu0()).get_wiggle() + r(mu_power::mu0);
+            const element_type w_mu2 = a(this->data.get_dd_rsd_mu2()).get_wiggle() + r(mu_power::mu2);
+            const element_type w_mu4 = a(this->data.get_dd_rsd_mu4()).get_wiggle() + r(mu_power::mu4);
+            const element_type w_mu6 = a(this->data.get_dd_rsd_mu6()).get_wiggle() + r(mu_power::mu6);
+            const element_type w_mu8 = a(this->data.get_dd_rsd_mu8()).get_wiggle() + r(mu_power::mu8);
+    
+            // use accessor to extract no-wiggle components
+            const element_type& nw_mu0 = a(this->data.get_dd_rsd_mu0()).get_nowiggle();
+            const element_type& nw_mu2 = a(this->data.get_dd_rsd_mu2()).get_nowiggle();
+            const element_type& nw_mu4 = a(this->data.get_dd_rsd_mu4()).get_nowiggle();
+            const element_type& nw_mu6 = a(this->data.get_dd_rsd_mu6()).get_nowiggle();
+            const element_type& nw_mu8 = a(this->data.get_dd_rsd_mu8()).get_nowiggle();
+            
+            // no-wiggle component is decomposed without resummation
+            element_type nowiggle = nw_mu0 * plain(mu_power::mu0) + nw_mu2 * plain(mu_power::mu2) + nw_mu4 * plain(mu_power::mu4)
+                                    + nw_mu6 * plain(mu_power::mu6) + nw_mu8 * plain(mu_power::mu8);
+            
+            // wiggle component is decomposed with resummation and possibly an adjustment
+            element_type wiggle = w_mu0 * exp(mu_power::mu0) + w_mu2 * exp(mu_power::mu2) + w_mu4 * exp(mu_power::mu4)
+                                  + w_mu6 * exp(mu_power::mu6) + w_mu8 * exp(mu_power::mu8);
+            
+            return nowiggle + wiggle;
+          };
+        
+      private:
+        
+        const oneloop_Pk& data;
+        PlainDecomposeMultiplet plain_decompose;
+        ExpDecomposeMultiplet exp_decompose;
+        
+      };
+    
+    
+    // project a single mu^n term into its Legendre multipoles
+    template <typename MultipletType, typename PlainDecomposeMultiplet, typename ExpDecomposeMultiplet>
+    class projector
+      {
+      
+      public:
+    
+        // element_type will be Pk_element or k2_Pk_element or similar -- a container holding a value and an error
+        typedef typename MultipletType::value_type::element_type element_type;
+    
+        // resum_type will be a container such as Pk_resum or k2_Pk_resum holding two element_types
+        typedef typename MultipletType::value_type resum_type;
+    
+        //! constructor
+        //! PlainDecomposer should be a triple of decomposers for the Legendre modes ell = 0, ell = 2, ell = 4
+        //! ExpDecomposer should be a triple of decomposer for the Legendre modes ell = 0, ell = 2, ell = 4
+        projector(const oneloop_Pk& d, PlainDecomposeMultiplet p, ExpDecomposeMultiplet e)
+          : data(d),
+            plain_decompose(std::move(p)),
+            exp_decompose(std::move(e))
+          {
+          }
+        
+        // project a mu^n coefficient into its Legendre decomposition
+        MultipletType compute(mu_power p)
+          {
+            k2_Pk_value ele;
+            switch(p)
+              {
+                case mu_power::mu0: { ele = this->data.get_dd_rsd_mu0().get_Z2_total(); break; }
+                case mu_power::mu2: { ele = this->data.get_dd_rsd_mu2().get_Z2_total(); break; }
+                case mu_power::mu4: { ele = this->data.get_dd_rsd_mu4().get_Z2_total(); break; }
+                case mu_power::mu6: { ele = this->data.get_dd_rsd_mu6().get_Z2_total(); break; }
+                case mu_power::mu8: { ele = this->data.get_dd_rsd_mu8().get_Z2_total(); break; }
+              }
+            
+            element_type raw = ele.get_raw();
+            element_type w = ele.get_wiggle();
+            element_type nw = ele.get_nowiggle();
+            
+            element_type raw_ell0 = raw * std::get<0>(this->plain_decompose)(p);
+            element_type raw_ell2 = raw * std::get<1>(this->plain_decompose)(p);
+            element_type raw_ell4 = raw * std::get<2>(this->plain_decompose)(p);
+            
+            element_type resum_ell0 = nw * std::get<0>(this->plain_decompose)(p) + w * std::get<0>(this->exp_decompose)(p);
+            element_type resum_ell2 = nw * std::get<1>(this->plain_decompose)(p) + w * std::get<1>(this->exp_decompose)(p);
+            element_type resum_ell4 = nw * std::get<2>(this->plain_decompose)(p) + w * std::get<2>(this->exp_decompose)(p);
+            
+            resum_type ell0(raw_ell0, resum_ell0);
+            resum_type ell2(raw_ell2, resum_ell2);
+            resum_type ell4(raw_ell4, resum_ell4);
+            
+            return MultipletType(ell0, ell2, ell4);
+          }
+        
+      private:
+        
+        const oneloop_Pk& data;
+        PlainDecomposeMultiplet plain_decompose;
+        ExpDecomposeMultiplet exp_decompose;
+        
+      };
+    
+    
+    // accessors for ell0, ell2, ell4 from a Legendre_multiplet<>
+
+    template <typename MultipletType>
+    struct get_ell0
+      {
+        auto operator()(const MultipletType& m) -> decltype(m.get_ell0()) { return m.get_ell0(); }
+      };
+    
+    template <typename MultipletType>
+    struct get_ell2
+      {
+        auto operator()(const MultipletType& m) -> decltype(m.get_ell2()) { return m.get_ell2(); }
+      };
+    
+    template <typename MultipletType>
+    struct get_ell4
+      {
+        auto operator()(const MultipletType& m) -> decltype(m.get_ell4()) { return m.get_ell4(); }
+      };
+    
+    
+    template <typename Pk_Accessor, typename k2_Pk_Accessor>
+    Pk_ell make_Pk_ell(const Pk_resum_multiplet& tree, const Pk_resum_multiplet& P13,
+                       const Pk_resum_multiplet& P22, const Pk_resum_multiplet& PSPT,
+                       const k2_Pk_resum_multiplet& Z2_d, const Pk_resum_multiplet& Z0_v, const k2_Pk_resum_multiplet& Z2_v,
+                       const Pk_resum_multiplet& Z0_vd, const k2_Pk_resum_multiplet& Z2_vd,
+                       const k2_Pk_resum_multiplet& Z2_vv, const k2_Pk_resum_multiplet& Z2_vvd,
+                       const k2_Pk_resum_multiplet& Z2_vvv, const k2_Pk_resum_multiplet& Z2_mu0,
+                       const k2_Pk_resum_multiplet& Z2_mu2, const k2_Pk_resum_multiplet& Z2_mu4,
+                       const k2_Pk_resum_multiplet& Z2_mu6, const k2_Pk_resum_multiplet& Z2_mu8,
+                       Pk_Accessor a, k2_Pk_Accessor b)
+      {
+        return Pk_ell(a(tree), a(P13), a(P22), a(PSPT), b(Z2_d), a(Z0_v),
+                      b(Z2_v), a(Z0_vd), b(Z2_vd), b(Z2_vv), b(Z2_vvd), b(Z2_vvv),
+                      b(Z2_mu0), b(Z2_mu2), b(Z2_mu4), b(Z2_mu6), b(Z2_mu8));
+      };
+
+    
   }   // namespace multipole_Pk_calculator_impl
-
-
-template <typename Accessor, typename Decomposer>
-auto
-multipole_Pk_calculator::decompose(Accessor extract, const oneloop_Pk& data, Decomposer decomp)
-  {
-    auto mu0 = extract(data.get_dd_rsd_mu0());
-    auto mu2 = extract(data.get_dd_rsd_mu2());
-    auto mu4 = extract(data.get_dd_rsd_mu4());
-    auto mu6 = extract(data.get_dd_rsd_mu6());
-    auto mu8 = extract(data.get_dd_rsd_mu8());
-    
-    return mu0 * decomp(mu_power::mu0)
-           + mu2 * decomp(mu_power::mu2)
-           + mu4 * decomp(mu_power::mu4)
-           + mu6 * decomp(mu_power::mu6)
-           + mu8 * decomp(mu_power::mu8);
-  }
-
-
-template <typename WiggleAccessor, typename NoWiggleAccessor, typename ResumAdjuster, typename RawDecomposer, typename XYDecomposer>
-auto
-multipole_Pk_calculator::decompose(WiggleAccessor wiggle, NoWiggleAccessor nowiggle, const oneloop_Pk& data,
-                                   ResumAdjuster adjust, RawDecomposer raw_decomp, XYDecomposer XY_decomp)
-  {
-    // the decomposition consists of two parts
-    // the broadband part comes from the no-wiggle power spectrum and has no resummation
-    auto nowiggle_mu0 = nowiggle(data.get_dd_rsd_mu0());
-    auto nowiggle_mu2 = nowiggle(data.get_dd_rsd_mu2());
-    auto nowiggle_mu4 = nowiggle(data.get_dd_rsd_mu4());
-    auto nowiggle_mu6 = nowiggle(data.get_dd_rsd_mu6());
-    auto nowiggle_mu8 = nowiggle(data.get_dd_rsd_mu8());
-    
-    auto nowiggle_Pl = nowiggle_mu0 * raw_decomp(mu_power::mu0)
-                       + nowiggle_mu2 * raw_decomp(mu_power::mu2)
-                       + nowiggle_mu4 * raw_decomp(mu_power::mu4)
-                       + nowiggle_mu6 * raw_decomp(mu_power::mu6)
-                       + nowiggle_mu8 * raw_decomp(mu_power::mu8);
-    
-    // meanwhile, the wiggle part is resummed
-    // its mu coefficients must be adjusted to account for subtractions associated with the resummation
-    auto wiggle_mu0 = wiggle(data.get_dd_rsd_mu0()) + adjust(mu_power::mu0);
-    auto wiggle_mu2 = wiggle(data.get_dd_rsd_mu2()) + adjust(mu_power::mu2);
-    auto wiggle_mu4 = wiggle(data.get_dd_rsd_mu4()) + adjust(mu_power::mu4);
-    auto wiggle_mu6 = wiggle(data.get_dd_rsd_mu6()) + adjust(mu_power::mu6);
-    auto wiggle_mu8 = wiggle(data.get_dd_rsd_mu8()) + adjust(mu_power::mu8);
-    
-    auto wiggle_Pl = wiggle_mu0 * XY_decomp(mu_power::mu0)
-                     + wiggle_mu2 * XY_decomp(mu_power::mu2)
-                     + wiggle_mu4 * XY_decomp(mu_power::mu4)
-                     + wiggle_mu6 * XY_decomp(mu_power::mu6)
-                     + wiggle_mu8 * XY_decomp(mu_power::mu8);
-    
-    return nowiggle_Pl + wiggle_Pl;
-  }
 
 
 multipole_Pk multipole_Pk_calculator::calculate_Legendre(const Mpc_units::energy& k, const Matsubara_XY& XY, const oneloop_Pk& data,
                                                          const oneloop_growth_record& gf_data, const initial_filtered_Pk& Pk_init,
                                                          const boost::optional<const final_filtered_Pk&>& Pk_final)
   {
+    using namespace multipole_Pk_calculator_impl;
+    
     // construct lambdas to access components of an RSD P(k) record
-
-    auto raw_tree        = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_tree().get_raw().get_value(); };
-    auto raw_13          = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_13().get_raw().get_value(); };
-    auto raw_22          = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_22().get_raw().get_value(); };
-    auto raw_SPT         = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_1loop_SPT().get_raw().get_value(); };
-    
-    auto wiggle_tree     = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_tree().get_wiggle().get_value(); };
-    auto wiggle_13       = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_13().get_wiggle().get_value(); };
-    auto wiggle_22       = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_22().get_wiggle().get_value(); };
-    auto wiggle_SPT      = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_1loop_SPT().get_wiggle().get_value(); };
-    auto wiggle_Z2d      = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy  { return pkg.get_Z2_delta().get_wiggle().get_value(); };
-    auto wiggle_Z0v      = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_Z0_v().get_wiggle().get_value(); };
-    auto wiggle_Z2v      = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy  { return pkg.get_Z2_v().get_wiggle().get_value(); };
-    auto wiggle_Z0vd     = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_Z0_vdelta().get_wiggle().get_value(); };
-    auto wiggle_Z2vd     = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy  { return pkg.get_Z2_vdelta().get_wiggle().get_value(); };
-    auto wiggle_Z2vv     = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy  { return pkg.get_Z2_vv().get_wiggle().get_value(); };
-    auto wiggle_Z2vvd    = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy  { return pkg.get_Z2_vvdelta().get_wiggle().get_value(); };
-    auto wiggle_Z2vvv    = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy  { return pkg.get_Z2_vvv().get_wiggle().get_value(); };
-    
-    auto nowiggle_tree   = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_tree().get_nowiggle().get_value(); };
-    auto nowiggle_13     = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_13().get_nowiggle().get_value(); };
-    auto nowiggle_22     = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_22().get_nowiggle().get_value(); };
-    auto nowiggle_SPT    = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_1loop_SPT().get_nowiggle().get_value(); };
-    auto nowiggle_Z2d    = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy  { return pkg.get_Z2_delta().get_nowiggle().get_value(); };
-    auto nowiggle_Z0v    = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_Z0_v().get_nowiggle().get_value(); };
-    auto nowiggle_Z2v    = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy  { return pkg.get_Z2_v().get_nowiggle().get_value(); };
-    auto nowiggle_Z0vd   = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy3 { return pkg.get_Z0_vdelta().get_nowiggle().get_value(); };
-    auto nowiggle_Z2vd   = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy  { return pkg.get_Z2_vdelta().get_nowiggle().get_value(); };
-    auto nowiggle_Z2vv   = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy  { return pkg.get_Z2_vv().get_nowiggle().get_value(); };
-    auto nowiggle_Z2vvd  = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy  { return pkg.get_Z2_vvdelta().get_nowiggle().get_value(); };
-    auto nowiggle_Z2vvv  = [](const rsd_dd_Pk& pkg) -> Mpc_units::inverse_energy  { return pkg.get_Z2_vvv().get_nowiggle().get_value(); };
+    auto get_tree     = [](const rsd_dd_Pk& pkg) -> Pk_value     { return pkg.get_tree(); };
+    auto get_13       = [](const rsd_dd_Pk& pkg) -> Pk_value     { return pkg.get_13(); };
+    auto get_22       = [](const rsd_dd_Pk& pkg) -> Pk_value     { return pkg.get_22(); };
+    auto get_SPT      = [](const rsd_dd_Pk& pkg) -> Pk_value     { return pkg.get_1loop_SPT(); };
+    auto get_Z2d      = [](const rsd_dd_Pk& pkg) -> k2_Pk_value  { return pkg.get_Z2_delta(); };
+    auto get_Z0v      = [](const rsd_dd_Pk& pkg) -> Pk_value     { return pkg.get_Z0_v(); };
+    auto get_Z2v      = [](const rsd_dd_Pk& pkg) -> k2_Pk_value  { return pkg.get_Z2_v(); };
+    auto get_Z0vd     = [](const rsd_dd_Pk& pkg) -> Pk_value     { return pkg.get_Z0_vdelta(); };
+    auto get_Z2vd     = [](const rsd_dd_Pk& pkg) -> k2_Pk_value  { return pkg.get_Z2_vdelta(); };
+    auto get_Z2vv     = [](const rsd_dd_Pk& pkg) -> k2_Pk_value  { return pkg.get_Z2_vv(); };
+    auto get_Z2vvd    = [](const rsd_dd_Pk& pkg) -> k2_Pk_value  { return pkg.get_Z2_vvdelta(); };
+    auto get_Z2vvv    = [](const rsd_dd_Pk& pkg) -> k2_Pk_value  { return pkg.get_Z2_vvv(); };
     
     // get Matsubara X+Y suppression factor (remember we have to scale up by the square of the linear growth factor,
     // since we store just the raw integral over the early-time tree-level power spectrum)
@@ -435,87 +582,60 @@ multipole_Pk multipole_Pk_calculator::calculate_Legendre(const Mpc_units::energy
     double B_coeff = Matsubara_XY;
     
     // set policy objects to adjust the different mu dependences to account for resummation
-    multipole_Pk_calculator_impl::resum_adjuster Pk_adj(k, Matsubara_XY, gf_data, data.get_dd().get_tree());
-    multipole_Pk_calculator_impl::null_adjuster<Mpc_units::inverse_energy3> Pk_null;
-    multipole_Pk_calculator_impl::null_adjuster<Mpc_units::inverse_energy> k2_Pk_null;
+    resum_adjuster Pk_adj(k, Matsubara_XY, gf_data, data.get_dd().get_tree());
+    null_adjuster<Mpc_units::inverse_energy3> Pk_null;
+    null_adjuster<Mpc_units::inverse_energy> k2_Pk_null;
     
-    // compute un-resummed multipole power spectra
+    // set up multiplet of plain decomposition coefficients
+    mu_to_ell0 plain_ell0;
+    mu_to_ell2 plain_ell2;
+    mu_to_ell4 plain_ell4;
+    auto plain_multiplet = std::make_tuple(plain_ell0, plain_ell2, plain_ell4);
     
-    Mpc_units::inverse_energy3 P0_tree = this->decompose(raw_tree, data, multipole_Pk_calculator_impl::mu_to_ell0());
-    Mpc_units::inverse_energy3 P2_tree = this->decompose(raw_tree, data, multipole_Pk_calculator_impl::mu_to_ell2());
-    Mpc_units::inverse_energy3 P4_tree = this->decompose(raw_tree, data, multipole_Pk_calculator_impl::mu_to_ell4());
+    // set up multiplet of expXY decomposition coefficients
+    mu_to_ell0_expXY exp_ell0(A_coeff, B_coeff);
+    mu_to_ell2_expXY exp_ell2(A_coeff, B_coeff);
+    mu_to_ell4_expXY exp_ell4(A_coeff, B_coeff);
+    auto exp_multiplet = std::make_tuple(exp_ell0, exp_ell2, exp_ell4);
     
-    Mpc_units::inverse_energy3 P0_13 = this->decompose(raw_13, data, multipole_Pk_calculator_impl::mu_to_ell0());
-    Mpc_units::inverse_energy3 P2_13 = this->decompose(raw_13, data, multipole_Pk_calculator_impl::mu_to_ell2());
-    Mpc_units::inverse_energy3 P4_13 = this->decompose(raw_13, data, multipole_Pk_calculator_impl::mu_to_ell4());
+    // create decomposer object
+    decomposer<Pk_resum_multiplet, decltype(plain_multiplet), decltype(exp_multiplet)> decomp(data, plain_multiplet, exp_multiplet);
+    decomposer<k2_Pk_resum_multiplet, decltype(plain_multiplet), decltype(exp_multiplet)> k2_decomp(data, plain_multiplet, exp_multiplet);
     
-    Mpc_units::inverse_energy3 P0_22 = this->decompose(raw_22, data, multipole_Pk_calculator_impl::mu_to_ell0());
-    Mpc_units::inverse_energy3 P2_22 = this->decompose(raw_22, data, multipole_Pk_calculator_impl::mu_to_ell2());
-    Mpc_units::inverse_energy3 P4_22 = this->decompose(raw_22, data, multipole_Pk_calculator_impl::mu_to_ell4());
-    
-    Mpc_units::inverse_energy3 P0_SPT = this->decompose(raw_SPT, data, multipole_Pk_calculator_impl::mu_to_ell0());
-    Mpc_units::inverse_energy3 P2_SPT = this->decompose(raw_SPT, data, multipole_Pk_calculator_impl::mu_to_ell2());
-    Mpc_units::inverse_energy3 P4_SPT = this->decompose(raw_SPT, data, multipole_Pk_calculator_impl::mu_to_ell4());
+    // get Legendre multiplets for each element of interest
+    Pk_resum_multiplet tree = decomp.compute(get_tree, Pk_null);
+    Pk_resum_multiplet P13 = decomp.compute(get_13, Pk_null);
+    Pk_resum_multiplet P22 = decomp.compute(get_22, Pk_null);
+    Pk_resum_multiplet PSPT = decomp.compute(get_SPT, Pk_adj);
 
-    // compute resummed multipole power spectra
-    
-    Mpc_units::inverse_energy3 P0_tree_rs = this->decompose(wiggle_tree, nowiggle_tree, data, Pk_null, multipole_Pk_calculator_impl::mu_to_ell0(), multipole_Pk_calculator_impl::mu_to_ell0_expXY(A_coeff, B_coeff));
-    Mpc_units::inverse_energy3 P2_tree_rs = this->decompose(wiggle_tree, nowiggle_tree, data, Pk_null, multipole_Pk_calculator_impl::mu_to_ell2(), multipole_Pk_calculator_impl::mu_to_ell2_expXY(A_coeff, B_coeff));
-    Mpc_units::inverse_energy3 P4_tree_rs = this->decompose(wiggle_tree, nowiggle_tree, data, Pk_null, multipole_Pk_calculator_impl::mu_to_ell4(), multipole_Pk_calculator_impl::mu_to_ell4_expXY(A_coeff, B_coeff));
-    
-    Mpc_units::inverse_energy3 P0_13_rs = this->decompose(wiggle_13, nowiggle_13, data, Pk_null, multipole_Pk_calculator_impl::mu_to_ell0(), multipole_Pk_calculator_impl::mu_to_ell0_expXY(A_coeff, B_coeff));
-    Mpc_units::inverse_energy3 P2_13_rs = this->decompose(wiggle_13, nowiggle_13, data, Pk_null, multipole_Pk_calculator_impl::mu_to_ell2(), multipole_Pk_calculator_impl::mu_to_ell2_expXY(A_coeff, B_coeff));
-    Mpc_units::inverse_energy3 P4_13_rs = this->decompose(wiggle_13, nowiggle_13, data, Pk_null, multipole_Pk_calculator_impl::mu_to_ell4(), multipole_Pk_calculator_impl::mu_to_ell4_expXY(A_coeff, B_coeff));
-    
-    Mpc_units::inverse_energy3 P0_22_rs = this->decompose(wiggle_22, nowiggle_22, data, Pk_null, multipole_Pk_calculator_impl::mu_to_ell0(), multipole_Pk_calculator_impl::mu_to_ell0_expXY(A_coeff, B_coeff));
-    Mpc_units::inverse_energy3 P2_22_rs = this->decompose(wiggle_22, nowiggle_22, data, Pk_null, multipole_Pk_calculator_impl::mu_to_ell2(), multipole_Pk_calculator_impl::mu_to_ell2_expXY(A_coeff, B_coeff));
-    Mpc_units::inverse_energy3 P4_22_rs = this->decompose(wiggle_22, nowiggle_22, data, Pk_null, multipole_Pk_calculator_impl::mu_to_ell4(), multipole_Pk_calculator_impl::mu_to_ell4_expXY(A_coeff, B_coeff));
-    
-    Mpc_units::inverse_energy3 P0_SPT_rs = this->decompose(wiggle_SPT, nowiggle_SPT, data, Pk_adj, multipole_Pk_calculator_impl::mu_to_ell0(), multipole_Pk_calculator_impl::mu_to_ell0_expXY(A_coeff, B_coeff));
-    Mpc_units::inverse_energy3 P2_SPT_rs = this->decompose(wiggle_SPT, nowiggle_SPT, data, Pk_adj, multipole_Pk_calculator_impl::mu_to_ell2(), multipole_Pk_calculator_impl::mu_to_ell2_expXY(A_coeff, B_coeff));
-    Mpc_units::inverse_energy3 P4_SPT_rs = this->decompose(wiggle_SPT, nowiggle_SPT, data, Pk_adj, multipole_Pk_calculator_impl::mu_to_ell4(), multipole_Pk_calculator_impl::mu_to_ell4_expXY(A_coeff, B_coeff));
-    
-    Mpc_units::inverse_energy P0_Z2d_rs = this->decompose(wiggle_Z2d, nowiggle_Z2d, data, k2_Pk_null, multipole_Pk_calculator_impl::mu_to_ell0(), multipole_Pk_calculator_impl::mu_to_ell0_expXY(A_coeff, B_coeff));
-    Mpc_units::inverse_energy P2_Z2d_rs = this->decompose(wiggle_Z2d, nowiggle_Z2d, data, k2_Pk_null, multipole_Pk_calculator_impl::mu_to_ell2(), multipole_Pk_calculator_impl::mu_to_ell2_expXY(A_coeff, B_coeff));
-    Mpc_units::inverse_energy P4_Z2d_rs = this->decompose(wiggle_Z2d, nowiggle_Z2d, data, k2_Pk_null, multipole_Pk_calculator_impl::mu_to_ell4(), multipole_Pk_calculator_impl::mu_to_ell4_expXY(A_coeff, B_coeff));
-    
-    Mpc_units::inverse_energy3 P0_Z0v_rs = this->decompose(wiggle_Z0v, nowiggle_Z0v, data, Pk_null, multipole_Pk_calculator_impl::mu_to_ell0(), multipole_Pk_calculator_impl::mu_to_ell0_expXY(A_coeff, B_coeff));
-    Mpc_units::inverse_energy3 P2_Z0v_rs = this->decompose(wiggle_Z0v, nowiggle_Z0v, data, Pk_null, multipole_Pk_calculator_impl::mu_to_ell2(), multipole_Pk_calculator_impl::mu_to_ell2_expXY(A_coeff, B_coeff));
-    Mpc_units::inverse_energy3 P4_Z0v_rs = this->decompose(wiggle_Z0v, nowiggle_Z0v, data, Pk_null, multipole_Pk_calculator_impl::mu_to_ell4(), multipole_Pk_calculator_impl::mu_to_ell4_expXY(A_coeff, B_coeff));
-    
-    Mpc_units::inverse_energy P0_Z2v_rs = this->decompose(wiggle_Z2v, nowiggle_Z2v, data, k2_Pk_null, multipole_Pk_calculator_impl::mu_to_ell0(), multipole_Pk_calculator_impl::mu_to_ell0_expXY(A_coeff, B_coeff));
-    Mpc_units::inverse_energy P2_Z2v_rs = this->decompose(wiggle_Z2v, nowiggle_Z2v, data, k2_Pk_null, multipole_Pk_calculator_impl::mu_to_ell2(), multipole_Pk_calculator_impl::mu_to_ell2_expXY(A_coeff, B_coeff));
-    Mpc_units::inverse_energy P4_Z2v_rs = this->decompose(wiggle_Z2v, nowiggle_Z2v, data, k2_Pk_null, multipole_Pk_calculator_impl::mu_to_ell4(), multipole_Pk_calculator_impl::mu_to_ell4_expXY(A_coeff, B_coeff));
-    
-    Mpc_units::inverse_energy3 P0_Z0vd_rs = this->decompose(wiggle_Z0vd, nowiggle_Z0vd, data, Pk_null, multipole_Pk_calculator_impl::mu_to_ell0(), multipole_Pk_calculator_impl::mu_to_ell0_expXY(A_coeff, B_coeff));
-    Mpc_units::inverse_energy3 P2_Z0vd_rs = this->decompose(wiggle_Z0vd, nowiggle_Z0vd, data, Pk_null, multipole_Pk_calculator_impl::mu_to_ell2(), multipole_Pk_calculator_impl::mu_to_ell2_expXY(A_coeff, B_coeff));
-    Mpc_units::inverse_energy3 P4_Z0vd_rs = this->decompose(wiggle_Z0vd, nowiggle_Z0vd, data, Pk_null, multipole_Pk_calculator_impl::mu_to_ell4(), multipole_Pk_calculator_impl::mu_to_ell4_expXY(A_coeff, B_coeff));
-    
-    Mpc_units::inverse_energy P0_Z2vd_rs = this->decompose(wiggle_Z2vd, nowiggle_Z2vd, data, k2_Pk_null, multipole_Pk_calculator_impl::mu_to_ell0(), multipole_Pk_calculator_impl::mu_to_ell0_expXY(A_coeff, B_coeff));
-    Mpc_units::inverse_energy P2_Z2vd_rs = this->decompose(wiggle_Z2vd, nowiggle_Z2vd, data, k2_Pk_null, multipole_Pk_calculator_impl::mu_to_ell2(), multipole_Pk_calculator_impl::mu_to_ell2_expXY(A_coeff, B_coeff));
-    Mpc_units::inverse_energy P4_Z2vd_rs = this->decompose(wiggle_Z2vd, nowiggle_Z2vd, data, k2_Pk_null, multipole_Pk_calculator_impl::mu_to_ell4(), multipole_Pk_calculator_impl::mu_to_ell4_expXY(A_coeff, B_coeff));
-    
-    Mpc_units::inverse_energy P0_Z2vv_rs = this->decompose(wiggle_Z2vv, nowiggle_Z2vv, data, k2_Pk_null, multipole_Pk_calculator_impl::mu_to_ell0(), multipole_Pk_calculator_impl::mu_to_ell0_expXY(A_coeff, B_coeff));
-    Mpc_units::inverse_energy P2_Z2vv_rs = this->decompose(wiggle_Z2vv, nowiggle_Z2vv, data, k2_Pk_null, multipole_Pk_calculator_impl::mu_to_ell2(), multipole_Pk_calculator_impl::mu_to_ell2_expXY(A_coeff, B_coeff));
-    Mpc_units::inverse_energy P4_Z2vv_rs = this->decompose(wiggle_Z2vv, nowiggle_Z2vv, data, k2_Pk_null, multipole_Pk_calculator_impl::mu_to_ell4(), multipole_Pk_calculator_impl::mu_to_ell4_expXY(A_coeff, B_coeff));
-    
-    Mpc_units::inverse_energy P0_Z2vvd_rs = this->decompose(wiggle_Z2vvd, nowiggle_Z2vvd, data, k2_Pk_null, multipole_Pk_calculator_impl::mu_to_ell0(), multipole_Pk_calculator_impl::mu_to_ell0_expXY(A_coeff, B_coeff));
-    Mpc_units::inverse_energy P2_Z2vvd_rs = this->decompose(wiggle_Z2vvd, nowiggle_Z2vvd, data, k2_Pk_null, multipole_Pk_calculator_impl::mu_to_ell2(), multipole_Pk_calculator_impl::mu_to_ell2_expXY(A_coeff, B_coeff));
-    Mpc_units::inverse_energy P4_Z2vvd_rs = this->decompose(wiggle_Z2vvd, nowiggle_Z2vvd, data, k2_Pk_null, multipole_Pk_calculator_impl::mu_to_ell4(), multipole_Pk_calculator_impl::mu_to_ell4_expXY(A_coeff, B_coeff));
-    
-    Mpc_units::inverse_energy P0_Z2vvv_rs = this->decompose(wiggle_Z2vvv, nowiggle_Z2vvv, data, k2_Pk_null, multipole_Pk_calculator_impl::mu_to_ell0(), multipole_Pk_calculator_impl::mu_to_ell0_expXY(A_coeff, B_coeff));
-    Mpc_units::inverse_energy P2_Z2vvv_rs = this->decompose(wiggle_Z2vvv, nowiggle_Z2vvv, data, k2_Pk_null, multipole_Pk_calculator_impl::mu_to_ell2(), multipole_Pk_calculator_impl::mu_to_ell2_expXY(A_coeff, B_coeff));
-    Mpc_units::inverse_energy P4_Z2vvv_rs = this->decompose(wiggle_Z2vvv, nowiggle_Z2vvv, data, k2_Pk_null, multipole_Pk_calculator_impl::mu_to_ell4(), multipole_Pk_calculator_impl::mu_to_ell4_expXY(A_coeff, B_coeff));
-    
-    Pk_ell P0(P0_tree, P0_tree_rs, P0_13, P0_13_rs, P0_22, P0_22_rs, P0_SPT, P0_SPT_rs,
-              P0_Z2d_rs, P0_Z0v_rs, P0_Z2v_rs, P0_Z0vd_rs, P0_Z2vd_rs, P0_Z2vv_rs, P0_Z2vvd_rs, P0_Z2vvv_rs);
+    k2_Pk_resum_multiplet Z2_delta = k2_decomp.compute(get_Z2d, k2_Pk_null);
+    Pk_resum_multiplet Z0_v = decomp.compute(get_Z0v, Pk_null);
+    k2_Pk_resum_multiplet Z2_v = k2_decomp.compute(get_Z2v, k2_Pk_null);
+    Pk_resum_multiplet Z0_vdelta = decomp.compute(get_Z0vd, Pk_null);
+    k2_Pk_resum_multiplet Z2_vdelta = k2_decomp.compute(get_Z2vd, k2_Pk_null);
+    k2_Pk_resum_multiplet Z2_vv = k2_decomp.compute(get_Z2vv, k2_Pk_null);
+    k2_Pk_resum_multiplet Z2_vvdelta = k2_decomp.compute(get_Z2vvd, k2_Pk_null);
+    k2_Pk_resum_multiplet Z2_vvv = k2_decomp.compute(get_Z2vvv, k2_Pk_null);
 
-    Pk_ell P2(P2_tree, P2_tree_rs, P2_13, P2_13_rs, P2_22, P2_22_rs, P2_SPT, P2_SPT_rs,
-              P2_Z2d_rs, P2_Z0v_rs, P2_Z2v_rs, P2_Z0vd_rs, P2_Z2vd_rs, P2_Z2vv_rs, P2_Z2vvd_rs, P2_Z2vvv_rs);
-
-    Pk_ell P4(P4_tree, P4_tree_rs, P4_13, P4_13_rs, P4_22, P4_22_rs, P4_SPT, P4_SPT_rs,
-              P4_Z2d_rs, P4_Z0v_rs, P4_Z2v_rs, P4_Z0vd_rs, P4_Z2vd_rs, P4_Z2vv_rs, P4_Z2vvd_rs, P4_Z2vvv_rs);
+    // create projector object
+    projector<k2_Pk_resum_multiplet, decltype(plain_multiplet), decltype(exp_multiplet)> proj(data, plain_multiplet, exp_multiplet);
     
+    // project mu^n counterterms into Legendre modes
+    k2_Pk_resum_multiplet Z2_mu0 = proj.compute(mu_power::mu0);
+    k2_Pk_resum_multiplet Z2_mu2 = proj.compute(mu_power::mu2);
+    k2_Pk_resum_multiplet Z2_mu4 = proj.compute(mu_power::mu4);
+    k2_Pk_resum_multiplet Z2_mu6 = proj.compute(mu_power::mu6);
+    k2_Pk_resum_multiplet Z2_mu8 = proj.compute(mu_power::mu8);
+    
+    // slice these multiplets into Pk_ell containers for the ell=0, ell=2 and ell=4 modes
+    Pk_ell P0 = make_Pk_ell(tree, P13, P22, PSPT, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv,
+                            Z2_mu0, Z2_mu2, Z2_mu4, Z2_mu6, Z2_mu8, get_ell0<Pk_resum_multiplet>(), get_ell0<k2_Pk_resum_multiplet>());
+    Pk_ell P2 = make_Pk_ell(tree, P13, P22, PSPT, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv,
+                            Z2_mu0, Z2_mu2, Z2_mu4, Z2_mu6, Z2_mu8, get_ell2<Pk_resum_multiplet>(), get_ell2<k2_Pk_resum_multiplet>());
+    Pk_ell P4 = make_Pk_ell(tree, P13, P22, PSPT, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv,
+                            Z2_mu0, Z2_mu2, Z2_mu4, Z2_mu6, Z2_mu8, get_ell4<Pk_resum_multiplet>(), get_ell4<k2_Pk_resum_multiplet>());
+    
+    // package everything up as as multiplet_Pk and return it
     return multipole_Pk(data.get_k_token(), data.get_init_Pk_token(), data.get_final_Pk_token(), data.get_IR_token(),
                         data.get_UV_token(), data.get_z_token(), XY.get_IR_resum_token(), P0, P2, P4);
   }
