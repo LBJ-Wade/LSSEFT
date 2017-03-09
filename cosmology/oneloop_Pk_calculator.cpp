@@ -154,7 +154,9 @@ oneloop_Pk_calculator::compute_rsd_dd_mu0(const Mpc_units::energy& k, const onel
     
     k2_Pk_value Z2_vvv;   // no contribution at mu^0
     
-    return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv);
+    k2_Pk_value Z_total = 2*val.g*(18*val.D + 28*val.E - 7*val.F - 2*val.G - 13*val.J)*k*k * Ptr_init;
+    
+    return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv, Z_total);
   }
 
 
@@ -226,7 +228,10 @@ oneloop_Pk_calculator::compute_rsd_dd_mu2(const Mpc_units::energy& k, const onel
     
     k2_Pk_value Z2_vvv;   // no contribution at mu^2
     
-    return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv);
+    k2_Pk_value Z2_total = val.g*(36*val.D*(val.fD + val.f) + 56*val.E*(val.fE + val.f) - 14*val.fF*val.F - 14*val.f*val.F + 16*val.A*val.fA*val.f*val.g + 16*val.B*val.fB*val.f*val.g - 11*val.f*val.f*val.g*val.g*val.g - 4*val.fG*val.G - 4*val.f*val.G -
+                               26*val.fJ*val.J - 26*val.f*val.J)*k*k * Ptr_init;
+    
+    return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv, Z2_total);
   }
 
 
@@ -303,7 +308,10 @@ oneloop_Pk_calculator::compute_rsd_dd_mu4(const Mpc_units::energy& k, const onel
     
     k2_Pk_value Z2_vvv = 5 * val.f*val.f*val.f * val.g*val.g*val.g*val.g * k*k * Ptr_init;
     
-    return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv);
+    k2_Pk_value Z2_total = -2*val.f*val.g*(-18*val.D*val.fD - 28*val.E*val.fE + 7*val.fF*val.F - val.A*val.fA*val.g - 6*val.B*val.fB*val.g - 8*val.A*val.fA*val.f*val.g - 8*val.B*val.fB*val.f*val.g + val.f*val.g*val.g*val.g + 3*val.f*val.f*val.g*val.g*val.g + 2*val.fG*val.G +
+                                     13*val.fJ*val.J)*k*k * Ptr_init;
+    
+    return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv, Z2_total);
   }
 
 
@@ -367,7 +375,9 @@ oneloop_Pk_calculator::compute_rsd_dd_mu6(const Mpc_units::energy& k, const onel
     
     k2_Pk_value Z2_vvv = 5 * val.f*val.f*val.f*val.f * val.g*val.g*val.g*val.g * k*k * Ptr_init;
     
-    return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv);
+    k2_Pk_value Z2_total = val.f*val.f*val.g*val.g*(2*val.A*val.fA + 12*val.B*val.fB + val.f*(-2 + 5*val.f)*val.g*val.g)*k*k * Ptr_init;
+    
+    return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv, Z2_total);
   }
 
 
@@ -416,7 +426,9 @@ oneloop_Pk_calculator::compute_rsd_dd_mu8(const Mpc_units::energy& k, const onel
     
     k2_Pk_value Z2_vvv;   // no contribution at mu^8
     
-    return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv);
+    k2_Pk_value Z2_total;   // no contribution at mu^8
+    
+    return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv, Z2_total);
   }
 
 
@@ -435,16 +447,16 @@ oneloop_Pk_calculator::calculate_resum_dd(const Mpc_units::energy& k, const Mats
     double MatsubaraA   = k*k * gf_data.g*gf_data.g * XY;
     double MatsubaraExp = std::exp(-MatsubaraA);
     
-    resum_Pk_value Ptree       = input_tree.get_nowiggle()     + MatsubaraExp*input_tree.get_wiggle();
-    resum_Pk_value P13         = input_13.get_nowiggle()       + MatsubaraExp*input_13.get_wiggle();
-    resum_Pk_value P22         = input_22.get_nowiggle()       + MatsubaraExp*input_22.get_wiggle();
-    k2_resum_Pk_value Z2_delta = input_Z2_delta.get_nowiggle() + MatsubaraExp*input_Z2_delta.get_wiggle();
+    auto Ptree       = input_tree.get_nowiggle()     + MatsubaraExp*input_tree.get_wiggle();
+    auto P13         = input_13.get_nowiggle()       + MatsubaraExp*input_13.get_wiggle();
+    auto P22         = input_22.get_nowiggle()       + MatsubaraExp*input_22.get_wiggle();
+    auto Z2_delta = input_Z2_delta.get_nowiggle() + MatsubaraExp*input_Z2_delta.get_wiggle();
 
-    resum_Pk_value SPT_nowiggle = input_tree.get_nowiggle() + input_13.get_nowiggle() + input_22.get_nowiggle();
-    resum_Pk_value SPT_wiggle   = input_tree.get_wiggle()   + input_13.get_wiggle()   + input_22.get_wiggle();
-    resum_Pk_value subtraction  = MatsubaraA * input_tree.get_wiggle();
+    auto SPT_nowiggle = input_tree.get_nowiggle() + input_13.get_nowiggle() + input_22.get_nowiggle();
+    auto SPT_wiggle   = input_tree.get_wiggle()   + input_13.get_wiggle()   + input_22.get_wiggle();
+    auto subtraction  = MatsubaraA * input_tree.get_wiggle();
     
-    resum_Pk_value P1loop_SPT   = SPT_nowiggle + MatsubaraExp * (SPT_wiggle + subtraction);
+    auto P1loop_SPT   = SPT_nowiggle + MatsubaraExp * (SPT_wiggle + subtraction);
     
     resum_dd_Pk Pk_resum(Ptree, P13, P22, P1loop_SPT, Z2_delta);
     

@@ -35,11 +35,9 @@
 
 // define convenience types for resummed versions of the basic power spectrum (~ 1/k^3) and k^2 * basic power spectrum (~ 1/k)
 // these differ from Pk_value and k2_Pk_value by dropping the need to keep raw & nowiggle information
-typedef Pk_value_group<Mpc_units::inverse_energy3> resum_Pk_value;
-typedef Pk_value_group<Mpc_units::inverse_energy>  k2_resum_Pk_value;
 
 // define a container class for the power spectrum data
-typedef generic_dd_Pk<resum_Pk_value, k2_resum_Pk_value> resum_dd_Pk;
+typedef generic_dd_Pk<Pk_element, k2_Pk_element> resum_dd_Pk;
 
 
 class oneloop_resum_Pk

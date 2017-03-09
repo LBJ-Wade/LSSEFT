@@ -100,6 +100,8 @@ SET(COSMOLOGY_SOURCE_FILES
   cosmology/concepts/oneloop_resum_Pk.cpp cosmology/concepts/oneloop_resum_Pk.h
   cosmology/concepts/Matsubara_XY.cpp cosmology/concepts/Matsubara_XY.h
   cosmology/concepts/filtered_Pk_value.cpp cosmology/concepts/filtered_Pk_value.h
+  cosmology/concepts/Pk_value.h
+  cosmology/concepts/Pk_resum_value.h
   cosmology/oneloop_integrands/shared.h
   cosmology/oneloop_integrands/delta_13.h
   cosmology/oneloop_integrands/delta_22.h

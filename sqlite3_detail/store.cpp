@@ -167,6 +167,43 @@ namespace sqlite3_operations
             check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, value.c_str()), dimensionless_value(item)));
             check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, error.c_str()), dimensionless_error(item)));
           };
+        
+        
+        // store Pk-value, no raw/nowiggle or error information
+        template <typename ValueType>
+        void store_Pk_value(sqlite3* db, sqlite3_stmt* stmt, const std::string& value, const ValueType& item)
+          {
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, value.c_str()), dimensionless_value(item)));
+          }
+        
+        
+        // store multipole P_ell value, including raw and resummed parts, with error information
+        template <typename ValueType>
+        void store_Pell_value(sqlite3* db, sqlite3_stmt* stmt, const std::string& value_raw, const std::string& error_raw,
+                              const std::string& value_resum, const std::string& error_resum, const ValueType& item)
+          {
+            const auto& raw = item.get_raw();
+            const auto& resum = item.get_resum();
+            
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, value_raw.c_str()), dimensionless_value(raw)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, error_raw.c_str()), dimensionless_error(raw)));
+            
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, value_resum.c_str()), dimensionless_value(resum)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, error_resum.c_str()), dimensionless_error(resum)));
+          }
+    
+    
+        // store multipole P_ell value, including raw and resummed parts, but with noerror information
+        template <typename ValueType>
+        void store_Pell_value(sqlite3* db, sqlite3_stmt* stmt, const std::string& value_raw,
+                              const std::string& value_resum, const ValueType& item)
+          {
+            const auto& raw = item.get_raw();
+            const auto& resum = item.get_resum();
+        
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, value_raw.c_str()), dimensionless_value(raw)));
+            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, value_resum.c_str()), dimensionless_value(resum)));
+          }
     
     
         template <typename PkType>
@@ -176,8 +213,8 @@ namespace sqlite3_operations
             std::ostringstream insert_stmt;
             insert_stmt
               << "INSERT INTO " << table_name << " VALUES (@mid, @zid, @kid, @init_Pk_id, @final_Pk_id, @IR_id, @UV_id, "
-              << "@Ptree_raw, @err_tree_raw, @P13_raw, @err_13_raw, @P22_raw, @err_22_raw, @P1loopSPT_raw, @err_1loopSPT_raw, @Z2_delta_raw, "
-              << "@Ptree_nw, @err_tree_nw, @P13_nw, @err_13_nw, @P22_nw, @err_22_nw, @P1loopSPT_nw, @err_1loopSPT_nw, @Z2_delta_nw"
+              << "@Ptree_raw, @err_tree_raw, @P13_raw, @err_13_raw, @P22_raw, @err_22_raw, @P1loopSPT_raw, @err_1loopSPT_raw, @Z2_d_raw, "
+              << "@Ptree_nw, @err_tree_nw, @P13_nw, @err_13_nw, @P22_nw, @err_22_nw, @P1loopSPT_nw, @err_1loopSPT_nw, @Z2_d_nw"
               << ");";
     
             // prepare statement
@@ -201,7 +238,7 @@ namespace sqlite3_operations
             store_Pk_value(db, stmt, "@P13_raw", "@err_13_raw", "@P13_nw", "@err_13_nw", value.get_13());
             store_Pk_value(db, stmt, "@P22_raw", "@err_22_raw", "@P22_nw", "@err_22_nw", value.get_22());
             store_Pk_value(db, stmt, "@P1loopSPT_raw", "@err_1loopSPT_raw", "@P1loopSPT_nw", "@err_1loopSPT_nw", value.get_1loop_SPT());
-            store_Pk_value(db, stmt, "@Z2_delta_raw", "@Z2_delta_nw", value.get_Z2_delta());
+            store_Pk_value(db, stmt, "@Z2_d_raw", "@Z2_d_nw", value.get_Z2_delta());
             
             // perform insertion
             check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_ONELOOP_PK_FAIL, SQLITE_DONE);
@@ -219,9 +256,17 @@ namespace sqlite3_operations
             std::ostringstream insert_stmt;
             insert_stmt
               << "INSERT INTO " << table_name << " VALUES (@mid, @zid, @kid, @init_Pk_id, @final_Pk_id, @IR_id, @UV_id, "
-              << "@Ptree_raw, @err_tree_raw, @P13_raw, @err_13_raw, @P22_raw, @err_22_raw, @P1loopSPT_raw, @err_1loopSPT_raw, @Z2_delta_raw, @Z0_v_raw, @Z2_v_raw, @Z0_vdelta_raw, @Z2_vdelta_raw, @Z2_vv_raw, @Z2_vvdelta_raw, @Z2_vvv_raw, "
-              << "@Ptree_nw, @err_tree_nw, @P13_nw, @err_13_nw, @P22_nw, @err_22_nw, @P1loopSPT_nw, @err_1loopSPT_nw, @Z2_delta_nw, @Z0_v_nw, @Z2_v_nw, @Z0_vdelta_nw, @Z2_vdelta_nw, @Z2_vv_nw, @Z2_vvdelta_nw, @Z2_vvv_nw"
-              << ");";
+                                              << "@Ptree_raw, @err_tree_raw, "
+                                              << "@P13_raw, @err_13_raw, "
+                                              << "@P22_raw, @err_22_raw, "
+                                              << "@P1loopSPT_raw, @err_1loopSPT_raw, "
+                                              << "@Z2_d_raw, @Z0_v_raw, @Z2_v_raw, @Z0_vd_raw, @Z2_vd_raw, @Z2_vv_raw, @Z2_vvd_raw, @Z2_vvv_raw, @Z2_total_raw, "
+                                              << "@Ptree_nw, @err_tree_nw, "
+                                              << "@P13_nw, @err_13_nw, "
+                                              << "@P22_nw, @err_22_nw, "
+                                              << "@P1loopSPT_nw, @err_1loopSPT_nw, "
+                                              << "@Z2_d_nw, @Z0_v_nw, @Z2_v_nw, @Z0_vd_nw, @Z2_vd_nw, @Z2_vv_nw, @Z2_vvd_nw, @Z2_vvv_nw, @Z2_total_nw"
+                                              << ");";
         
             // prepare statement
             sqlite3_stmt* stmt;
@@ -244,14 +289,15 @@ namespace sqlite3_operations
             store_Pk_value(db, stmt, "@P13_raw", "@err_13_raw", "@P13_nw", "@err_13_nw", value.get_13());
             store_Pk_value(db, stmt, "@P22_raw", "@err_22_raw", "@P22_nw", "@err_22_nw", value.get_22());
             store_Pk_value(db, stmt, "@P1loopSPT_raw", "@err_1loopSPT_raw", "@P1loopSPT_nw", "@err_1loopSPT_nw", value.get_1loop_SPT());
-            store_Pk_value(db, stmt, "@Z2_delta_raw", "@Z2_delta_nw", value.get_Z2_delta());
+            store_Pk_value(db, stmt, "@Z2_d_raw", "@Z2_d_nw", value.get_Z2_delta());
             store_Pk_value(db, stmt, "@Z0_v_raw", "@Z0_v_nw", value.get_Z0_v());
             store_Pk_value(db, stmt, "@Z2_v_raw", "@Z2_v_nw", value.get_Z2_v());
-            store_Pk_value(db, stmt, "@Z0_vdelta_raw", "@Z0_vdelta_nw", value.get_Z0_vdelta());
-            store_Pk_value(db, stmt, "@Z2_vdelta_raw", "@Z2_vdelta_nw", value.get_Z2_vdelta());
+            store_Pk_value(db, stmt, "@Z0_vd_raw", "@Z0_vd_nw", value.get_Z0_vdelta());
+            store_Pk_value(db, stmt, "@Z2_vd_raw", "@Z2_vd_nw", value.get_Z2_vdelta());
             store_Pk_value(db, stmt, "@Z2_vv_raw", "@Z2_vv_nw", value.get_Z2_vv());
-            store_Pk_value(db, stmt, "@Z2_vvdelta_raw", "@Z2_vvdelta_nw", value.get_Z2_vvdelta());
+            store_Pk_value(db, stmt, "@Z2_vvd_raw", "@Z2_vvd_nw", value.get_Z2_vvdelta());
             store_Pk_value(db, stmt, "@Z2_vvv_raw", "@Z2_vvv_nw", value.get_Z2_vvv());
+            store_Pk_value(db, stmt, "@Z2_total_raw", "@Z2_total_nw", value.get_Z2_total());
             
             // perform insertion
             check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_ONELOOP_RSD_PK_FAIL, SQLITE_DONE);
@@ -268,9 +314,24 @@ namespace sqlite3_operations
             std::ostringstream insert_stmt;
             insert_stmt
               << "INSERT INTO " << table_name << " VALUES (@mid, @zid, @kid, @init_Pk_id, @final_Pk_id, @IR_cutoff_id, @UV_cutoff_id, @IR_resum_id, "
-                                              << "@Ptree, @Ptree_resum, @P13, @P13_resum, @P22, @P22_resum, "
-                                              << "@P1loopSPT, @P1loopSPT_resum, @Z2_delta, @Z0_v, @Z2_v, @Z0_vdelta, @Z2_vdelta, "
-                                              << "@Z2_vv, @Z2_vvdelta, @Z2_vvv);";
+                                              << "@Ptree, @Ptree_err, @Ptree_resum, @Ptree_resum_err, "
+                                              << "@P13, @P13_err, @P13_resum, @P13_resum_err, "
+                                              << "@P22, @P22_err, @P22_resum, @P22_resum_err, "
+                                              << "@P1loopSPT, @P1loopSPT_err, @P1loopSPT_resum, @P1loopSPT_resum_err, "
+                                              << "@Z2_d, @Z2_d_resum, "
+                                              << "@Z0_v, @Z0_v_resum, "
+                                              << "@Z2_v, @Z2_v_resum, "
+                                              << "@Z0_vd, @Z0_vd_resum, "
+                                              << "@Z2_vd, @Z2_vd_resum, "
+                                              << "@Z2_vv, @Z2_vv_resum, "
+                                              << "@Z2_vvd, @Z2_vvd_resum, "
+                                              << "@Z2_vvv, @Z2_vvv_resum, "
+                                              << "@Z2_mu0, @Z2_mu0_resum, "
+                                              << "@Z2_mu2, @Z2_mu2_resum, "
+                                              << "@Z2_mu4, @Z2_mu4_resum, "
+                                              << "@Z2_mu6, @Z2_mu6_resum, "
+                                              << "@Z2_mu8, @Z2_mu8_resum"
+                                              << ");";
     
             // prepare statement
             sqlite3_stmt* stmt;
@@ -278,13 +339,10 @@ namespace sqlite3_operations
     
             // bind parameter values
             const auto& tree = value.get_tree();
-            const auto& tree_resum = value.get_tree_resum();
             const auto& P13 = value.get_13();
-            const auto& P13_resum = value.get_13_resum();
             const auto& P22 = value.get_22();
-            const auto& P22_resum = value.get_22_resum();
             const auto& P1loopSPT = value.get_1loop_SPT();
-            const auto& P1loopSPT_resum = value.get_1loop_SPT_resum();
+
             const auto& Z2_delta = value.get_Z2_delta();
             const auto& Z0_v = value.get_Z0_v();
             const auto& Z2_v = value.get_Z2_v();
@@ -293,6 +351,12 @@ namespace sqlite3_operations
             const auto& Z2_vv = value.get_Z2_vv();
             const auto& Z2_vvdelta = value.get_Z2_vvdelta();
             const auto& Z2_vvv = value.get_Z2_vvv();
+
+            const auto& Z2_mu0 = value.get_Z2_mu0();
+            const auto& Z2_mu2 = value.get_Z2_mu2();
+            const auto& Z2_mu4 = value.get_Z2_mu4();
+            const auto& Z2_mu6 = value.get_Z2_mu6();
+            const auto& Z2_mu8 = value.get_Z2_mu8();
             
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@mid"), model.get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@zid"), sample.get_z_token().get_id()));
@@ -306,23 +370,26 @@ namespace sqlite3_operations
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_cutoff_id"), sample.get_IR_cutoff_token().get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@UV_cutoff_id"), sample.get_UV_cutoff_token().get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_resum_id"), sample.get_IR_resum_token().get_id()));
-
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Ptree"), make_dimensionless(tree)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Ptree_resum"), make_dimensionless(tree_resum)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@P13"), make_dimensionless(P13)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@P13_resum"), make_dimensionless(P13_resum)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@P22"), make_dimensionless(P22)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@P22_resum"), make_dimensionless(P22_resum)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@P1loopSPT"), make_dimensionless(P1loopSPT)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@P1loopSPT_resum"), make_dimensionless(P1loopSPT_resum)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Z2_delta"), make_dimensionless(Z2_delta)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Z0_v"), make_dimensionless(Z0_v)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Z2_v"), make_dimensionless(Z2_v)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Z0_vdelta"), make_dimensionless(Z0_vdelta)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Z2_vdelta"), make_dimensionless(Z2_vdelta)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Z2_vv"), make_dimensionless(Z2_vv)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Z2_vvdelta"), make_dimensionless(Z2_vvdelta)));
-            check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Z2_vvv"), make_dimensionless(Z2_vvv)));
+            
+            store_Pell_value(db, stmt, "@Ptree", "@Ptree_err", "@Ptree_resum", "@Ptree_resum_err", tree);
+            store_Pell_value(db, stmt, "@P13", "@P13_err", "@P13_resum", "@P13_resum_err", P13);
+            store_Pell_value(db, stmt, "@P22", "@P22_err", "@P22_resum", "@P22_resum_err", P22);
+            store_Pell_value(db, stmt, "@P1loopSPT", "@P1loopSPT_err", "@P1loopSPT_resum", "@P1loopSPT_resum_err", P1loopSPT);
+    
+            store_Pell_value(db, stmt, "@Z2_d", "@Z2_d_resum", Z2_delta);
+            store_Pell_value(db, stmt, "@Z0_v", "@Z0_v_resum", Z0_v);
+            store_Pell_value(db, stmt, "@Z2_v", "@Z2_v_resum", Z2_v);
+            store_Pell_value(db, stmt, "@Z0_vd", "@Z0_vd_resum", Z0_vdelta);
+            store_Pell_value(db, stmt, "@Z2_vd", "@Z2_vd_resum", Z2_vdelta);
+            store_Pell_value(db, stmt, "@Z2_vv", "@Z2_vv_resum", Z2_vv);
+            store_Pell_value(db, stmt, "@Z2_vvd", "@Z2_vvd_resum", Z2_vvdelta);
+            store_Pell_value(db, stmt, "@Z2_vvv", "@Z2_vvv_resum", Z2_vvv);
+    
+            store_Pell_value(db, stmt, "@Z2_mu0", "@Z2_mu0_resum", Z2_mu0);
+            store_Pell_value(db, stmt, "@Z2_mu2", "@Z2_mu2_resum", Z2_mu2);
+            store_Pell_value(db, stmt, "@Z2_mu4", "@Z2_mu4_resum", Z2_mu4);
+            store_Pell_value(db, stmt, "@Z2_mu6", "@Z2_mu6_resum", Z2_mu6);
+            store_Pell_value(db, stmt, "@Z2_mu8", "@Z2_mu8_resum", Z2_mu8);
     
             // perform insertion
             check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_MULTIPOLE_PK_FAIL, SQLITE_DONE);
@@ -599,7 +666,7 @@ namespace sqlite3_operations
         std::ostringstream insert_stmt;
         insert_stmt
           << "INSERT INTO " << policy.dd_Pk_resum_table() << " VALUES (@mid, @zid, @kid, @init_Pk_id, @final_Pk_id, @IR_cutoff_id, @UV_cutoff_id, @IR_resum_id, "
-          << "@Ptree, @err_tree, @P13, @err_13, @P22, @err_22, @P1loop_SPT, @err_1loop_SPT, @Z2_delta, @err_Z2_delta);";
+          << "@Ptree, @err_tree, @P13, @err_13, @P22, @err_22, @P1loop_SPT, @err_1loop_SPT, @Z2_d);";
     
         // prepare statement
         sqlite3_stmt* stmt;
@@ -625,7 +692,7 @@ namespace sqlite3_operations
         store_impl::store_Pk_value(db, stmt, "@P13", "@err_13", item.get_13());
         store_impl::store_Pk_value(db, stmt, "@P22", "@err_22", item.get_22());
         store_impl::store_Pk_value(db, stmt, "@P1loop_SPT", "@err_1loop_SPT", item.get_1loop_SPT());
-        store_impl::store_Pk_value(db, stmt, "@Z2_delta", "@err_Z2_delta", item.get_Z2_delta());
+        store_impl::store_Pk_value(db, stmt, "@Z2_d", item.get_Z2_delta());
     
         // perform insertion
         check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_RESUM_ONE_LOOP_PK_FAIL, SQLITE_DONE);
