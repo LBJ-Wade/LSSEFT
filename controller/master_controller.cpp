@@ -148,7 +148,7 @@ void master_controller::execute()
     stepping_range<double> lo_redshift_samples(0.0, 50.0, 250, 1.0, spacing_type::logarithmic_bottom);
 
     // set up a list of UV cutoffs, measured in h/Mpc, to be used with the loop integrals
-    stepping_range<Mpc_units::energy> UV_cutoffs(0.8, 0.8, 0, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
+    stepping_range<Mpc_units::energy> UV_cutoffs(1.4, 1.4, 0, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
 
     // set up a list of IR cutoffs, measured in h/Mpc, to be used with the loop integrals
     stepping_range<Mpc_units::energy> IR_cutoffs(1E-4, 1E-4, 0, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
