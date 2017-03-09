@@ -154,7 +154,7 @@ void master_controller::execute()
     stepping_range<Mpc_units::energy> IR_cutoffs(1E-4, 1E-4, 0, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
 
     // set up a list of k at which to compute the loop integrals
-    stepping_range<Mpc_units::energy> loop_k_samples(0.005, 0.5, 200, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
+    stepping_range<Mpc_units::energy> loop_k_samples(0.005, 1.0, 500, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
     
     // set up a list of IR resummation scales, measured in h/Mpc
     stepping_range<Mpc_units::energy> IR_resummation(0.3, 0.3, 0, 1.0 / Mpc_units::Mpc, spacing_type::linear);
