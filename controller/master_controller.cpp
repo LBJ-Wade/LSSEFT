@@ -157,7 +157,7 @@ void master_controller::execute()
     stepping_range<Mpc_units::energy> loop_k_samples(0.005, 1.0, 500, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
     
     // set up a list of IR resummation scales, measured in h/Mpc
-    stepping_range<Mpc_units::energy> IR_resummation(0.3, 0.3, 0, 1.0 / Mpc_units::Mpc, spacing_type::linear);
+    stepping_range<Mpc_units::energy> IR_resummation(1.4, 1.4, 0, 1.0 / Mpc_units::Mpc, spacing_type::linear);
 
     // exchange these sample ranges for iterable databases
     std::unique_ptr<z_database> hi_z_db              = dmgr.build_redshift_db(hi_redshift_samples);
@@ -234,9 +234,19 @@ void master_controller::execute()
             // rescale final power spectrum
             dmgr.rescale_final_Pk(*model, *final_Pk_wig, *lo_z_db);
           }
+    
+    
+        // STEP 2 - COMPUTE MATSUBARA X & Y COEFFICIENTS
+    
+        // build a work list of the Matsubara X & Y coefficients associated with these resummation scales
+        std::unique_ptr<Matsubara_XY_work_list> Matsubara_work =
+          dmgr.build_Matsubara_XY_work_list(*model, *IR_resum_db, initial_Pk_wig);
+    
+        // distribute this work list among the worker processes
+        if(Matsubara_work) this->scatter(cosmology_model, *model, *Matsubara_work, dmgr);
         
         
-        // STEP 2 - COMPUTE LOOP INTEGRALS
+        // STEP 3 - COMPUTE LOOP INTEGRALS
 
         // build a work list for the loop integrals
         std::unique_ptr<loop_momentum_work_list> loop_momentum_work =
@@ -244,16 +254,6 @@ void master_controller::execute()
 
         // distribute this work list among the worker processes
         if(loop_momentum_work) this->scatter(cosmology_model, *model, *loop_momentum_work, dmgr);
-    
-        
-        // STEP 3 - COMPUTE MATSUBARA X & Y COEFFICIENTS
-        
-        // build a work list of the Matsubara X & Y coefficients associated with these resummation scales
-        std::unique_ptr<Matsubara_XY_work_list> Matsubara_work =
-          dmgr.build_Matsubara_XY_work_list(*model, *IR_resum_db, initial_Pk_wig);
-    
-        // distribute this work list among the worker processes
-        if(Matsubara_work) this->scatter(cosmology_model, *model, *Matsubara_work, dmgr);
         
         
         // STEP 4 - COMPUTE ONE-LOOP POWER SPECTRA IN REAL AND REDSHIFT SPACE

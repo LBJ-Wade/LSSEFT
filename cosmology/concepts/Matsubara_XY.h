@@ -54,7 +54,7 @@ class Matsubara_XY
   public:
 
     //! overload * operator to return X + Y value
-    const Mpc_units::inverse_energy2 operator*() const { return this->X + this->Y; }
+    const Mpc_units::inverse_energy2 operator*() const { return this->X + this->Y/3.0; }
     
     //! allow automatic conversion to Mpc_units::inverse_energy2
     operator Mpc_units::inverse_energy2() const { return *(*this); }
