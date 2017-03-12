@@ -169,6 +169,14 @@ auto operator/(const raw_wiggle_Pk_component<PkType>& P, const ScalarType& S) ->
   }
 
 
+//! overload multiplication of raw_wiggle_Pk_component<>s
+template <typename PkTypeA, typename PkTypeB>
+auto operator*(const raw_wiggle_Pk_component<PkTypeA> PA, const raw_wiggle_Pk_component<PkTypeB>& PB) -> raw_wiggle_Pk_component<decltype(PA.get_raw().get_value()*PB.get_raw().get_value())>
+  {
+    return raw_wiggle_Pk_component<decltype(PA.get_raw().get_value()*PB.get_raw().get_value())>(PA.get_raw() * PB.get_raw(), PA.get_nowiggle() * PB.get_nowiggle());
+  }
+
+
 
 // AUTOMATIC CONVERSION OF LOOP INTEGRAL KERNELS TO PK COMPONENTS
 
@@ -238,14 +246,6 @@ template <typename ValueType>
 raw_wiggle_Pk_component<ValueType> operator-(const loop_integral_output<ValueType>& A, const raw_wiggle_Pk_component<ValueType>& B)
   {
     return raw_wiggle_Pk_component<ValueType>(A.get_raw() - B.get_raw(), A.get_nowiggle() - B.get_nowiggle());
-  }
-
-
-// multiplication of raw_wiggle_Pk_component<>s
-template <typename PkTypeA, typename PkTypeB>
-auto operator*(const raw_wiggle_Pk_component<PkTypeA> PA, const raw_wiggle_Pk_component<PkTypeB>& PB) -> raw_wiggle_Pk_component<decltype(PA.get_raw().get_value()*PB.get_raw().get_value())>
-  {
-    return raw_wiggle_Pk_component<decltype(PA.get_raw().get_value()*PB.get_raw().get_value())>(PA.get_raw() * PB.get_raw(), PA.get_nowiggle() * PB.get_nowiggle());
   }
 
 
