@@ -191,7 +191,7 @@ oneloop_Pk_calculator::compute_rsd_dd_mu2(const Mpc_units::energy& k, const onel
     Pk_value P13_tensor_d = Ptr_init * 3.0 * (-2.0+val.f) * val.g*val.g * (-val.A*val.fA - val.B*val.fB + val.f*val.g*val.g) * rsd13.get_d();
     Pk_value P13_tensor_e = Ptr_init * val.g*val.g * (64.0*val.B*val.fB + val.A*(val.fA*(48.0-11.0*val.f) - 16.0*val.f) - val.B*(32.0+11.0*val.fB)*val.f
                                                  + val.f*(-48.0+11.0*val.f)*val.g*val.g) * rsd13.get_e() / 6.0;
-    Pk_value P13_tensor_f = Ptr_init * 2.0 * (-3.0*val.f) * val.g*val.g * (val.A*val.fA + val.B*val.fB - val.f*val.g*val.g) * rsd13.get_f();
+    Pk_value P13_tensor_f = Ptr_init * 2.0 * (-3.0+val.f) * val.g*val.g * (val.A*val.fA + val.B*val.fB - val.f*val.g*val.g) * rsd13.get_f();
     Pk_value P13_tensor_g = Ptr_init * (-4.0+val.f) * val.g*val.g * (val.A*val.fA + val.B*val.fB - val.f*val.g*val.g) * rsd13.get_g() / 2.0;
     
     Pk_value P13 = P13_simple + P13_tensor_a + P13_tensor_b + P13_tensor_c + P13_tensor_d + P13_tensor_e + P13_tensor_f + P13_tensor_g;
