@@ -31,6 +31,7 @@
 #include "scheduler.h"
 
 #include "cosmology/FRW_model.h"
+#include "cosmology/MDR1_sim.h"
 #include "cosmology/oneloop_growth_integrator.h"
 #include "cosmology/concepts/range.h"
 #include "cosmology/concepts/power_spectrum.h"
@@ -135,7 +136,9 @@ void master_controller::execute()
     data_manager dmgr(this->arg_cache.get_database_path());
 
     // fix the background cosmological model
-    FRW_model cosmology_model;
+    // here, that's taken to have parameters matching the MDR1 simulation
+    FRW_model cosmology_model(MDR1::omega_m, MDR1::omega_cc, MDR1::h, MDR1::T_CMB, MDR1::Neff, MDR1::f_baryon,
+                              MDR1::z_star, MDR1::z_drag, MDR1::z_eq, MDR1::Acurv, MDR1::ns, MDR1::kpiv);
     std::unique_ptr<FRW_model_token> model = dmgr.tokenize(cosmology_model);
 
     // set up a list of wavenumbers to sample for the transfer functions, measured in h/Mpc

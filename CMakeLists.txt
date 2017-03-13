@@ -79,6 +79,7 @@ SET(MPI_SOURCE_FILES
 SET(COSMOLOGY_SOURCE_FILES
   cosmology/FRW_model.cpp cosmology/FRW_model.h
   cosmology/Planck_defaults.h
+  cosmology/MDR1_sim.h
   cosmology/types.h
   cosmology/constants.h
   cosmology/concepts/range.h
