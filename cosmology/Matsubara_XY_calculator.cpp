@@ -75,10 +75,9 @@ namespace Matsubara_XY_calculator_impl
             qmin(_qmin),
             qmax(_qmax),
             Pk(_Pk),
-            jacobian((UV_cutoff - IR_cutoff) * (qmax - qmin)),
+            jacobian((UV_cutoff - IR_cutoff) * (qmax - qmin)),    // linear Jacobian is OK because we rescale all variable inside the integrand back to their original dimension
             s_range(UV_cutoff - IR_cutoff),
-            q_range(qmax - qmin),
-            q_volume(qmax*qmax*qmax/3.0 - qmin*qmin*qmin/3.0)
+            q_range(qmax - qmin)
           {
           }
         
@@ -94,7 +93,6 @@ namespace Matsubara_XY_calculator_impl
         
         Mpc_units::energy s_range;
         Mpc_units::inverse_energy q_range;
-        Mpc_units::inverse_energy3 q_volume;
       };
     
     
@@ -105,9 +103,10 @@ namespace Matsubara_XY_calculator_impl
         Mpc_units::energy s = data->IR_cutoff + x[0] * data->s_range;
         Mpc_units::inverse_energy q = data->qmin + x[1] * data->q_range;
         
-        Mpc_units::energy qfactor = q*q / data->q_volume;
+        double qsq_dimless = q*q / Mpc_units::Mpc2;
+        double Pk_dimless = data->Pk(s) / Mpc_units::Mpc3;
         
-        f[0] = data->jacobian * qfactor * data->Pk(s) * (1.0 - (3.0/(q*s))*boost::math::sph_bessel(1, q*s)) / Mpc_units::Mpc2;
+        f[0] = data->jacobian * qsq_dimless * Pk_dimless * (1.0/3.0 - (1.0/(q*s))*boost::math::sph_bessel(1, q*s));
         
         return(0);  // return value irrelevant unless = -999, which means stop integration
       }
@@ -119,10 +118,11 @@ namespace Matsubara_XY_calculator_impl
         
         Mpc_units::energy s = data->IR_cutoff + x[0] * data->s_range;
         Mpc_units::inverse_energy q = data->qmin + x[1] * data->q_range;
-        
-        Mpc_units::energy qfactor = q*q / data->q_volume;
-        
-        f[0] = data->jacobian * qfactor * data->Pk(s) * boost::math::sph_bessel(2, q*s) / Mpc_units::Mpc2;
+    
+        double qsq_dimless = q*q / Mpc_units::Mpc2;
+        double Pk_dimless = data->Pk(s) / Mpc_units::Mpc3;
+    
+        f[0] = data->jacobian * qsq_dimless * Pk_dimless * boost::math::sph_bessel(2, q*s);
         
         return(0);  // return value irrelevant unless = -999, which means stop integration
       }
@@ -169,6 +169,8 @@ Matsubara_XY_calculator::compute_XY(const Mpc_units::energy& IR_resum, const Mpc
     const Mpc_units::inverse_energy qmin = 10 * Mpc_units::Mpc;
     const Mpc_units::inverse_energy qmax = 300 * Mpc_units::Mpc;
     
+    const double dimless_qvolume = (qmax*qmax*qmax - qmin*qmin*qmin) / Mpc_units::Mpc3;
+    
     std::unique_ptr<Matsubara_XY_calculator_impl::integrand_data> data =
       std::make_unique<Matsubara_XY_calculator_impl::integrand_data>(IR_resum, k_min, qmin, qmax, Pk);
     
@@ -184,7 +186,9 @@ Matsubara_XY_calculator::compute_XY(const Mpc_units::energy& IR_resum, const Mpc
           &regions, &evaluations, &fail,
           integral, error, prob);
     
-    // phase space factor is the smae as Matsubara's 1/6pi^2, from 1/3 in raw definition of X and Y multiplied
-    // by an explicit 1/2 in the exponential
-    return integral[0] * Mpc_units::Mpc2 / (6.0 * M_PI * M_PI);
+    // factor of 1/2 in damping exponential exp(-k^2 (X+Y)/2) is absorbed here
+    // factor of 3 is what is left of volume normalization (4pi/3) after cancelling 4pi from integration measure
+    // (the q^3 factor in the volume is accounted for in dimless_qvolume)
+    // the factor pi^2 comes from the phase space measure in the k integral after cancelling 4pi from the numerator
+    return integral[0] * 3.0 * Mpc_units::Mpc2 / (2.0 * M_PI * M_PI * dimless_qvolume);
   }
