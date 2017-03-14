@@ -96,7 +96,7 @@ namespace MPI_detail
 
         //! empty constructor: used to receive a payload
         new_transfer_integration()
-          : model(),
+          : model("", 0, 0, 0, Mpc_units::energy(0), 0, 0, 0, 0, 0, 0, 0, Mpc_units::energy(0)),
             k(0),       // note k has no default constructor
             token(0),   // note token has no default constructor
             z_db()
@@ -229,7 +229,7 @@ namespace MPI_detail
         
         //! empty constructor, used to receive a payload
         new_filter_Pk()
-          : model(),
+          : model("", 0, 0, 0, Mpc_units::energy(0), 0, 0, 0, 0, 0, 0, 0, Mpc_units::energy(0)),
             k(0),
             k_tok(0),
             Pk_tok(0),
@@ -388,7 +388,7 @@ namespace MPI_detail
 
         //! empty constructor: used to receive a payload
         new_loop_momentum_integration()
-          : model(),
+          : model("", 0, 0, 0, Mpc_units::energy(0), 0, 0, 0, 0, 0, 0, 0, Mpc_units::energy(0)),
             k(0),
             UV_cutoff(0),
             IR_cutoff(0),

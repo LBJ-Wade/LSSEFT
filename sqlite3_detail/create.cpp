@@ -42,6 +42,7 @@ namespace sqlite3_operations
             stmt
               << "CREATE TABLE " << policy.FRW_model_table() << "("
               << "id INTEGER PRIMARY KEY, "
+              << "name TEXT, "
               << "omega_m DOUBLE, "
               << "omega_cc DOUBLE, "
               << "h DOUBLE, "

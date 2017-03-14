@@ -138,8 +138,8 @@ void master_controller::execute()
 
     // fix the background cosmological model
     // here, that's taken to have parameters matching the MDR1 simulation
-    FRW_model cosmology_model(MDR1::omega_m, MDR1::omega_cc, MDR1::h, MDR1::T_CMB, MDR1::Neff, MDR1::f_baryon,
-                              MDR1::z_star, MDR1::z_drag, MDR1::z_eq, MDR1::Acurv, MDR1::ns, MDR1::kpiv);
+    FRW_model cosmology_model(MDR1::name, MDR1::omega_m, MDR1::omega_cc, MDR1::h, MDR1::T_CMB, MDR1::Neff,
+                              MDR1::f_baryon, MDR1::z_star, MDR1::z_drag, MDR1::z_eq, MDR1::Acurv, MDR1::ns, MDR1::kpiv);
     std::unique_ptr<FRW_model_token> model = dmgr.tokenize(cosmology_model);
 
     // set up a list of wavenumbers to sample for the transfer functions, measured in h/Mpc

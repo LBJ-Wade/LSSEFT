@@ -34,6 +34,8 @@
 namespace MDR1
   {
     
+    const     std::string       name     = "Matches MDR1 simulation https://www.cosmosim.org/cms/simulations/mdr1";
+    
     constexpr double            omega_cc = 0.73;
     constexpr double            omega_m  = 0.27;
     constexpr double            h        = 0.70;
