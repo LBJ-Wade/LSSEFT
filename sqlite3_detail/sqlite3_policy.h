@@ -70,6 +70,9 @@ class sqlite3_policy
     //! linear power spectrum table
     const std::string& Pk_linear_table() const { return(this->Pk_linear); }
     
+    //! filtering configurations
+    const std::string& filter_config_table() const { return(this->filter_config); }
+    
     //! transfer function table
     const std::string& transfer_table() const { return(this->transfer); }
 
@@ -235,6 +238,9 @@ class sqlite3_policy
     
     //! linear power spectrum data table
     const std::string Pk_linear;
+    
+    //! filtering configuraitons
+    const std::string filter_config;
 
     //! transfer function table
     const std::string transfer;

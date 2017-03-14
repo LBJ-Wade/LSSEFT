@@ -35,6 +35,7 @@ constexpr auto SQLITE3_DEFAULT_UV_CUTOFF_CONFIGURATION_TABLE  = "UV_cutoff_confi
 constexpr auto SQLITE3_DEFAULT_IR_RESUM_CONFIGURATION_TABLE   = "IR_resum_config";
 constexpr auto SQLITE3_DEFAULT_LINEAR_PK_CONFIGURATION_TABLE  = "Pk_linear_config";
 constexpr auto SQLITE3_DEFAULT_LINEAR_PK_DATA_TABLE           = "Pk_linear";
+constexpr auto SQLITE3_DEFAULT_FILTER_CONFIGURATION_TABLE     = "filter_config";
 constexpr auto SQLITE3_DEFAULT_TRANSFER_TABLE                 = "transfer";
 constexpr auto SQLITE3_DEFAULT_GROWTH_G_TABLE                 = "g_factors";
 constexpr auto SQLITE3_DEFAULT_GROWTH_F_TABLE                 = "f_factors";

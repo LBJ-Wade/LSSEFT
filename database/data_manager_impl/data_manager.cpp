@@ -50,7 +50,8 @@ data_manager::data_manager(const boost::filesystem::path& c)
     policy(),
     FRW_model_tol(LSSEFT_DEFAULT_FRW_MODEL_PARAMETER_TOLERANCE),
     z_tol(LSSEFT_DEFAULT_REDSHIFT_CONFIGURATION_TOLERANCE),
-    k_tol(LSSEFT_DEFAULT_WAVENUMBER_CONFIGURATION_TOLERANCE)
+    k_tol(LSSEFT_DEFAULT_WAVENUMBER_CONFIGURATION_TOLERANCE),
+    filter_tol(LSSEFT_DEFAULT_FILTER_CONFIGURATION_TOLERANCE)
   {
     // check whether container already exists
     if(boost::filesystem::exists(container))

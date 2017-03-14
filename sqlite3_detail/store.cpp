@@ -636,7 +636,7 @@ namespace sqlite3_operations
 
         std::ostringstream insert_stmt;
         insert_stmt
-          << "INSERT INTO " << policy.Pk_linear_table() << " VALUES (@Pk_id, @kid, @Pk_raw, @Pk_nw, @Pk_ref);";
+          << "INSERT INTO " << policy.Pk_linear_table() << " VALUES (@Pk_id, @params_id, @kid, @Pk_raw, @Pk_nw, @Pk_ref);";
     
         // prepare statement
         sqlite3_stmt* stmt;
@@ -644,13 +644,14 @@ namespace sqlite3_operations
     
         // bind parameter values
         check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_id"), sample.get_Pk_token().get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@params_id"), sample.get_params_token().get_id()));
         check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@kid"), sample.get_k_token().get_id()));
         check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_raw"), store_impl::make_dimensionless(sample.get_Pk_raw())));
         check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_nw"), store_impl::make_dimensionless(sample.get_Pk_nowiggle())));
         check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_ref"), store_impl::make_dimensionless(sample.get_Pk_ref())));
     
         // perform insertion
-        check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_MATSUBARA_XY_FAIL, SQLITE_DONE);
+        check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_PK_LINEAR_DATA_FAIL, SQLITE_DONE);
     
         // clear bindings and release
         check_stmt(db, sqlite3_clear_bindings(stmt));

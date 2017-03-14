@@ -474,6 +474,7 @@ namespace sqlite3_operations
             stmt
               << "CREATE TABLE " << policy.Pk_linear_table() << "("
               << "Pk_id INTEGER, "
+              << "params_id INTEGER, "
               << "kid INTEGER, "
               << "Pk_raw DOUBLE, "
               << "Pk_nw DOUBLE, "
@@ -482,11 +483,29 @@ namespace sqlite3_operations
               << ", "
               << "PRIMARY KEY (Pk_id, kid), "
               << "FOREIGN KEY (Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
+              << "FOREIGN KEY (params_id) REFERENCES " << policy.filter_config_table() << "(id), "
               << "FOREIGN KEY (kid) REFERENCES " << policy.wavenumber_config_table() << "(id));";
 #else
               << ");";
 #endif
             
+            exec(db, stmt.str());
+          }
+        
+        
+        void filter_data_config_table(sqlite3* db, const sqlite3_policy& policy)
+          {
+            std::ostringstream stmt;
+            stmt
+              << "CREATE TABLE " << policy.filter_config_table() << "("
+              << "id INTEGER PRIMARY KEY, "
+              << "amplitude DOUBLE, "
+              << "pivot DOUBLE, "
+              << "idx DOUBLE, "
+              << "abserr DOUBLE, "
+              << "relerr DOUBLE"
+              << ");";
+              
             exec(db, stmt.str());
           }
         
@@ -510,6 +529,8 @@ namespace sqlite3_operations
         
         create_impl::Pk_linear_config_table(db, policy);
         create_impl::Pk_linear_data_table(db, policy);
+        
+        create_impl::filter_data_config_table(db, policy);
         
         create_impl::oneloop_momentum_integral_table(db, policy.AA_table(), policy);
         create_impl::oneloop_momentum_integral_table(db, policy.AB_table(), policy);

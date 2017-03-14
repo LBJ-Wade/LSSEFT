@@ -39,6 +39,7 @@
 
 #include "cosmology/types.h"
 #include "cosmology/FRW_model.h"
+#include "cosmology/Pk_filter.h"
 #include "cosmology/concepts/transfer_function.h"
 #include "cosmology/concepts/oneloop_growth.h"
 #include "cosmology/concepts/range.h"
@@ -162,7 +163,8 @@ class data_manager
     
     //! build a work list representing k-modes for which we need to produce a filtered wiggle/no-wiggle power spectrum
     std::unique_ptr<filter_Pk_work_list>
-    build_filter_Pk_work_list(linear_Pk_token& token, std::shared_ptr<filterable_Pk>& Pk_lin);
+    build_filter_Pk_work_list(linear_Pk_token& Pk_token, std::shared_ptr<filterable_Pk>& Pk_lin,
+                              filter_data_token& filter_token, const Pk_filter_data& params);
 
     //! exchange a linear power spectrum container for a wiggle-Pk container
     template <typename PkContainer>
@@ -200,6 +202,9 @@ class data_manager
     //! tokenize a linear power spectrum
     template <typename PkContainer>
     std::unique_ptr<linear_Pk_token> tokenize(const FRW_model_token& model, const PkContainer& Pk_lin);
+    
+    //! tokenize a set of filtering parameters
+    std::unique_ptr<filter_data_token> tokenize(const Pk_filter_data& data);
   
   protected:
     
@@ -220,6 +225,11 @@ class data_manager
     //! generates a new transaction on the database; will fail if a transaction is in progress
     template <typename PkContainer>
     std::unique_ptr<linear_Pk_token> tokenize(transaction_manager& mgr, const FRW_model_token& model, const PkContainer& Pk_lin);
+    
+    //! tokenize a set of filtering parameters
+    //! generates a new transaction on the database; will fail if a transaction is in progress
+    std::unique_ptr<filter_data_token> tokenize(transaction_manager& mgr, const Pk_filter_data& data);
+    
 
     // DATA STORAGE
 
@@ -306,6 +316,9 @@ class data_manager
     template <typename PkContainer>
     unsigned int lookup_or_insert(transaction_manager& mgr, const FRW_model_token& model, const PkContainer& Pk_lin);
     
+    //! lookup or insert a filtering parameter set
+    unsigned int lookup_or_insert(transaction_manager& mgr, const Pk_filter_data& data);
+    
     
     // INTERNAL DATA
 
@@ -340,6 +353,9 @@ class data_manager
 
     //! tolerance to use when searching for wavenumber configurations
     double k_tol;
+    
+    //! tolerance to use when searching for filter-data configurations
+    double filter_tol;
 
   };
 

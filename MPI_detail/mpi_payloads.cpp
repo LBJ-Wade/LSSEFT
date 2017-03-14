@@ -47,7 +47,7 @@ namespace MPI_detail
 
     new_filter_Pk build_payload(const FRW_model& model, filter_Pk_work_list::const_iterator& t)
       {
-        return new_filter_Pk(model, *(*t), t->get_k_token(), t->get_Pk_token(), t->get_linear_Pk());
+        return new_filter_Pk(model, *(*t), t->get_k_token(), t->get_Pk_token(), t->get_linear_Pk(), t->get_params_token(), t->get_params());
       }
     
     

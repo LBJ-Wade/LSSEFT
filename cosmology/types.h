@@ -38,6 +38,7 @@
 #include "cosmology/concepts/Matsubara_XY.h"
 
 #include "units/Mpc_units.h"
+#include "Pk_filter.h"
 
 
 //! work record for a transfer function calculation
@@ -467,12 +468,14 @@ class filter_Pk_work_record
   public:
     
     //! constructor
-    filter_Pk_work_record(const Mpc_units::energy& _k, const k_token& kt,
-                          std::shared_ptr<filterable_Pk>& Pk, const linear_Pk_token& Pt)
+    filter_Pk_work_record(const Mpc_units::energy& _k, const k_token& kt, std::shared_ptr<filterable_Pk>& Pk,
+                          const linear_Pk_token& Pt, const filter_data_token& pt, const Pk_filter_data& p)
       : k(_k),
         k_tok(kt),
         Pk_lin(Pk),
-        Pk_tok(Pt)
+        Pk_tok(Pt),
+        params_tok(pt),
+        params(p)
       {
       }
     
@@ -493,6 +496,12 @@ class filter_Pk_work_record
     //! get power spectrum token
     const linear_Pk_token& get_Pk_token() const { return this->Pk_tok; }
     
+    //! get filtering parameters token
+    const filter_data_token& get_params_token() const { return this->params_tok; }
+    
+    //! get filtering parameters
+    const Pk_filter_data& get_params() const { return this->params; }
+    
     
     // INTERNAL DATA
     
@@ -511,6 +520,12 @@ class filter_Pk_work_record
     
     //! token for unfiltered linear power spectrum
     linear_Pk_token Pk_tok;
+    
+    //! token for filtering parameters
+    filter_data_token params_tok;
+    
+    //! filtering parameters
+    Pk_filter_data params;
     
   };
 

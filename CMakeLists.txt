@@ -150,7 +150,8 @@ SET(SQLITE3_DETAIL_SOURCE_FILES
   sqlite3_detail/missing_elements.cpp sqlite3_detail/missing_elements.h
   sqlite3_detail/store.cpp sqlite3_detail/store.h
   sqlite3_detail/find.cpp sqlite3_detail/find.h
-  sqlite3_detail/power_spectrum.h)
+  sqlite3_detail/power_spectrum.h
+  sqlite3_detail/filter_data.cpp sqlite3_detail/filter_data.h)
 
 SET(SOURCE_FILES
   ${TOP_LEVEL_SOURCE_FILES}
@@ -211,6 +212,7 @@ ADD_EXECUTABLE(lsseft
   sqlite3_detail/create.cpp
   sqlite3_detail/FRW_model.cpp
   sqlite3_detail/redshift.cpp
+  sqlite3_detail/filter_data.cpp
   sqlite3_detail/temporary_tables.cpp
   sqlite3_detail/missing_elements.cpp
   sqlite3_detail/store.cpp

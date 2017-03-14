@@ -417,6 +417,43 @@ inline const std::string& tokenization_table<linear_Pk_token>(const sqlite3_poli
   }
 
 
+//! token representing a set of filtering parameters
+class filter_data_token: public generic_token
+  {
+    
+    // CONSTRUCTOR, DESTRUCTOR
+  
+  public:
+    
+    //! constructor
+    filter_data_token(unsigned int i);
+    
+    //! destructor is default
+    virtual ~filter_data_token() = default;
+  
+  
+  private:
+    
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+    
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & boost::serialization::base_object<generic_token>(*this);
+      }
+    
+  };
+
+
+// specialize tokenization for filtering tokens
+template <>
+inline const std::string& tokenization_table<filter_data_token>(const sqlite3_policy& policy)
+  {
+    return(policy.filter_config_table());
+  }
+
+
 namespace boost
   {
     

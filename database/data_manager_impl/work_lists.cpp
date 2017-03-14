@@ -449,7 +449,8 @@ data_manager::build_Matsubara_XY_work_list(FRW_model_token& model, IR_resum_data
 
 
 std::unique_ptr<filter_Pk_work_list>
-data_manager::build_filter_Pk_work_list(linear_Pk_token& token, std::shared_ptr<filterable_Pk>& Pk_lin)
+data_manager::build_filter_Pk_work_list(linear_Pk_token& Pk_token, std::shared_ptr<filterable_Pk>& Pk_lin,
+                                        filter_data_token& filter_token, const Pk_filter_data& params)
   {
     // start timer
     boost::timer::cpu_timer timer;
@@ -466,14 +467,14 @@ data_manager::build_filter_Pk_work_list(linear_Pk_token& token, std::shared_ptr<
     
     // obtain list of missing configurations
     std::unique_ptr<k_database> missing =
-      sqlite3_operations::missing_filter_Pk_wavenumbers(this->handle, *mgr, this->policy, token, *k_db, k_table);
+      sqlite3_operations::missing_filter_Pk_wavenumbers(this->handle, *mgr, this->policy, Pk_token, filter_token, *k_db, k_table);
     
     if(missing)
       {
         // add these configurations to the work list
         for(k_database::const_record_iterator t = missing->record_cbegin(); t != missing->record_cend(); ++t)
           {
-            work_list->emplace_back(*(*t), t->get_token(), Pk_lin, token);
+            work_list->emplace_back(*(*t), t->get_token(), Pk_lin, Pk_token, filter_token, params);
           }
       }
     

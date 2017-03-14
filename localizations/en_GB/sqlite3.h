@@ -41,6 +41,9 @@ constexpr auto ERROR_SQLITE3_INSERT_REDSHIFT_FAIL                    = "failed t
 constexpr auto ERROR_SQLITE3_MULTIPLE_WAVENUMBERS                    = "multiple wavenumbers with matching values";
 constexpr auto ERROR_SQLITE3_INSERT_WAVENUMBER_FAIL                  = "failed to insert wavenumber record [backend code=";
 
+constexpr auto ERROR_SQLITE3_MULTIPLE_FILTER_DATA                    = "multiple filter data sets with matching values";
+constexpr auto ERROR_SQLITE3_INSERT_FILTER_DATA_FAIL                 = "failed to insert filter data record [backend code=";
+
 constexpr auto ERROR_SQLITE3_TEMPORARY_REDSHIFT                      = "failed to insert redshift record in temporary table [backend code=";
 constexpr auto ERROR_SQLITE3_TEMPORARY_WAVENUMBER                    = "failed to insert wavenumber record in temporary table [backend code=";
 
@@ -48,7 +51,8 @@ constexpr auto ERROR_SQLITE3_MULTIPLE_PK_LINEAR                      = "multiple
 constexpr auto ERROR_SQLITE3_PK_LINEAR                               = "linear power spectrum";
 constexpr auto ERROR_SQLITE3_PK_LINEAR_WRONG_MODEL                   = "was originally tagged for use with model id";
 constexpr auto ERROR_SQLITE3_PK_LINEAR_WRONG_MD5                     = "has changed MD5 hash";
-constexpr auto ERROR_SQLITE3_INSERT_PK_LINEAR_FAIL                   = "failed to insert linear Pk record [backend code=";
+constexpr auto ERROR_SQLITE3_INSERT_PK_LINEAR_DATA_FAIL              = "failed to insert linear Pk data record [backend code=";
+constexpr auto ERROR_SQLITE3_INSERT_PK_LINEAR_CONFIG_FAIL            = "failed to insert linear Pk configuration record [backend code=";
 
 constexpr auto ERROR_SQLITE3_INSERT_TRANSFER_FAIL                    = "failed to insert transfer function record";
 constexpr auto ERROR_SQLITE3_INSERT_GROWTH_G_FAIL                    = "failed to insert one-loop growth g-factor record";

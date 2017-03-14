@@ -84,3 +84,9 @@ linear_Pk_token::linear_Pk_token(unsigned int i)
   : generic_token(i)
   {
   }
+
+
+filter_data_token::filter_data_token(unsigned int i)
+  : generic_token(i)
+  {
+  }

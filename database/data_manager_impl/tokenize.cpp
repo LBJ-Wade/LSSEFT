@@ -92,3 +92,26 @@ std::unique_ptr<z_token> data_manager::tokenize(transaction_manager& mgr, double
     unsigned int id = this->lookup_or_insert(mgr, z);
     return std::make_unique<z_token>(id);
   }
+
+
+std::unique_ptr<filter_data_token> data_manager::tokenize(const Pk_filter_data& data)
+  {
+    // open a new transaction on the database
+    std::shared_ptr<transaction_manager> transaction = this->open_transaction();
+    
+    // lookup id for this set of filter parameters, or generate one if it does not already exist
+    std::unique_ptr<filter_data_token> id = this->tokenize(*transaction, data);
+    
+    // commit the transaction
+    transaction->commit();
+    
+    return std::move(id);
+  }
+
+
+std::unique_ptr<filter_data_token> data_manager::tokenize(transaction_manager& mgr, const Pk_filter_data& data)
+  {
+    // look up id for this set of filter parameters, or generate one if it does not already exist
+    unsigned int id = this->lookup_or_insert(mgr, data);
+    return std::make_unique<filter_data_token>(id);
+  }

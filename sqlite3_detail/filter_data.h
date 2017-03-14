@@ -1,5 +1,5 @@
 //
-// Created by David Seery on 05/12/2016.
+// Created by David Seery on 14/03/2017.
 // --@@ // Copyright (c) 2017 University of Sussex. All rights reserved.
 //
 // This file is part of the Sussex Effective Field Theory for
@@ -23,30 +23,34 @@
 // --@@
 //
 
-#include "filtered_Pk_value.h"
+#ifndef LSSEFT_FILTER_DATA_H
+#define LSSEFT_FILTER_DATA_H
 
 
-filtered_Pk_value::filtered_Pk_value(const k_token& kt, const linear_Pk_token& Pt, const filter_data_token& pt,
-                                     Mpc_units::inverse_energy3 _Pk_nw, Mpc_units::inverse_energy3 _Pk_raw,
-                                     Mpc_units::inverse_energy3 _Pk_ref)
-  : fail(false),
-    k_tok(kt),
-    Pk_tok(Pt),
-    params_tok(pt),
-    Pk_nw(std::move(_Pk_nw)),
-    Pk_raw(std::move(_Pk_raw)),
-    Pk_ref(std::move(_Pk_ref))
+#include <memory>
+
+#include "cosmology/Pk_filter.h"
+
+#include "database/transaction_manager.h"
+#include "sqlite3_policy.h"
+
+#include "boost/optional.hpp"
+
+#include "sqlite3.h"
+
+
+namespace sqlite3_operations
   {
-  }
+    
+    //! lookup id for a set of filter data
+    boost::optional<unsigned int> lookup_filter_data(sqlite3* db, transaction_manager& mgr, const Pk_filter_data& data,
+                                                     const sqlite3_policy& policy, double tol);
+    
+    //! insert a set of filter data
+    unsigned int insert_filter_data(sqlite3* db, transaction_manager& mgr, const Pk_filter_data& data,
+                                    const sqlite3_policy& policy);
+    
+  }   // namespace sqlite3_operations
 
 
-filtered_Pk_value::filtered_Pk_value()
-  : fail(false),
-    k_tok(0),
-    Pk_tok(0),
-    params_tok(0),
-    Pk_nw(0.0),
-    Pk_raw(0.0),
-    Pk_ref(0.0)
-  {
-  }
+#endif //LSSEFT_FILTER_DATA_H

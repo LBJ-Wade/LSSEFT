@@ -224,9 +224,10 @@ namespace sqlite3_operations
       }
 
 
-    //! find missing wavenumbers in a named table, returned as a std::set<> of ids
-    std::set<unsigned int> missing_wavenumbers_for_table(sqlite3* db, const linear_Pk_token& token,
-                                                         const std::string& table, const std::string& k_table)
+    //! find missing wavenumbers for a filtered power spectrum
+    std::set<unsigned int> missing_filtered_wavenumbers(sqlite3* db, const linear_Pk_token& Pk_token,
+                                                        const filter_data_token& params_token,
+                                                        const std::string& table, const std::string& k_table)
       {
         assert(db != nullptr);
 
@@ -235,7 +236,7 @@ namespace sqlite3_operations
         select_stmt
           << "SELECT id FROM " << k_table << " "
           << "WHERE id NOT IN "
-          << "(SELECT kid FROM " << table << " WHERE " << table << ".Pk_id=@Pk_id) "
+          << "(SELECT kid FROM " << table << " WHERE " << table << ".Pk_id=@Pk_id AND " << table << ".params_id=@params_id) "
           << "ORDER BY id;";
 
         // prepare statement
@@ -243,7 +244,8 @@ namespace sqlite3_operations
         check_stmt(db, sqlite3_prepare_v2(db, select_stmt.str().c_str(), select_stmt.str().length()+1, &stmt, nullptr));
 
         // bind parameter values
-        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_id"), token.get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_id"), Pk_token.get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@params_id"), params_token.get_id()));
 
         std::set<unsigned int> results;
 
@@ -870,7 +872,8 @@ namespace sqlite3_operations
     
     std::unique_ptr<k_database>
     missing_filter_Pk_wavenumbers(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
-                                  const linear_Pk_token& token, const k_database& k_db, const std::string& k_table)
+                                  const linear_Pk_token& Pk_token, const filter_data_token& params_token,
+                                  const k_database& k_db, const std::string& k_table)
       {
         assert(db != nullptr);
         
@@ -878,7 +881,7 @@ namespace sqlite3_operations
         std::unique_ptr<k_database> missing_db;
         
         // get list of missing k-values for this linear power spectrum
-        std::set<unsigned int> missing = missing_wavenumbers_for_table(db, token, policy.Pk_linear_table(), k_table);
+        std::set<unsigned int> missing = missing_filtered_wavenumbers(db, Pk_token, params_token, policy.Pk_linear_table(), k_table);
         
         if(missing.size() > 0)
           {

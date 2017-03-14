@@ -193,23 +193,25 @@ void slave_controller::process_item(MPI_detail::new_filter_Pk& payload)
     const FRW_model& model = payload.get_model();
     const Mpc_units::energy& k = payload.get_k();
     const filterable_Pk& Pk_lin = payload.get_Pk_linear();
+    const Pk_filter_data& params = payload.get_params();
     
     const k_token& k_tok = payload.get_k_token();
     const linear_Pk_token& Pk_tok = payload.get_Pk_token();
+    const filter_data_token& params_tok = payload.get_params_token();
     
     filtered_Pk_value sample;
     try
       {
-        Pk_filter filter;
+        Pk_filter filter(params);
         auto out = filter(model, Pk_lin, k);
-        sample = filtered_Pk_value(k_tok, Pk_tok, out.first, Pk_lin(k), out.second);
+        sample = filtered_Pk_value(k_tok, Pk_tok, params_tok, out.first, Pk_lin(k), out.second);
       }
     catch(runtime_exception& xe)
       {
         if(xe.get_exception_code() == exception_type::filter_failure)
           {
             std::cerr << "lsseft: " << xe.what() << '\n';
-            sample = filtered_Pk_value(k_tok, Pk_tok, 0.0, Pk_lin(k), 0.0);
+            sample = filtered_Pk_value(k_tok, Pk_tok, params_tok, 0.0, Pk_lin(k), 0.0);
             sample.mark_failed();
           }
         else

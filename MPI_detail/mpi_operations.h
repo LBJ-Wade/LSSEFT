@@ -233,18 +233,22 @@ namespace MPI_detail
             k(0),
             k_tok(0),
             Pk_tok(0),
-            Pk_lin()
+            Pk_lin(),
+            params_tok(0),
+            params()
           {
           }
            
         //! value constructor, used to construct and send a payload
-        new_filter_Pk(const FRW_model& m, const Mpc_units::energy& _k, const k_token& kt,
-                      const linear_Pk_token& Pt, const std::shared_ptr<filterable_Pk>& _Pk)
+        new_filter_Pk(const FRW_model& m, const Mpc_units::energy& _k, const k_token& kt, const linear_Pk_token& Pt,
+                      const std::shared_ptr<filterable_Pk>& _Pk, const filter_data_token& pt, const Pk_filter_data& p)
           : model(m),
             k(_k),
             k_tok(kt),
             Pk_tok(Pt),
-            Pk_lin(_Pk)
+            Pk_lin(_Pk),
+            params_tok(pt),
+            params(p)
           {
           }
         
@@ -270,6 +274,12 @@ namespace MPI_detail
         
         //! get linear power specturm container
         const filterable_Pk& get_Pk_linear() const { return *this->Pk_lin; }
+        
+        //! get filtering parameters token
+        const filter_data_token& get_params_token() const { return this->params_tok; }
+        
+        //! get filtering parameters
+        const Pk_filter_data& get_params() const { return this->params; }
     
     
         // INTERNAL DATA
@@ -290,6 +300,12 @@ namespace MPI_detail
         
         //! linear power spectrum container
         std::shared_ptr<filterable_Pk> Pk_lin;
+        
+        //! token for filtering parameters
+        filter_data_token params_tok;
+        
+        //! filtering parameters
+        Pk_filter_data params;
     
     
         // enable boost::serialization support, and hence automated packing for transmission over MPI
@@ -303,6 +319,8 @@ namespace MPI_detail
             ar & k_tok;
             ar & Pk_tok;
             ar & Pk_lin;
+            ar & params_tok;
+            ar & params;
           }
     
       };

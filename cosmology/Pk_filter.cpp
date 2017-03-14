@@ -134,12 +134,11 @@ Pk_filter::operator()(const FRW_model& model, const filterable_Pk& Pk_lin, const
     const double slog_max = std::log10(k_max * Mpc_units::Mpc);
     const double slog_min = std::log10(k_min * Mpc_units::Mpc);
 
-    // scale 0.25 for lambda suggested by Vlah, Seljak, Chu & Feng p.23 arXiv:1509.02120
-    // they also suggested it should grow slightly at large k
-    constexpr Mpc_units::energy K_PIV = 0.07 / Mpc_units::Mpc;
-    constexpr double LAMBDA_SLOPE = 0.02;
-
-    const double lambda = 0.25 * std::pow(k/K_PIV, LAMBDA_SLOPE);
+    const Mpc_units::energy pivot = this->params.get_pivot();
+    const double amplitude = this->params.get_amplitude();
+    const double index = this->params.get_index();
+    
+    const double lambda = amplitude * std::pow(k/pivot, index);
     
     try
       {
@@ -178,7 +177,7 @@ double Pk_filter::integrate(const double slog_min, const double slog_max, const 
           Pk_filter_impl::components,
           integrand, data.get(),
           Pk_filter_impl::points_per_invocation,
-          this->rel_err, this->abs_err,
+          this->params.get_relerr(), this->params.get_abserr(),
           Pk_filter_impl::verbosity_none | Pk_filter_impl::samples_last,
           Pk_filter_impl::min_eval, Pk_filter_impl::max_eval,
           Pk_filter_impl::cuhre_key,
