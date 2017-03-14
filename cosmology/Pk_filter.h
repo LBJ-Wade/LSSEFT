@@ -34,6 +34,9 @@
 
 #include "defaults.h"
 
+#include "boost/timer/timer.hpp"
+#include "boost/serialization/serialization.hpp"
+
 #include "cuba.h"
 
 
@@ -129,6 +132,60 @@ class Pk_filter_data
   };
 
 
+template <typename ValueType>
+class filter_result
+  {
+  
+  public:
+    
+    typedef ValueType value_type;
+    
+    //! constructor initializes zero values
+    filter_result()
+      : value(value_type(0.0)),
+        error(value_type(0.0)),
+        regions(0),
+        evaluations(0),
+        time(0)
+      {
+      }
+    
+    //! destructor is default
+    ~filter_result() = default;
+    
+    
+    // DATA
+    
+  public:
+    
+    value_type                    value;
+    value_type                    error;
+    
+    unsigned int                  regions;
+    unsigned int                  evaluations;
+    boost::timer::nanosecond_type time;
+  
+  private:
+    
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+    
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & value;
+        ar & regions;
+        ar & evaluations;
+        ar & error;
+        ar & time;
+      }
+    
+  };
+
+
+typedef filter_result<Mpc_units::inverse_energy3> Pk_filter_result;
+
+
 class Pk_filter
   {
     
@@ -152,7 +209,7 @@ class Pk_filter
     
     //! filter a linear power spectrum; returns estimate of the no-wiggle component and
     //! the reference power spectrum for the same scale
-    std::pair< Mpc_units::inverse_energy3, Mpc_units::inverse_energy3 >
+    std::pair< Pk_filter_result, Mpc_units::inverse_energy3 >
     operator()(const FRW_model& model, const filterable_Pk& Pk_lin, const Mpc_units::energy& k);
     
     
@@ -161,8 +218,10 @@ class Pk_filter
   private:
     
     //! apply filter to a given integrand
-    double integrate(const double slog_min, const double slog_max, const double klog, const double lambda,
-                     const filterable_Pk& Pk_lin, const approx_Pk& Papprox, integrand_t integrand);
+    template <typename ResultType>
+    bool integrate(const double slog_min, const double slog_max, const double klog, const double lambda,
+                   const filterable_Pk& Pk_lin, const approx_Pk& Papprox, integrand_t integrand,
+                   ResultType& result);
 
     //! compute Eisenstein & Hu approximation to the power spectrum
     std::unique_ptr<approx_Pk> eisenstein_hu(const FRW_model& model, const filterable_Pk& Pk_lin);

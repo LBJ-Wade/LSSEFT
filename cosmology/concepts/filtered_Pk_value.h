@@ -30,7 +30,10 @@
 #include "database/tokens.h"
 #include "units/Mpc_units.h"
 
+#include "cosmology/Pk_filter.h"
+
 #include "boost/serialization/serialization.hpp"
+
 
 class filtered_Pk_value
   {
@@ -41,7 +44,7 @@ class filtered_Pk_value
     
     //! value constructor
     filtered_Pk_value(const k_token& kt, const linear_Pk_token& Pt, const filter_data_token& pt,
-                      Mpc_units::inverse_energy3 _Pk_nw, Mpc_units::inverse_energy3 _Pk_raw,
+                      Pk_filter_result _Pk_nw, Mpc_units::inverse_energy3 _Pk_raw,
                       Mpc_units::inverse_energy3 _Pk_ref);
     
     //! empty constructor, used only for receiving MPI payloads
@@ -72,10 +75,10 @@ class filtered_Pk_value
     const filter_data_token& get_params_token() const { return this->params_tok; }
     
     //! get no-wiggle power spectrum
-    const Mpc_units::inverse_energy3 get_Pk_nowiggle() const { return this->Pk_nw; }
+    const Pk_filter_result get_Pk_nowiggle() const { return this->Pk_nw; }
     
     //! get raw power spectrum
-    const Mpc_units::inverse_energy3 get_Pk_raw() const { return this->Pk_raw; }
+    const Mpc_units::inverse_energy3& get_Pk_raw() const { return this->Pk_raw; }
     
     //! get reference power spectrum
     const Mpc_units::inverse_energy3 get_Pk_ref() const { return this->Pk_ref; }
@@ -104,7 +107,7 @@ class filtered_Pk_value
     // PAYLOAD DATA
     
     //! no-wiggle power spectrum
-    Mpc_units::inverse_energy3 Pk_nw;
+    Pk_filter_result Pk_nw;
     
     //! raw power spectrum
     Mpc_units::inverse_energy3 Pk_raw;

@@ -27,7 +27,7 @@
 
 
 filtered_Pk_value::filtered_Pk_value(const k_token& kt, const linear_Pk_token& Pt, const filter_data_token& pt,
-                                     Mpc_units::inverse_energy3 _Pk_nw, Mpc_units::inverse_energy3 _Pk_raw,
+                                     Pk_filter_result _Pk_nw, Mpc_units::inverse_energy3 _Pk_raw,
                                      Mpc_units::inverse_energy3 _Pk_ref)
   : fail(false),
     k_tok(kt),
@@ -45,7 +45,7 @@ filtered_Pk_value::filtered_Pk_value()
     k_tok(0),
     Pk_tok(0),
     params_tok(0),
-    Pk_nw(0.0),
+    Pk_nw(),
     Pk_raw(0.0),
     Pk_ref(0.0)
   {

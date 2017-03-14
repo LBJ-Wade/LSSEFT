@@ -119,7 +119,7 @@ namespace Pk_filter_impl
   }   // namespace Pk_filter_impl
 
 
-std::pair< Mpc_units::inverse_energy3, Mpc_units::inverse_energy3 >
+std::pair< Pk_filter_result, Mpc_units::inverse_energy3 >
 Pk_filter::operator()(const FRW_model& model, const filterable_Pk& Pk_lin, const Mpc_units::energy& k)
   {
     // build reference Eisenstein & Hu power spectrum
@@ -140,27 +140,43 @@ Pk_filter::operator()(const FRW_model& model, const filterable_Pk& Pk_lin, const
     
     const double lambda = amplitude * std::pow(k/pivot, index);
     
-    try
+    filter_result<double> filtered_Pk;
+    filter_result<double> volume;
+    
+    bool filter_fail = this->integrate(slog_min, slog_max, klog, lambda, Pk_lin, *Papprox, Pk_filter_impl::filter_integrand, filtered_Pk);
+    bool volume_fail = this->integrate(slog_min, slog_max, klog, lambda, Pk_lin, *Papprox, Pk_filter_impl::window_integrand, volume);
+
+    double raw_ratio = filtered_Pk.value / volume.value;
+
+    Pk_filter_result rval;
+    rval.value = (*Papprox)(k) * raw_ratio;
+
+    double A_ratio = filtered_Pk.error/filtered_Pk.value;
+    double B_ratio = volume.error/volume.value;
+    double err = std::abs(raw_ratio) * std::sqrt(A_ratio*A_ratio + B_ratio*B_ratio);
+    rval.error = (*Papprox)(k) * err;
+
+    // we have a choice about what we report for the integration metadata;
+    // currently we report the values for the Pk part of the integration
+    rval.evaluations = filtered_Pk.evaluations;
+    rval.regions = filtered_Pk.regions;
+    rval.time = filtered_Pk.time;
+
+    if(filter_fail || volume_fail)
       {
-        const double filtered_Pk = this->integrate(slog_min, slog_max, klog, lambda, Pk_lin, *Papprox, Pk_filter_impl::filter_integrand);
-        const double volume      = this->integrate(slog_min, slog_max, klog, lambda, Pk_lin, *Papprox, Pk_filter_impl::window_integrand);
-    
-        const Mpc_units::inverse_energy3 P_nw = (*Papprox)(k) * filtered_Pk / volume;
-    
-        return std::make_pair(P_nw, (*Papprox)(k));
-      }
-    catch(runtime_exception& xe)
-      {
+        std::ostringstream msg;
+        msg << LSSEFT_PK_FILTER_FAIL << " k = " << k * Mpc_units::Mpc << " h/Mpc";
+        throw runtime_exception(exception_type::filter_failure, msg.str());
       }
     
-    std::ostringstream msg;
-    msg << LSSEFT_PK_FILTER_FAIL << " k = " << k * Mpc_units::Mpc << " h/Mpc";
-    throw runtime_exception(exception_type::filter_failure, msg.str());
+    return std::make_pair(rval, (*Papprox)(k));
   }
 
 
-double Pk_filter::integrate(const double slog_min, const double slog_max, const double klog, const double lambda,
-                            const filterable_Pk& Pk_lin, const approx_Pk& Papprox, integrand_t integrand)
+template <typename ResultType>
+bool Pk_filter::integrate(const double slog_min, const double slog_max, const double klog, const double lambda,
+                          const filterable_Pk& Pk_lin, const approx_Pk& Papprox, integrand_t integrand,
+                          ResultType& result)
   {
     cubareal integral[Pk_filter_impl::dimensions];
     cubareal error[Pk_filter_impl::dimensions];
@@ -169,6 +185,8 @@ double Pk_filter::integrate(const double slog_min, const double slog_max, const 
     int regions;
     int evaluations;
     int fail;
+    
+    boost::timer::cpu_timer raw_timer;
 
     std::unique_ptr<Pk_filter_impl::integrand_data> data =
       std::make_unique<Pk_filter_impl::integrand_data>(slog_min, slog_max, klog, lambda, Pk_lin, Papprox);
@@ -185,10 +203,16 @@ double Pk_filter::integrate(const double slog_min, const double slog_max, const 
           &regions, &evaluations, &fail,
           integral, error, prob);
     
-    if(fail != 0 || !std::isfinite(integral[0]) || !std::isfinite(error[0]))
-      throw runtime_exception(exception_type::filter_failure);
+    raw_timer.stop();
     
-    return integral[0];
+    // write values into return structure
+    result.value = typename ResultType::value_type(integral[0]);
+    result.error = typename ResultType::value_type(error[0]);
+    result.regions = regions;
+    result.evaluations = evaluations;
+    result.time = raw_timer.elapsed().wall;
+    
+    return(fail != 0 || !std::isfinite(integral[0]) || !std::isfinite(error[0]));
   }
 
 

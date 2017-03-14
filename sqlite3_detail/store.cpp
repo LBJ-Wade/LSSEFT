@@ -636,19 +636,25 @@ namespace sqlite3_operations
 
         std::ostringstream insert_stmt;
         insert_stmt
-          << "INSERT INTO " << policy.Pk_linear_table() << " VALUES (@Pk_id, @params_id, @kid, @Pk_raw, @Pk_nw, @Pk_ref);";
+          << "INSERT INTO " << policy.Pk_linear_table() << " VALUES (@Pk_id, @params_id, @kid, @Pk_raw, @Pk_nw, @Pk_ref, @Pk_nw_err, @regions, @evaluations, @time);";
     
         // prepare statement
         sqlite3_stmt* stmt;
         check_stmt(db, sqlite3_prepare_v2(db, insert_stmt.str().c_str(), insert_stmt.str().length()+1, &stmt, nullptr));
     
         // bind parameter values
+        const Pk_filter_result& Pk_nw = sample.get_Pk_nowiggle();
+        
         check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_id"), sample.get_Pk_token().get_id()));
         check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@params_id"), sample.get_params_token().get_id()));
         check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@kid"), sample.get_k_token().get_id()));
         check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_raw"), store_impl::make_dimensionless(sample.get_Pk_raw())));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_nw"), store_impl::make_dimensionless(sample.get_Pk_nowiggle())));
+        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_nw"), store_impl::make_dimensionless(Pk_nw.value)));
         check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_ref"), store_impl::make_dimensionless(sample.get_Pk_ref())));
+        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_nw_err"), store_impl::make_dimensionless(Pk_nw.error)));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@regions"), Pk_nw.regions));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@evaluations"), Pk_nw.evaluations));
+        check_stmt(db, sqlite3_bind_int64(stmt, sqlite3_bind_parameter_index(stmt, "@time"), Pk_nw.time));
     
         // perform insertion
         check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_PK_LINEAR_DATA_FAIL, SQLITE_DONE);

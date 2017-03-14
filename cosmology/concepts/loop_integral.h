@@ -55,6 +55,7 @@ class loop_integral_result
     //! destructor is default
     ~loop_integral_result() = default;
 
+    
     // DATA
   
   public:
