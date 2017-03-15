@@ -33,6 +33,8 @@
 // Planck 2013+WP 'best fit' parameters from Table 2 on p.11 of arXiv:1303.5076
 namespace Planck2013
   {
+    
+    const     std::string       name     = "Planck2013 best-fit TT+TE+EE+lowP+lensing+ext cosmology";
 
     constexpr double            omega_cc = 0.6817;
     constexpr double            omega_m  = 1.0 - omega_cc;
@@ -59,6 +61,8 @@ namespace Planck2013
 // Planck 2015 TT+TE+EE+lowP+lensing+ext parameters from Table 4 on p.31 of arXiv:1502.01589
 namespace Planck2015
   {
+   
+    const     std::string       name     = "Planck2015 best-fit TT+TE+EE+lowP+lensing+ext cosmology";
     
     constexpr double            omega_cc = 0.6911;
     constexpr double            omega_m  = 1.0 - omega_cc;

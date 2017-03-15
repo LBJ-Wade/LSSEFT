@@ -86,7 +86,7 @@ resum_Pk_configs data_manager::tensor_product(k_database& k_db, IR_cutoff_databa
 
 
 std::unique_ptr<transfer_work_list>
-data_manager::build_transfer_work_list(FRW_model_token& model, k_database& k_db, z_database& z_db)
+data_manager::build_transfer_work_list(const FRW_model_token& model, k_database& k_db, z_database& z_db)
   {
     // start timer
     boost::timer::cpu_timer timer;
@@ -103,8 +103,6 @@ data_manager::build_transfer_work_list(FRW_model_token& model, k_database& k_db,
     // for each wavenumber in k_db, find which z-values are missing
     for(k_database::record_iterator t = k_db.record_begin(); t != k_db.record_end(); ++t)
       {
-//        std::cout << "lsseft: checking missing redshift values for k = " << (*(*t) * Mpc_units::Mpc) << " h/Mpc = " << (*(*t)) / Mpc_units::eV << " eV" << '\n';
-        
         // get a database of missing redshifts for this k-value.
         // sqlite3_operations::missing_redshifts() returns a std::unique_ptr which transfers ownership,
         // but we want to convert that to a std::shared_ptr which is what transfer_work_item expects,
@@ -117,8 +115,6 @@ data_manager::build_transfer_work_list(FRW_model_token& model, k_database& k_db,
         // if any redshifts were missing, set up a record in the work list
         if(missing)
           {
-//            std::cout << "  -- " << missing_values->size() << " redshifts" << '\n';
-            
             work_list->emplace_back(*(*t), t->get_token(), missing);
           }
       }
@@ -130,7 +126,9 @@ data_manager::build_transfer_work_list(FRW_model_token& model, k_database& k_db,
     mgr->commit();
     
     timer.stop();
-    std::cout << "lsseft: constructed transfer function work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall) << '\n';
+    std::ostringstream msg;
+    msg << "constructed transfer function work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall);
+    this->err_handler.info(msg.str());
     
     // release list if it contains no work
     if(work_list->empty()) work_list.release();
@@ -139,7 +137,8 @@ data_manager::build_transfer_work_list(FRW_model_token& model, k_database& k_db,
   }
 
 
-std::unique_ptr<z_database> data_manager::build_oneloop_work_list(FRW_model_token& model, z_database& z_db)
+std::unique_ptr<z_database>
+data_manager::build_loop_growth_work_list(const FRW_model_token& model, z_database& z_db, const growth_params_token& params)
   {
     // start timer
     boost::timer::cpu_timer timer;
@@ -151,8 +150,7 @@ std::unique_ptr<z_database> data_manager::build_oneloop_work_list(FRW_model_toke
     std::string z_table = sqlite3_operations::z_table(this->handle, *mgr, this->policy, z_db);
     
     std::unique_ptr<z_database> work_list =
-      sqlite3_operations::missing_oneloop_growth_redshifts(this->handle, *mgr, this->policy, model,
-                                                           z_db, z_table);
+      sqlite3_operations::missing_oneloop_growth_redshifts(this->handle, *mgr, this->policy, model, params, z_db, z_table);
     
     // drop unneeded temporary tables
     sqlite3_operations::drop_temp(this->handle, *mgr, z_table);
@@ -161,24 +159,26 @@ std::unique_ptr<z_database> data_manager::build_oneloop_work_list(FRW_model_toke
     mgr->commit();
     
     timer.stop();
-    std::cout << "lsseft: constructed one-loop growth factor work list ("
-              << (work_list ? work_list->size() : 0) << " items) in time "
-              << format_time(timer.elapsed().wall) << '\n';
+    std::ostringstream msg;
+    msg << "constructed one-loop growth factor work list ("
+        << (work_list ? work_list->size() : 0) << " items) in time "
+        << format_time(timer.elapsed().wall);
+    this->err_handler.info(msg.str());
     
     return(work_list);
   }
 
 
-std::unique_ptr<loop_momentum_work_list>
-data_manager::build_loop_momentum_work_list(FRW_model_token& model, k_database& k_db,
-                                            IR_cutoff_database& IR_db, UV_cutoff_database& UV_db,
-                                            std::shared_ptr<initial_filtered_Pk>& Pk)
+std::unique_ptr<loop_integral_work_list>
+data_manager::build_loop_momentum_work_list(const FRW_model_token& model, k_database& k_db, IR_cutoff_database& IR_db,
+                                            UV_cutoff_database& UV_db, std::shared_ptr<initial_filtered_Pk>& Pk,
+                                            const loop_integral_params_token& params_tok, const loop_integral_params& params)
   {
     // start timer
     boost::timer::cpu_timer timer;
     
     // construct an empty work list
-    std::unique_ptr<loop_momentum_work_list> work_list = std::make_unique<loop_momentum_work_list>();
+    std::unique_ptr<loop_integral_work_list> work_list = std::make_unique<loop_integral_work_list>();
     
     // open a transaction on the database
     std::shared_ptr<transaction_manager> mgr = this->open_transaction();
@@ -190,21 +190,24 @@ data_manager::build_loop_momentum_work_list(FRW_model_token& model, k_database& 
     // obtain set of configurations that actually need to be computed, ie. are not already present
     // in the database
     loop_configs missing =
-      sqlite3_operations::missing_loop_integral_configurations(this->handle, *mgr, this->policy, model, Pk->get_token(),
-                                                               required_configs);
+      sqlite3_operations::missing_loop_integral_configurations(this->handle, *mgr, this->policy, model, params_tok,
+                                                               Pk->get_token(), required_configs);
     
     // add these missing configurations to the work list
     for(const loop_configs::value_type& record : missing)
       {
         work_list->emplace_back(*(*record.k), record.k->get_token(), *(*record.UV_cutoff),
-                                record.UV_cutoff->get_token(), *(*record.IR_cutoff), record.IR_cutoff->get_token(), Pk);
+                                record.UV_cutoff->get_token(), *(*record.IR_cutoff), record.IR_cutoff->get_token(), Pk,
+                                params_tok, params);
       }
     
     // close transaction
     mgr->commit();
     
     timer.stop();
-    std::cout << "lsseft: constructed loop momentum work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall) << '\n';
+    std::ostringstream msg;
+    msg << "constructed loop momentum work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall);
+    this->err_handler.info(msg.str());
     
     // release list if it contains no work
     if(work_list->empty()) work_list.release();
@@ -214,8 +217,9 @@ data_manager::build_loop_momentum_work_list(FRW_model_token& model, k_database& 
 
 
 std::unique_ptr<one_loop_Pk_work_list>
-data_manager::build_one_loop_Pk_work_list(FRW_model_token& model, z_database& z_db, k_database& k_db,
-                                          IR_cutoff_database& IR_db, UV_cutoff_database& UV_db,
+data_manager::build_one_loop_Pk_work_list(const FRW_model_token& model, const growth_params_token& growth_params,
+                                          const loop_integral_params_token& loop_params, z_database& z_db,
+                                          k_database& k_db, IR_cutoff_database& IR_db, UV_cutoff_database& UV_db,
                                           std::shared_ptr<initial_filtered_Pk>& Pk_init,
                                           std::shared_ptr<final_filtered_Pk>& Pk_final)
   {
@@ -241,16 +245,17 @@ data_manager::build_one_loop_Pk_work_list(FRW_model_token& model, z_database& z_
       {
         // find redshifts that are missing for this configuration, if any
         std::unique_ptr<z_database> missing_zs =
-          sqlite3_operations::missing_one_loop_Pk_redshifts(this->handle, *mgr, this->policy, model,
-                                                            Pk_init->get_token(), final_tok, z_table, z_db, record);
+          sqlite3_operations::missing_one_loop_Pk_redshifts(this->handle, *mgr, this->policy, model, growth_params,
+                                                            loop_params, Pk_init->get_token(), final_tok, z_table,
+                                                            z_db, record);
         
         // schedule a task to compute any missing redshifts
         if(missing_zs)
           {
-            std::shared_ptr<oneloop_growth> g = this->find<oneloop_growth>(*mgr, model, z_db);
+            std::shared_ptr<oneloop_growth> g = this->find<oneloop_growth>(*mgr, model, growth_params, z_db);
             
             std::shared_ptr<loop_integral> l =
-              this->find<loop_integral>(*mgr, model, record.k->get_token(), Pk_init->get_token(),
+              this->find<loop_integral>(*mgr, model, loop_params, record.k->get_token(), Pk_init->get_token(),
                                         record.IR_cutoff->get_token(), record.UV_cutoff->get_token());
             
             work_list->emplace_back(*(*record.k), g, l, Pk_init, Pk_final);
@@ -261,7 +266,9 @@ data_manager::build_one_loop_Pk_work_list(FRW_model_token& model, z_database& z_
     sqlite3_operations::drop_temp(this->handle, *mgr, z_table);
     
     timer.stop();
-    std::cout << "lsseft: constructed one-loop P(k) work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall) << '\n';
+    std::ostringstream msg;
+    msg << "constructed one-loop P(k) work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall);
+    this->err_handler.info(msg.str());
     
     // close transaction
     mgr->commit();
@@ -274,9 +281,11 @@ data_manager::build_one_loop_Pk_work_list(FRW_model_token& model, z_database& z_
 
 
 std::unique_ptr<one_loop_resum_Pk_work_list>
-data_manager::build_one_loop_resum_Pk_work_list(FRW_model_token& model, z_database& z_db, k_database& k_db,
-                                                IR_cutoff_database& IR_cutoff_db, UV_cutoff_database& UV_cutoff_db,
-                                                IR_resum_database& IR_resum_db,
+data_manager::build_one_loop_resum_Pk_work_list(const FRW_model_token& model, const growth_params_token& growth_params,
+                                                const loop_integral_params_token& loop_params,
+                                                const MatsubaraXY_params_token& XY_params, z_database& z_db,
+                                                k_database& k_db, IR_cutoff_database& IR_cutoff_db,
+                                                UV_cutoff_database& UV_cutoff_db, IR_resum_database& IR_resum_db,
                                                 std::shared_ptr<initial_filtered_Pk>& Pk_init,
                                                 std::shared_ptr<final_filtered_Pk>& Pk_final)
   {
@@ -303,25 +312,26 @@ data_manager::build_one_loop_resum_Pk_work_list(FRW_model_token& model, z_databa
         // find redshifts that are missing for this configuration, if any
         std::unique_ptr<z_database> missing_zs =
           sqlite3_operations::missing_one_loop_resum_Pk_redshifts(this->handle, *mgr, this->policy, model,
+                                                                  growth_params, loop_params, XY_params,
                                                                   Pk_init->get_token(), final_tok, z_table, z_db, record);
         
         // schedule a task to compute any missing redshifts
         if(missing_zs)
           {
-            std::unique_ptr<oneloop_growth> gf_data = this->find<oneloop_growth>(*mgr, model, *missing_zs);
+            std::unique_ptr<oneloop_growth> gf_data = this->find<oneloop_growth>(*mgr, model, growth_params, *missing_zs);
             
-            for(oneloop_growth::const_iterator t = gf_data->cbegin(); t != gf_data->cend(); ++t)
+            for(const oneloop_value& val : *gf_data)
               {
                 // lookup one-loop data for this redshift and loop configuration
                 std::shared_ptr<oneloop_Pk> loop_data =
-                  this->find<oneloop_Pk>(*mgr, model, record.k->get_token(), (*t).first, Pk_init->get_token(),
-                                         final_tok, record.IR_cutoff->get_token(), record.UV_cutoff->get_token());
+                  this->find<oneloop_Pk>(*mgr, model, growth_params, loop_params, record.k->get_token(), val.first,
+                                         Pk_init->get_token(), final_tok, record.IR_cutoff->get_token(), record.UV_cutoff->get_token());
                 
                 // lookup Matsubara X & Y coefficients for this IR resummation scale
                 std::unique_ptr<Matsubara_XY> XY_coeffs =
-                  this->find<Matsubara_XY>(*mgr, model, Pk_init->get_token(), record.IR_resum->get_token());
+                  this->find<Matsubara_XY>(*mgr, model, XY_params, Pk_init->get_token(), record.IR_resum->get_token());
                 
-                work_list->emplace_back(*(*record.k), *XY_coeffs, loop_data, (*t).second, Pk_init, Pk_final);
+                work_list->emplace_back(*(*record.k), *XY_coeffs, loop_data, val.second, Pk_init, Pk_final);
               }
           }
       }
@@ -333,7 +343,9 @@ data_manager::build_one_loop_resum_Pk_work_list(FRW_model_token& model, z_databa
     mgr->commit();
     
     timer.stop();
-    std::cout << "lsseft: constructed one-loop resummed P(k) work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall) << '\n';
+    std::ostringstream msg;
+    msg << "constructed one-loop resummed P(k) work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall);
+    this->err_handler.info(msg.str());
     
     // release list if it contains no work
     if(work_list->empty()) work_list.release();
@@ -343,9 +355,11 @@ data_manager::build_one_loop_resum_Pk_work_list(FRW_model_token& model, z_databa
 
 
 std::unique_ptr<multipole_Pk_work_list>
-data_manager::build_multipole_Pk_work_list(FRW_model_token& model, z_database& z_db, k_database& k_db,
-                                           IR_cutoff_database& IR_cutoff_db, UV_cutoff_database& UV_cutoff_db,
-                                           IR_resum_database& IR_resum_db,
+data_manager::build_multipole_Pk_work_list(const FRW_model_token& model, const growth_params_token& growth_params,
+                                           const loop_integral_params_token& loop_params,
+                                           const MatsubaraXY_params_token& XY_params, z_database& z_db,
+                                           k_database& k_db, IR_cutoff_database& IR_cutoff_db,
+                                           UV_cutoff_database& UV_cutoff_db, IR_resum_database& IR_resum_db,
                                            std::shared_ptr<initial_filtered_Pk>& Pk_init,
                                            std::shared_ptr<final_filtered_Pk>& Pk_final)
   {
@@ -371,26 +385,26 @@ data_manager::build_multipole_Pk_work_list(FRW_model_token& model, z_database& z
       {
         // find redshifts that are missing for this configuration, if any
         std::unique_ptr<z_database> missing_zs =
-          sqlite3_operations::missing_multipole_Pk_redshifts(this->handle, *mgr, this->policy, model,
-                                                             Pk_init->get_token(), final_tok, z_table, z_db, record);
+          sqlite3_operations::missing_multipole_Pk_redshifts(this->handle, *mgr, this->policy, model, growth_params,
+                                                             loop_params, XY_params, Pk_init->get_token(), final_tok, z_table, z_db, record);
         
         // schedule a task to compute any missing redshifts
         if(missing_zs)
           {
-            std::unique_ptr<oneloop_growth> gf_data = this->find<oneloop_growth>(*mgr, model, *missing_zs);
+            std::unique_ptr<oneloop_growth> gf_data = this->find<oneloop_growth>(*mgr, model, growth_params, *missing_zs);
             
-            for(oneloop_growth::const_iterator t = gf_data->cbegin(); t != gf_data->cend(); ++t)
+            for(const oneloop_value& val : *gf_data)
               {
                 // lookup one-loop data for this redshift and loop configuration
                 std::shared_ptr<oneloop_Pk> loop_data =
-                  this->find<oneloop_Pk>(*mgr, model, record.k->get_token(), (*t).first, Pk_init->get_token(),
-                                         final_tok, record.IR_cutoff->get_token(), record.UV_cutoff->get_token());
+                  this->find<oneloop_Pk>(*mgr, model, growth_params, loop_params, record.k->get_token(), val.first,
+                                         Pk_init->get_token(), final_tok, record.IR_cutoff->get_token(), record.UV_cutoff->get_token());
                 
                 // lookup Matsubara X & Y coefficients for this IR resummation scale
                 std::unique_ptr<Matsubara_XY> XY_coeffs =
-                  this->find<Matsubara_XY>(*mgr, model, Pk_init->get_token(), record.IR_resum->get_token());
+                  this->find<Matsubara_XY>(*mgr, model, XY_params, Pk_init->get_token(), record.IR_resum->get_token());
                 
-                work_list->emplace_back(*(*record.k), *XY_coeffs, loop_data, (*t).second, Pk_init, Pk_final);
+                work_list->emplace_back(*(*record.k), *XY_coeffs, loop_data, val.second, Pk_init, Pk_final);
               }
           }
       }
@@ -402,7 +416,9 @@ data_manager::build_multipole_Pk_work_list(FRW_model_token& model, z_database& z
     mgr->commit();
     
     timer.stop();
-    std::cout << "lsseft: constructed one-loop multipole P(k) work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall) << '\n';
+    std::ostringstream msg;
+    msg << "constructed one-loop multipole P(k) work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall);
+    this->err_handler.info(msg.str());
     
     // release list if it contains no work
     if(work_list->empty()) work_list.release();
@@ -412,8 +428,10 @@ data_manager::build_multipole_Pk_work_list(FRW_model_token& model, z_database& z
 
 
 std::unique_ptr<Matsubara_XY_work_list>
-data_manager::build_Matsubara_XY_work_list(FRW_model_token& model, IR_resum_database& IR_resum_db,
-                                           std::shared_ptr<initial_filtered_Pk>& Pk)
+data_manager::build_Matsubara_XY_work_list(const FRW_model_token& model_tok, IR_resum_database& IR_resum_db,
+                                           std::shared_ptr<initial_filtered_Pk>& Pk,
+                                           const MatsubaraXY_params_token& XY_tok,
+                                           const MatsubaraXY_params& params)
   {
     // start timer
     boost::timer::cpu_timer timer;
@@ -426,20 +444,22 @@ data_manager::build_Matsubara_XY_work_list(FRW_model_token& model, IR_resum_data
     
     // obatain list of missing configurations
     Matsubara_configs missing =
-      sqlite3_operations::missing_Matsubara_XY_configurations(this->handle, *mgr, this->policy, model, Pk->get_token(),
-                                                              IR_resum_db);
+      sqlite3_operations::missing_Matsubara_XY_configurations(this->handle, *mgr, this->policy, model_tok,
+                                                              Pk->get_token(), IR_resum_db, XY_tok);
     
     // add these configurations to the work list
     for(const Matsubara_configs::value_type& record : missing)
       {
-        work_list->emplace_back(*(*record.IR_resum), record.IR_resum->get_token(), Pk);
+        work_list->emplace_back(*(*record.IR_resum), record.IR_resum->get_token(), Pk, XY_tok, params);
       }
     
     // close transaction
     mgr->commit();
     
     timer.stop();
-    std::cout << "lsseft: constructed Matsubara XY work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall) << '\n';
+    std::ostringstream msg;
+    msg << "constructed Matsubara XY work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall);
+    this->err_handler.info(msg.str());
     
     // release list if it contains no work
     if(work_list->empty()) work_list.release();
@@ -449,7 +469,8 @@ data_manager::build_Matsubara_XY_work_list(FRW_model_token& model, IR_resum_data
 
 
 std::unique_ptr<filter_Pk_work_list>
-data_manager::build_filter_Pk_work_list(linear_Pk_token& token, std::shared_ptr<filterable_Pk>& Pk_lin)
+data_manager::build_filter_Pk_work_list(const linear_Pk_token& Pk_token, std::shared_ptr<filterable_Pk>& Pk_lin,
+                                        const filter_params_token& filter_token, const Pk_filter_params& params)
   {
     // start timer
     boost::timer::cpu_timer timer;
@@ -466,14 +487,14 @@ data_manager::build_filter_Pk_work_list(linear_Pk_token& token, std::shared_ptr<
     
     // obtain list of missing configurations
     std::unique_ptr<k_database> missing =
-      sqlite3_operations::missing_filter_Pk_wavenumbers(this->handle, *mgr, this->policy, token, *k_db, k_table);
+      sqlite3_operations::missing_filter_Pk_wavenumbers(this->handle, *mgr, this->policy, Pk_token, filter_token, *k_db, k_table);
     
     if(missing)
       {
         // add these configurations to the work list
         for(k_database::const_record_iterator t = missing->record_cbegin(); t != missing->record_cend(); ++t)
           {
-            work_list->emplace_back(*(*t), t->get_token(), Pk_lin, token);
+            work_list->emplace_back(*(*t), t->get_token(), Pk_lin, Pk_token, filter_token, params);
           }
       }
     
@@ -484,7 +505,9 @@ data_manager::build_filter_Pk_work_list(linear_Pk_token& token, std::shared_ptr<
     mgr->commit();
     
     timer.stop();
-    std::cout << "lsseft: constructed wiggle/no-wiggle filter work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall) << '\n';
+    std::ostringstream msg;
+    msg << "constructed wiggle/no-wiggle filter work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall);
+    this->err_handler.info(msg.str());
     
     // release list if it contains to work
     if(work_list->empty()) work_list.release();

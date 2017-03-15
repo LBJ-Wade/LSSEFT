@@ -42,10 +42,18 @@ class FRW_model
     //! constructor
     //! cosmological parameters refer to their values today; if none are provided, then we use
     //! Planck values as sensible defaults
-    FRW_model(double om = Planck2015::omega_m, double occ = Planck2015::omega_cc, double h_ = Planck2015::h,
-              Mpc_units::energy tc = Planck2015::T_CMB, double ne = Planck2015::Neff,
-              double fb = Planck2015::f_baryon, double zs = Planck2015::z_star, double zd = Planck2015::z_drag,
-              double ze = Planck2015::z_eq, double Ac = Planck2015::Acurv, double n = Planck2015::ns,
+    FRW_model(std::string nm = Planck2015::name,
+              double om = Planck2015::omega_m,
+              double occ = Planck2015::omega_cc,
+              double h_ = Planck2015::h,
+              Mpc_units::energy tc = Planck2015::T_CMB,
+              double ne = Planck2015::Neff,
+              double fb = Planck2015::f_baryon,
+              double zs = Planck2015::z_star,
+              double zd = Planck2015::z_drag,
+              double ze = Planck2015::z_eq,
+              double Ac = Planck2015::Acurv,
+              double n = Planck2015::ns,
               Mpc_units::energy kp = Planck2015::kpiv);
 
     //! destructor is default
@@ -56,6 +64,9 @@ class FRW_model
 
   public:
 
+    //! get name
+    const std::string& get_name() const { return this->name; }
+    
     //! get value of omega_m
     double get_omega_m() const { return(this->omega_m); }
 
@@ -97,6 +108,9 @@ class FRW_model
 
   private:
 
+    //! name
+    std::string name;
+    
     //! omega_m, measured today
     double omega_m;
 
@@ -140,6 +154,7 @@ class FRW_model
     template <typename Archive>
     void serialize(Archive& ar, unsigned int version)
       {
+        ar & name;
         ar & omega_m;
         ar & omega_cc;
         ar & h;

@@ -137,7 +137,7 @@ namespace sqlite3_operations
         check_stmt(db, sqlite3_bind_text(stmt, sqlite3_bind_parameter_index(stmt, "@md5_hash"), md5.c_str(), md5.length(), SQLITE_STATIC));
         
         // perform insertion
-        check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_PK_LINEAR_FAIL, SQLITE_DONE);
+        check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_PK_LINEAR_CONFIG_FAIL, SQLITE_DONE);
         
         // finalize statement and release resources
         check_stmt(db, sqlite3_clear_bindings(stmt));

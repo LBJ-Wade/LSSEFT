@@ -24,7 +24,6 @@
 //
 
 
-#include <MPI_detail/mpi_traits.h>
 #include "core.h"
 
 #include "master_controller.h"
@@ -32,6 +31,9 @@
 
 #include "cosmology/FRW_model.h"
 #include "cosmology/MDR1_sim.h"
+#include "cosmology/oneloop_growth_integrator.h"
+#include "cosmology/Pk_filter.h"
+#include "cosmology/Matsubara_XY_calculator.h"
 #include "cosmology/oneloop_growth_integrator.h"
 #include "cosmology/concepts/range.h"
 #include "cosmology/concepts/power_spectrum.h"
@@ -133,12 +135,12 @@ void master_controller::execute()
       }
 
     // set up
-    data_manager dmgr(this->arg_cache.get_database_path());
+    data_manager dmgr(this->arg_cache.get_database_path(), this->err_handler);
 
     // fix the background cosmological model
     // here, that's taken to have parameters matching the MDR1 simulation
-    FRW_model cosmology_model(MDR1::omega_m, MDR1::omega_cc, MDR1::h, MDR1::T_CMB, MDR1::Neff, MDR1::f_baryon,
-                              MDR1::z_star, MDR1::z_drag, MDR1::z_eq, MDR1::Acurv, MDR1::ns, MDR1::kpiv);
+    FRW_model cosmology_model(MDR1::name, MDR1::omega_m, MDR1::omega_cc, MDR1::h, MDR1::T_CMB, MDR1::Neff,
+                              MDR1::f_baryon, MDR1::z_star, MDR1::z_drag, MDR1::z_eq, MDR1::Acurv, MDR1::ns, MDR1::kpiv);
     std::unique_ptr<FRW_model_token> model = dmgr.tokenize(cosmology_model);
 
     // set up a list of wavenumbers to sample for the transfer functions, measured in h/Mpc
@@ -171,7 +173,26 @@ void master_controller::execute()
     std::unique_ptr<IR_cutoff_database> IR_cutoff_db = dmgr.build_IR_cutoff_db(IR_cutoffs);
     std::unique_ptr<IR_resum_database>  IR_resum_db  = dmgr.build_IR_resum_db(IR_resummation);
     std::unique_ptr<k_database>         loop_k_db    = dmgr.build_k_db(loop_k_samples);
-
+    
+    
+    // SET UP PARAMETERS
+    
+    // set up parameters for filter
+    Pk_filter_params filter_params(0.25, 0.05 / Mpc_units::Mpc, 0.02);
+    std::unique_ptr<filter_params_token> filter_tok = dmgr.tokenize(filter_params);
+    
+    // set up parameters for growth function
+    growth_params gf_params;
+    std::unique_ptr<growth_params_token> growth_tok = dmgr.tokenize(gf_params);
+    
+    // set up parameters for Matsubara X&Y integral
+    MatsubaraXY_params XY_params;
+    std::unique_ptr<MatsubaraXY_params_token> XY_tok = dmgr.tokenize(XY_params);
+    
+    // set up parameters for loop integral
+    loop_integral_params loop_params;
+    std::unique_ptr<loop_integral_params_token> loop_tok = dmgr.tokenize(loop_params);
+    
     
     // GENERATE TARGETS
 
@@ -187,10 +208,10 @@ void master_controller::execute()
 
     // build a work list for linear and one-loop growth functions (and their growth rates);
     // we inherit ownership of its lifetime using std::unique_ptr<>
-    std::unique_ptr<z_database> loop_growth_work = dmgr.build_oneloop_work_list(*model, *lo_z_db);
+    std::unique_ptr<z_database> loop_growth_work = dmgr.build_loop_growth_work_list(*model, *lo_z_db, *growth_tok);
 
     // compute linear and one-loop growth functions, if needed; can be done on master process since there is only one integration
-    if(loop_growth_work) this->integrate_oneloop(cosmology_model, *model, *loop_growth_work, dmgr);
+    if(loop_growth_work) this->integrate_loop_growth(cosmology_model, *model, *loop_growth_work, dmgr, *growth_tok, gf_params);
     
     if(this->arg_cache.is_initial_powerspectrum_set())
       {
@@ -200,11 +221,11 @@ void master_controller::execute()
         // we manage its lifetime using std::shared_ptr<> because we want to share ownership with
         // the MPI work records and payloads
         std::shared_ptr<initial_Pk> init_Pk_lin_db = std::make_shared<initial_Pk>(this->arg_cache.get_initial_powerspectrum_path());
-        std::unique_ptr<linear_Pk_token> init_Pk_lin = dmgr.tokenize(*model, *init_Pk_lin_db);
+        std::unique_ptr<linear_Pk_token> init_Pk_tok = dmgr.tokenize(*model, *init_Pk_lin_db);
     
         // build a work list for filtering the linear power spectrum in wiggle/no-wiggle components
         std::shared_ptr<filterable_Pk> filterable_init_Pk_lin_db = make_filterable(*init_Pk_lin_db);
-        auto init_filter_work = dmgr.build_filter_Pk_work_list(*init_Pk_lin, filterable_init_Pk_lin_db);
+        auto init_filter_work = dmgr.build_filter_Pk_work_list(*init_Pk_tok, filterable_init_Pk_lin_db, *filter_tok, filter_params);
     
         // distribute this work list among the worker processes
         if(init_filter_work) this->scatter(cosmology_model, *model, *init_filter_work, dmgr);
@@ -212,30 +233,30 @@ void master_controller::execute()
         // exchange our linear power spectrum for the filtered version;
         // we manage its lifetime using std::shared_ptr<> since ownership is shared with the
         // MPI work records and payloads
-        std::shared_ptr<initial_filtered_Pk> initial_Pk_wig = dmgr.build_wiggle_Pk(*init_Pk_lin, *init_Pk_lin_db);
+        std::shared_ptr<initial_filtered_Pk> init_Pk_filt = dmgr.build_wiggle_Pk(*init_Pk_tok, *init_Pk_lin_db);
     
         // if a final linear power spectrum has been specified, then read this in too, tokenize it,
         // and obtain a container
-        std::unique_ptr<linear_Pk_token> final_Pk_lin;
-        std::shared_ptr<final_filtered_Pk> final_Pk_wig;
+        std::unique_ptr<linear_Pk_token> final_Pk_tok;
+        std::shared_ptr<final_filtered_Pk> final_Pk_filt;
         if(this->arg_cache.is_final_powerspectrum_set())
           {
             // read in final power spectrum and tokenize it
             std::shared_ptr<final_Pk> final_Pk_lin_db = std::make_shared<final_Pk>(this->arg_cache.get_final_powerspectrum_path());
-            final_Pk_lin = dmgr.tokenize(*model, *final_Pk_lin_db);
+            final_Pk_tok = dmgr.tokenize(*model, *final_Pk_lin_db);
             
             // build a work list for filtering
             std::shared_ptr<filterable_Pk> filterable_final_Pk_lin_db = make_filterable(*final_Pk_lin_db);
-            auto final_filter_work = dmgr.build_filter_Pk_work_list(*final_Pk_lin, filterable_final_Pk_lin_db);
+            auto final_filter_work = dmgr.build_filter_Pk_work_list(*final_Pk_tok, filterable_final_Pk_lin_db, *filter_tok, filter_params);
             
             // distribute this work list among the worker processes
             if(final_filter_work) this->scatter(cosmology_model, *model, *final_filter_work, dmgr);
             
             // get filtered version of power spectrum
-            final_Pk_wig = dmgr.build_wiggle_Pk(*final_Pk_lin, *final_Pk_lin_db);
+            final_Pk_filt = dmgr.build_wiggle_Pk(*final_Pk_tok, *final_Pk_lin_db);
             
             // rescale final power spectrum
-            dmgr.rescale_final_Pk(*model, *final_Pk_wig, *lo_z_db);
+            dmgr.rescale_final_Pk(*model, *growth_tok, *final_Pk_filt, *lo_z_db);
           }
     
     
@@ -243,7 +264,7 @@ void master_controller::execute()
     
         // build a work list of the Matsubara X & Y coefficients associated with these resummation scales
         std::unique_ptr<Matsubara_XY_work_list> Matsubara_work =
-          dmgr.build_Matsubara_XY_work_list(*model, *IR_resum_db, initial_Pk_wig);
+          dmgr.build_Matsubara_XY_work_list(*model, *IR_resum_db, init_Pk_filt, *XY_tok, XY_params);
     
         // distribute this work list among the worker processes
         if(Matsubara_work) this->scatter(cosmology_model, *model, *Matsubara_work, dmgr);
@@ -252,8 +273,8 @@ void master_controller::execute()
         // STEP 3 - COMPUTE LOOP INTEGRALS
 
         // build a work list for the loop integrals
-        std::unique_ptr<loop_momentum_work_list> loop_momentum_work =
-          dmgr.build_loop_momentum_work_list(*model, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, initial_Pk_wig);
+        std::unique_ptr<loop_integral_work_list> loop_momentum_work =
+          dmgr.build_loop_momentum_work_list(*model, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, init_Pk_filt, *loop_tok, loop_params);
 
         // distribute this work list among the worker processes
         if(loop_momentum_work) this->scatter(cosmology_model, *model, *loop_momentum_work, dmgr);
@@ -263,16 +284,17 @@ void master_controller::execute()
         
         // build a work list for the individual power spectrum components
         std::unique_ptr<one_loop_Pk_work_list> Pk_work =
-          dmgr.build_one_loop_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db,
-                                           initial_Pk_wig, final_Pk_wig);
+          dmgr.build_one_loop_Pk_work_list(*model, *growth_tok, *loop_tok, *lo_z_db, *loop_k_db,
+                                           *IR_cutoff_db, *UV_cutoff_db, init_Pk_filt, final_Pk_filt);
 
         // distribute this work list among the worker processes
         if(Pk_work) this->scatter(cosmology_model, *model, *Pk_work, dmgr);
         
         // build a work list for the resummed power spectrum components
         std::unique_ptr<one_loop_resum_Pk_work_list> Pk_resum_work =
-          dmgr.build_one_loop_resum_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db,
-                                                 *IR_resum_db, initial_Pk_wig, final_Pk_wig);
+          dmgr.build_one_loop_resum_Pk_work_list(*model, *growth_tok, *loop_tok, *XY_tok, *lo_z_db,
+                                                 *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, *IR_resum_db, init_Pk_filt,
+                                                 final_Pk_filt);
         
         // distribute this work list among the worker processes
         if(Pk_resum_work) this->scatter(cosmology_model, *model, *Pk_resum_work, dmgr);
@@ -282,8 +304,9 @@ void master_controller::execute()
         
         // build a work list for the resummed multipole power spectra
         std::unique_ptr<multipole_Pk_work_list> multipole_Pk_work =
-          dmgr.build_multipole_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db,
-                                            *IR_resum_db, initial_Pk_wig, final_Pk_wig);
+          dmgr.build_multipole_Pk_work_list(*model, *growth_tok, *loop_tok, *XY_tok, *lo_z_db,
+                                            *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, *IR_resum_db, init_Pk_filt,
+                                            final_Pk_filt);
     
         // distribute this work list among the worker processes
         if(multipole_Pk_work) this->scatter(cosmology_model, *model, *multipole_Pk_work, dmgr);
@@ -300,6 +323,8 @@ void master_controller::scatter(const FRW_model& model, const FRW_model_token& t
     using WorkItem = typename WorkItemList::value_type;
     
     boost::timer::cpu_timer timer;
+    boost::timer::cpu_timer database_timer;
+    database_timer.stop();
 
     if(this->mpi_world.size() == 1) throw runtime_exception(exception_type::runtime_error, ERROR_TOO_FEW_WORKERS);
 
@@ -349,7 +374,9 @@ void master_controller::scatter(const FRW_model& model, const FRW_model_token& t
               {
                 case MPI_detail::MESSAGE_WORK_PRODUCT_READY:
                   {
+                    database_timer.resume();
                     this->store_payload<WorkItem>(token, stat->source(), dmgr);
+                    database_timer.stop();
                     sch->mark_unassigned(this->worker_number(stat->source()));
                     break;
                   }
@@ -372,7 +399,12 @@ void master_controller::scatter(const FRW_model& model, const FRW_model_token& t
       }
 
     timer.stop();
-    std::cout << "lsseft: completed work in time " << format_time(timer.elapsed().wall) << '\n';
+    std::ostringstream msg;
+    msg << "completed work in time " << format_time(timer.elapsed().wall)
+        << " ["
+        << "database performance: write time " << format_time(database_timer.elapsed().wall)
+        << "]";
+    this->err_handler.info(msg.str());
   }
 
 
@@ -448,12 +480,12 @@ void master_controller::close_down_workers()
   }
 
 
-void master_controller::integrate_oneloop(const FRW_model& model, const FRW_model_token& token, z_database& z_db,
-                                          data_manager& dmgr)
+void master_controller::integrate_loop_growth(const FRW_model& model, const FRW_model_token& token, z_database& z_db, data_manager& dmgr,
+                                              const growth_params_token& params_tok, const growth_params& params)
   {
-    oneloop_growth_integrator integrator;
+    oneloop_growth_integrator integrator(params);
 
-    growth_integrator_data data = integrator.integrate(model, z_db);
+    growth_integrator_data data = integrator.integrate(model, params_tok, z_db);
 
     dmgr.store(token, *data.container);
   }

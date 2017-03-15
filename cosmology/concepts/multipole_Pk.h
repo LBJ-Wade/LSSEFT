@@ -312,9 +312,10 @@ class multipole_Pk
   public:
     
     //! value constructor
-    multipole_Pk(const k_token kt, const linear_Pk_token Pkt_i, const boost::optional<linear_Pk_token> Pkt_f,
-                 const IR_cutoff_token IRt, const UV_cutoff_token UVt, const z_token zt, const IR_resum_token IRrt,
-                 const Pk_ell _P0, const Pk_ell _P2, const Pk_ell _P4);
+    multipole_Pk(const k_token kt, const growth_params_token& gp, const loop_integral_params_token& lp,
+                 const MatsubaraXY_params_token& XYp, const linear_Pk_token Pkt_i,
+                 const boost::optional<linear_Pk_token> Pkt_f, const IR_cutoff_token IRt, const UV_cutoff_token UVt,
+                 const z_token zt, const IR_resum_token IRrt, const Pk_ell _P0, const Pk_ell _P2, const Pk_ell _P4);
     
     //! empty constructor for us in MPI payloads
     multipole_Pk();
@@ -329,6 +330,15 @@ class multipole_Pk
     
     //! get wavenumber token
     const k_token& get_k_token() const { return this->k; }
+    
+    //! get growth parameters token
+    const growth_params_token& get_growth_params_token() const { return this->growth_params; }
+    
+    //! get loop integral parameters token
+    const loop_integral_params_token& get_loop_params_token() const { return this->loop_params; }
+    
+    //! get XY parameters token
+    const MatsubaraXY_params_token& get_XY_params_token() const { return this->XY_params; }
     
     //! get UV cutoff token
     const UV_cutoff_token& get_UV_cutoff_token() const { return this->UV_cutoff; }
@@ -372,6 +382,15 @@ class multipole_Pk
     //! wavenumber token
     k_token k;
     
+    //! growth parameters token
+    growth_params_token growth_params;
+    
+    //! loop parameters token
+    loop_integral_params_token loop_params;
+    
+    //! XY parameters token
+    MatsubaraXY_params_token XY_params;
+    
     //! initial linear power spectrum token
     linear_Pk_token init_Pk;
     
@@ -410,6 +429,9 @@ class multipole_Pk
     void serialize(Archive& ar, unsigned int version)
       {
         ar & k;
+        ar & growth_params;
+        ar & loop_params;
+        ar & XY_params;
         ar & init_Pk;
         ar & UV_cutoff;
         ar & IR_cutoff;
@@ -444,9 +466,11 @@ namespace boost
             Pk_ell empty(empty_Pk, empty_Pk, empty_Pk, empty_Pk, empty_k2_Pk, empty_Pk,
                          empty_k2_Pk, empty_Pk, empty_k2_Pk, empty_k2_Pk, empty_k2_Pk, empty_k2_Pk,
                          empty_k2_Pk, empty_k2_Pk, empty_k2_Pk, empty_k2_Pk, empty_k2_Pk);
-
-            ::new(t) multipole_Pk(k_token(0), linear_Pk_token(0), boost::none, IR_cutoff_token(0),
-                                  UV_cutoff_token(0), z_token(0), IR_resum_token(0), empty, empty, empty);
+    
+            ::new(t) multipole_Pk(k_token(0), growth_params_token(0), loop_integral_params_token(0),
+                                  MatsubaraXY_params_token(0), linear_Pk_token(0),
+                                  boost::none, IR_cutoff_token(0), UV_cutoff_token(0), z_token(0), IR_resum_token(0),
+                                  empty, empty, empty);
           }
         
       }   // namespace serialization

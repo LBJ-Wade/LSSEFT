@@ -132,7 +132,8 @@ namespace Matsubara_XY_calculator_impl
 
 Matsubara_XY
 Matsubara_XY_calculator::calculate_Matsubara_XY(const Mpc_units::energy& IR_resum, const IR_resum_token& IR_resum_tok,
-                                                const initial_filtered_Pk& Pk_lin)
+                                                const initial_filtered_Pk& Pk_lin,
+                                                const MatsubaraXY_params_token& params_tok)
   {
     // extract database for power spectra
     const auto& raw_db = Pk_lin.get_raw_db();
@@ -150,7 +151,7 @@ Matsubara_XY_calculator::calculate_Matsubara_XY(const Mpc_units::energy& IR_resu
     Mpc_units::inverse_energy2 X = this->compute_XY(IR_resum, k_min, nowiggle, Matsubara_XY_calculator_impl::matsubara_X_integrand);
     Mpc_units::inverse_energy2 Y = this->compute_XY(IR_resum, k_min, nowiggle, Matsubara_XY_calculator_impl::matsubara_Y_integrand);
     
-    return Matsubara_XY(Pk_lin.get_token(), IR_resum_tok, X, Y);
+    return Matsubara_XY(params_tok, Pk_lin.get_token(), IR_resum_tok, X, Y);
   }
 
 
@@ -178,7 +179,7 @@ Matsubara_XY_calculator::compute_XY(const Mpc_units::energy& IR_resum, const Mpc
           Matsubara_XY_calculator_impl::components,
           integrand, data.get(),
           Matsubara_XY_calculator_impl::points_per_invocation,
-          this->rel_err, this->abs_err,
+          this->params.get_relerr(), this->params.get_abserr(),
           Matsubara_XY_calculator_impl::verbosity_none | Matsubara_XY_calculator_impl::samples_last,
           Matsubara_XY_calculator_impl::min_eval, Matsubara_XY_calculator_impl::max_eval,
           Matsubara_XY_calculator_impl::cuhre_key,

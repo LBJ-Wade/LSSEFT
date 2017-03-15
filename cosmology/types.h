@@ -31,11 +31,16 @@
 
 #include "database/tokens.h"
 #include "database/z_database.h"
+
 #include "cosmology/concepts/power_spectrum.h"
 #include "cosmology/concepts/oneloop_growth.h"
 #include "cosmology/concepts/loop_integral.h"
 #include "cosmology/concepts/oneloop_Pk.h"
 #include "cosmology/concepts/Matsubara_XY.h"
+
+#include "cosmology/Pk_filter.h"
+#include "cosmology/oneloop_momentum_integrator.h"
+#include "cosmology/Matsubara_XY_calculator.h"
 
 #include "units/Mpc_units.h"
 
@@ -97,7 +102,7 @@ typedef std::list<transfer_work_record> transfer_work_list;
 
 
 //! work record for a momentum integral calculation
-class loop_momentum_work_record
+class loop_integral_work_record
   {
 
     // CONSTRUCTOR, DESTRUCTOR
@@ -105,22 +110,24 @@ class loop_momentum_work_record
   public:
 
     //! constructor
-    loop_momentum_work_record(const Mpc_units::energy& _k, const k_token& kt,
-                              const Mpc_units::energy& _UV, const UV_cutoff_token& UVt,
-                              const Mpc_units::energy& _IR, const IR_cutoff_token& IRt,
-                              const std::shared_ptr<initial_filtered_Pk>& _Pk)
+    loop_integral_work_record(const Mpc_units::energy& _k, const k_token& kt, const Mpc_units::energy& _UV,
+                              const UV_cutoff_token& UVt, const Mpc_units::energy& _IR, const IR_cutoff_token& IRt,
+                              const std::shared_ptr<initial_filtered_Pk>& _Pk, const loop_integral_params_token& _pt,
+                              const loop_integral_params& _p)
       : k(_k),
         UV_cutoff(_UV),
         IR_cutoff(_IR),
         k_tok(kt),
         UV_tok(UVt),
         IR_tok(IRt),
-        Pk(_Pk)
+        Pk(_Pk),
+        params_tok(_pt),
+        params(_p)
       {
       }
 
     //! destructor is default
-    ~loop_momentum_work_record() = default;
+    ~loop_integral_work_record() = default;
 
 
     // INTERFACE
@@ -147,6 +154,12 @@ class loop_momentum_work_record
 
     //! get tree-level power spectrum
     const std::shared_ptr<initial_filtered_Pk>& get_tree_Pk_db() const { return(this->Pk); }
+    
+    //! get parameters token
+    const loop_integral_params_token& get_params_token() const { return this->params_tok; }
+    
+    //! get parameters block
+    const loop_integral_params& get_params() const { return this->params; }
 
 
     // INTERNAL DATA
@@ -173,11 +186,17 @@ class loop_momentum_work_record
 
     //! tree-level power spectrum
     std::shared_ptr<initial_filtered_Pk> Pk;
+    
+    //! parameters token
+    loop_integral_params_token params_tok;
+    
+    //! parameters block
+    loop_integral_params params;
 
   };
 
 //! list of work for loop integral calculation
-typedef std::list<loop_momentum_work_record> loop_momentum_work_list;
+typedef std::list<loop_integral_work_record> loop_integral_work_list;
 
 
 //! work record for a one-loop power spectrum calculation
@@ -259,10 +278,13 @@ class Matsubara_XY_work_record
     
     //! constructor
     Matsubara_XY_work_record(const Mpc_units::energy& _IR, const IR_resum_token& _IRt,
-                            const std::shared_ptr<initial_filtered_Pk>& _Pk)
+                             const std::shared_ptr<initial_filtered_Pk>& _Pk, const MatsubaraXY_params_token& _pt,
+                             const MatsubaraXY_params& _params)
       : IR_resum(_IR),
         IR_resum_tok(_IRt),
-        Pk(_Pk)
+        Pk(_Pk),
+        params_tok(_pt),
+        params(_params)
       {
       }
     
@@ -280,6 +302,11 @@ class Matsubara_XY_work_record
     //! get tree-level power spectrum
     const std::shared_ptr<initial_filtered_Pk>& get_linear_Pk() const { return this->Pk; }
     
+    //! get parameters token
+    const MatsubaraXY_params_token& get_params_token() const { return this->params_tok; }
+    
+    //! get parameters
+    const MatsubaraXY_params& get_params() const { return this->params; }
     
     // INTERNAL DATA
   
@@ -295,6 +322,12 @@ class Matsubara_XY_work_record
     
     //! tree-level power spectrum
     std::shared_ptr<initial_filtered_Pk> Pk;
+    
+    //! parameters token
+    MatsubaraXY_params_token params_tok;
+    
+    //! parameters block
+    MatsubaraXY_params params;
     
   };
 
@@ -467,12 +500,14 @@ class filter_Pk_work_record
   public:
     
     //! constructor
-    filter_Pk_work_record(const Mpc_units::energy& _k, const k_token& kt,
-                          std::shared_ptr<filterable_Pk>& Pk, const linear_Pk_token& Pt)
+    filter_Pk_work_record(const Mpc_units::energy& _k, const k_token& kt, std::shared_ptr<filterable_Pk>& Pk,
+                          const linear_Pk_token& Pt, const filter_params_token& pt, const Pk_filter_params& p)
       : k(_k),
         k_tok(kt),
         Pk_lin(Pk),
-        Pk_tok(Pt)
+        Pk_tok(Pt),
+        params_tok(pt),
+        params(p)
       {
       }
     
@@ -493,6 +528,12 @@ class filter_Pk_work_record
     //! get power spectrum token
     const linear_Pk_token& get_Pk_token() const { return this->Pk_tok; }
     
+    //! get filtering parameters token
+    const filter_params_token& get_params_token() const { return this->params_tok; }
+    
+    //! get filtering parameters
+    const Pk_filter_params& get_params() const { return this->params; }
+    
     
     // INTERNAL DATA
     
@@ -511,6 +552,12 @@ class filter_Pk_work_record
     
     //! token for unfiltered linear power spectrum
     linear_Pk_token Pk_tok;
+    
+    //! token for filtering parameters
+    filter_params_token params_tok;
+    
+    //! filtering parameters
+    Pk_filter_params params;
     
   };
 

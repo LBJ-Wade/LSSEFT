@@ -44,13 +44,18 @@
 #include "boost/timer/timer.hpp"
 
 
-data_manager::data_manager(const boost::filesystem::path& c)
+data_manager::data_manager(const boost::filesystem::path& c, error_handler& e)
   : container(c),
+    err_handler(e),
     handle(nullptr),   // try to catch handle-not-initialized errors
     policy(),
     FRW_model_tol(LSSEFT_DEFAULT_FRW_MODEL_PARAMETER_TOLERANCE),
     z_tol(LSSEFT_DEFAULT_REDSHIFT_CONFIGURATION_TOLERANCE),
-    k_tol(LSSEFT_DEFAULT_WAVENUMBER_CONFIGURATION_TOLERANCE)
+    k_tol(LSSEFT_DEFAULT_WAVENUMBER_CONFIGURATION_TOLERANCE),
+    filter_tol(LSSEFT_DEFAULT_FILTER_CONFIGURATION_TOLERANCE),
+    oneloop_tol(LSSEFT_DEFAULT_ONELOOP_CONFIGURATION_TOLERANCE),
+    MatsubaraXY_tol(LSSEFT_DEFAULT_MATSUBARAXY_CONFIGURATION_TOLERANCE),
+    growth_tol(LSSEFT_DEFAULT_GROWTH_CONFIGURATION_TOLERANCE)
   {
     // check whether container already exists
     if(boost::filesystem::exists(container))

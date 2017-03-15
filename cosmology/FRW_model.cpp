@@ -28,9 +28,10 @@
 #include "FRW_model.h"
 
 
-FRW_model::FRW_model(double om, double occ, double h_, Mpc_units::energy tc, double ne, double fb, double zs,
+FRW_model::FRW_model(std::string nm, double om, double occ, double h_, Mpc_units::energy tc, double ne, double fb, double zs,
                      double zd, double ze, double Ac, double n, Mpc_units::energy kp)
-  : omega_m(om),
+  : name(nm),
+    omega_m(om),
     omega_cc(occ),
     h(h_),
     T_CMB(tc),
@@ -43,10 +44,4 @@ FRW_model::FRW_model(double om, double occ, double h_, Mpc_units::energy tc, dou
     ns(n),
     k_piv(kp)
   {
-//    std::cout << "New FRW cosmology with Omega_m=" << omega_m
-//      << ", Omega_CC=" << omega_cc
-//      << ", h=" << h
-//      << ", T_CMB=" << T_CMB / Mpc_units::Kelvin
-//      << ", Neff=" << Neff
-//      << '\n';
   }

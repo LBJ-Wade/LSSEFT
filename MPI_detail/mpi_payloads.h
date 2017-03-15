@@ -41,7 +41,7 @@ namespace MPI_detail
     new_transfer_integration build_payload(const FRW_model& model, transfer_work_list::const_iterator& t);
 
     //! build payload for loop integration
-    new_loop_momentum_integration build_payload(const FRW_model& model, loop_momentum_work_list::const_iterator& t);
+    new_loop_momentum_integration build_payload(const FRW_model& model, loop_integral_work_list::const_iterator& t);
     
     //! build payload for linear Pk filter calculation
     new_filter_Pk build_payload(const FRW_model& model, filter_Pk_work_list::const_iterator& t);

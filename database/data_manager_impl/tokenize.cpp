@@ -92,3 +92,95 @@ std::unique_ptr<z_token> data_manager::tokenize(transaction_manager& mgr, double
     unsigned int id = this->lookup_or_insert(mgr, z);
     return std::make_unique<z_token>(id);
   }
+
+
+std::unique_ptr<filter_params_token> data_manager::tokenize(const Pk_filter_params& data)
+  {
+    // open a new transaction on the database
+    std::shared_ptr<transaction_manager> transaction = this->open_transaction();
+    
+    // lookup id for this set of filter parameters, or generate one if it does not already exist
+    std::unique_ptr<filter_params_token> id = this->tokenize(*transaction, data);
+    
+    // commit the transaction
+    transaction->commit();
+    
+    return std::move(id);
+  }
+
+
+std::unique_ptr<filter_params_token> data_manager::tokenize(transaction_manager& mgr, const Pk_filter_params& data)
+  {
+    // look up id for this set of filter parameters, or generate one if it does not already exist
+    unsigned int id = this->lookup_or_insert(mgr, data);
+    return std::make_unique<filter_params_token>(id);
+  }
+
+
+std::unique_ptr<loop_integral_params_token> data_manager::tokenize(const loop_integral_params& data)
+  {
+    // open a new transaction on the database
+    std::shared_ptr<transaction_manager> transaction = this->open_transaction();
+    
+    // lookup id for this set of filter parameters, or generate one if it does not already exist
+    std::unique_ptr<loop_integral_params_token> id = this->tokenize(*transaction, data);
+    
+    // commit the transaction
+    transaction->commit();
+    
+    return std::move(id);
+  }
+
+
+std::unique_ptr<loop_integral_params_token> data_manager::tokenize(transaction_manager& mgr, const loop_integral_params& data)
+  {
+    // look up id for this set of filter parameters, or generate one if it does not already exist
+    unsigned int id = this->lookup_or_insert(mgr, data);
+    return std::make_unique<loop_integral_params_token>(id);
+  }
+
+
+std::unique_ptr<MatsubaraXY_params_token> data_manager::tokenize(const MatsubaraXY_params& data)
+  {
+    // open a new transaction on the database
+    std::shared_ptr<transaction_manager> transaction = this->open_transaction();
+    
+    // lookup id for this set of filter parameters, or generate one if it does not already exist
+    std::unique_ptr<MatsubaraXY_params_token> id = this->tokenize(*transaction, data);
+    
+    // commit the transaction
+    transaction->commit();
+    
+    return std::move(id);
+  }
+
+
+std::unique_ptr<MatsubaraXY_params_token> data_manager::tokenize(transaction_manager& mgr, const MatsubaraXY_params& data)
+  {
+    // look up id for this set of filter parameters, or generate one if it does not already exist
+    unsigned int id = this->lookup_or_insert(mgr, data);
+    return std::make_unique<MatsubaraXY_params_token>(id);
+  }
+
+
+std::unique_ptr<growth_params_token> data_manager::tokenize(const growth_params& data)
+  {
+    // open a new transaction on the database
+    std::shared_ptr<transaction_manager> transaction = this->open_transaction();
+    
+    // lookup id for this set of filter parameters, or generate one if it does not already exist
+    std::unique_ptr<growth_params_token> id = this->tokenize(*transaction, data);
+    
+    // commit the transaction
+    transaction->commit();
+    
+    return std::move(id);
+  }
+
+
+std::unique_ptr<growth_params_token> data_manager::tokenize(transaction_manager& mgr, const growth_params& data)
+  {
+    // look up id for this set of filter parameters, or generate one if it does not already exist
+    unsigned int id = this->lookup_or_insert(mgr, data);
+    return std::make_unique<growth_params_token>(id);
+  }

@@ -40,6 +40,58 @@
 #include "boost/timer/timer.hpp"
 
 
+class growth_params
+  {
+    
+    // CONSTRUCTOR, DESTRUCTOR
+  
+  public:
+    
+    //! constructor
+    growth_params(double a=LSSEFT_DEFAULT_ODE_ABS_ERR, double r=LSSEFT_DEFAULT_ODE_REL_ERR)
+      : abs_err(a),
+        rel_err(r)
+      {
+      }
+    
+    //! destructor is default
+    ~growth_params() = default;
+    
+    
+    // INTERFACE
+  
+  public:
+    
+    //! get abserr
+    double get_abserr() const { return this->abs_err; }
+    
+    //! get relerr
+    double get_relerr() const { return this->rel_err; }
+    
+    
+    // INTERNAL DATA
+  
+  private:
+    
+    //! absolute tolerance
+    double abs_err;
+    
+    //! relative tolerance
+    double rel_err;
+    
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+    
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & abs_err;
+        ar & rel_err;
+      }
+    
+  };
+
+
 struct growth_integrator_data
   {
     
@@ -65,7 +117,7 @@ class oneloop_growth_integrator
   public:
 
     //! constructor
-    oneloop_growth_integrator(double a= LSSEFT_DEFAULT_ODE_ABS_ERR, double r= LSSEFT_DEFAULT_ODE_REL_ERR);
+    oneloop_growth_integrator(const growth_params& p);
 
     //! destructor is default
     ~oneloop_growth_integrator() = default;
@@ -76,20 +128,15 @@ class oneloop_growth_integrator
   public:
 
     //! integrate one-loop growth factors for a given set of redshift samples
-    growth_integrator_data integrate(const FRW_model& model, z_database& z_db);
+    growth_integrator_data integrate(const FRW_model& model, const growth_params_token& params, z_database& z_db);
 
 
     // INTERNAL DATA
 
   private:
 
-    // TOLERANCES
-
-    //! required absolute error
-    double abs_err;
-
-    //! required relative error
-    double rel_err;
+    //! parameter block
+    growth_params params;
 
   };
 

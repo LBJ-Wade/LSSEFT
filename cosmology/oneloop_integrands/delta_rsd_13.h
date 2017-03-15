@@ -46,7 +46,7 @@ namespace oneloop_momentum_impl
         double atanh = (q > data->k) ? std::atanh(data->k / q) : std::atanh(q / data->k);
         Mpc_units::energy2 intg = (data->k / q) * (data->k / q) * (data->k / q) * data->k * (q - atanh * data->k);
     
-        f[0] = data->jacobian_1d * intg * data->Pk(q);
+        f[0] = data->jacobian_dq * intg * data->Pk(q);
     
         return 0;
       }
@@ -61,7 +61,7 @@ namespace oneloop_momentum_impl
         double atanh = (q > data->k) ? std::atanh(data->k / q) : std::atanh(q / data->k);
         Mpc_units::energy2 intg = (data->k / q) * data->k * data->k * atanh;
         
-        f[0] = data->jacobian_1d * intg * data->Pk(q);
+        f[0] = data->jacobian_dq * intg * data->Pk(q);
         
         return 0;
       }
@@ -75,7 +75,7 @@ namespace oneloop_momentum_impl
         
         Mpc_units::energy2 intg = data->k * data->k;
         
-        f[0] = data->jacobian_1d * intg * data->Pk(q);
+        f[0] = data->jacobian_dq * intg * data->Pk(q);
         
         return 0;
       }
@@ -90,7 +90,7 @@ namespace oneloop_momentum_impl
         double atanh = (q > data->k) ? std::atanh(data->k / q) : std::atanh(q / data->k);
         Mpc_units::energy2 intg = data->k * q * atanh;
         
-        f[0] = data->jacobian_1d * intg * data->Pk(q);
+        f[0] = data->jacobian_dq * intg * data->Pk(q);
         
         return 0;
       }
@@ -104,7 +104,7 @@ namespace oneloop_momentum_impl
         
         Mpc_units::energy2 intg = q * q;
         
-        f[0] = data->jacobian_1d * intg * data->Pk(q);
+        f[0] = data->jacobian_dq * intg * data->Pk(q);
         
         return 0;
       }
@@ -119,7 +119,7 @@ namespace oneloop_momentum_impl
         double atanh = (q > data->k) ? std::atanh(data->k / q) : std::atanh(q / data->k);
         Mpc_units::energy2 intg = (q / data->k) * q * q * atanh;
         
-        f[0] = data->jacobian_1d * intg * data->Pk(q);
+        f[0] = data->jacobian_dq * intg * data->Pk(q);
         
         return 0;
       }
@@ -134,7 +134,7 @@ namespace oneloop_momentum_impl
         double atanh = (q > data->k) ? std::atanh(data->k / q) : std::atanh(q / data->k);
         Mpc_units::energy2 intg = (q / data->k) * (q / data->k) * (q / data->k) * q * (data->k - q * atanh);
         
-        f[0] = data->jacobian_1d * intg * data->Pk(q);
+        f[0] = data->jacobian_dq * intg * data->Pk(q);
         
         return 0;
       }

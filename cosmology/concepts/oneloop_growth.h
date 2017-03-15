@@ -348,7 +348,7 @@ class oneloop_growth
   public:
 
     //! value constructor
-    oneloop_growth(const z_database& z);
+    oneloop_growth(const growth_params_token& p, const z_database& z);
     
     //! empty constructor used for receiving an MPI payload
     oneloop_growth();
@@ -422,11 +422,15 @@ class oneloop_growth
 
   public:
 
+    //! get size
     size_t size() const { return this->z_db->size(); }
     
     //! store components
     void push_back(double g, double A, double B, double D, double E, double F, double G, double J,
                    double f, double fA, double fB, double fD, double fE, double fF, double fG, double fJ);
+    
+    //! get parameter token
+    const growth_params_token& get_params_token() const { return this->params; }
 
 
     // INTERNAL DATA
@@ -434,6 +438,9 @@ class oneloop_growth
   private:
 
     // CONFIGURATION DATA
+    
+    //! parameter token
+    growth_params_token params;
 
     //! copy of redshift database
     std::unique_ptr<z_database> z_db;
