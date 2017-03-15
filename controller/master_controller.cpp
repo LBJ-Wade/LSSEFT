@@ -323,6 +323,8 @@ void master_controller::scatter(const FRW_model& model, const FRW_model_token& t
     using WorkItem = typename WorkItemList::value_type;
     
     boost::timer::cpu_timer timer;
+    boost::timer::cpu_timer database_timer;
+    database_timer.stop();
 
     if(this->mpi_world.size() == 1) throw runtime_exception(exception_type::runtime_error, ERROR_TOO_FEW_WORKERS);
 
@@ -372,7 +374,9 @@ void master_controller::scatter(const FRW_model& model, const FRW_model_token& t
               {
                 case MPI_detail::MESSAGE_WORK_PRODUCT_READY:
                   {
+                    database_timer.resume();
                     this->store_payload<WorkItem>(token, stat->source(), dmgr);
+                    database_timer.stop();
                     sch->mark_unassigned(this->worker_number(stat->source()));
                     break;
                   }
@@ -395,7 +399,10 @@ void master_controller::scatter(const FRW_model& model, const FRW_model_token& t
       }
 
     timer.stop();
-    std::cout << "lsseft: completed work in time " << format_time(timer.elapsed().wall) << '\n';
+    std::cout << "lsseft: completed work in time " << format_time(timer.elapsed().wall)
+              << " ["
+              << "database performance: write time " << format_time(database_timer.elapsed().wall)
+              << "]" << '\n';
   }
 
 
