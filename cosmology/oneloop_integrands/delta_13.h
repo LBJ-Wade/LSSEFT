@@ -50,7 +50,7 @@ namespace oneloop_momentum_impl
         double gamma1 = (k_minus_q_sq*k_dot_q - q*q*k_dot_q + data->k_sq*k_dot_q) / (2.0 * q*q * k_minus_q_sq);
         double alpha2 = (2.0*data->k_sq*q*q - k_dot_q*(data->k_sq + q*q)) / (2.0 * q*q * data->k_sq);
         
-        f[0] = 8.0 * data->jacobian_2d * qqPq * gamma1*alpha2;
+        f[0] = 8.0 * data->jacobian_d3q * qqPq * gamma1*alpha2;
         
         return(0);  // return value irrelevant unless = -999, which means stop integration
       }
@@ -73,7 +73,7 @@ namespace oneloop_momentum_impl
         double gamma1 = (k_minus_q_sq*k_dot_q - q*q*k_dot_q + data->k_sq*k_dot_q) / (2.0 * q*q * k_minus_q_sq);
         double gamma2 = (2.0*data->k_sq*q*q - k_dot_q*(2.0*data->k_sq + 2.0*q*q - 2.0*k_dot_q)) / (2.0 * q*q * data->k_sq);
         
-        f[0] = 8.0 * data->jacobian_2d * qqPq * gamma1*gamma2;
+        f[0] = 8.0 * data->jacobian_d3q * qqPq * gamma1*gamma2;
         
         return(0);  // return value irrelevant unless = -999, which means stop integration
       }
@@ -96,7 +96,7 @@ namespace oneloop_momentum_impl
         double alpha1 = (k_minus_q_sq*k_dot_q + q*q*data->k_sq - q*q*k_dot_q) / (2.0 * q*q * k_minus_q_sq);
         double alpha2 = (2.0*data->k_sq*q*q - k_dot_q*(data->k_sq + q*q)) / (2.0 * q*q * data->k_sq);
         
-        f[0] = 8.0 * data->jacobian_2d * qqPq * alpha1*alpha2;
+        f[0] = 8.0 * data->jacobian_d3q * qqPq * alpha1*alpha2;
         
         return(0);  // return value irrelevant unless = -999, which means stop integration
       }
@@ -119,7 +119,7 @@ namespace oneloop_momentum_impl
         double alpha1 = (k_minus_q_sq*k_dot_q + q*q*data->k_sq - q*q*k_dot_q) / (2.0 * q*q * k_minus_q_sq);
         double gamma2 = (2.0*data->k_sq*q*q - k_dot_q*(2.0*data->k_sq + 2.0*q*q - 2.0*k_dot_q)) / (2.0 * q*q * data->k_sq);
         
-        f[0] = 8.0 * data->jacobian_2d * qqPq * alpha1*gamma2;
+        f[0] = 8.0 * data->jacobian_d3q * qqPq * alpha1*gamma2;
         
         return(0);  // return value irrelevant unless = -999, which means stop integration
       }
@@ -142,7 +142,7 @@ namespace oneloop_momentum_impl
         double alpha_asym = (data->k_sq - k_dot_q) / k_minus_q_sq;
         double alpha2 = (2.0*data->k_sq*q*q - k_dot_q*(data->k_sq + q*q)) / (2.0 * q*q * data->k_sq);
         
-        f[0] = 8.0 * data->jacobian_2d * qqPq * alpha_asym * alpha2;
+        f[0] = 8.0 * data->jacobian_d3q * qqPq * alpha_asym * alpha2;
         
         return(0);  // return value irrelevant unless = -999, which means stop integration
       }
@@ -165,7 +165,7 @@ namespace oneloop_momentum_impl
         double alpha_asym = (data->k_sq - k_dot_q) / k_minus_q_sq;
         double gamma2 = (2.0*data->k_sq*q*q - k_dot_q*(2.0*data->k_sq + 2.0*q*q - 2.0*k_dot_q)) / (2.0 * q*q * data->k_sq);
         
-        f[0] = 8.0 * data->jacobian_2d * qqPq * alpha_asym * gamma2;
+        f[0] = 8.0 * data->jacobian_d3q * qqPq * alpha_asym * gamma2;
         
         return(0);  // return value irrelevant unless = -999, which means stop integration
       }

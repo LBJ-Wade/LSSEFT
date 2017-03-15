@@ -38,6 +38,8 @@
 
 #include "cosmology/types.h"
 
+#include "error/error_handler.h"
+
 
 slave_controller::slave_controller(boost::mpi::environment& me, boost::mpi::communicator& mw, argument_cache& ac)
   : mpi_env(me),
@@ -174,9 +176,6 @@ void slave_controller::process_item(MPI_detail::new_transfer_integration& payloa
     const Mpc_units::energy& k = payload.get_k();
     const k_token& tok = payload.get_token();
     const z_database& z_db = payload.get_z_db();
-    
-//    std::cout << "Worker " << this->worker_number() << " processing transfer item: id = " << tok.get_id() << " for k = "
-//              << k * Mpc_units::Mpc << " h/Mpc = " << k / Mpc_units::eV << " eV" << '\n';
 
     transfer_integrator integrator;
     transfer_function sample = integrator.integrate(model, k, tok, z_db);
@@ -210,7 +209,7 @@ void slave_controller::process_item(MPI_detail::new_filter_Pk& payload)
       {
         if(xe.get_exception_code() == exception_type::filter_failure)
           {
-            std::cerr << "lsseft: " << xe.what() << '\n';
+            this->err_handler.error(xe.what());
             sample = filtered_Pk_value(k_tok, Pk_tok, params_tok, Pk_filter_result(), Pk_lin(k), 0.0);
             sample.mark_failed();
           }
@@ -240,12 +239,8 @@ void slave_controller::process_item(MPI_detail::new_loop_momentum_integration& p
     const IR_cutoff_token& IR_tok = payload.get_IR_token();
     const initial_filtered_Pk& Pk = payload.get_tree_power_spectrum();
     const loop_integral_params_token& params_tok = payload.get_params_token();
-    
-//    std::cout << "Worker " << this->worker_number() << " processing loop integral item: k-id = " << k_tok.get_id()
-//              << " for k = " << k * Mpc_units::Mpc << " h/Mpc, IR cutoff = " << IR_cutoff * Mpc_units::Mpc
-//              << " h/Mpc, UV cutoff = " << UV_cutoff * Mpc_units::Mpc << " h/Mpc" << '\n';
 
-    oneloop_momentum_integrator integrator(params);
+    oneloop_momentum_integrator integrator(params, this->err_handler);
     loop_integral sample = integrator.integrate(model, params_tok, k, k_tok, UV_cutoff, UV_tok, IR_cutoff, IR_tok, Pk);
 
     // inform master process that we have completed work on this integration
@@ -288,10 +283,6 @@ void slave_controller::process_item(MPI_detail::new_one_loop_Pk& payload)
     const loop_integral_params_token& loop_tok = loop_data.get_params_token();
     const growth_params_token& growth_tok = gf_factors.get_params_token();
     
-//    std::cout << "Worker " << this->worker_number() << " processing 1-loop P(k) for"
-//              << " k-id = " << k_tok.get_id() << ", IR-id = " << IR_tok.get_id() << ", UV-id = " << UV_tok.get_id()
-//              << "; " << gf_factors.size() << " redshifts to process" << '\n';
-    
     oneloop_Pk_calculator calculator;
     std::list<oneloop_Pk> sample = calculator.calculate_dd(k, k_tok, gf_factors, loop_data, Pk_init, Pk_final);
     
@@ -333,13 +324,6 @@ void slave_controller::process_item(MPI_detail::new_multipole_Pk& payload)
     const oneloop_growth_record& gf_data = payload.get_gf_data();
     const initial_filtered_Pk& Pk_init = payload.get_init_linear_Pk();
     boost::optional<const final_filtered_Pk&> Pk_final = payload.get_final_linear_Pk();
-    
-//    std::cout << "Worker " << this->worker_number() << " processing multipole P(k) for"
-//              << " k-id = " << oneloop_data.get_k_token().get_id()
-//              << ", z-id = " << oneloop_data.get_z_token().get_id()
-//              << ", IR-id = " << oneloop_data.get_IR_token().get_id()
-//              << ", UV-id = " << oneloop_data.get_UV_token().get_id()
-//              << ", IR-resum-id = " << IR_resum_tok.get_id() << '\n';
     
     multipole_Pk_calculator calculator;
     multipole_Pk sample = calculator.calculate_Legendre(k, XY, oneloop_data, gf_data, Pk_init, Pk_final);

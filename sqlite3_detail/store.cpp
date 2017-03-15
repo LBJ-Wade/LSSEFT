@@ -533,13 +533,14 @@ namespace sqlite3_operations
 
         if(delta22.get_fail() || delta13.get_fail() || rsd22.get_fail() || rsd13.get_fail())
           {
-            std::cerr << "lsseft: loop kernels not stored (model = " << model.get_id()
-                      << ", k = " << sample.get_k_token().get_id()
-                      << ", P(k) = " << sample.get_Pk_token().get_id()
-                      << ", IR cutoff = " << sample.get_IR_token().get_id()
-                      << ", UV cutoff = " << sample.get_UV_token().get_id() << ") "
-                      << "since marked as failed" << '\n';
-            return;
+            std::ostringstream msg;
+            msg << "loop kernels not stored (model = " << model.get_id()
+                << ", k = " << sample.get_k_token().get_id()
+                << ", P(k) = " << sample.get_Pk_token().get_id()
+                << ", IR cutoff = " << sample.get_IR_token().get_id()
+                << ", UV cutoff = " << sample.get_UV_token().get_id() << ") "
+                << "since marked as failed";
+            throw runtime_exception(exception_type::store_error, msg.str());
           }
     
         const loop_integral_params_token& params = sample.get_params_token();
@@ -643,10 +644,11 @@ namespace sqlite3_operations
         
         if(sample.get_fail())
           {
-            std::cerr << "lsseft: filtered Pk not stored (Pk_id = " << sample.get_Pk_token().get_id() << ", "
-                      << "kid = " << sample.get_k_token().get_id() << ") "
-                      << "since marked as failed" << '\n';
-            return;
+            std::ostringstream msg;
+            msg << "filtered Pk not stored (Pk_id = " << sample.get_Pk_token().get_id() << ", "
+                << "kid = " << sample.get_k_token().get_id() << ") "
+                << "since marked as failed";
+            throw runtime_exception(exception_type::store_error, msg.str());
           }
 
         std::ostringstream insert_stmt;

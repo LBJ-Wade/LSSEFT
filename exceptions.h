@@ -38,7 +38,8 @@ enum class exception_type
     transaction_error,
     runtime_error,
     spline_error,
-    filter_failure
+    filter_failure,
+    store_error
   };
 
 

@@ -39,8 +39,9 @@
 
 
 
-oneloop_momentum_integrator::oneloop_momentum_integrator(const loop_integral_params& p)
-  : params(p)
+oneloop_momentum_integrator::oneloop_momentum_integrator(const loop_integral_params& p, error_handler& e)
+  : params(p),
+    err_handler(e)
   {
     // seed random number generator
     mersenne_twister.seed(random_device());
@@ -170,8 +171,10 @@ bool oneloop_momentum_integrator::evaluate_integral(const FRW_model& model, cons
         if(tries > 0)
           {
             re = re * 4.0;
-            std::cout << "lsseft: relaxing error tolerance for kernel = " << name << " (" << component << "), attempt "
-                      << tries << ", now abstol = " << ae << ", reltol = " << re << '\n';
+            std::ostringstream msg;
+            msg << "relaxing error tolerance for kernel = " << name << " (" << component << "), attempt "
+                << tries << ", now abstol = " << ae << ", reltol = " << re;
+            this->err_handler.info(msg.str());
           }
 
         Cuhre(oneloop_momentum_impl::dimensions,
@@ -205,10 +208,13 @@ bool oneloop_momentum_integrator::evaluate_integral(const FRW_model& model, cons
       }
     
     if(tries >= max_tries)
-      std::cerr << "lsseft: integration failure: kernel = " << name << " (" << component << "), "
-                << "regions = " << regions << ", evaluations = " << evaluations << ", fail = "
-                << fail << ", value = " << integral[0] << ", error = " << error[0] << ", probability = " << prob[0]
-                << '\n';
+      {
+        std::ostringstream msg;
+        msg << "integration failure: kernel = " << name << " (" << component << "), "
+            << "regions = " << regions << ", evaluations = " << evaluations << ", fail = "
+            << fail << ", value = " << integral[0] << ", error = " << error[0] << ", probability = " << prob[0];
+        this->err_handler.warn(msg.str());
+      }
     
     
     return (tries >= max_tries);

@@ -28,6 +28,7 @@
 
 
 #include <random>
+#include <error/error_handler.h>
 
 #include "FRW_model.h"
 #include "concepts/loop_integral.h"
@@ -36,6 +37,8 @@
 #include "database/tokens.h"
 
 #include "defaults.h"
+
+#include "error/error_handler.h"
 
 #include "cuba.h"
 
@@ -123,7 +126,7 @@ class oneloop_momentum_integrator
   public:
 
     //! constructor
-    oneloop_momentum_integrator(const loop_integral_params& p);
+    oneloop_momentum_integrator(const loop_integral_params& p, error_handler& e);
 
     //! destructor is default
     ~oneloop_momentum_integrator() = default;
@@ -167,6 +170,9 @@ class oneloop_momentum_integrator
 
     //! parameter block
     loop_integral_params params;
+    
+    //! reference to error handler agent
+    error_handler& err_handler;
 
 
     // RANDOM NUMBER GENERATORS
