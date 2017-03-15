@@ -113,7 +113,8 @@ class master_controller
   protected:
 
     //! compute kernels at given redshifts
-    void integrate_oneloop(const FRW_model& model, const FRW_model_token& token, z_database& z_db, data_manager& dmgr);
+    void integrate_loop_growth(const FRW_model& model, const FRW_model_token& token, z_database& z_db, data_manager& dmgr,
+                               const growth_params_token& params_tok, const growth_params& params);
 
 
     // INTERNAL DATA

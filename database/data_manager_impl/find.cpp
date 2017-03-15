@@ -44,21 +44,25 @@
 
 
 template <>
-std::unique_ptr<oneloop_growth> data_manager::find<oneloop_growth>(transaction_manager& mgr, const FRW_model_token& model, const z_database& z_db)
+std::unique_ptr<oneloop_growth>
+data_manager::find<oneloop_growth>(transaction_manager& mgr, const FRW_model_token& model, const growth_params_token& params,
+                                   const z_database& z_db)
   {
-    return sqlite3_operations::find(this->handle, mgr, this->policy, model, z_db);
+    return sqlite3_operations::find(this->handle, mgr, this->policy, model, params, z_db);
   }
 
 
 template <>
-std::unique_ptr<initial_filtered_Pk> data_manager::find<initial_filtered_Pk>(transaction_manager& mgr, const linear_Pk_token& token, const k_database& k_db)
+std::unique_ptr<initial_filtered_Pk>
+data_manager::find<initial_filtered_Pk>(transaction_manager& mgr, const linear_Pk_token& token, const k_database& k_db)
   {
     return sqlite3_operations::find<initial_filtered_Pk>(this->handle, mgr, this->policy, token, k_db);
   }
 
 
 template <>
-std::unique_ptr<final_filtered_Pk> data_manager::find<final_filtered_Pk>(transaction_manager& mgr, const linear_Pk_token& token, const k_database& k_db)
+std::unique_ptr<final_filtered_Pk>
+data_manager::find<final_filtered_Pk>(transaction_manager& mgr, const linear_Pk_token& token, const k_database& k_db)
   {
     return sqlite3_operations::find<final_filtered_Pk>(this->handle, mgr, this->policy, token, k_db);
   }
@@ -66,28 +70,29 @@ std::unique_ptr<final_filtered_Pk> data_manager::find<final_filtered_Pk>(transac
 
 template <>
 std::unique_ptr<loop_integral>
-data_manager::find<loop_integral>(transaction_manager& mgr, const FRW_model_token& model,
-                                  const k_token& k, const linear_Pk_token& Pk,
-                                  const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff)
+data_manager::find<loop_integral>(transaction_manager& mgr, const FRW_model_token& model, const loop_integral_params_token& params,
+                                  const k_token& k, const linear_Pk_token& Pk, const IR_cutoff_token& IR_cutoff,
+                                  const UV_cutoff_token& UV_cutoff)
   {
-    return sqlite3_operations::find(this->handle, mgr, this->policy, model, k, Pk, IR_cutoff, UV_cutoff);
+    return sqlite3_operations::find(this->handle, mgr, this->policy, model, params, k, Pk, IR_cutoff, UV_cutoff);
   }
 
 
 template <>
 std::unique_ptr<oneloop_Pk>
-data_manager::find<oneloop_Pk>(transaction_manager& mgr, const FRW_model_token& model, const k_token& k, const z_token& z,
+data_manager::find<oneloop_Pk>(transaction_manager& mgr, const FRW_model_token& model, const growth_params_token& growth_params,
+                               const loop_integral_params_token& loop_params, const k_token& k, const z_token& z,
                                const linear_Pk_token& Pk_init, const boost::optional<linear_Pk_token>& Pk_final,
                                const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff)
   {
-    return sqlite3_operations::find(this->handle, mgr, this->policy, model, k, z, Pk_init, Pk_final, IR_cutoff, UV_cutoff);
+    return sqlite3_operations::find(this->handle, mgr, this->policy, model, growth_params, loop_params, k, z, Pk_init, Pk_final, IR_cutoff, UV_cutoff);
   }
 
 
 template <>
 std::unique_ptr<Matsubara_XY>
-data_manager::find(transaction_manager& mgr, const FRW_model_token& model, const linear_Pk_token& Pk,
-                   const IR_resum_token& IR_resum)
+data_manager::find<Matsubara_XY>(transaction_manager& mgr, const FRW_model_token& model, const MatsubaraXY_params_token& params,
+                                 const linear_Pk_token& Pk, const IR_resum_token& IR_resum)
   {
-    return sqlite3_operations::find(this->handle, mgr, this->policy, model, Pk, IR_resum);
+    return sqlite3_operations::find(this->handle, mgr, this->policy, model, params, Pk, IR_resum);
   }

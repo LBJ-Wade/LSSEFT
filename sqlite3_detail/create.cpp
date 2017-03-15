@@ -99,7 +99,7 @@ namespace sqlite3_operations
               << "Phi DOUBLE"
 #ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
               << ", "
-              << "PRIMARY KEY (zid, kid), "
+              << "PRIMARY KEY (mid, zid, kid), "
               << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
               << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id), "
               << "FOREIGN KEY (kid) REFERENCES " << policy.wavenumber_config_table() << "(id));";
@@ -117,6 +117,7 @@ namespace sqlite3_operations
             stmt
               << "CREATE TABLE " << policy.g_factor_table() << "("
               << "mid INTEGER, "
+              << "params_id INTEGER, "
               << "zid INTEGER, "
               << "g_linear DOUBLE, "
               << "A DOUBLE, "
@@ -128,8 +129,9 @@ namespace sqlite3_operations
               << "J DOUBLE"
 #ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
               << ", "
-              << "PRIMARY KEY (mid, zid), "
+              << "PRIMARY KEY (mid, params_id, zid), "
               << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
+              << "FOREIGN KEY (params_id) REFERENCES " << policy.growth_config_table() << "(id), "
               << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id));";
 #else
               << ");";
@@ -145,6 +147,7 @@ namespace sqlite3_operations
             stmt
               << "CREATE TABLE " << policy.f_factor_table() << "("
               << "mid INTEGER, "
+              << "params_id INTEGER, "
               << "zid INTEGER, "
               << "f_linear DOUBLE, "
               << "fA DOUBLE, "
@@ -156,8 +159,9 @@ namespace sqlite3_operations
               << "fJ DOUBLE"
 #ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
               << ", "
-              << "PRIMARY KEY (mid, zid), "
+              << "PRIMARY KEY (mid, params_id, zid), "
               << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
+              << "FOREIGN KEY (params_id) REFERENCES " << policy.growth_config_table() << "(id), "
               << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id));";
 #else
               << ");";
@@ -173,6 +177,7 @@ namespace sqlite3_operations
             stmt
               << "CREATE TABLE " << table_name << "("
               << "mid INTEGER, "
+              << "params_id INTEGER, "
               << "kid INTEGER, "
               << "Pk_id INTEGER, "
               << "IR_id INTEGER, "
@@ -189,9 +194,11 @@ namespace sqlite3_operations
               << "nw_time DOUBLE"
 #ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
               << ", "
-              << "PRIMARY KEY (mid, kid, Pk_id, IR_id, UV_id), "
+              << "PRIMARY KEY (mid, params_id, kid, Pk_id, IR_id, UV_id), "
               << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
+              << "FOREIGN KEY (params_id) REFERENCES " << policy.growth_config_table() << "(id), "
               << "FOREIGN KEY (kid) REFERENCES " << policy.wavenumber_config_table() << "(id), "
+              << "FOREIGN KEY (params_id) REFERENCES " << policy.loop_integral_config_table() << "(id), "
               << "FOREIGN KEY (Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
               << "FOREIGN KEY (IR_id) REFERENCES " << policy.IR_config_table() << "(id), "
               << "FOREIGN KEY (UV_id) REFERENCES " << policy.UV_config_table() << "(id));";
@@ -209,6 +216,8 @@ namespace sqlite3_operations
             stmt
               << "CREATE TABLE " << table_name << "("
               << "mid INTEGER, "
+              << "growth_params INTEGER, "
+              << "loop_params INTEGER, "
               << "zid INTEGER, "
               << "kid INTEGER, "
               << "init_Pk_id INTEGER, "
@@ -235,8 +244,10 @@ namespace sqlite3_operations
               << "Z2_d_nw DOUBLE"
 #ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
               << ", "
-              << "PRIMARY KEY (mid, zid, kid, init_Pk_id, final_Pk_id, IR_id, UV_id), "
+              << "PRIMARY KEY (mid, growth_params, loop_params, zid, kid, init_Pk_id, final_Pk_id, IR_id, UV_id), "
               << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
+              << "FOREIGN KEY (growth_params) REFERENCES " << policy.growth_config_table() << "(id), "
+              << "FOREIGN KEY (loop_params) REFERENCES " << policy.loop_integral_config_table() << "(id), "
               << "FOREIGN KEY (kid) REFERENCES " << policy.wavenumber_config_table() << "(id), "
               << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id), "
               << "FOREIGN KEY (init_Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
@@ -257,6 +268,9 @@ namespace sqlite3_operations
             stmt
               << "CREATE TABLE " << table_name << "("
               << "mid INTEGER, "
+              << "growth_params INTEGER, "
+              << "loop_params INTEGER, "
+              << "XY_params INTEGER, "
               << "zid INTEGER, "
               << "kid INTEGER, "
               << "init_Pk_id INTEGER, "
@@ -275,8 +289,11 @@ namespace sqlite3_operations
               << "Z2_d DOUBLE"
 #ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
               << ", "
-              << "PRIMARY KEY (mid, zid, kid, init_Pk_id, final_Pk_id, IR_cutoff_id, UV_cutoff_id, IR_resum_id), "
+              << "PRIMARY KEY (mid, growth_params, loop_params, XY_params, zid, kid, init_Pk_id, final_Pk_id, IR_cutoff_id, UV_cutoff_id, IR_resum_id), "
               << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
+              << "FOREIGN KEY (growth_params) REFERENCES " << policy.growth_config_table() << "(id), "
+              << "FOREIGN KEY (loop_params) REFERENCES " << policy.loop_integral_config_table() << "(id), "
+              << "FOREIGN KEY (XY_params) REFERENCES " << policy.MatsubaraXY_config_table() << "(id), "
               << "FOREIGN KEY (kid) REFERENCES " << policy.wavenumber_config_table() << "(id), "
               << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id), "
               << "FOREIGN KEY (init_Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
@@ -298,6 +315,8 @@ namespace sqlite3_operations
             stmt
               << "CREATE TABLE " << table_name << "("
               << "mid INTEGER, "
+              << "growth_params INTEGER, "
+              << "loop_params INTEGER, "
               << "zid INTEGER, "
               << "kid INTEGER, "
               << "init_Pk_id INTEGER, "
@@ -340,8 +359,10 @@ namespace sqlite3_operations
               << "Z2_total_nw DOUBLE"
 #ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
               << ", "
-              << "PRIMARY KEY (mid, zid, kid, init_Pk_id, final_Pk_id, IR_id, UV_id), "
+              << "PRIMARY KEY (mid, growth_params, loop_params, zid, kid, init_Pk_id, final_Pk_id, IR_id, UV_id), "
               << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
+              << "FOREIGN KEY (growth_params) REFERENCES " << policy.growth_config_table() << "(id), "
+              << "FOREIGN KEY (loop_params) REFERENCES " << policy.loop_integral_config_table() << "(id), "
               << "FOREIGN KEY (kid) REFERENCES " << policy.wavenumber_config_table() << "(id), "
               << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id), "
               << "FOREIGN KEY (init_Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
@@ -362,6 +383,9 @@ namespace sqlite3_operations
             stmt
               << "CREATE TABLE " << table_name << "("
               << "mid INTEGER, "
+              << "growth_params INTEGER, "
+              << "loop_params INTEGER, "
+              << "XY_params INTEGER, "
               << "zid INTEGER, "
               << "kid INTEGER, "
               << "init_Pk_id INTEGER, "
@@ -413,8 +437,11 @@ namespace sqlite3_operations
               << "Z2_mu8_resum DOUBLE "
 #ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
               << ", "
-              << "PRIMARY KEY (mid, zid, kid, init_Pk_id, final_Pk_id, IR_cutoff_id, UV_cutoff_id, IR_resum_id), "
+              << "PRIMARY KEY (mid, growth_params, loop_params, XY_params, zid, kid, init_Pk_id, final_Pk_id, IR_cutoff_id, UV_cutoff_id, IR_resum_id), "
               << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
+              << "FOREIGN KEY (growth_params) REFERENCES " << policy.growth_config_table() << "(id), "
+              << "FOREIGN KEY (loop_params) REFERENCES " << policy.loop_integral_config_table() << "(id), "
+              << "FOREIGN KEY (XY_params) REFERENCES " << policy.MatsubaraXY_config_table() << "(id), "
               << "FOREIGN KEY (kid) REFERENCES " << policy.wavenumber_config_table() << "(id), "
               << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id), "
               << "FOREIGN KEY (init_Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
@@ -436,14 +463,16 @@ namespace sqlite3_operations
             stmt
               << "CREATE TABLE " << policy.Matsubara_XY_table() << "("
               << "mid INTEGER, "
+              << "params_id INTEGER, "
               << "Pk_id INTEGER, "
               << "IR_resum_id INTEGER, "
               << "X DOUBLE, "
               << "Y DOUBLE"
 #ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
               << ", "
-              << "PRIMARY KEY (mid, IR_resum_id), "
+              << "PRIMARY KEY (mid, params_id, Pk_id, IR_resum_id), "
               << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
+              << "FOREIGN KEY (params_id) REFERENCES " << policy.MatsubaraXY_config_table() << "(id), "
               << "FOREIGN KEY (Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
               << "FOREIGN KEY (IR_resum_id) REFERENCES " << policy.IR_resum_config_table() << "(id));";
 #else
@@ -498,7 +527,7 @@ namespace sqlite3_operations
           }
         
         
-        void filter_data_config_table(sqlite3* db, const sqlite3_policy& policy)
+        void filter_params_config_table(sqlite3* db, const sqlite3_policy& policy)
           {
             std::ostringstream stmt;
             stmt
@@ -511,6 +540,50 @@ namespace sqlite3_operations
               << "relerr DOUBLE"
               << ");";
               
+            exec(db, stmt.str());
+          }
+    
+    
+        void oneloop_params_config_table(sqlite3* db, const sqlite3_policy& policy)
+          {
+            std::ostringstream stmt;
+            stmt
+              << "CREATE TABLE " << policy.loop_integral_config_table() << "("
+              << "id INTEGER PRIMARY KEY, "
+              << "abserr_13 DOUBLE, "
+              << "relerr_13 DOUBLE, "
+              << "abserr_22 DOUBLE, "
+              << "relerr_22 DOUBLE"
+              << ");";
+        
+            exec(db, stmt.str());
+          }
+    
+    
+        void MatsubaraXY_params_config_table(sqlite3* db, const sqlite3_policy& policy)
+          {
+            std::ostringstream stmt;
+            stmt
+              << "CREATE TABLE " << policy.MatsubaraXY_config_table() << "("
+              << "id INTEGER PRIMARY KEY, "
+              << "abserr DOUBLE, "
+              << "relerr DOUBLE"
+              << ");";
+        
+            exec(db, stmt.str());
+          }
+    
+    
+        void growth_params_config_table(sqlite3* db, const sqlite3_policy& policy)
+          {
+            std::ostringstream stmt;
+            stmt
+              << "CREATE TABLE " << policy.growth_config_table() << "("
+              << "id INTEGER PRIMARY KEY, "
+              << "abserr DOUBLE, "
+              << "relerr DOUBLE"
+              << ");";
+        
             exec(db, stmt.str());
           }
         
@@ -527,15 +600,19 @@ namespace sqlite3_operations
         create_impl::wavenumber_config_table(db, policy.UV_config_table(), policy);
         create_impl::wavenumber_config_table(db, policy.IR_resum_config_table(), policy);
         
-        create_impl::transfer_function_table(db, policy);
+        create_impl::Pk_linear_config_table(db, policy);
         
+        create_impl::oneloop_params_config_table(db, policy);
+        create_impl::MatsubaraXY_params_config_table(db, policy);
+        create_impl::growth_params_config_table(db, policy);
+        create_impl::filter_params_config_table(db, policy);
+    
+        create_impl::transfer_function_table(db, policy);
+    
         create_impl::oneloop_g_table(db, policy);
         create_impl::oneloop_f_table(db, policy);
-        
-        create_impl::Pk_linear_config_table(db, policy);
+
         create_impl::Pk_linear_data_table(db, policy);
-        
-        create_impl::filter_data_config_table(db, policy);
         
         create_impl::oneloop_momentum_integral_table(db, policy.AA_table(), policy);
         create_impl::oneloop_momentum_integral_table(db, policy.AB_table(), policy);

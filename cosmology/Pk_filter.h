@@ -40,7 +40,7 @@
 #include "cuba.h"
 
 
-class Pk_filter_data
+class Pk_filter_params
   {
     
     // CONSTRUCTOR, DESTRUCTOR
@@ -48,11 +48,11 @@ class Pk_filter_data
   public:
     
     //! constructor
-    Pk_filter_data(double A = LSSEFT_DEFAULT_FILTER_PK_AMPLITUDE,
-                   Mpc_units::energy p = LSSEFT_DEFAULT_FILTER_PK_PIVOT,
-                   double n = LSSEFT_DEFAULT_FILTER_PK_INDEX,
-                   double r = LSSEFT_DEFAULT_FILTER_PK_REL_ERR,
-                   double a = LSSEFT_DEFAULT_FILTER_PK_ABS_ERR)
+    Pk_filter_params(double A = LSSEFT_DEFAULT_FILTER_PK_AMPLITUDE,
+                     Mpc_units::energy p = LSSEFT_DEFAULT_FILTER_PK_PIVOT,
+                     double n = LSSEFT_DEFAULT_FILTER_PK_INDEX,
+                     double r = LSSEFT_DEFAULT_FILTER_PK_REL_ERR,
+                     double a = LSSEFT_DEFAULT_FILTER_PK_ABS_ERR)
       : amplitude(A),
         pivot(p),
         index(n),
@@ -63,7 +63,7 @@ class Pk_filter_data
     
     
     //! destructor is default
-    ~Pk_filter_data() = default;
+    ~Pk_filter_params() = default;
     
     
     // INTERFACE
@@ -71,28 +71,19 @@ class Pk_filter_data
   public:
     
     //! get amplitude
-    double get_amplitude() const
-      { return this->amplitude; }
-    
+    double get_amplitude() const { return this->amplitude; }
     
     //! get pivot
-    const Mpc_units::energy& get_pivot() const
-      { return this->pivot; }
-    
+    const Mpc_units::energy& get_pivot() const { return this->pivot; }
     
     //! get index
-    double get_index() const
-      { return this->index; }
-    
+    double get_index() const { return this->index; }
     
     //! get relative error
-    double get_relerr() const
-      { return this->rel_err; }
-    
+    double get_relerr() const { return this->rel_err; }
     
     //! get absolute error
-    double get_abserr() const
-      { return this->abs_err; }
+    double get_abserr() const { return this->abs_err; }
     
     
     // INTERNAL DATA
@@ -194,7 +185,7 @@ class Pk_filter
   public:
     
     //! constructor accepts Pk_filter_data package
-    Pk_filter(const Pk_filter_data& p)
+    Pk_filter(const Pk_filter_params& p)
       : params(p)
       {
       }
@@ -232,7 +223,7 @@ class Pk_filter
   private:
     
     //! filtering parameters
-    const Pk_filter_data& params;
+    const Pk_filter_params params;
     
   };
 

@@ -418,7 +418,7 @@ inline const std::string& tokenization_table<linear_Pk_token>(const sqlite3_poli
 
 
 //! token representing a set of filtering parameters
-class filter_data_token: public generic_token
+class filter_params_token: public generic_token
   {
     
     // CONSTRUCTOR, DESTRUCTOR
@@ -426,10 +426,10 @@ class filter_data_token: public generic_token
   public:
     
     //! constructor
-    filter_data_token(unsigned int i);
+    filter_params_token(unsigned int i);
     
     //! destructor is default
-    virtual ~filter_data_token() = default;
+    virtual ~filter_params_token() = default;
   
   
   private:
@@ -448,9 +448,120 @@ class filter_data_token: public generic_token
 
 // specialize tokenization for filtering tokens
 template <>
-inline const std::string& tokenization_table<filter_data_token>(const sqlite3_policy& policy)
+inline const std::string& tokenization_table<filter_params_token>(const sqlite3_policy& policy)
   {
     return(policy.filter_config_table());
+  }
+
+
+//! token representing a set of one-loop integral parameters
+class loop_integral_params_token: public generic_token
+  {
+    
+    // CONSTRUCTOR, DESTRUCTOR
+  
+  public:
+    
+    //! constructor
+    loop_integral_params_token(unsigned int i);
+    
+    //! destructor is default
+    virtual ~loop_integral_params_token() = default;
+  
+  
+  private:
+    
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+    
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & boost::serialization::base_object<generic_token>(*this);
+      }
+    
+  };
+
+
+// specialize tokenization for oneloop-parameter tokens
+template <>
+inline const std::string& tokenization_table<loop_integral_params_token>(const sqlite3_policy& policy)
+  {
+    return(policy.loop_integral_config_table());
+  }
+
+
+//! token representing a set of parameters for the Matsubara X & Y integration
+class MatsubaraXY_params_token: public generic_token
+  {
+    
+    // CONSTRUCTOR, DESTRUCTOR
+  
+  public:
+    
+    //! constructor
+    MatsubaraXY_params_token(unsigned int i);
+    
+    //! destructor is default
+    virtual ~MatsubaraXY_params_token() = default;
+  
+  
+  private:
+    
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+    
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & boost::serialization::base_object<generic_token>(*this);
+      }
+    
+  };
+
+
+// specialize tokenization for MatsubaraXY tokens
+template <>
+inline const std::string& tokenization_table<MatsubaraXY_params_token>(const sqlite3_policy& policy)
+  {
+    return(policy.MatsubaraXY_config_table());
+  }
+
+
+//! token representing a set of parameters for the growth function integration
+class growth_params_token: public generic_token
+  {
+    
+    // CONSTRUCTOR, DESTRUCTOR
+  
+  public:
+    
+    //! constructor
+    growth_params_token(unsigned int i);
+    
+    //! destructor is default
+    virtual ~growth_params_token() = default;
+  
+  
+  private:
+    
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+    
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & boost::serialization::base_object<generic_token>(*this);
+      }
+    
+  };
+
+
+// specialize tokenization for filtering tokens
+template <>
+inline const std::string& tokenization_table<growth_params_token>(const sqlite3_policy& policy)
+  {
+    return(policy.growth_config_table());
   }
 
 
@@ -557,6 +668,62 @@ namespace boost
           {
             // invoke in-place constructor with blank id; will be overwritten later during deserialization
             ::new(t) linear_Pk_token(0);
+          }
+    
+        
+        template <typename Archive>
+        inline void save_construct_data(Archive& ar, const filter_params_token* t, const unsigned int file_version)
+          {
+          }
+    
+    
+        template <typename Archive>
+        inline void load_construct_data(Archive& ar, filter_params_token* t, const unsigned int file_version)
+          {
+            // invoke in-place constructor with blank id; will be overwritten later during deserialization
+            ::new(t) filter_params_token(0);
+          }
+    
+    
+        template <typename Archive>
+        inline void save_construct_data(Archive& ar, const loop_integral_params_token* t, const unsigned int file_version)
+          {
+          }
+    
+    
+        template <typename Archive>
+        inline void load_construct_data(Archive& ar, loop_integral_params_token* t, const unsigned int file_version)
+          {
+            // invoke in-place constructor with blank id; will be overwritten later during deserialization
+            ::new(t) loop_integral_params_token(0);
+          }
+    
+    
+        template <typename Archive>
+        inline void save_construct_data(Archive& ar, const MatsubaraXY_params_token* t, const unsigned int file_version)
+          {
+          }
+    
+    
+        template <typename Archive>
+        inline void load_construct_data(Archive& ar, MatsubaraXY_params_token* t, const unsigned int file_version)
+          {
+            // invoke in-place constructor with blank id; will be overwritten later during deserialization
+            ::new(t) MatsubaraXY_params_token(0);
+          }
+    
+    
+        template <typename Archive>
+        inline void save_construct_data(Archive& ar, const growth_params_token* t, const unsigned int file_version)
+          {
+          }
+    
+    
+        template <typename Archive>
+        inline void load_construct_data(Archive& ar, growth_params_token* t, const unsigned int file_version)
+          {
+            // invoke in-place constructor with blank id; will be overwritten later during deserialization
+            ::new(t) growth_params_token(0);
           }
     
     
@@ -763,6 +930,122 @@ namespace std
         
         //! hash function
         size_t operator()(const linear_Pk_token& tok) const
+          {
+            std::hash<generic_token> hasher;
+            return hasher(tok);
+          }
+        
+      };
+    
+    
+    template<>
+    class hash<filter_params_token>
+      {
+        
+        // CONSTRUCTOR, DESTRUCTOR
+      
+      public:
+        
+        //! constructor is default
+        hash() = default;
+        
+        //! destrucotr is default
+        ~hash() = default;
+        
+        
+        // IMPLEMENTATION
+      
+      public:
+        
+        //! hash function
+        size_t operator()(const filter_params_token& tok) const
+          {
+            std::hash<generic_token> hasher;
+            return hasher(tok);
+          }
+        
+      };
+    
+    
+    template<>
+    class hash<loop_integral_params_token>
+      {
+        
+        // CONSTRUCTOR, DESTRUCTOR
+      
+      public:
+        
+        //! constructor is default
+        hash() = default;
+        
+        //! destrucotr is default
+        ~hash() = default;
+        
+        
+        // IMPLEMENTATION
+      
+      public:
+        
+        //! hash function
+        size_t operator()(const loop_integral_params_token& tok) const
+          {
+            std::hash<generic_token> hasher;
+            return hasher(tok);
+          }
+        
+      };
+    
+    
+    template<>
+    class hash<MatsubaraXY_params_token>
+      {
+        
+        // CONSTRUCTOR, DESTRUCTOR
+      
+      public:
+        
+        //! constructor is default
+        hash() = default;
+        
+        //! destrucotr is default
+        ~hash() = default;
+        
+        
+        // IMPLEMENTATION
+      
+      public:
+        
+        //! hash function
+        size_t operator()(const MatsubaraXY_params_token& tok) const
+          {
+            std::hash<generic_token> hasher;
+            return hasher(tok);
+          }
+        
+      };
+    
+    
+    template<>
+    class hash<growth_params_token>
+      {
+        
+        // CONSTRUCTOR, DESTRUCTOR
+      
+      public:
+        
+        //! constructor is default
+        hash() = default;
+        
+        //! destrucotr is default
+        ~hash() = default;
+        
+        
+        // IMPLEMENTATION
+      
+      public:
+        
+        //! hash function
+        size_t operator()(const growth_params_token& tok) const
           {
             std::hash<generic_token> hasher;
             return hasher(tok);

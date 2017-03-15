@@ -636,6 +636,7 @@ multipole_Pk multipole_Pk_calculator::calculate_Legendre(const Mpc_units::energy
                             Z2_mu0, Z2_mu2, Z2_mu4, Z2_mu6, Z2_mu8, get_ell4<Pk_resum_multiplet>(), get_ell4<k2_Pk_resum_multiplet>());
     
     // package everything up as as multiplet_Pk and return it
-    return multipole_Pk(data.get_k_token(), data.get_init_Pk_token(), data.get_final_Pk_token(), data.get_IR_token(),
-                        data.get_UV_token(), data.get_z_token(), XY.get_IR_resum_token(), P0, P2, P4);
+    return multipole_Pk(data.get_k_token(), data.get_growth_params(), data.get_loop_params(), XY.get_params_token(),
+                        data.get_init_Pk_token(), data.get_final_Pk_token(), data.get_IR_token(), data.get_UV_token(),
+                        data.get_z_token(), XY.get_IR_resum_token(), P0, P2, P4);
   }

@@ -26,11 +26,14 @@
 #include "oneloop_Pk.h"
 
 
-oneloop_Pk::oneloop_Pk(const k_token& kt, const linear_Pk_token& Pkt_i, const boost::optional<linear_Pk_token>& Pkt_f,
-                       const IR_cutoff_token& IRt, const UV_cutoff_token& UVt, const z_token& zt,
-                       const dd_Pk& _dd, const rsd_dd_Pk& _rsd_mu0, const rsd_dd_Pk& _rsd_mu2, const rsd_dd_Pk& _rsd_mu4,
+oneloop_Pk::oneloop_Pk(const k_token& kt, const growth_params_token& gt, const loop_integral_params_token& lt,
+                       const linear_Pk_token& Pkt_i, const boost::optional<linear_Pk_token>& Pkt_f,
+                       const IR_cutoff_token& IRt, const UV_cutoff_token& UVt, const z_token& zt, const dd_Pk& _dd,
+                       const rsd_dd_Pk& _rsd_mu0, const rsd_dd_Pk& _rsd_mu2, const rsd_dd_Pk& _rsd_mu4,
                        const rsd_dd_Pk& _rsd_mu6, const rsd_dd_Pk& _rsd_mu8)
   : k(kt),
+    loop_params(lt),
+    growth_params(gt),
     init_Pk(Pkt_i),
     final_Pk(Pkt_f),
     UV_cutoff(UVt),
@@ -48,6 +51,8 @@ oneloop_Pk::oneloop_Pk(const k_token& kt, const linear_Pk_token& Pkt_i, const bo
 
 oneloop_Pk::oneloop_Pk()
   : k(0),
+    loop_params(0),
+    growth_params(0),
     init_Pk(0),
     final_Pk(boost::none),
     UV_cutoff(0),

@@ -26,9 +26,10 @@
 #include "Matsubara_XY.h"
 
 
-Matsubara_XY::Matsubara_XY(const linear_Pk_token& Pkt, const IR_resum_token& IRt, const Mpc_units::inverse_energy2& _X,
-                           const Mpc_units::inverse_energy2& _Y)
-  : IR_resum_tok(IRt),
+Matsubara_XY::Matsubara_XY(const MatsubaraXY_params_token& pt, const linear_Pk_token& Pkt, const IR_resum_token& IRt,
+                           const Mpc_units::inverse_energy2& _X, const Mpc_units::inverse_energy2& _Y)
+  : params_tok(pt),
+    IR_resum_tok(IRt),
     Pk_lin(Pkt),
     X(_X),
     Y(_Y)
@@ -37,7 +38,8 @@ Matsubara_XY::Matsubara_XY(const linear_Pk_token& Pkt, const IR_resum_token& IRt
 
 
 Matsubara_XY::Matsubara_XY()
-  : IR_resum_tok(0),
+  : params_tok(0),
+    IR_resum_tok(0),
     Pk_lin(0),
     X(0.0),
     Y(0.0)

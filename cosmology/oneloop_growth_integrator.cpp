@@ -150,18 +150,18 @@ class oneloop_observer
 // ONELOOP_INTEGRATOR METHODS
 
 
-oneloop_growth_integrator::oneloop_growth_integrator(double a, double r)
-  : abs_err(a),
-    rel_err(r)
+oneloop_growth_integrator::oneloop_growth_integrator(const growth_params& p)
+  : params(p)
   {
 
   }
 
 
-growth_integrator_data oneloop_growth_integrator::integrate(const FRW_model& model, z_database& z_db)
+growth_integrator_data
+oneloop_growth_integrator::integrate(const FRW_model& model, const growth_params_token& params, z_database& z_db)
   {
     // set up empty oneloop_growth container
-    std::unique_ptr<oneloop_growth> ctr = std::make_unique<oneloop_growth>(z_db);
+    std::unique_ptr<oneloop_growth> ctr = std::make_unique<oneloop_growth>(params, z_db);
 
     // set up a functor for the ODE system
     oneloop_functor rhs(model);
@@ -182,7 +182,7 @@ growth_integrator_data oneloop_growth_integrator::integrate(const FRW_model& mod
     std::vector<double> z_sample;
     std::copy(z_db.value_rbegin(), z_db.value_rend(), std::back_inserter(z_sample));
 
-    auto stepper = boost::numeric::odeint::make_dense_output< boost::numeric::odeint::runge_kutta_dopri5<state_vector> >(this->abs_err, this->rel_err);
+    auto stepper = boost::numeric::odeint::make_dense_output< boost::numeric::odeint::runge_kutta_dopri5<state_vector> >(this->params.get_abserr(), this->params.get_relerr());
 
     obs.start_timer();
     size_t steps = boost::numeric::odeint::integrate_times(stepper, rhs, x, z_sample.begin(), z_sample.end(), -1E-3, obs);

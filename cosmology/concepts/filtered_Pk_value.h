@@ -43,7 +43,7 @@ class filtered_Pk_value
   public:
     
     //! value constructor
-    filtered_Pk_value(const k_token& kt, const linear_Pk_token& Pt, const filter_data_token& pt,
+    filtered_Pk_value(const k_token& kt, const linear_Pk_token& Pt, const filter_params_token& pt,
                       Pk_filter_result _Pk_nw, Mpc_units::inverse_energy3 _Pk_raw,
                       Mpc_units::inverse_energy3 _Pk_ref);
     
@@ -72,7 +72,7 @@ class filtered_Pk_value
     const linear_Pk_token& get_Pk_token() const { return this->Pk_tok; }
     
     //! get filtering parameters token
-    const filter_data_token& get_params_token() const { return this->params_tok; }
+    const filter_params_token& get_params_token() const { return this->params_tok; }
     
     //! get no-wiggle power spectrum
     const Pk_filter_result get_Pk_nowiggle() const { return this->Pk_nw; }
@@ -101,7 +101,7 @@ class filtered_Pk_value
     linear_Pk_token Pk_tok;
     
     //! parameters token
-    filter_data_token params_tok;
+    filter_params_token params_tok;
     
     
     // PAYLOAD DATA

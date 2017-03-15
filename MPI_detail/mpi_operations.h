@@ -241,7 +241,7 @@ namespace MPI_detail
            
         //! value constructor, used to construct and send a payload
         new_filter_Pk(const FRW_model& m, const Mpc_units::energy& _k, const k_token& kt, const linear_Pk_token& Pt,
-                      const std::shared_ptr<filterable_Pk>& _Pk, const filter_data_token& pt, const Pk_filter_data& p)
+                      const std::shared_ptr<filterable_Pk>& _Pk, const filter_params_token& pt, const Pk_filter_params& p)
           : model(m),
             k(_k),
             k_tok(kt),
@@ -276,10 +276,10 @@ namespace MPI_detail
         const filterable_Pk& get_Pk_linear() const { return *this->Pk_lin; }
         
         //! get filtering parameters token
-        const filter_data_token& get_params_token() const { return this->params_tok; }
+        const filter_params_token& get_params_token() const { return this->params_tok; }
         
         //! get filtering parameters
-        const Pk_filter_data& get_params() const { return this->params; }
+        const Pk_filter_params& get_params() const { return this->params; }
     
     
         // INTERNAL DATA
@@ -302,10 +302,10 @@ namespace MPI_detail
         std::shared_ptr<filterable_Pk> Pk_lin;
         
         //! token for filtering parameters
-        filter_data_token params_tok;
+        filter_params_token params_tok;
         
         //! filtering parameters
-        Pk_filter_data params;
+        Pk_filter_params params;
     
     
         // enable boost::serialization support, and hence automated packing for transmission over MPI
@@ -395,15 +395,17 @@ namespace MPI_detail
             k_tok(0),
             UV_tok(0),
             IR_tok(0),
-            Pk()
+            Pk(),
+            params_tok(0),
+            params()
           {
           }
 
         //! value constructor: used to construct and send a payload
         new_loop_momentum_integration(const FRW_model& m, const Mpc_units::energy& _k, const k_token& kt,
-                                      const Mpc_units::energy& UV, const UV_cutoff_token& UVt,
-                                      const Mpc_units::energy& IR, const IR_cutoff_token& IRt,
-                                      const std::shared_ptr<initial_filtered_Pk>& _Pk)
+                                      const Mpc_units::energy& UV, const UV_cutoff_token& UVt, const Mpc_units::energy& IR,
+                                      const IR_cutoff_token& IRt, const std::shared_ptr<initial_filtered_Pk>& _Pk,
+                                      const loop_integral_params_token& pt, const loop_integral_params& p)
           : model(m),
             k(_k),
             UV_cutoff(UV),
@@ -411,7 +413,9 @@ namespace MPI_detail
             k_tok(kt),
             UV_tok(UVt),
             IR_tok(IRt),
-            Pk(_Pk)
+            Pk(_Pk),
+            params_tok(pt),
+            params(p)
           {
           }
 
@@ -446,6 +450,12 @@ namespace MPI_detail
 
         //! get tree-level power spectrum
         const initial_filtered_Pk& get_tree_power_spectrum() const { return *this->Pk; }
+        
+        //! get parameters token
+        const loop_integral_params_token& get_params_token() const { return this->params_tok; }
+        
+        //! get parameters block
+        const loop_integral_params& get_params() const { return this->params; }
 
 
         // INTERNAL DATA
@@ -475,6 +485,12 @@ namespace MPI_detail
 
         //! tree-level power spectrum
         std::shared_ptr<initial_filtered_Pk> Pk;
+        
+        //! parameters token
+        loop_integral_params_token params_tok;
+        
+        //! parameters block
+        loop_integral_params params;
 
 
         // enable boost::serialization support, and hence automated packing for transmission over MPI
@@ -559,16 +575,21 @@ namespace MPI_detail
         new_Matsubara_XY()
           : IR_resum(0.0),
             IR_resum_tok(0),
-            Pk()
+            Pk(),
+            params_tok(0),
+            params()
           {
           }
         
         //! value constructor: used to construct and send a payload
         new_Matsubara_XY(const Mpc_units::energy& _IR, const IR_resum_token& _IRt,
-                        const std::shared_ptr<initial_filtered_Pk>& _Pk)
+                         const std::shared_ptr<initial_filtered_Pk>& _Pk, const MatsubaraXY_params_token& _pt,
+                         const MatsubaraXY_params& _pm)
           : IR_resum(_IR),
             IR_resum_tok(_IRt),
-            Pk(_Pk)
+            Pk(_Pk),
+            params_tok(_pt),
+            params(_pm)
           {
           }
         
@@ -588,6 +609,12 @@ namespace MPI_detail
     
         //! get tree-level power spectrum
         const initial_filtered_Pk& get_tree_power_spectrum() const { return *this->Pk; }
+        
+        //! get parameters token
+        const MatsubaraXY_params_token& get_params_token() const { return this->params_tok; }
+        
+        //! get parameters block
+        const MatsubaraXY_params& get_params() const { return this->params; }
     
     
         // INTERNAL DATA
@@ -602,6 +629,12 @@ namespace MPI_detail
     
         //! tree-level power spectrum
         std::shared_ptr<initial_filtered_Pk> Pk;
+        
+        //! parameters token
+        MatsubaraXY_params_token params_tok;
+        
+        //! parameters
+        MatsubaraXY_params params;
     
     
         // enable boost::serialization support, and hence automated packing for transmission over MPI
@@ -613,6 +646,8 @@ namespace MPI_detail
             ar & IR_resum;
             ar & IR_resum_tok;
             ar & Pk;
+            ar & params_tok;
+            ar & params;
           }
     
       };

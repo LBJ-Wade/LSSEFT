@@ -39,21 +39,18 @@
 
 
 
-oneloop_momentum_integrator::oneloop_momentum_integrator(double a_13, double r_13, double a_22, double r_22)
-  : abs_err_13(std::abs(a_13)),
-    rel_err_13(std::abs(r_13)),
-    abs_err_22(std::abs(a_22)),
-    rel_err_22(std::abs(r_22))
+oneloop_momentum_integrator::oneloop_momentum_integrator(const loop_integral_params& p)
+  : params(p)
   {
     // seed random number generator
     mersenne_twister.seed(random_device());
   }
 
 
-loop_integral oneloop_momentum_integrator::integrate(const FRW_model& model, const Mpc_units::energy& k,
-                                                     const k_token& k_tok, const Mpc_units::energy& UV_cutoff,
-                                                     const UV_cutoff_token& UV_tok, const Mpc_units::energy& IR_cutoff,
-                                                     const IR_cutoff_token& IR_tok, const initial_filtered_Pk& Pk)
+loop_integral
+oneloop_momentum_integrator::integrate(const FRW_model& model, const loop_integral_params_token& params_tok, const Mpc_units::energy& k,
+                                       const k_token& k_tok, const Mpc_units::energy& UV_cutoff, const UV_cutoff_token& UV_tok,
+                                       const Mpc_units::energy& IR_cutoff, const IR_cutoff_token& IR_tok, const initial_filtered_Pk& Pk)
   {
     delta_13_integrals delta13;
     delta_22_integrals delta22;
@@ -110,7 +107,7 @@ loop_integral oneloop_momentum_integrator::integrate(const FRW_model& model, con
        fail_RSD22_C4 || fail_RSD22_D1)
       rsd22.mark_failed();
     
-    loop_integral container(k_tok, Pk.get_token(), UV_tok, IR_tok, delta22, delta13, rsd22, rsd13);
+    loop_integral container(k_tok, params_tok, Pk.get_token(), UV_tok, IR_tok, delta22, delta13, rsd22, rsd13);
 
     return container;
   }
@@ -160,8 +157,8 @@ bool oneloop_momentum_integrator::evaluate_integral(const FRW_model& model, cons
     std::unique_ptr<oneloop_momentum_impl::integrand_data> data =
       std::make_unique<oneloop_momentum_impl::integrand_data>(model, k, UV_cutoff, IR_cutoff, Pk);
     
-    double re = (type == loop_integral_type::P13 ? this->rel_err_13 : this->rel_err_22);
-    double ae = (type == loop_integral_type::P13 ? this->abs_err_13 : this->abs_err_22);
+    double re = (type == loop_integral_type::P13 ? this->params.get_relerr_13() : this->params.get_relerr_22());
+    double ae = (type == loop_integral_type::P13 ? this->params.get_abserr_13() : this->params.get_abserr_22());
 
     constexpr unsigned int MAX_13_TRIES = 5;
     constexpr unsigned int MAX_22_TRIES = 3;

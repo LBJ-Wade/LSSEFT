@@ -40,9 +40,79 @@
 #include "cuba.h"
 
 #include "boost/timer/timer.hpp"
+#include "boost/serialization/serialization.hpp"
 
 
 enum class loop_integral_type { P13, P22 };
+
+
+class loop_integral_params
+  {
+    
+    // CONSTRUCTOR, DESTRUCTOR
+    
+  public:
+    
+    //! constructor
+    loop_integral_params(double a_13=LSSEFT_DEFAULT_INTEGRAL_ABS_ERR_13, double r_13=LSSEFT_DEFAULT_INTEGRAL_REL_ERR_13,
+                         double a_22=LSSEFT_DEFAULT_INTEGRAL_ABS_ERR_22, double r_22=LSSEFT_DEFAULT_INTEGRAL_REL_ERR_22)
+      : abs_err_13(a_13),
+        rel_err_13(r_13),
+        abs_err_22(a_22),
+        rel_err_22(r_22)
+      {
+      }
+   
+    //! destructor is default
+    ~loop_integral_params() = default;
+    
+    
+    // INTERFACE
+    
+  public:
+    
+    //! get 13 abserr
+    double get_abserr_13() const { return this->abs_err_13; }
+    
+    //! get 13 relerr
+    double get_relerr_13() const { return this->rel_err_13; }
+    
+    //! get 22 abserr
+    double get_abserr_22() const { return this->abs_err_22; }
+    
+    //! get 22 relerr
+    double get_relerr_22() const { return this->rel_err_22; }
+    
+    
+    // INTERNAL DATA
+  
+  private:
+    
+    //! absolute tolerance for 13 integrals
+    double abs_err_13;
+    
+    //! relative tolerance for 13 integrals
+    double rel_err_13;
+    
+    //! absolute tolerance for 22 integrals
+    double abs_err_22;
+    
+    //! relative tolerance for 22 integrals
+    double rel_err_22;
+    
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+    
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & abs_err_13;
+        ar & rel_err_13;
+        ar & abs_err_22;
+        ar & rel_err_22;
+      }
+    
+  };
 
 
 class oneloop_momentum_integrator
@@ -53,8 +123,7 @@ class oneloop_momentum_integrator
   public:
 
     //! constructor
-    oneloop_momentum_integrator(double a_13=LSSEFT_DEFAULT_INTEGRAL_ABS_ERR_13, double r_13=LSSEFT_DEFAULT_INTEGRAL_REL_ERR_13,
-                                double a_22=LSSEFT_DEFAULT_INTEGRAL_ABS_ERR_22, double r_22=LSSEFT_DEFAULT_INTEGRAL_REL_ERR_22);
+    oneloop_momentum_integrator(const loop_integral_params& p);
 
     //! destructor is default
     ~oneloop_momentum_integrator() = default;
@@ -65,10 +134,9 @@ class oneloop_momentum_integrator
   public:
 
     //! integrate one-loop kernels
-    loop_integral integrate(const FRW_model& model, const Mpc_units::energy& k, const k_token& k_tok,
-                            const Mpc_units::energy& UV_cutoff, const UV_cutoff_token& UV_tok,
-                            const Mpc_units::energy& IR_cutoff, const IR_cutoff_token& IR_tok,
-                            const initial_filtered_Pk& Pk);
+    loop_integral integrate(const FRW_model& model, const loop_integral_params_token& params_tok, const Mpc_units::energy& k,
+                                const k_token& k_tok, const Mpc_units::energy& UV_cutoff, const UV_cutoff_token& UV_tok,
+                                const Mpc_units::energy& IR_cutoff, const IR_cutoff_token& IR_tok, const initial_filtered_Pk& Pk);
 
     //! output integrands for inspection
     void write_integrands(const FRW_model& model, const Mpc_units::energy& k,
@@ -97,17 +165,8 @@ class oneloop_momentum_integrator
 
   private:
 
-    //! absolute tolerance for 13 integrals
-    double abs_err_13;
-    
-    //! relative tolerance for 13 integrals
-    double rel_err_13;
-    
-    //! absolute tolerance for 22 integrals
-    double abs_err_22;
-
-    //! relative tolerance for 22 integrals
-    double rel_err_22;
+    //! parameter block
+    loop_integral_params params;
 
 
     // RANDOM NUMBER GENERATORS

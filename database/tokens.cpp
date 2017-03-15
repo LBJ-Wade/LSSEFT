@@ -86,7 +86,25 @@ linear_Pk_token::linear_Pk_token(unsigned int i)
   }
 
 
-filter_data_token::filter_data_token(unsigned int i)
+filter_params_token::filter_params_token(unsigned int i)
+  : generic_token(i)
+  {
+  }
+
+
+loop_integral_params_token::loop_integral_params_token(unsigned int i)
+  : generic_token(i)
+  {
+  }
+
+
+MatsubaraXY_params_token::MatsubaraXY_params_token(unsigned int i)
+  : generic_token(i)
+  {
+  }
+
+
+growth_params_token::growth_params_token(unsigned int i)
   : generic_token(i)
   {
   }

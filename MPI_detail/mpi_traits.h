@@ -61,8 +61,11 @@ namespace MPI_detail
       };
 
     
-    template <> struct work_item_traits<loop_momentum_work_record>
+    template <> struct work_item_traits<loop_integral_work_record>
       {
+        work_item_traits() {}
+    
+    
         typedef new_loop_momentum_integration   outgoing_payload_type;
         typedef loop_momentum_integration_ready incoming_payload_type;
 
@@ -73,6 +76,9 @@ namespace MPI_detail
     
     template<> struct work_item_traits<Matsubara_XY_work_record>
       {
+        work_item_traits() {}
+    
+    
         typedef new_Matsubara_XY   outgoing_payload_type;
         typedef Matsubara_XY_ready incoming_payload_type;
         

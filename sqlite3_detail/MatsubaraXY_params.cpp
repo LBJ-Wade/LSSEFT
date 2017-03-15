@@ -23,8 +23,7 @@
 // --@@
 //
 
-
-#include "filter_data.h"
+#include "MatsubaraXY_params.h"
 
 #include "database/tokens.h"
 
@@ -38,32 +37,26 @@ namespace sqlite3_operations
   {
     
     boost::optional<unsigned int>
-    lookup_filter_data(sqlite3* db, transaction_manager& mgr, const Pk_filter_data& data, const sqlite3_policy& policy,
-                       double tol)
+    lookup_MatsubaraXY_params(sqlite3* db, transaction_manager& mgr, const MatsubaraXY_params& data,
+                              const sqlite3_policy& policy, double tol)
       {
         assert(db != nullptr);
         
         std::ostringstream select_stmt;
         select_stmt
-          << "SELECT id FROM " << tokenization_table<filter_data_token>(policy) << " WHERE "
-          << "ABS((amplitude-@amplitude)/amplitude)<@tol "
-          << "AND ABS((pivot-@pivot)/pivot)<@tol "
-          << "AND ABS((idx-@index)/idx)<@tol "
-          << "AND ABS((abserr-@abserr)/abserr)<@tol "
-          << "AND ABS((relerr-@relerr)/relerr)<@tol;";
-          
+          << "SELECT id FROM " << tokenization_table<MatsubaraXY_params_token>(policy) << " WHERE "
+          << "ABS((abserr-@abs)/abserr)<@tol "
+          << "AND ABS((relerr-@rel)/relerr)<@tol;";
+        
         // prepare SQL statement
         sqlite3_stmt* stmt;
         check_stmt(db, sqlite3_prepare_v2(db, select_stmt.str().c_str(), select_stmt.str().length()+1, &stmt, nullptr));
         
         // bind values to the parameters
         check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@tol"), tol));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@amplitude"), data.get_amplitude()));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@pivot"), data.get_pivot() * Mpc_units::Mpc));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@index"), data.get_index()));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@abserr"), data.get_abserr()));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@relerr"), data.get_relerr()));
-    
+        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@abs"), data.get_abserr()));
+        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@rel"), data.get_relerr()));
+        
         // execute statement and step through results
         int status = 0;
         boost::optional<unsigned int> id = boost::none;
@@ -71,50 +64,48 @@ namespace sqlite3_operations
           {
             if(status == SQLITE_ROW)
               {
-                if(id) throw runtime_exception(exception_type::database_error, ERROR_SQLITE3_MULTIPLE_FILTER_DATA);
+                if(id) throw runtime_exception(exception_type::database_error, ERROR_SQLITE3_MULTIPLE_MATSUBARAXY_PARAMS);
                 id = static_cast<unsigned int>(sqlite3_column_int(stmt, 0));
               }
           }
-    
+        
         // finalize statement and release resources
         check_stmt(db, sqlite3_clear_bindings(stmt));
         check_stmt(db, sqlite3_finalize(stmt));
-    
+        
         return(id);
       }
     
     
     unsigned int
-    insert_filter_data(sqlite3* db, transaction_manager& mgr, const Pk_filter_data& data, const sqlite3_policy& policy)
+    insert_MatsubaraXY_params(sqlite3* db, transaction_manager& mgr, const MatsubaraXY_params& data,
+                              const sqlite3_policy& policy)
       {
         assert(db != nullptr);
         
         // get number of rows in table; this will be the identifier for the new data set
-        unsigned int new_id = count(db, tokenization_table<filter_data_token>(policy));
+        unsigned int new_id = count(db, tokenization_table<MatsubaraXY_params_token>(policy));
         
         std::ostringstream insert_stmt;
         insert_stmt
-          << "INSERT INTO " << tokenization_table<filter_data_token>(policy) << " VALUES (@id, @amplitude, @pivot, @index, @abserr, @relerr);";
-    
+          << "INSERT INTO " << tokenization_table<MatsubaraXY_params_token>(policy) << " VALUES (@id, @abs, @rel);";
+        
         // prepare SQL statement
         sqlite3_stmt* stmt;
         check_stmt(db, sqlite3_prepare_v2(db, insert_stmt.str().c_str(), insert_stmt.str().length()+1, &stmt, nullptr));
-    
+        
         // bind values to the parameters
         check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@id"), new_id));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@amplitude"), data.get_amplitude()));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@pivot"), data.get_pivot() * Mpc_units::Mpc));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@index"), data.get_index()));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@abserr"), data.get_abserr()));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@relerr"), data.get_relerr()));
-    
+        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@abs"), data.get_abserr()));
+        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@rel"), data.get_relerr()));
+        
         // perform insertion
-        check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_FILTER_DATA_FAIL, SQLITE_DONE);
-    
+        check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_MATSUBARAXY_PARAMS_FAIL, SQLITE_DONE);
+        
         // finalize statement and release resources
         check_stmt(db, sqlite3_clear_bindings(stmt));
         check_stmt(db, sqlite3_finalize(stmt));
-    
+        
         return(new_id);
       }
     

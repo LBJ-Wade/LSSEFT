@@ -26,7 +26,7 @@
 #include "filtered_Pk_value.h"
 
 
-filtered_Pk_value::filtered_Pk_value(const k_token& kt, const linear_Pk_token& Pt, const filter_data_token& pt,
+filtered_Pk_value::filtered_Pk_value(const k_token& kt, const linear_Pk_token& Pt, const filter_params_token& pt,
                                      Pk_filter_result _Pk_nw, Mpc_units::inverse_energy3 _Pk_raw,
                                      Mpc_units::inverse_energy3 _Pk_ref)
   : fail(false),

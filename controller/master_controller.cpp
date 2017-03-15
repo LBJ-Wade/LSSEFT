@@ -24,7 +24,6 @@
 //
 
 
-#include <MPI_detail/mpi_traits.h>
 #include "core.h"
 
 #include "master_controller.h"
@@ -34,6 +33,8 @@
 #include "cosmology/MDR1_sim.h"
 #include "cosmology/oneloop_growth_integrator.h"
 #include "cosmology/Pk_filter.h"
+#include "cosmology/Matsubara_XY_calculator.h"
+#include "cosmology/oneloop_growth_integrator.h"
 #include "cosmology/concepts/range.h"
 #include "cosmology/concepts/power_spectrum.h"
 
@@ -174,12 +175,24 @@ void master_controller::execute()
     std::unique_ptr<k_database>         loop_k_db    = dmgr.build_k_db(loop_k_samples);
     
     
-    // POWER SPECTRUM FILTERING
+    // SET UP PARAMETERS
     
-    // set up filter
-    Pk_filter_data filter_params(0.25, 0.05 / Mpc_units::Mpc, 0.02);
-    std::unique_ptr<filter_data_token> filter_tok = dmgr.tokenize(filter_params);
-
+    // set up parameters for filter
+    Pk_filter_params filter_params(0.25, 0.05 / Mpc_units::Mpc, 0.02);
+    std::unique_ptr<filter_params_token> filter_tok = dmgr.tokenize(filter_params);
+    
+    // set up parameters for growth function
+    growth_params gf_params;
+    std::unique_ptr<growth_params_token> growth_tok = dmgr.tokenize(gf_params);
+    
+    // set up parameters for Matsubara X&Y integral
+    MatsubaraXY_params XY_params;
+    std::unique_ptr<MatsubaraXY_params_token> XY_tok = dmgr.tokenize(XY_params);
+    
+    // set up parameters for loop integral
+    loop_integral_params loop_params;
+    std::unique_ptr<loop_integral_params_token> loop_tok = dmgr.tokenize(loop_params);
+    
     
     // GENERATE TARGETS
 
@@ -195,10 +208,10 @@ void master_controller::execute()
 
     // build a work list for linear and one-loop growth functions (and their growth rates);
     // we inherit ownership of its lifetime using std::unique_ptr<>
-    std::unique_ptr<z_database> loop_growth_work = dmgr.build_oneloop_work_list(*model, *lo_z_db);
+    std::unique_ptr<z_database> loop_growth_work = dmgr.build_loop_growth_work_list(*model, *lo_z_db, *growth_tok);
 
     // compute linear and one-loop growth functions, if needed; can be done on master process since there is only one integration
-    if(loop_growth_work) this->integrate_oneloop(cosmology_model, *model, *loop_growth_work, dmgr);
+    if(loop_growth_work) this->integrate_loop_growth(cosmology_model, *model, *loop_growth_work, dmgr, *growth_tok, gf_params);
     
     if(this->arg_cache.is_initial_powerspectrum_set())
       {
@@ -243,7 +256,7 @@ void master_controller::execute()
             final_Pk_filt = dmgr.build_wiggle_Pk(*final_Pk_tok, *final_Pk_lin_db);
             
             // rescale final power spectrum
-            dmgr.rescale_final_Pk(*model, *final_Pk_filt, *lo_z_db);
+            dmgr.rescale_final_Pk(*model, *growth_tok, *final_Pk_filt, *lo_z_db);
           }
     
     
@@ -251,7 +264,7 @@ void master_controller::execute()
     
         // build a work list of the Matsubara X & Y coefficients associated with these resummation scales
         std::unique_ptr<Matsubara_XY_work_list> Matsubara_work =
-          dmgr.build_Matsubara_XY_work_list(*model, *IR_resum_db, init_Pk_filt);
+          dmgr.build_Matsubara_XY_work_list(*model, *IR_resum_db, init_Pk_filt, *XY_tok, XY_params);
     
         // distribute this work list among the worker processes
         if(Matsubara_work) this->scatter(cosmology_model, *model, *Matsubara_work, dmgr);
@@ -260,8 +273,8 @@ void master_controller::execute()
         // STEP 3 - COMPUTE LOOP INTEGRALS
 
         // build a work list for the loop integrals
-        std::unique_ptr<loop_momentum_work_list> loop_momentum_work =
-          dmgr.build_loop_momentum_work_list(*model, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, init_Pk_filt);
+        std::unique_ptr<loop_integral_work_list> loop_momentum_work =
+          dmgr.build_loop_momentum_work_list(*model, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, init_Pk_filt, *loop_tok, loop_params);
 
         // distribute this work list among the worker processes
         if(loop_momentum_work) this->scatter(cosmology_model, *model, *loop_momentum_work, dmgr);
@@ -271,16 +284,17 @@ void master_controller::execute()
         
         // build a work list for the individual power spectrum components
         std::unique_ptr<one_loop_Pk_work_list> Pk_work =
-          dmgr.build_one_loop_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db,
-                                           init_Pk_filt, final_Pk_filt);
+          dmgr.build_one_loop_Pk_work_list(*model, *growth_tok, *loop_tok, *lo_z_db, *loop_k_db,
+                                           *IR_cutoff_db, *UV_cutoff_db, init_Pk_filt, final_Pk_filt);
 
         // distribute this work list among the worker processes
         if(Pk_work) this->scatter(cosmology_model, *model, *Pk_work, dmgr);
         
         // build a work list for the resummed power spectrum components
         std::unique_ptr<one_loop_resum_Pk_work_list> Pk_resum_work =
-          dmgr.build_one_loop_resum_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db,
-                                                 *IR_resum_db, init_Pk_filt, final_Pk_filt);
+          dmgr.build_one_loop_resum_Pk_work_list(*model, *growth_tok, *loop_tok, *XY_tok, *lo_z_db,
+                                                 *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, *IR_resum_db, init_Pk_filt,
+                                                 final_Pk_filt);
         
         // distribute this work list among the worker processes
         if(Pk_resum_work) this->scatter(cosmology_model, *model, *Pk_resum_work, dmgr);
@@ -290,8 +304,9 @@ void master_controller::execute()
         
         // build a work list for the resummed multipole power spectra
         std::unique_ptr<multipole_Pk_work_list> multipole_Pk_work =
-          dmgr.build_multipole_Pk_work_list(*model, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db,
-                                            *IR_resum_db, init_Pk_filt, final_Pk_filt);
+          dmgr.build_multipole_Pk_work_list(*model, *growth_tok, *loop_tok, *XY_tok, *lo_z_db,
+                                            *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, *IR_resum_db, init_Pk_filt,
+                                            final_Pk_filt);
     
         // distribute this work list among the worker processes
         if(multipole_Pk_work) this->scatter(cosmology_model, *model, *multipole_Pk_work, dmgr);
@@ -456,12 +471,12 @@ void master_controller::close_down_workers()
   }
 
 
-void master_controller::integrate_oneloop(const FRW_model& model, const FRW_model_token& token, z_database& z_db,
-                                          data_manager& dmgr)
+void master_controller::integrate_loop_growth(const FRW_model& model, const FRW_model_token& token, z_database& z_db, data_manager& dmgr,
+                                              const growth_params_token& params_tok, const growth_params& params)
   {
-    oneloop_growth_integrator integrator;
+    oneloop_growth_integrator integrator(params);
 
-    growth_integrator_data data = integrator.integrate(model, z_db);
+    growth_integrator_data data = integrator.integrate(model, params_tok, z_db);
 
     dmgr.store(token, *data.container);
   }

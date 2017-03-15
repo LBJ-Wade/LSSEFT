@@ -26,8 +26,9 @@
 #include "oneloop_growth.h"
 
 
-oneloop_growth::oneloop_growth(const z_database& z)
-  : z_db(std::make_unique<z_database>(z))
+oneloop_growth::oneloop_growth(const growth_params_token& p, const z_database& z)
+  : params(p),
+    z_db(std::make_unique<z_database>(z))
   {
     g_linear = std::make_unique< std::vector<double> >();
     A = std::make_unique< std::vector<double> >();
@@ -50,6 +51,7 @@ oneloop_growth::oneloop_growth(const z_database& z)
 
 
 oneloop_growth::oneloop_growth()
+  : params(0)
   {
   }
 
@@ -78,7 +80,8 @@ void oneloop_growth::push_back(double g, double A, double B, double D, double E,
 
 
 oneloop_growth::oneloop_growth(oneloop_growth&& obj)
-  : z_db(std::make_unique<z_database>(*obj.z_db)),
+  : params(obj.params),
+    z_db(std::make_unique<z_database>(*obj.z_db)),
     g_linear(std::move(obj.g_linear)),
     A(std::move(obj.A)),
     B(std::move(obj.B)),

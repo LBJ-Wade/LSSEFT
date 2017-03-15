@@ -41,8 +41,17 @@ constexpr auto ERROR_SQLITE3_INSERT_REDSHIFT_FAIL                    = "failed t
 constexpr auto ERROR_SQLITE3_MULTIPLE_WAVENUMBERS                    = "multiple wavenumbers with matching values";
 constexpr auto ERROR_SQLITE3_INSERT_WAVENUMBER_FAIL                  = "failed to insert wavenumber record [backend code=";
 
-constexpr auto ERROR_SQLITE3_MULTIPLE_FILTER_DATA                    = "multiple filter data sets with matching values";
-constexpr auto ERROR_SQLITE3_INSERT_FILTER_DATA_FAIL                 = "failed to insert filter data record [backend code=";
+constexpr auto ERROR_SQLITE3_MULTIPLE_FILTER_PARAMS                  = "multiple filter parameter sets with matching values";
+constexpr auto ERROR_SQLITE3_INSERT_FILTER_PARAMS_FAIL               = "failed to insert filter parameter record [backend code=";
+
+constexpr auto ERROR_SQLITE3_MULTIPLE_ONELOOP_PARAMS                 = "multiple oneloop parameter sets with matching values";
+constexpr auto ERROR_SQLITE3_INSERT_ONELOOP_PARAMS_FAIL              = "failed to insert oneloop parameter record [backend code=";
+
+constexpr auto ERROR_SQLITE3_MULTIPLE_MATSUBARAXY_PARAMS             = "multiple Matsubara X&Y parameter sets with matching values";
+constexpr auto ERROR_SQLITE3_INSERT_MATSUBARAXY_PARAMS_FAIL          = "failed to insert Matsubara X&Y parameter record [backend code=";
+
+constexpr auto ERROR_SQLITE3_MULTIPLE_GROWTH_PARAMS                  = "multiple growth-function parameter sets with matching values";
+constexpr auto ERROR_SQLITE3_INSERT_GROWTH_PARAMS_FAIL               = "failed to insert growth-function parameter record [backend code=";
 
 constexpr auto ERROR_SQLITE3_TEMPORARY_REDSHIFT                      = "failed to insert redshift record in temporary table [backend code=";
 constexpr auto ERROR_SQLITE3_TEMPORARY_WAVENUMBER                    = "failed to insert wavenumber record in temporary table [backend code=";

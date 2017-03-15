@@ -23,13 +23,12 @@
 // --@@
 //
 
-#ifndef LSSEFT_FILTER_DATA_H
-#define LSSEFT_FILTER_DATA_H
-
+#ifndef LSSEFT_MATSUBARAXY_PARAMS_H
+#define LSSEFT_MATSUBARAXY_PARAMS_H
 
 #include <memory>
 
-#include "cosmology/Pk_filter.h"
+#include "cosmology/Matsubara_XY_calculator.h"
 
 #include "database/transaction_manager.h"
 #include "sqlite3_policy.h"
@@ -43,14 +42,15 @@ namespace sqlite3_operations
   {
     
     //! lookup id for a set of filter data
-    boost::optional<unsigned int> lookup_filter_data(sqlite3* db, transaction_manager& mgr, const Pk_filter_data& data,
-                                                     const sqlite3_policy& policy, double tol);
+    boost::optional<unsigned int> lookup_MatsubaraXY_params(sqlite3* db, transaction_manager& mgr,
+                                                            const MatsubaraXY_params& data,
+                                                            const sqlite3_policy& policy, double tol);
     
     //! insert a set of filter data
-    unsigned int insert_filter_data(sqlite3* db, transaction_manager& mgr, const Pk_filter_data& data,
-                                    const sqlite3_policy& policy);
+    unsigned int insert_MatsubaraXY_params(sqlite3* db, transaction_manager& mgr, const MatsubaraXY_params& data,
+                                           const sqlite3_policy& policy);
     
   }   // namespace sqlite3_operations
 
 
-#endif //LSSEFT_FILTER_DATA_H
+#endif //LSSEFT_MATSUBARAXY_PARAMS_H

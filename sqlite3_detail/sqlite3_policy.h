@@ -70,8 +70,17 @@ class sqlite3_policy
     //! linear power spectrum table
     const std::string& Pk_linear_table() const { return(this->Pk_linear); }
     
-    //! filtering configurations
+    //! filtering parameter configurations
     const std::string& filter_config_table() const { return(this->filter_config); }
+    
+    //! oneloop parameter configurations
+    const std::string& loop_integral_config_table() const { return(this->loop_integral_config); }
+    
+    //! MatsubaraXY parameter configurations
+    const std::string& MatsubaraXY_config_table() const { return(this->MatsubaraXY_config); }
+    
+    //! growth parameter configurations
+    const std::string& growth_config_table() const { return(this->growth_config); }
     
     //! transfer function table
     const std::string& transfer_table() const { return(this->transfer); }
@@ -239,8 +248,17 @@ class sqlite3_policy
     //! linear power spectrum data table
     const std::string Pk_linear;
     
-    //! filtering configuraitons
+    //! filtering parameter configurations
     const std::string filter_config;
+    
+    //! one-loop parameter configurations
+    const std::string loop_integral_config;
+    
+    //! MatsubaraXY parameter configurations
+    const std::string MatsubaraXY_config;
+    
+    //! growth function parameter configurations
+    const std::string growth_config;
 
     //! transfer function table
     const std::string transfer;

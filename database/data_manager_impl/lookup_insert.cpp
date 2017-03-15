@@ -64,10 +64,37 @@ unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, double z)
   }
 
 
-unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const Pk_filter_data& data)
+unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const Pk_filter_params& data)
   {
-    boost::optional<unsigned int> id = sqlite3_operations::lookup_filter_data(this->handle, mgr, data, this->policy, this->filter_tol);
+    boost::optional<unsigned int> id = sqlite3_operations::lookup_filter_params(this->handle, mgr, data, this->policy, this->filter_tol);
     if(id) return *id;
     
-    return sqlite3_operations::insert_filter_data(this->handle, mgr, data, this->policy);
+    return sqlite3_operations::insert_filter_params(this->handle, mgr, data, this->policy);
+  }
+
+
+unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const loop_integral_params& data)
+  {
+    boost::optional<unsigned int> id = sqlite3_operations::lookup_oneloop_params(this->handle, mgr, data, this->policy, this->oneloop_tol);
+    if(id) return *id;
+    
+    return sqlite3_operations::insert_oneloop_params(this->handle, mgr, data, this->policy);
+  }
+
+
+unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const MatsubaraXY_params& data)
+  {
+    boost::optional<unsigned int> id = sqlite3_operations::lookup_MatsubaraXY_params(this->handle, mgr, data, this->policy, this->MatsubaraXY_tol);
+    if(id) return *id;
+    
+    return sqlite3_operations::insert_MatsubaraXY_params(this->handle, mgr, data, this->policy);
+  }
+
+
+unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const growth_params& data)
+  {
+    boost::optional<unsigned int> id = sqlite3_operations::lookup_growth_params(this->handle, mgr, data, this->policy, this->growth_tol);
+    if(id) return *id;
+    
+    return sqlite3_operations::insert_growth_params(this->handle, mgr, data, this->policy);
   }
