@@ -44,10 +44,4 @@ FRW_model::FRW_model(std::string nm, double om, double occ, double h_, Mpc_units
     ns(n),
     k_piv(kp)
   {
-//    std::cout << "New FRW cosmology with Omega_m=" << omega_m
-//      << ", Omega_CC=" << omega_cc
-//      << ", h=" << h
-//      << ", T_CMB=" << T_CMB / Mpc_units::Kelvin
-//      << ", Neff=" << Neff
-//      << '\n';
   }

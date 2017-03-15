@@ -103,8 +103,6 @@ data_manager::build_transfer_work_list(const FRW_model_token& model, k_database&
     // for each wavenumber in k_db, find which z-values are missing
     for(k_database::record_iterator t = k_db.record_begin(); t != k_db.record_end(); ++t)
       {
-//        std::cout << "lsseft: checking missing redshift values for k = " << (*(*t) * Mpc_units::Mpc) << " h/Mpc = " << (*(*t)) / Mpc_units::eV << " eV" << '\n';
-        
         // get a database of missing redshifts for this k-value.
         // sqlite3_operations::missing_redshifts() returns a std::unique_ptr which transfers ownership,
         // but we want to convert that to a std::shared_ptr which is what transfer_work_item expects,
@@ -117,8 +115,6 @@ data_manager::build_transfer_work_list(const FRW_model_token& model, k_database&
         // if any redshifts were missing, set up a record in the work list
         if(missing)
           {
-//            std::cout << "  -- " << missing_values->size() << " redshifts" << '\n';
-            
             work_list->emplace_back(*(*t), t->get_token(), missing);
           }
       }
@@ -130,7 +126,9 @@ data_manager::build_transfer_work_list(const FRW_model_token& model, k_database&
     mgr->commit();
     
     timer.stop();
-    std::cout << "lsseft: constructed transfer function work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall) << '\n';
+    std::ostringstream msg;
+    msg << "constructed transfer function work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall);
+    this->err_handler.info(msg.str());
     
     // release list if it contains no work
     if(work_list->empty()) work_list.release();
@@ -161,9 +159,11 @@ data_manager::build_loop_growth_work_list(const FRW_model_token& model, z_databa
     mgr->commit();
     
     timer.stop();
-    std::cout << "lsseft: constructed one-loop growth factor work list ("
-              << (work_list ? work_list->size() : 0) << " items) in time "
-              << format_time(timer.elapsed().wall) << '\n';
+    std::ostringstream msg;
+    msg << "constructed one-loop growth factor work list ("
+        << (work_list ? work_list->size() : 0) << " items) in time "
+        << format_time(timer.elapsed().wall);
+    this->err_handler.info(msg.str());
     
     return(work_list);
   }
@@ -205,7 +205,9 @@ data_manager::build_loop_momentum_work_list(const FRW_model_token& model, k_data
     mgr->commit();
     
     timer.stop();
-    std::cout << "lsseft: constructed loop momentum work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall) << '\n';
+    std::ostringstream msg;
+    msg << "constructed loop momentum work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall);
+    this->err_handler.info(msg.str());
     
     // release list if it contains no work
     if(work_list->empty()) work_list.release();
@@ -264,7 +266,9 @@ data_manager::build_one_loop_Pk_work_list(const FRW_model_token& model, const gr
     sqlite3_operations::drop_temp(this->handle, *mgr, z_table);
     
     timer.stop();
-    std::cout << "lsseft: constructed one-loop P(k) work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall) << '\n';
+    std::ostringstream msg;
+    msg << "constructed one-loop P(k) work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall);
+    this->err_handler.info(msg.str());
     
     // close transaction
     mgr->commit();
@@ -339,7 +343,9 @@ data_manager::build_one_loop_resum_Pk_work_list(const FRW_model_token& model, co
     mgr->commit();
     
     timer.stop();
-    std::cout << "lsseft: constructed one-loop resummed P(k) work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall) << '\n';
+    std::ostringstream msg;
+    msg << "constructed one-loop resummed P(k) work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall);
+    this->err_handler.info(msg.str());
     
     // release list if it contains no work
     if(work_list->empty()) work_list.release();
@@ -410,7 +416,9 @@ data_manager::build_multipole_Pk_work_list(const FRW_model_token& model, const g
     mgr->commit();
     
     timer.stop();
-    std::cout << "lsseft: constructed one-loop multipole P(k) work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall) << '\n';
+    std::ostringstream msg;
+    msg << "constructed one-loop multipole P(k) work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall);
+    this->err_handler.info(msg.str());
     
     // release list if it contains no work
     if(work_list->empty()) work_list.release();
@@ -449,7 +457,9 @@ data_manager::build_Matsubara_XY_work_list(const FRW_model_token& model_tok, IR_
     mgr->commit();
     
     timer.stop();
-    std::cout << "lsseft: constructed Matsubara XY work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall) << '\n';
+    std::ostringstream msg;
+    msg << "constructed Matsubara XY work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall);
+    this->err_handler.info(msg.str());
     
     // release list if it contains no work
     if(work_list->empty()) work_list.release();
@@ -495,7 +505,9 @@ data_manager::build_filter_Pk_work_list(const linear_Pk_token& Pk_token, std::sh
     mgr->commit();
     
     timer.stop();
-    std::cout << "lsseft: constructed wiggle/no-wiggle filter work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall) << '\n';
+    std::ostringstream msg;
+    msg << "constructed wiggle/no-wiggle filter work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall);
+    this->err_handler.info(msg.str());
     
     // release list if it contains to work
     if(work_list->empty()) work_list.release();

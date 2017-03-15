@@ -312,7 +312,6 @@ void transfer_observer::operator()(const state_vector& x, double z)
     else
       {
         this->container.push_back(x[DELTA_M], x[DELTA_R], x[THETA_M], x[THETA_R], x[PHI]);
-//        std::cout << "z = " << z << ", delta_m = " << x[DELTA_M] << ", delta_r = " << x[DELTA_R] << ", theta_m = " << x[THETA_M] << ", theta_r = " << x[THETA_R] << ", Phi = " << x[PHI] << '\n';
       }
   }
 

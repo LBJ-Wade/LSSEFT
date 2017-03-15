@@ -135,7 +135,7 @@ void master_controller::execute()
       }
 
     // set up
-    data_manager dmgr(this->arg_cache.get_database_path());
+    data_manager dmgr(this->arg_cache.get_database_path(), this->err_handler);
 
     // fix the background cosmological model
     // here, that's taken to have parameters matching the MDR1 simulation
@@ -399,10 +399,12 @@ void master_controller::scatter(const FRW_model& model, const FRW_model_token& t
       }
 
     timer.stop();
-    std::cout << "lsseft: completed work in time " << format_time(timer.elapsed().wall)
-              << " ["
-              << "database performance: write time " << format_time(database_timer.elapsed().wall)
-              << "]" << '\n';
+    std::ostringstream msg;
+    msg << "completed work in time " << format_time(timer.elapsed().wall)
+        << " ["
+        << "database performance: write time " << format_time(database_timer.elapsed().wall)
+        << "]";
+    this->err_handler.info(msg.str());
   }
 
 

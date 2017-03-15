@@ -71,7 +71,7 @@ class data_manager
   public:
 
     //! constructor opens SQLite3 handle, and creates tables if this is a new database
-    data_manager(const boost::filesystem::path& c);
+    data_manager(const boost::filesystem::path& c, error_handler& e);
 
     //! destructor closes SQLite3 handle
     ~data_manager();
@@ -386,6 +386,12 @@ class data_manager
 
     //! sqlite3_policy object
     sqlite3_policy policy;
+    
+    
+    // DELEGATES
+    
+    //! error handler agent
+    error_handler& err_handler;
 
 
     // SEARCH TOLERANCES

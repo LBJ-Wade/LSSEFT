@@ -44,8 +44,9 @@
 #include "boost/timer/timer.hpp"
 
 
-data_manager::data_manager(const boost::filesystem::path& c)
+data_manager::data_manager(const boost::filesystem::path& c, error_handler& e)
   : container(c),
+    err_handler(e),
     handle(nullptr),   // try to catch handle-not-initialized errors
     policy(),
     FRW_model_tol(LSSEFT_DEFAULT_FRW_MODEL_PARAMETER_TOLERANCE),

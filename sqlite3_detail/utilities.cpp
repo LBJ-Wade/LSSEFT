@@ -96,8 +96,6 @@ namespace sqlite3_operations
           {
             std::ostringstream msg;
             msg << ERROR_SQLITE3 << " " << sqlite3_errmsg(db) << " [status=" << status << "]";
-            std::cerr << msg.str() << '\n';
-            assert(false);
             throw runtime_exception(exception_type::sqlite3_error, msg.str());
           }
       }
