@@ -434,7 +434,7 @@ oneloop_Pk_calculator::compute_rsd_dd_mu8(const Mpc_units::energy& k, const onel
 
 oneloop_resum_Pk
 oneloop_Pk_calculator::calculate_resum_dd(const Mpc_units::energy& k, const Matsubara_XY& XY, const oneloop_Pk& data,
-                                          const oneloop_growth_record& gf_data, const initial_filtered_Pk& init_Pk,
+                                          const oneloop_growth_record& Df_data, const initial_filtered_Pk& init_Pk,
                                           const boost::optional<const final_filtered_Pk&>& final_Pk)
   {
     const auto& input_dd = data.get_dd();
@@ -444,7 +444,7 @@ oneloop_Pk_calculator::calculate_resum_dd(const Mpc_units::energy& k, const Mats
     const auto& input_Z2_delta = input_dd.get_Z2_delta();
     
     // compute Matsubara suppression factor
-    double MatsubaraA   = k*k * gf_data.g*gf_data.g * XY;
+    double MatsubaraA   = k*k * Df_data.g*Df_data.g * XY;
     double MatsubaraExp = std::exp(-MatsubaraA);
     
     auto Ptree       = input_tree.get_nowiggle()     + MatsubaraExp*input_tree.get_wiggle();

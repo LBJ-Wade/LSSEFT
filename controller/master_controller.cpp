@@ -75,7 +75,8 @@ void master_controller::process_arguments(int argc, char* argv[])
       (LSSEFT_SWITCH_VERBOSE, LSSEFT_HELP_VERBOSE)
       (LSSEFT_SWITCH_DATABASE, boost::program_options::value<std::string>(), LSSEFT_HELP_DATABASE)
       (LSSEFT_SWITCH_INITIAL_POWERSPEC, boost::program_options::value<std::string>(), LSSEFT_HELP_INITIAL_POWERSPEC)
-      (LSSEFT_SWITCH_FINAL_POWERSPEC, boost::program_options::value<std::string>(), LSSEFT_HELP_FINAL_POWERSPEC);
+      (LSSEFT_SWITCH_FINAL_POWERSPEC, boost::program_options::value<std::string>(), LSSEFT_HELP_FINAL_POWERSPEC)
+      (LSSEFT_SWITCH_EDS_MODE, LSSEFT_HELP_EDS_MODE);
 
     boost::program_options::options_description hidden("Hidden options");
     hidden.add_options()
@@ -123,6 +124,8 @@ void master_controller::process_arguments(int argc, char* argv[])
       {
         this->arg_cache.set_final_powerspectrum_path(option_map[LSSEFT_SWITCH_FINAL_POWERSPEC_LONG].as<std::string>());
       }
+    
+    if(option_map.count(LSSEFT_SWITCH_EDS_MODE)) this->arg_cache.set_EdS_mode(true);
   }
 
 
@@ -135,7 +138,7 @@ void master_controller::execute()
       }
 
     // set up
-    data_manager dmgr(this->arg_cache.get_database_path(), this->err_handler);
+    data_manager dmgr(this->arg_cache.get_database_path(), this->err_handler, this->arg_cache);
 
     // fix the background cosmological model
     // here, that's taken to have parameters matching the MDR1 simulation
@@ -182,8 +185,8 @@ void master_controller::execute()
     std::unique_ptr<filter_params_token> filter_tok = dmgr.tokenize(filter_params);
     
     // set up parameters for growth function
-    growth_params gf_params;
-    std::unique_ptr<growth_params_token> growth_tok = dmgr.tokenize(gf_params);
+    growth_params Df_params(this->arg_cache.use_EdS());
+    std::unique_ptr<growth_params_token> growth_tok = dmgr.tokenize(Df_params);
     
     // set up parameters for Matsubara X&Y integral
     MatsubaraXY_params XY_params;
@@ -211,7 +214,7 @@ void master_controller::execute()
     std::unique_ptr<z_database> loop_growth_work = dmgr.build_loop_growth_work_list(*model, *lo_z_db, *growth_tok);
 
     // compute linear and one-loop growth functions, if needed; can be done on master process since there is only one integration
-    if(loop_growth_work) this->integrate_loop_growth(cosmology_model, *model, *loop_growth_work, dmgr, *growth_tok, gf_params);
+    if(loop_growth_work) this->integrate_loop_growth(cosmology_model, *model, *loop_growth_work, dmgr, *growth_tok, Df_params);
     
     if(this->arg_cache.is_initial_powerspectrum_set())
       {
@@ -483,9 +486,9 @@ void master_controller::close_down_workers()
 void master_controller::integrate_loop_growth(const FRW_model& model, const FRW_model_token& token, z_database& z_db, data_manager& dmgr,
                                               const growth_params_token& params_tok, const growth_params& params)
   {
-    oneloop_growth_integrator integrator(params);
+    oneloop_growth_integrator integrator(params, params_tok);
 
-    growth_integrator_data data = integrator.integrate(model, params_tok, z_db);
+    growth_integrator_data data = integrator.integrate(model, z_db);
 
     dmgr.store(token, *data.container);
   }

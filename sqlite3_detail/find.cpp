@@ -326,32 +326,32 @@ namespace sqlite3_operations
     
     std::unique_ptr<oneloop_growth>
     find(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model,
-         const growth_params_token& params, const z_database& z_db)
+             const growth_params_token& params, const z_database& z_db)
       {
         // set up temporary table of desired z identifiers
         std::string ztab = z_table(db, mgr, policy, z_db);
         
         std::unique_ptr<oneloop_growth> payload = std::make_unique<oneloop_growth>(params, z_db);
 
-        // note use of ORDER BY ... DESC which is needed to get the g, f values
+        // note use of ORDER BY ... DESC which is needed to get the D, f values
         // in the correct order
         // z_table() will produce a table of tokens in ascending redshift order,
         // ie. ordered into the past
         
-        std::ostringstream g_select_stmt;
-        g_select_stmt
+        std::ostringstream D_select_stmt;
+        D_select_stmt
           << "SELECT "
-          << "g_sample.g_linear, "
-          << "g_sample.A, "
-          << "g_sample.B, "
-          << "g_sample.D, "
-          << "g_sample.E, "
-          << "g_sample.F, "
-          << "g_sample.G, "
-          << "g_sample.J "
+          << "D_sample.D_linear, "
+          << "D_sample.A, "
+          << "D_sample.B, "
+          << "D_sample.D, "
+          << "D_sample.E, "
+          << "D_sample.F, "
+          << "D_sample.G, "
+          << "D_sample.J "
           << "FROM " << ztab << " "
-          << "INNER JOIN (SELECT * FROM " << policy.g_factor_table() << " WHERE mid=@mid AND params_id=@params_id) g_sample "
-          << "ON " << ztab << ".id = g_sample.zid "
+          << "INNER JOIN (SELECT * FROM " << policy.D_factor_table() << " WHERE mid=@mid AND params_id=@params_id) D_sample "
+          << "ON " << ztab << ".id = D_sample.zid "
           << "ORDER BY " << ztab << ".ROWID DESC;";
         
         std::ostringstream f_select_stmt;
@@ -370,65 +370,83 @@ namespace sqlite3_operations
           << "ON " << ztab << ".id = f_sample.zid "
           << "ORDER BY " << ztab << ".ROWID DESC;";
         
+        constexpr unsigned int D_linear = 0;
+        constexpr unsigned int D_A = 1;
+        constexpr unsigned int D_B = 2;
+        constexpr unsigned int D_D = 3;
+        constexpr unsigned int D_E = 4;
+        constexpr unsigned int D_F = 5;
+        constexpr unsigned int D_G = 6;
+        constexpr unsigned int D_J = 7;
+
+        constexpr unsigned int f_linear = 0;
+        constexpr unsigned int f_A = 1;
+        constexpr unsigned int f_B = 2;
+        constexpr unsigned int f_D = 3;
+        constexpr unsigned int f_E = 4;
+        constexpr unsigned int f_F = 5;
+        constexpr unsigned int f_G = 6;
+        constexpr unsigned int f_J = 7;
+        
         // prepare statements
-        sqlite3_stmt* g_stmt;
-        check_stmt(db, sqlite3_prepare_v2(db, g_select_stmt.str().c_str(), g_select_stmt.str().length()+1, &g_stmt, nullptr));
+        sqlite3_stmt* D_stmt;
+        check_stmt(db, sqlite3_prepare_v2(db, D_select_stmt.str().c_str(), D_select_stmt.str().length()+1, &D_stmt, nullptr));
     
         sqlite3_stmt* f_stmt;
         check_stmt(db, sqlite3_prepare_v2(db, f_select_stmt.str().c_str(), f_select_stmt.str().length()+1, &f_stmt, nullptr));
     
-        check_stmt(db, sqlite3_bind_int(g_stmt, sqlite3_bind_parameter_index(g_stmt, "@mid"), model.get_id()));
+        check_stmt(db, sqlite3_bind_int(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@mid"), model.get_id()));
         check_stmt(db, sqlite3_bind_int(f_stmt, sqlite3_bind_parameter_index(f_stmt, "@mid"), model.get_id()));
-        check_stmt(db, sqlite3_bind_int(g_stmt, sqlite3_bind_parameter_index(g_stmt, "@params_id"), params.get_id()));
+        check_stmt(db, sqlite3_bind_int(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@params_id"), params.get_id()));
         check_stmt(db, sqlite3_bind_int(f_stmt, sqlite3_bind_parameter_index(f_stmt, "@params_id"), params.get_id()));
         
-        int g_status = 0;
+        int D_status = 0;
         int f_status = 0;
         
         unsigned int read_count = 0;
         
-        while((g_status = sqlite3_step(g_stmt)) != SQLITE_DONE && (f_status = sqlite3_step(f_stmt)) != SQLITE_DONE)
+        while((D_status = sqlite3_step(D_stmt)) != SQLITE_DONE && (f_status = sqlite3_step(f_stmt)) != SQLITE_DONE)
           {
-            if(g_status == SQLITE_ROW && f_status == SQLITE_ROW)
+            if(D_status == SQLITE_ROW && f_status == SQLITE_ROW)
               {
-                payload->push_back(sqlite3_column_double(g_stmt, 0),
-                                   sqlite3_column_double(g_stmt, 1),
-                                   sqlite3_column_double(g_stmt, 2),
-                                   sqlite3_column_double(g_stmt, 3),
-                                   sqlite3_column_double(g_stmt, 4),
-                                   sqlite3_column_double(g_stmt, 5),
-                                   sqlite3_column_double(g_stmt, 6),
-                                   sqlite3_column_double(g_stmt, 7),
-                                   sqlite3_column_double(f_stmt, 0),
-                                   sqlite3_column_double(f_stmt, 1),
-                                   sqlite3_column_double(f_stmt, 2),
-                                   sqlite3_column_double(f_stmt, 3),
-                                   sqlite3_column_double(f_stmt, 4),
-                                   sqlite3_column_double(f_stmt, 5),
-                                   sqlite3_column_double(f_stmt, 6),
-                                   sqlite3_column_double(f_stmt, 7));
+                payload->push_back(sqlite3_column_double(D_stmt, D_linear),
+                                   sqlite3_column_double(D_stmt, D_A),
+                                   sqlite3_column_double(D_stmt, D_B),
+                                   sqlite3_column_double(D_stmt, D_D),
+                                   sqlite3_column_double(D_stmt, D_E),
+                                   sqlite3_column_double(D_stmt, D_F),
+                                   sqlite3_column_double(D_stmt, D_G),
+                                   sqlite3_column_double(D_stmt, D_J),
+                                   sqlite3_column_double(f_stmt, f_linear),
+                                   sqlite3_column_double(f_stmt, f_A),
+                                   sqlite3_column_double(f_stmt, f_B),
+                                   sqlite3_column_double(f_stmt, f_D),
+                                   sqlite3_column_double(f_stmt, f_E),
+                                   sqlite3_column_double(f_stmt, f_F),
+                                   sqlite3_column_double(f_stmt, f_G),
+                                   sqlite3_column_double(f_stmt, f_J));
                 
                 ++read_count;
               }
             else
               {
                 std::ostringstream msg;
-                msg << ERROR_SQLITE3_FG_GROWTH_TABLE_READ_FAIL << "(" << g_status << "," << f_status << "): " << sqlite3_errmsg(db) << "]";
+                msg << ERROR_SQLITE3_DF_GROWTH_TABLE_READ_FAIL << "(" << D_status << "," << f_status << "): " << sqlite3_errmsg(db) << "]";
 
-                check_stmt(db, sqlite3_finalize(g_stmt));
+                check_stmt(db, sqlite3_finalize(D_stmt));
                 check_stmt(db, sqlite3_finalize(f_stmt));
 
                 throw runtime_exception(exception_type::database_error, msg.str());
               }
           }
         
-        check_stmt(db, sqlite3_finalize(g_stmt));
+        check_stmt(db, sqlite3_finalize(D_stmt));
         check_stmt(db, sqlite3_finalize(f_stmt));
     
         // drop unneeded temporary tables
         drop_temp(db, mgr, ztab);
     
-        if(read_count != z_db.size()) throw runtime_exception(exception_type::database_error, ERROR_SQLITE3_FG_GROWTH_MISREAD);
+        if(read_count != z_db.size()) throw runtime_exception(exception_type::database_error, ERROR_SQLITE3_DF_GROWTH_MISREAD);
         
         return std::move(payload);
       }

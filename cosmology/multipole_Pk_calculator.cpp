@@ -555,7 +555,7 @@ namespace multipole_Pk_calculator_impl
 
 
 multipole_Pk multipole_Pk_calculator::calculate_Legendre(const Mpc_units::energy& k, const Matsubara_XY& XY, const oneloop_Pk& data,
-                                                         const oneloop_growth_record& gf_data, const initial_filtered_Pk& Pk_init,
+                                                         const oneloop_growth_record& Df_data, const initial_filtered_Pk& Pk_init,
                                                          const boost::optional<const final_filtered_Pk&>& Pk_final)
   {
     using namespace multipole_Pk_calculator_impl;
@@ -576,13 +576,13 @@ multipole_Pk multipole_Pk_calculator::calculate_Legendre(const Mpc_units::energy
     
     // get Matsubara X+Y suppression factor (remember we have to scale up by the square of the linear growth factor,
     // since we store just the raw integral over the early-time tree-level power spectrum)
-    double Matsubara_XY = gf_data.g*gf_data.g * k*k * XY;
+    double Matsubara_XY = Df_data.g*Df_data.g * k*k * XY;
     
-    double A_coeff = gf_data.f*(gf_data.f+2.0) * Matsubara_XY;
+    double A_coeff = Df_data.f*(Df_data.f+2.0) * Matsubara_XY;
     double B_coeff = Matsubara_XY;
     
     // set policy objects to adjust the different mu dependences to account for resummation
-    resum_adjuster Pk_adj(k, Matsubara_XY, gf_data, data.get_dd().get_tree());
+    resum_adjuster Pk_adj(k, Matsubara_XY, Df_data, data.get_dd().get_tree());
     null_adjuster<Mpc_units::inverse_energy3> Pk_null;
     null_adjuster<Mpc_units::inverse_energy> k2_Pk_null;
     

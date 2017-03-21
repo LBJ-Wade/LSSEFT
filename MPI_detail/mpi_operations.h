@@ -863,7 +863,7 @@ namespace MPI_detail
           : k(0.0),
             XY(),
             data(),
-            gf_data(),
+            Df_data(),
             Pk_init(),
             Pk_final()
           {
@@ -871,13 +871,13 @@ namespace MPI_detail
     
         //! value constructor: used to construct and send a payload
         new_one_loop_resum_Pk(const Mpc_units::energy& _k, const Matsubara_XY& _XY,
-                              const std::shared_ptr<oneloop_Pk>& _data, const oneloop_growth_record& _gf_data,
+                              const std::shared_ptr<oneloop_Pk>& _data, const oneloop_growth_record& _Df_data,
                               const std::shared_ptr<initial_filtered_Pk>& _Pk_init,
                               const std::shared_ptr<final_filtered_Pk>& _Pk_final)
           : k(_k),
             XY(_XY),
             data(_data),
-            gf_data(_gf_data),
+            Df_data(_Df_data),
             Pk_init(_Pk_init),
             Pk_final(_Pk_final)
           {
@@ -901,7 +901,7 @@ namespace MPI_detail
         const oneloop_Pk& get_oneloop_Pk_data() const { return *this->data; }
     
         //! get gf growth factors
-        const oneloop_growth_record& get_gf_data() const { return this->gf_data; }
+        const oneloop_growth_record& get_Df_data() const { return this->Df_data; }
     
         //! get initial linear power spectrum
         const initial_filtered_Pk& get_init_linear_Pk() const { return *this->Pk_init; }
@@ -930,7 +930,7 @@ namespace MPI_detail
         std::shared_ptr<oneloop_Pk> data;
     
         //! gf growth factors
-        oneloop_growth_record gf_data;
+        oneloop_growth_record Df_data;
     
         //! initial linear power spectrum
         std::shared_ptr<initial_filtered_Pk> Pk_init;
@@ -948,7 +948,7 @@ namespace MPI_detail
             ar & k;
             ar & XY;
             ar & data;
-            ar & gf_data;
+            ar & Df_data;
             ar & Pk_init;
             ar & Pk_final;
           }
@@ -1017,7 +1017,7 @@ namespace MPI_detail
           : k(0.0),
             XY(),
             data(),
-            gf_data(),
+            Df_data(),
             Pk_init(),
             Pk_final()
           {
@@ -1025,12 +1025,12 @@ namespace MPI_detail
         
         //! value constructor: used to construct and send a payload
         new_multipole_Pk(const Mpc_units::energy& _k, const Matsubara_XY& _XY, const std::shared_ptr<oneloop_Pk>& _data,
-                         const oneloop_growth_record& _gf_data, const std::shared_ptr<initial_filtered_Pk>& _Pk_init,
+                         const oneloop_growth_record& _Df_data, const std::shared_ptr<initial_filtered_Pk>& _Pk_init,
                          const std::shared_ptr<final_filtered_Pk>& _Pk_final)
           : k(_k),
             XY(_XY),
             data(_data),
-            gf_data(_gf_data),
+            Df_data(_Df_data),
             Pk_init(_Pk_init),
             Pk_final(_Pk_final)
           {
@@ -1054,7 +1054,7 @@ namespace MPI_detail
         const oneloop_Pk& get_oneloop_Pk_data() const { return *this->data; }
         
         //! get gf growth factors
-        const oneloop_growth_record& get_gf_data() const { return this->gf_data; }
+        const oneloop_growth_record& get_Df_data() const { return this->Df_data; }
         
         //! get initial linear power spectrum
         const initial_filtered_Pk& get_init_linear_Pk() const { return *this->Pk_init; }
@@ -1083,7 +1083,7 @@ namespace MPI_detail
         std::shared_ptr<oneloop_Pk> data;
         
         //! gf growth factors
-        oneloop_growth_record gf_data;
+        oneloop_growth_record Df_data;
     
         //! initial linear power spectrum
         std::shared_ptr<initial_filtered_Pk> Pk_init;
@@ -1101,7 +1101,7 @@ namespace MPI_detail
             ar & k;
             ar & XY;
             ar & data;
-            ar & gf_data;
+            ar & Df_data;
             ar & Pk_init;
             ar & Pk_final;
           }

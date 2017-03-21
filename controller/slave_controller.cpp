@@ -302,12 +302,12 @@ void slave_controller::process_item(MPI_detail::new_one_loop_resum_Pk& payload)
     const Mpc_units::energy& k = payload.get_k();
     const Matsubara_XY& XY = payload.get_Matsubara_XY();
     const oneloop_Pk& oneloop_data = payload.get_oneloop_Pk_data();
-    const oneloop_growth_record& gf_data = payload.get_gf_data();
+    const oneloop_growth_record& Df_data = payload.get_Df_data();
     const initial_filtered_Pk& Pk_init = payload.get_init_linear_Pk();
     boost::optional<const final_filtered_Pk&> Pk_final = payload.get_final_linear_Pk();
     
     oneloop_Pk_calculator calculator;
-    oneloop_resum_Pk sample = calculator.calculate_resum_dd(k, XY, oneloop_data, gf_data, Pk_init, Pk_final);
+    oneloop_resum_Pk sample = calculator.calculate_resum_dd(k, XY, oneloop_data, Df_data, Pk_init, Pk_final);
     
     // inform master process that the calculation is finished
     MPI_detail::one_loop_resum_Pk_ready return_payload(sample);
@@ -321,12 +321,12 @@ void slave_controller::process_item(MPI_detail::new_multipole_Pk& payload)
     const Mpc_units::energy& k = payload.get_k();
     const Matsubara_XY& XY = payload.get_Matsubara_XY();
     const oneloop_Pk& oneloop_data = payload.get_oneloop_Pk_data();
-    const oneloop_growth_record& gf_data = payload.get_gf_data();
+    const oneloop_growth_record& Df_data = payload.get_Df_data();
     const initial_filtered_Pk& Pk_init = payload.get_init_linear_Pk();
     boost::optional<const final_filtered_Pk&> Pk_final = payload.get_final_linear_Pk();
     
     multipole_Pk_calculator calculator;
-    multipole_Pk sample = calculator.calculate_Legendre(k, XY, oneloop_data, gf_data, Pk_init, Pk_final);
+    multipole_Pk sample = calculator.calculate_Legendre(k, XY, oneloop_data, Df_data, Pk_init, Pk_final);
     
     // inform master process that the calculation is finished
     MPI_detail::multipole_Pk_ready return_payload(sample);

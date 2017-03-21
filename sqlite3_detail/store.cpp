@@ -458,17 +458,17 @@ namespace sqlite3_operations
         assert(db != nullptr);
 
         // construct SQL insert statements
-        std::ostringstream insert_g_stmt;
-        insert_g_stmt
-          << "INSERT INTO " << policy.g_factor_table() << " VALUES (@mid, @params_id, @zid, @g_linear, @A, @B, @D, @E, @F, @G, @J);";
+        std::ostringstream insert_D_stmt;
+        insert_D_stmt
+          << "INSERT INTO " << policy.D_factor_table() << " VALUES (@mid, @params_id, @zid, @D_linear, @A, @B, @D, @E, @F, @G, @J);";
         
         std::ostringstream insert_f_stmt;
         insert_f_stmt
           << "INSERT INTO " << policy.f_factor_table() << " VALUES (@mid, @params_id, @zid, @f_linear, @fA, @fB, @fD, @fE, @fF, @fG, @fJ);";
 
         // prepare statements
-        sqlite3_stmt* g_stmt;
-        check_stmt(db, sqlite3_prepare_v2(db, insert_g_stmt.str().c_str(), insert_g_stmt.str().length()+1, &g_stmt, nullptr));
+        sqlite3_stmt* D_stmt;
+        check_stmt(db, sqlite3_prepare_v2(db, insert_D_stmt.str().c_str(), insert_D_stmt.str().length()+1, &D_stmt, nullptr));
     
         sqlite3_stmt* f_stmt;
         check_stmt(db, sqlite3_prepare_v2(db, insert_f_stmt.str().c_str(), insert_f_stmt.str().length()+1, &f_stmt, nullptr));
@@ -477,21 +477,21 @@ namespace sqlite3_operations
         const growth_params_token& params = sample.get_params_token();
         for(const oneloop_value& val : sample)
           {
-            // bind values to the g statement
-            check_stmt(db, sqlite3_bind_int(g_stmt, sqlite3_bind_parameter_index(g_stmt, "@mid"), model.get_id()));
-            check_stmt(db, sqlite3_bind_int(g_stmt, sqlite3_bind_parameter_index(g_stmt, "@params_id"), params.get_id()));
-            check_stmt(db, sqlite3_bind_int(g_stmt, sqlite3_bind_parameter_index(g_stmt, "@zid"), val.first.get_id()));
-            check_stmt(db, sqlite3_bind_double(g_stmt, sqlite3_bind_parameter_index(g_stmt, "@g_linear"), val.second.g));
-            check_stmt(db, sqlite3_bind_double(g_stmt, sqlite3_bind_parameter_index(g_stmt, "@A"), val.second.A));
-            check_stmt(db, sqlite3_bind_double(g_stmt, sqlite3_bind_parameter_index(g_stmt, "@B"), val.second.B));
-            check_stmt(db, sqlite3_bind_double(g_stmt, sqlite3_bind_parameter_index(g_stmt, "@D"), val.second.D));
-            check_stmt(db, sqlite3_bind_double(g_stmt, sqlite3_bind_parameter_index(g_stmt, "@E"), val.second.E));
-            check_stmt(db, sqlite3_bind_double(g_stmt, sqlite3_bind_parameter_index(g_stmt, "@F"), val.second.F));
-            check_stmt(db, sqlite3_bind_double(g_stmt, sqlite3_bind_parameter_index(g_stmt, "@G"), val.second.G));
-            check_stmt(db, sqlite3_bind_double(g_stmt, sqlite3_bind_parameter_index(g_stmt, "@J"), val.second.J));
+            // bind values to the D statement
+            check_stmt(db, sqlite3_bind_int(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@mid"), model.get_id()));
+            check_stmt(db, sqlite3_bind_int(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@params_id"), params.get_id()));
+            check_stmt(db, sqlite3_bind_int(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@zid"), val.first.get_id()));
+            check_stmt(db, sqlite3_bind_double(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@D_linear"), val.second.g));
+            check_stmt(db, sqlite3_bind_double(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@A"), val.second.A));
+            check_stmt(db, sqlite3_bind_double(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@B"), val.second.B));
+            check_stmt(db, sqlite3_bind_double(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@D"), val.second.D));
+            check_stmt(db, sqlite3_bind_double(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@E"), val.second.E));
+            check_stmt(db, sqlite3_bind_double(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@F"), val.second.F));
+            check_stmt(db, sqlite3_bind_double(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@G"), val.second.G));
+            check_stmt(db, sqlite3_bind_double(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@J"), val.second.J));
 
-            // perform g insertion
-            check_stmt(db, sqlite3_step(g_stmt), ERROR_SQLITE3_INSERT_GROWTH_G_FAIL, SQLITE_DONE);
+            // perform D insertion
+            check_stmt(db, sqlite3_step(D_stmt), ERROR_SQLITE3_INSERT_GROWTH_D_FAIL, SQLITE_DONE);
     
             // bind values to the f statement
             check_stmt(db, sqlite3_bind_int(f_stmt, sqlite3_bind_parameter_index(f_stmt, "@mid"), model.get_id()));
@@ -510,14 +510,14 @@ namespace sqlite3_operations
             check_stmt(db, sqlite3_step(f_stmt), ERROR_SQLITE3_INSERT_GROWTH_F_FAIL, SQLITE_DONE);
 
             // clear bindings and reset statement
-            check_stmt(db, sqlite3_clear_bindings(g_stmt));
-            check_stmt(db, sqlite3_reset(g_stmt));
+            check_stmt(db, sqlite3_clear_bindings(D_stmt));
+            check_stmt(db, sqlite3_reset(D_stmt));
             check_stmt(db, sqlite3_clear_bindings(f_stmt));
             check_stmt(db, sqlite3_reset(f_stmt));
           }
 
         // finalize statement and release resources
-        check_stmt(db, sqlite3_finalize(g_stmt));
+        check_stmt(db, sqlite3_finalize(D_stmt));
         check_stmt(db, sqlite3_finalize(f_stmt));
       }
 

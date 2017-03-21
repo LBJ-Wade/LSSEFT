@@ -48,8 +48,9 @@ class growth_params
   public:
     
     //! constructor
-    growth_params(double a=LSSEFT_DEFAULT_ODE_ABS_ERR, double r=LSSEFT_DEFAULT_ODE_REL_ERR)
-      : abs_err(a),
+    growth_params(bool EdS=false, double a=LSSEFT_DEFAULT_ODE_ABS_ERR, double r=LSSEFT_DEFAULT_ODE_REL_ERR)
+      : EdS_mode(EdS),
+        abs_err(a),
         rel_err(r)
       {
       }
@@ -62,6 +63,9 @@ class growth_params
   
   public:
     
+    //! use EdS mode?
+    bool use_EdS() const { return this->EdS_mode; }
+    
     //! get abserr
     double get_abserr() const { return this->abs_err; }
     
@@ -73,6 +77,9 @@ class growth_params
   
   private:
     
+    //! use Einstein-de Sitter approximations to growth factors?
+    bool EdS_mode;
+    
     //! absolute tolerance
     double abs_err;
     
@@ -82,9 +89,11 @@ class growth_params
     // enable boost::serialization support, and hence automated packing for transmission over MPI
     friend class boost::serialization::access;
     
+    
     template <typename Archive>
     void serialize(Archive& ar, unsigned int version)
       {
+        ar & EdS_mode;
         ar & abs_err;
         ar & rel_err;
       }
@@ -117,7 +126,7 @@ class oneloop_growth_integrator
   public:
 
     //! constructor
-    oneloop_growth_integrator(const growth_params& p);
+    oneloop_growth_integrator(const growth_params& p, const growth_params_token& t);
 
     //! destructor is default
     ~oneloop_growth_integrator() = default;
@@ -128,7 +137,7 @@ class oneloop_growth_integrator
   public:
 
     //! integrate one-loop growth factors for a given set of redshift samples
-    growth_integrator_data integrate(const FRW_model& model, const growth_params_token& params, z_database& z_db);
+    growth_integrator_data integrate(const FRW_model& model, z_database& z_db);
 
 
     // INTERNAL DATA
@@ -136,7 +145,10 @@ class oneloop_growth_integrator
   private:
 
     //! parameter block
-    growth_params params;
+    const growth_params params;
+    
+    //! token for parameter block
+    const growth_params_token token;
 
   };
 
