@@ -461,6 +461,7 @@ std::unique_ptr<scheduler> master_controller::set_up_workers(unsigned int tag)
               {
                 this->mpi_world.recv(stat.source(), MPI_detail::MESSAGE_WORKER_READY);
                 sch->initialize_worker(this->worker_number(stat.source()));
+                break;
               }
           }
       }
