@@ -103,6 +103,17 @@ class argument_cache
     
     //! determine whether a final linear power spectrum has been set
     bool is_final_powerspectrum_set() const { return(!this->final_linear_Pk.empty()); }
+    
+    
+    // INTERFACE -- CALCULATION PARAMETERS
+    
+  public:
+    
+    //! query whether we are using EdS approximations to the growth functions
+    bool use_EdS() const { return this->EdS_mode; }
+    
+    //! set EdS mode
+    void set_EdS_mode(bool m) { this->EdS_mode = m; }
 
 
     // INTERNAL DATA
@@ -114,6 +125,9 @@ class argument_cache
 
     //! generate colourized output?
     bool colour_output;
+    
+    //! use Einstein-de Sitter approximations to growth functions?
+    bool EdS_mode;
 
     //! database path
     boost::filesystem::path database;
@@ -133,6 +147,7 @@ class argument_cache
       {
         ar & verbose;
         ar & colour_output;
+        ar & EdS_mode;
         ar & database;
         ar & init_linear_Pk;
         ar & final_linear_Pk;

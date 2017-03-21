@@ -44,10 +44,11 @@
 #include "boost/timer/timer.hpp"
 
 
-data_manager::data_manager(const boost::filesystem::path& c, error_handler& e)
+data_manager::data_manager(const boost::filesystem::path& c, error_handler& e, const argument_cache& ac)
   : container(c),
     err_handler(e),
     handle(nullptr),   // try to catch handle-not-initialized errors
+    arg_cache(ac),
     policy(),
     FRW_model_tol(LSSEFT_DEFAULT_FRW_MODEL_PARAMETER_TOLERANCE),
     z_tol(LSSEFT_DEFAULT_REDSHIFT_CONFIGURATION_TOLERANCE),

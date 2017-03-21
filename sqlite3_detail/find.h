@@ -52,7 +52,7 @@ namespace sqlite3_operations
     //! extract one-loop growth g- and f-functions for a given set of redshifts
     std::unique_ptr<oneloop_growth>
     find(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& token,
-         const growth_params_token& params, const z_database& z_db);
+             const growth_params_token& params, const z_database& z_db);
     
     //! extract loop integrals for a given wavenumber, linear power spectrum, UV-cutoff and IR-cutoff combination
     std::unique_ptr<loop_integral>

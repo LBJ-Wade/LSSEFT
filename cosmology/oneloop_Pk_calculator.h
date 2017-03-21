@@ -70,7 +70,7 @@ class oneloop_Pk_calculator
     
     oneloop_resum_Pk
     calculate_resum_dd(const Mpc_units::energy& k, const Matsubara_XY& XY, const oneloop_Pk& data,
-                       const oneloop_growth_record& gf_data, const initial_filtered_Pk& init_Pk,
+                       const oneloop_growth_record& Df_data, const initial_filtered_Pk& init_Pk,
                        const boost::optional<const final_filtered_Pk&>& final_Pk);
 
     

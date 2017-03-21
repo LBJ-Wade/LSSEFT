@@ -86,7 +86,7 @@ class sqlite3_policy
     const std::string& transfer_table() const { return(this->transfer); }
 
     //! 1-loop growth g-factor table
-    const std::string& g_factor_table() const { return(this->growth_g_factor); }
+    const std::string& D_factor_table() const { return(this->growth_D_factor); }
     
     //! 1-loop growth f-factor table
     const std::string& f_factor_table() const { return(this->growth_f_factor); }
@@ -264,7 +264,7 @@ class sqlite3_policy
     const std::string transfer;
 
     //! 1-loop growth g-factor table
-    const std::string growth_g_factor;
+    const std::string growth_D_factor;
     
     //! 1-loop growth f-factor table
     const std::string growth_f_factor;

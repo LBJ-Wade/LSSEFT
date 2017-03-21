@@ -54,6 +54,8 @@
 
 #include "utilities/formatter.h"
 
+#include "controller/argument_cache.h"
+
 #include "boost/filesystem/operations.hpp"
 
 #include "sqlite3.h"
@@ -71,7 +73,7 @@ class data_manager
   public:
 
     //! constructor opens SQLite3 handle, and creates tables if this is a new database
-    data_manager(const boost::filesystem::path& c, error_handler& e);
+    data_manager(const boost::filesystem::path& c, error_handler& e, const argument_cache& ac);
 
     //! destructor closes SQLite3 handle
     ~data_manager();
@@ -130,18 +132,18 @@ class data_manager
     //! generates a new transaction on the database; will fail if a transaction is in progress
     std::unique_ptr<loop_integral_work_list>
     build_loop_momentum_work_list(const FRW_model_token& model, k_database& k_db, IR_cutoff_database& IR_db,
-                                      UV_cutoff_database& UV_db, std::shared_ptr<initial_filtered_Pk>& Pk,
-                                      const loop_integral_params_token& params_tok, const loop_integral_params& params);
+                                  UV_cutoff_database& UV_db, std::shared_ptr<initial_filtered_Pk>& Pk,
+                                  const loop_integral_params_token& params_tok, const loop_integral_params& params);
     
     //! build a work list representing (k, z, IR, UV) combinations of the one-loop power spectra
     //! that are missing from the SQLite backing store.
     //! generates a new transaction on the database; will fail if a transaction is in progress
     std::unique_ptr<one_loop_Pk_work_list>
     build_one_loop_Pk_work_list(const FRW_model_token& model, const growth_params_token& growth_params,
-                                    const loop_integral_params_token& loop_params, z_database& z_db,
-                                    k_database& k_db, IR_cutoff_database& IR_db, UV_cutoff_database& UV_db,
-                                    std::shared_ptr<initial_filtered_Pk>& Pk_init,
-                                    std::shared_ptr<final_filtered_Pk>& Pk_final);
+                                const loop_integral_params_token& loop_params, z_database& z_db,
+                                k_database& k_db, IR_cutoff_database& IR_db, UV_cutoff_database& UV_db,
+                                std::shared_ptr<initial_filtered_Pk>& Pk_init,
+                                std::shared_ptr<final_filtered_Pk>& Pk_final);
     
     //! build a work list represenitng (k, z, IR_cutoff, UV_cutoff, IR_resum) combinations of the one-loop
     //! power spectrum that are missing from the SQLite backing store
@@ -160,12 +162,12 @@ class data_manager
     //! generates a new transaction on the database; will fail if a transaction is in progress
     std::unique_ptr<multipole_Pk_work_list>
     build_multipole_Pk_work_list(const FRW_model_token& model, const growth_params_token& growth_params,
-                                     const loop_integral_params_token& loop_params,
-                                     const MatsubaraXY_params_token& XY_params, z_database& z_db,
-                                     k_database& k_db, IR_cutoff_database& IR_cutoff_db,
-                                     UV_cutoff_database& UV_cutoff_db, IR_resum_database& IR_resum_db,
-                                     std::shared_ptr<initial_filtered_Pk>& Pk_init,
-                                     std::shared_ptr<final_filtered_Pk>& Pk_final);
+                                 const loop_integral_params_token& loop_params,
+                                 const MatsubaraXY_params_token& XY_params, z_database& z_db,
+                                 k_database& k_db, IR_cutoff_database& IR_cutoff_db,
+                                 UV_cutoff_database& UV_cutoff_db, IR_resum_database& IR_resum_db,
+                                 std::shared_ptr<initial_filtered_Pk>& Pk_init,
+                                 std::shared_ptr<final_filtered_Pk>& Pk_final);
     
     //! build a work list representing data for calculation of the Matsubara- X & Y coefficients
     std::unique_ptr<Matsubara_XY_work_list>
@@ -185,7 +187,7 @@ class data_manager
     //! compute how to rescale a final power spectrum to the same amplitude as an initial power spectrum
     template <typename PkContainer>
     PkContainer& rescale_final_Pk(const FRW_model_token& model, const growth_params_token& params, PkContainer& Pk,
-                                      const z_database& z_db);
+                                  const z_database& z_db);
     
   protected:
     
@@ -282,8 +284,9 @@ class data_manager
     //! extract a sample of a z-dependent but not k-dependent quantity, of the type specified by
     //! the payload
     template <typename PayloadType>
-    std::unique_ptr<oneloop_growth> find(transaction_manager& mgr, const FRW_model_token& model, const growth_params_token& params,
-                                             const z_database& z_db);
+    std::unique_ptr<oneloop_growth>
+    find(transaction_manager& mgr, const FRW_model_token& model, const growth_params_token& params,
+             const z_database& z_db);
     
     //! extract a sample of a power spectrum-like quantity that depends on k but not z
     template <typename PayloadType>
@@ -294,23 +297,23 @@ class data_manager
     template <typename PayloadType>
     std::unique_ptr<loop_integral>
     find(transaction_manager& mgr, const FRW_model_token& model, const loop_integral_params_token& params,
-             const k_token& k, const linear_Pk_token& Pk, const IR_cutoff_token& IR_cutoff,
-             const UV_cutoff_token& UV_cutoff);
+         const k_token& k, const linear_Pk_token& Pk, const IR_cutoff_token& IR_cutoff,
+         const UV_cutoff_token& UV_cutoff);
     
     //! extract a sample of a P(k)-like quantity that is k-dependent, z-dependent,
     //! and IR/UV-cutoff dependent
     template <typename PayloadType>
     std::unique_ptr<oneloop_Pk>
     find(transaction_manager& mgr, const FRW_model_token& model, const growth_params_token& growth_params,
-             const loop_integral_params_token& loop_params, const k_token& k, const z_token& z,
-             const linear_Pk_token& Pk_init, const boost::optional<linear_Pk_token>& Pk_final,
-             const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
+         const loop_integral_params_token& loop_params, const k_token& k, const z_token& z,
+         const linear_Pk_token& Pk_init, const boost::optional<linear_Pk_token>& Pk_final,
+         const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
     
     //! extract a quantity of a IR-resummation-scale dependent quantity
     template <typename PayloadType>
     std::unique_ptr<Matsubara_XY>
     find(transaction_manager& mgr, const FRW_model_token& model, const MatsubaraXY_params_token& params,
-             const linear_Pk_token& Pk, const IR_resum_token& IR_resum);
+         const linear_Pk_token& Pk, const IR_resum_token& IR_resum);
 
     
     // TRANSACTIONS
@@ -382,10 +385,13 @@ class data_manager
     std::weak_ptr<transaction_manager> current_transaction;
 
 
-    // SQLite3 policies
+    // POLICIES
 
-    //! sqlite3_policy object
-    sqlite3_policy policy;
+    //! arguments and global policies
+    const argument_cache& arg_cache;
+    
+    //! SQLite3 policies
+    const sqlite3_policy policy;
     
     
     // DELEGATES

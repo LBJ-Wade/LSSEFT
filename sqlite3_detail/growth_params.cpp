@@ -46,7 +46,8 @@ namespace sqlite3_operations
         select_stmt
           << "SELECT id FROM " << tokenization_table<growth_params_token>(policy) << " WHERE "
           << "ABS((abserr-@abs)/abserr)<@tol "
-          << "AND ABS((relerr-@rel)/relerr)<@tol;";
+          << "AND ABS((relerr-@rel)/relerr)<@tol "
+          << "AND use_EdS=@use_EdS;";
         
         // prepare SQL statement
         sqlite3_stmt* stmt;
@@ -56,6 +57,7 @@ namespace sqlite3_operations
         check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@tol"), tol));
         check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@abs"), data.get_abserr()));
         check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@rel"), data.get_relerr()));
+        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@use_EdS"), data.use_EdS() ? 1 : 0));
         
         // execute statement and step through results
         int status = 0;
@@ -88,7 +90,7 @@ namespace sqlite3_operations
         
         std::ostringstream insert_stmt;
         insert_stmt
-          << "INSERT INTO " << tokenization_table<growth_params_token>(policy) << " VALUES (@id, @abs, @rel);";
+          << "INSERT INTO " << tokenization_table<growth_params_token>(policy) << " VALUES (@id, @abs, @rel, @use_EdS);";
         
         // prepare SQL statement
         sqlite3_stmt* stmt;
@@ -98,6 +100,7 @@ namespace sqlite3_operations
         check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@id"), new_id));
         check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@abs"), data.get_abserr()));
         check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@rel"), data.get_relerr()));
+        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@use_EdS"), data.use_EdS() ? 1 : 0));
         
         // perform insertion
         check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_GROWTH_PARAMS_FAIL, SQLITE_DONE);

@@ -30,7 +30,7 @@ oneloop_growth::oneloop_growth(const growth_params_token& p, const z_database& z
   : params(p),
     z_db(std::make_unique<z_database>(z))
   {
-    g_linear = std::make_unique< std::vector<double> >();
+    D_linear = std::make_unique< std::vector<double> >();
     A = std::make_unique< std::vector<double> >();
     B = std::make_unique< std::vector<double> >();
     D = std::make_unique< std::vector<double> >();
@@ -56,10 +56,10 @@ oneloop_growth::oneloop_growth()
   }
 
 
-void oneloop_growth::push_back(double g, double A, double B, double D, double E, double F, double G, double J,
-                               double f, double fA, double fB, double fD, double fE, double fF, double fG, double fJ)
+void oneloop_growth::push_back(double D_lin, double A, double B, double D, double E, double F, double G, double J,
+                               double f_lin, double fA, double fB, double fD, double fE, double fF, double fG, double fJ)
   {
-    this->g_linear->push_back(g);
+    this->D_linear->push_back(D_lin);
     this->A->push_back(A);
     this->B->push_back(B);
     this->D->push_back(D);
@@ -68,7 +68,7 @@ void oneloop_growth::push_back(double g, double A, double B, double D, double E,
     this->G->push_back(G);
     this->J->push_back(J);
     
-    this->f_linear->push_back(f);
+    this->f_linear->push_back(f_lin);
     this->fA->push_back(fA);
     this->fB->push_back(fB);
     this->fD->push_back(fD);
@@ -82,7 +82,7 @@ void oneloop_growth::push_back(double g, double A, double B, double D, double E,
 oneloop_growth::oneloop_growth(oneloop_growth&& obj)
   : params(obj.params),
     z_db(std::make_unique<z_database>(*obj.z_db)),
-    g_linear(std::move(obj.g_linear)),
+    D_linear(std::move(obj.D_linear)),
     A(std::move(obj.A)),
     B(std::move(obj.B)),
     D(std::move(obj.D)),
@@ -99,7 +99,7 @@ oneloop_growth::oneloop_growth(oneloop_growth&& obj)
     fG(std::move(obj.fG)),
     fJ(std::move(obj.fJ))
   {
-    obj.g_linear = std::make_unique< std::vector<double> >();
+    obj.D_linear = std::make_unique< std::vector<double> >();
     obj.A = std::make_unique< std::vector<double> >();
     obj.B = std::make_unique< std::vector<double> >();
     obj.D = std::make_unique< std::vector<double> >();

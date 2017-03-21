@@ -252,13 +252,13 @@ data_manager::build_one_loop_Pk_work_list(const FRW_model_token& model, const gr
         // schedule a task to compute any missing redshifts
         if(missing_zs)
           {
-            std::shared_ptr<oneloop_growth> g = this->find<oneloop_growth>(*mgr, model, growth_params, z_db);
+            std::shared_ptr<oneloop_growth> Df_data = this->find<oneloop_growth>(*mgr, model, growth_params, z_db);
             
             std::shared_ptr<loop_integral> l =
               this->find<loop_integral>(*mgr, model, loop_params, record.k->get_token(), Pk_init->get_token(),
                                         record.IR_cutoff->get_token(), record.UV_cutoff->get_token());
             
-            work_list->emplace_back(*(*record.k), g, l, Pk_init, Pk_final);
+            work_list->emplace_back(*(*record.k), Df_data, l, Pk_init, Pk_final);
           }
       }
     
@@ -318,9 +318,9 @@ data_manager::build_one_loop_resum_Pk_work_list(const FRW_model_token& model, co
         // schedule a task to compute any missing redshifts
         if(missing_zs)
           {
-            std::unique_ptr<oneloop_growth> gf_data = this->find<oneloop_growth>(*mgr, model, growth_params, *missing_zs);
+            std::unique_ptr<oneloop_growth> Df_data = this->find<oneloop_growth>(*mgr, model, growth_params, *missing_zs);
             
-            for(const oneloop_value& val : *gf_data)
+            for(const oneloop_value& val : *Df_data)
               {
                 // lookup one-loop data for this redshift and loop configuration
                 std::shared_ptr<oneloop_Pk> loop_data =
@@ -391,9 +391,9 @@ data_manager::build_multipole_Pk_work_list(const FRW_model_token& model, const g
         // schedule a task to compute any missing redshifts
         if(missing_zs)
           {
-            std::unique_ptr<oneloop_growth> gf_data = this->find<oneloop_growth>(*mgr, model, growth_params, *missing_zs);
+            std::unique_ptr<oneloop_growth> Df_data = this->find<oneloop_growth>(*mgr, model, growth_params, *missing_zs);
             
-            for(const oneloop_value& val : *gf_data)
+            for(const oneloop_value& val : *Df_data)
               {
                 // lookup one-loop data for this redshift and loop configuration
                 std::shared_ptr<oneloop_Pk> loop_data =

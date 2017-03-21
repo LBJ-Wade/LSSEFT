@@ -73,7 +73,8 @@ namespace sqlite3_operations
           << "AND ABS((z_eq-@z_eq)/z_eq)<@tol "
           << "AND ABS((A_curv-@A_curv)/A_curv)<@tol "
           << "AND ABS((ns-@ns)/ns)<@tol "
-          << "AND ABS((k_piv-@k_piv)/k_piv)<@tol;";
+          << "AND ABS((k_piv-@k_piv)/k_piv)<@tol"
+          << ";";
 
         // prepare SQL statement
         sqlite3_stmt* stmt;

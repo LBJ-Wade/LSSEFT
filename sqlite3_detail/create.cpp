@@ -115,11 +115,11 @@ namespace sqlite3_operations
           {
             std::ostringstream stmt;
             stmt
-              << "CREATE TABLE " << policy.g_factor_table() << "("
+              << "CREATE TABLE " << policy.D_factor_table() << "("
               << "mid INTEGER, "
               << "params_id INTEGER, "
               << "zid INTEGER, "
-              << "g_linear DOUBLE, "
+              << "D_linear DOUBLE, "
               << "A DOUBLE, "
               << "B DOUBLE, "
               << "D DOUBLE, "
@@ -581,7 +581,8 @@ namespace sqlite3_operations
               << "CREATE TABLE " << policy.growth_config_table() << "("
               << "id INTEGER PRIMARY KEY, "
               << "abserr DOUBLE, "
-              << "relerr DOUBLE"
+              << "relerr DOUBLE, "
+              << "use_EdS INTEGER"
               << ");";
         
             exec(db, stmt.str());
