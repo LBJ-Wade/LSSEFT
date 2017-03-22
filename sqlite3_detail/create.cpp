@@ -96,16 +96,10 @@ namespace sqlite3_operations
               << "delta_r DOUBLE, "
               << "theta_m DOUBLE, "
               << "theta_r DOUBLE, "
-              << "Phi DOUBLE"
-#ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
-              << ", "
-              << "PRIMARY KEY (mid, zid, kid), "
+              << "Phi DOUBLE, "
               << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
               << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id), "
               << "FOREIGN KEY (kid) REFERENCES " << policy.wavenumber_config_table() << "(id));";
-#else
-              << ");";
-#endif
     
             exec(db, stmt.str());
           }
@@ -126,16 +120,10 @@ namespace sqlite3_operations
               << "E DOUBLE, "
               << "F DOUBLE, "
               << "G DOUBLE, "
-              << "J DOUBLE"
-#ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
-              << ", "
-              << "PRIMARY KEY (mid, params_id, zid), "
+              << "J DOUBLE, "
               << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
               << "FOREIGN KEY (params_id) REFERENCES " << policy.growth_config_table() << "(id), "
               << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id));";
-#else
-              << ");";
-#endif
     
             exec(db, stmt.str());
           }
@@ -156,16 +144,10 @@ namespace sqlite3_operations
               << "fE DOUBLE, "
               << "fF DOUBLE, "
               << "fG DOUBLE, "
-              << "fJ DOUBLE"
-#ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
-              << ", "
-              << "PRIMARY KEY (mid, params_id, zid), "
+              << "fJ DOUBLE, "
               << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
               << "FOREIGN KEY (params_id) REFERENCES " << policy.growth_config_table() << "(id), "
               << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id));";
-#else
-              << ");";
-#endif
     
             exec(db, stmt.str());
           }
@@ -191,10 +173,7 @@ namespace sqlite3_operations
               << "nw_regions DOUBLE, "
               << "nw_evals DOUBLE, "
               << "nw_err DOUBLE, "
-              << "nw_time DOUBLE"
-#ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
-              << ", "
-              << "PRIMARY KEY (mid, params_id, kid, Pk_id, IR_id, UV_id), "
+              << "nw_time DOUBLE, "
               << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
               << "FOREIGN KEY (params_id) REFERENCES " << policy.growth_config_table() << "(id), "
               << "FOREIGN KEY (kid) REFERENCES " << policy.wavenumber_config_table() << "(id), "
@@ -202,9 +181,6 @@ namespace sqlite3_operations
               << "FOREIGN KEY (Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
               << "FOREIGN KEY (IR_id) REFERENCES " << policy.IR_config_table() << "(id), "
               << "FOREIGN KEY (UV_id) REFERENCES " << policy.UV_config_table() << "(id));";
-#else
-            << ");";
-#endif
             
             exec(db, stmt.str());
           }
@@ -241,10 +217,7 @@ namespace sqlite3_operations
               << "err_22_nw DOUBLE, "
               << "P1loopSPT_nw DOUBLE, "
               << "err_1loopSPT_nw DOUBLE, "
-              << "Z2_d_nw DOUBLE"
-#ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
-              << ", "
-              << "PRIMARY KEY (mid, growth_params, loop_params, zid, kid, init_Pk_id, final_Pk_id, IR_id, UV_id), "
+              << "Z2_d_nw DOUBLE, "
               << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
               << "FOREIGN KEY (growth_params) REFERENCES " << policy.growth_config_table() << "(id), "
               << "FOREIGN KEY (loop_params) REFERENCES " << policy.loop_integral_config_table() << "(id), "
@@ -254,9 +227,6 @@ namespace sqlite3_operations
               << "FOREIGN KEY (final_Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
               << "FOREIGN KEY (IR_id) REFERENCES " << policy.IR_config_table() << "(id), "
               << "FOREIGN KEY (UV_id) REFERENCES " << policy.UV_config_table() << "(id));";
-#else
-            << ");";
-#endif
             
             exec(db, stmt.str());
           }
@@ -286,10 +256,7 @@ namespace sqlite3_operations
               << "err_22 DOUBLE, "
               << "P1loop_SPT DOUBLE, "
               << "err_1loop_SPT DOUBLE, "
-              << "Z2_d DOUBLE"
-#ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
-              << ", "
-              << "PRIMARY KEY (mid, growth_params, loop_params, XY_params, zid, kid, init_Pk_id, final_Pk_id, IR_cutoff_id, UV_cutoff_id, IR_resum_id), "
+              << "Z2_d DOUBLE, "
               << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
               << "FOREIGN KEY (growth_params) REFERENCES " << policy.growth_config_table() << "(id), "
               << "FOREIGN KEY (loop_params) REFERENCES " << policy.loop_integral_config_table() << "(id), "
@@ -301,9 +268,6 @@ namespace sqlite3_operations
               << "FOREIGN KEY (IR_cutoff_id) REFERENCES " << policy.IR_config_table() << "(id), "
               << "FOREIGN KEY (UV_cutoff_id) REFERENCES " << policy.UV_config_table() << "(id), "
               << "FOREIGN KEY (IR_resum_id) REFERENCES " << policy.IR_resum_config_table() << "(id));";
-#else
-            << ");";
-#endif
     
             exec(db, stmt.str());
           }
@@ -356,10 +320,7 @@ namespace sqlite3_operations
               << "Z2_vv_nw DOUBLE, "
               << "Z2_vvd_nw DOUBLE, "
               << "Z2_vvv_nw DOUBLE, "
-              << "Z2_total_nw DOUBLE"
-#ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
-              << ", "
-              << "PRIMARY KEY (mid, growth_params, loop_params, zid, kid, init_Pk_id, final_Pk_id, IR_id, UV_id), "
+              << "Z2_total_nw DOUBLE, "
               << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
               << "FOREIGN KEY (growth_params) REFERENCES " << policy.growth_config_table() << "(id), "
               << "FOREIGN KEY (loop_params) REFERENCES " << policy.loop_integral_config_table() << "(id), "
@@ -369,9 +330,6 @@ namespace sqlite3_operations
               << "FOREIGN KEY (final_Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
               << "FOREIGN KEY (IR_id) REFERENCES " << policy.IR_config_table() << "(id), "
               << "FOREIGN KEY (UV_id) REFERENCES " << policy.UV_config_table() << "(id));";
-#else
-            << ");";
-#endif
             
             exec(db, stmt.str());
           }
@@ -434,10 +392,7 @@ namespace sqlite3_operations
               << "Z2_mu6 DOUBLE, "
               << "Z2_mu6_resum DOUBLE, "
               << "Z2_mu8 DOUBLE, "
-              << "Z2_mu8_resum DOUBLE "
-#ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
-              << ", "
-              << "PRIMARY KEY (mid, growth_params, loop_params, XY_params, zid, kid, init_Pk_id, final_Pk_id, IR_cutoff_id, UV_cutoff_id, IR_resum_id), "
+              << "Z2_mu8_resum DOUBLE, "
               << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
               << "FOREIGN KEY (growth_params) REFERENCES " << policy.growth_config_table() << "(id), "
               << "FOREIGN KEY (loop_params) REFERENCES " << policy.loop_integral_config_table() << "(id), "
@@ -449,9 +404,6 @@ namespace sqlite3_operations
               << "FOREIGN KEY (IR_cutoff_id) REFERENCES " << policy.IR_config_table() << "(id), "
               << "FOREIGN KEY (UV_cutoff_id) REFERENCES " << policy.UV_config_table() << "(id) "
               << "FOREIGN KEY (IR_resum_id) REFERENCES " << policy.IR_resum_config_table() << "(id));";
-#else
-              << ");";
-#endif
             
             exec(db, stmt.str());
           }
@@ -467,17 +419,11 @@ namespace sqlite3_operations
               << "Pk_id INTEGER, "
               << "IR_resum_id INTEGER, "
               << "X DOUBLE, "
-              << "Y DOUBLE"
-#ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
-              << ", "
-              << "PRIMARY KEY (mid, params_id, Pk_id, IR_resum_id), "
+              << "Y DOUBLE, "
               << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
               << "FOREIGN KEY (params_id) REFERENCES " << policy.MatsubaraXY_config_table() << "(id), "
               << "FOREIGN KEY (Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
               << "FOREIGN KEY (IR_resum_id) REFERENCES " << policy.IR_resum_config_table() << "(id));";
-#else
-              << ");";
-#endif
     
             exec(db, stmt.str());
           }
@@ -512,16 +458,10 @@ namespace sqlite3_operations
               << "Pk_nw_err DOUBLE, "
               << "regions DOUBLE, "
               << "evaluations DOUBLE, "
-              << "time DOUBLE"
-#ifdef LSSEFT_STRICT_DATABASE_CONSISTENCY
-              << ", "
-              << "PRIMARY KEY (Pk_id, kid), "
+              << "time DOUBLE, "
               << "FOREIGN KEY (Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
               << "FOREIGN KEY (params_id) REFERENCES " << policy.filter_config_table() << "(id), "
               << "FOREIGN KEY (kid) REFERENCES " << policy.wavenumber_config_table() << "(id));";
-#else
-              << ");";
-#endif
             
             exec(db, stmt.str());
           }

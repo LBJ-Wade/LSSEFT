@@ -131,7 +131,7 @@ void master_controller::process_arguments(int argc, char* argv[])
 
 void master_controller::execute()
   {
-    if(!this->arg_cache.get_database_set())
+    if(!this->arg_cache.is_database_set())
       {
         this->err_handler.error(ERROR_NO_DATABASE);
         return;
@@ -325,11 +325,16 @@ void master_controller::scatter(const FRW_model& model, const FRW_model_token& t
   {
     using WorkItem = typename WorkItemList::value_type;
     
-    boost::timer::cpu_timer timer;
-    boost::timer::cpu_timer database_timer;
-    database_timer.stop();
+    boost::timer::cpu_timer timer;              // total CPU time
+    boost::timer::cpu_timer write_timer;        // time spent writing to the database
+    write_timer.stop();
 
     if(this->mpi_world.size() == 1) throw runtime_exception(exception_type::runtime_error, ERROR_TOO_FEW_WORKERS);
+    
+    // ask data manager to prepare for new writes
+    boost::timer::cpu_timer pre_timer;          // time spent doing preparation
+    dmgr.setup_write(work);
+    pre_timer.stop();
 
     // instruct slave processes to await transfer function tasks
     std::unique_ptr<scheduler> sch = this->set_up_workers(MPI_detail::work_item_traits<WorkItem>::new_task_message());
@@ -377,9 +382,9 @@ void master_controller::scatter(const FRW_model& model, const FRW_model_token& t
               {
                 case MPI_detail::MESSAGE_WORK_PRODUCT_READY:
                   {
-                    database_timer.resume();
+                    write_timer.resume();
                     this->store_payload<WorkItem>(token, stat->source(), dmgr);
-                    database_timer.stop();
+                    write_timer.stop();
                     sch->mark_unassigned(this->worker_number(stat->source()));
                     break;
                   }
@@ -400,12 +405,18 @@ void master_controller::scatter(const FRW_model& model, const FRW_model_token& t
             stat = this->mpi_world.iprobe();
           }
       }
+    
+    boost::timer::cpu_timer post_timer;     // time spent tidying up the database after a write
+    dmgr.finalize_write(work);
+    post_timer.stop();
 
     timer.stop();
     std::ostringstream msg;
     msg << "completed work in time " << format_time(timer.elapsed().wall)
         << " ["
-        << "database performance: write time " << format_time(database_timer.elapsed().wall)
+        << "database performance: prepare " << format_time(pre_timer.elapsed().wall) << ", "
+        << "writes " << format_time(write_timer.elapsed().wall) << ", "
+        << "cleanup " << format_time(post_timer.elapsed().wall)
         << "]";
     this->err_handler.info(msg.str());
   }
@@ -487,9 +498,11 @@ void master_controller::close_down_workers()
 void master_controller::integrate_loop_growth(const FRW_model& model, const FRW_model_token& token, z_database& z_db, data_manager& dmgr,
                                               const growth_params_token& params_tok, const growth_params& params)
   {
+    dmgr.setup_growth_write();
+    
     oneloop_growth_integrator integrator(params, params_tok);
-
     growth_integrator_data data = integrator.integrate(model, z_db);
-
     dmgr.store(token, *data.container);
+    
+    dmgr.finalize_growth_write();
   }

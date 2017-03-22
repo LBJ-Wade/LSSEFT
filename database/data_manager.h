@@ -266,6 +266,64 @@ class data_manager
     //! tokenize a set of growth function parameters
     std::unique_ptr<growth_params_token> tokenize(transaction_manager& mgr, const growth_params& data);
     
+    
+    // DATABASE SERVICES -- WRITE PREPARATION
+    
+  public:
+    
+    //! prepare to write to the growth-factor tables
+    void setup_growth_write();
+    
+    //! prepare to write to the transfer function table
+    void setup_write(transfer_work_list& work);
+    
+    //! prepare to write to the loop integral table
+    void setup_write(loop_integral_work_list& work);
+    
+    //! prepare to write to the filtered Pk table
+    void setup_write(filter_Pk_work_list& work);
+    
+    //! prepare to write to the Matsubara XY table
+    void setup_write(Matsubara_XY_work_list& work);
+    
+    //! prepare to write to the one-loop power spectrum table
+    void setup_write(one_loop_Pk_work_list& work);
+    
+    //! prepare to write to the one-loop resummed power spectrum table
+    void setup_write(one_loop_resum_Pk_work_list& work);
+    
+    //! prepare to write to the multipole power spectrum table
+    void setup_write(multipole_Pk_work_list& work);
+    
+    
+    // DATABASE SERVICES -- CLOSE DOWN AFTER WRITE
+  
+  public:
+    
+    //! finish writing to the growth-factor tables
+    void finalize_growth_write();
+    
+    //! finish writing to the transfer function table
+    void finalize_write(transfer_work_list& work);
+    
+    //! finish writing to the loop integral table
+    void finalize_write(loop_integral_work_list& work);
+    
+    //! finish writing to the filtered Pk table
+    void finalize_write(filter_Pk_work_list& work);
+    
+    //! finish writing to the Matsubara XY table
+    void finalize_write(Matsubara_XY_work_list& work);
+    
+    //! finish writing to the one-loop power spectrum table
+    void finalize_write(one_loop_Pk_work_list& work);
+    
+    //! finish writing to the one-loop resummed power spectrum table
+    void finalize_write(one_loop_resum_Pk_work_list& work);
+    
+    //! finish writing to the multipole power spectrum table
+    void finalize_write(multipole_Pk_work_list& work);
+    
 
     // DATA STORAGE
 

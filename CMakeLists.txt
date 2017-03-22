@@ -123,6 +123,7 @@ SET(DATABASE_SOURCE_FILES
   database/data_manager_impl/work_lists.cpp
   database/data_manager_impl/find.cpp
   database/data_manager_impl/transactions.cpp
+  database/data_manager_impl/admin.cpp
   database/tokens.cpp database/tokens.h
   database/transaction_manager.cpp database/transaction_manager.h
   database/wavenumber_database.h
@@ -206,6 +207,7 @@ ADD_EXECUTABLE(lsseft
   database/data_manager_impl/work_lists.cpp
   database/data_manager_impl/find.cpp
   database/data_manager_impl/transactions.cpp
+  database/data_manager_impl/admin.cpp
   database/tokens.cpp
   database/transaction_manager.cpp
   database/z_database.cpp

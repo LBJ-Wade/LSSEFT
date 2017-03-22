@@ -54,6 +54,33 @@ namespace sqlite3_operations
 
     //! count number of rows in a specified table
     unsigned int count(sqlite3* db, const std::string& table);
+    
+    
+    // PRAGMA MANAGEMENT
+    
+    //! optimize SQLite performance settings for write performance
+    void write_performance_pragmas(sqlite3* db, bool network_filesystem);
+    
+    //! relax SQLite settings
+    void default_pragmas(sqlite3* db);
+    
+    
+    // INDEX MANAGEMENT
+    
+    //! create a SQLite index
+    void create_index(sqlite3* db, const std::string& table, const std::string& column);
+    
+    //! drop an SQLite index
+    void drop_index(sqlite3* db, const std::string& table, const std::string& column);
+
+    //! create a set of SQLite indices
+    void create_index(sqlite3* db, const std::string& table, std::initializer_list<std::string> list);
+    
+    //! drop a set of SQLite indices
+    void drop_index(sqlite3* db, const std::string& table, std::initializer_list<std::string> list);
+    
+    //! update SQLite's internal statistics
+    void analyze(sqlite3* db);
 
   }
 
