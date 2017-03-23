@@ -97,8 +97,8 @@ data_manager::~data_manager()
   {
     assert(this->handle != nullptr);
 
-    // perform routine maintenance on the container
-    sqlite3_operations::exec(this->handle, "VACUUM;");
+    // perform routine maintenance on container and tidy up
+    sqlite3_operations::tidy(this->handle);
 
     sqlite3_close(this->handle);
   }

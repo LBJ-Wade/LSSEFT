@@ -245,4 +245,16 @@ namespace sqlite3_operations
       }
     
     
+    void tidy(sqlite3* db)
+      {
+        assert(db != nullptr);
+        
+        // vacuum database to compact it
+        exec(db, "VACUUM;");
+        
+        // switch journal mode back to DELETE in order to tidy up -shm or -wal files
+        exec(db, "PRAGMA journal_mode = DELETE;");
+      }
+    
+    
   }   // namespace sqlite3_operations

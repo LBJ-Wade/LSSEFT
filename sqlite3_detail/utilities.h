@@ -56,7 +56,10 @@ namespace sqlite3_operations
     unsigned int count(sqlite3* db, const std::string& table);
     
     
-    // PRAGMA MANAGEMENT
+    // ADMINISTRATION
+    
+    //! tidy up before closing
+    void tidy(sqlite3* db);
     
     //! optimize SQLite performance settings for write performance
     void write_performance_pragmas(sqlite3* db, bool network_filesystem);
