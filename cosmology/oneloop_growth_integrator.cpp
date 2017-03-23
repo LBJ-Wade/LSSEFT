@@ -363,7 +363,7 @@ void oneloop_observer::operator()(const state_vector& x, double z)
     state_vector::value_type A     = this->use_EdS ? 3.0*D_lin_sq/7.0  : x[ELEMENT_A];
     state_vector::value_type B     = this->use_EdS ? 2.0*D_lin_sq/7.0  : x[ELEMENT_B];
     state_vector::value_type D     = this->use_EdS ? 2.0*D_lin_cb/21.0 : x[ELEMENT_D];
-    state_vector::value_type E     = this->use_EdS ? 4.0*D_lin_cb*63.0 : x[ELEMENT_E];
+    state_vector::value_type E     = this->use_EdS ? 4.0*D_lin_cb/63.0 : x[ELEMENT_E];
     state_vector::value_type F     = this->use_EdS ? 1.0*D_lin_cb/14.0 : x[ELEMENT_F];
     state_vector::value_type G     = this->use_EdS ? 1.0*D_lin_cb/21.0 : x[ELEMENT_G];
     state_vector::value_type J     = this->use_EdS ? 1.0*D_lin_cb/9.0  : x[ELEMENT_J];
