@@ -433,6 +433,7 @@ class multipole_Pk
         ar & loop_params;
         ar & XY_params;
         ar & init_Pk;
+        ar & final_Pk;
         ar & UV_cutoff;
         ar & IR_cutoff;
         ar & z;
