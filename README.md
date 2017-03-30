@@ -8,16 +8,16 @@ This version of *LSSEFT* has been written by David Seery at the University of Su
 
 # Releases
 
-The current release of *LSSEFT* is 2017.1. This release can be identified via a DOI linking to a deposit at [zenodo.org](https://zenodo.org). That same .tar.gz archives for each release are available directly from GitHub, but for citations please use the [zenodo.org](https://zenodo.org) versions.
+The current release of *LSSEFT* is 2017.1, and can be identified via a DOI linking to a deposit at [zenodo.org](https://zenodo.org). The same .tar.gz archives for each release are available directly from GitHub, but for citations please use the [zenodo.org](https://zenodo.org) versions.
 
 - 2017.1 (x March 2017) Source code DOI:xxx
 
 # How to install and use *LSSEFT*
 
 To obtain the source code, either clone this repository
-or download a release as tar archive. The build process is managed
+or download a release as a tar archive. The build process is managed
 by [CMake](https://cmake.org) and requires at least version 3.0.
-It is easiest to build in a separate directory; the name doesn't
+It is easiest to build in a separate directory. The name doesn't
 matter, and `build` is as good as any other.
 Create this directory at the top level, change into it, and then run
 `cmake` specifying that you wish to build with the `Release` configuration:
@@ -38,10 +38,10 @@ cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=icc -DCMAKE_CXX_COMPILER=
 *LSSEFT* depends on a number of other libraries:
 
 * An MPI library. Normally [OpenMPI](https://www.open-mpi.org) is a good
-choice. Depending on your system it can usually be installed easily,
+choice. Depending on your system it is usually easy to install,
 either via a standard package management framework (on Linux) or
 [MacPorts](https://www.macports.org)/[Homebrew](https://www.macports.org)
-on macOS.
+(on macOS).
 
 * The [OpenSSH](https://www.openssh.com) library,
 which is used to compute MD5 hashes. This is typically available under
@@ -51,16 +51,16 @@ the same package management systems.
 enabled and compiled against whatever MPI library you wish to use.
 
 These dependencies should be installed on your system before you
-invoke `cmake`. If `cmake` is unable to locate them then the build
+invoke `cmake`. If `cmake` is unable to locate them, the build
 configuration process will fail with an error.
 
-*LSSEFT* depends on two less common libraries. Since these are unlikely
+*LSSEFT* also depends on two less common libraries. Since these are unlikely
 to be installed on your system, the build process will download
 and build them automatically:
 
-* The [SPLINTER](https://github.com/bgrimstad/splinter) library,
+* The [SPLINTER](https://github.com/bgrimstad/splinter) library
 for calculating B-splines. This is distributed under the
-[Mozilla Public License version 2](mozilla public license explained).
+[Mozilla Public License version 2](https://www.mozilla.org/en-US/MPL/2.0/).
 
 * The [Cuba library](http://www.feynarts.de/cuba/) for multidimensional integration. Cuba is distributed under the [GNU Lesser Public General License](http://www.gnu.org/licenses/lgpl.html).
 
@@ -82,11 +82,11 @@ successfully.
 
 For most calculations you will wish to modify the
 `master_controller.cpp` file, which controls what is actually computed
-by setting up C++ objects the model the calculation.
+by setting up C++ objects that model the calculation.
 Most of these objects require a specification of the background
-cosmological parameters, which are currently set up to match the
-[MDR1](https://www.cosmosim.org/cms/simulations/mdr1/), because these
-were the parameters used in our paper:
+cosmological parameters. These are currently set up to match the
+[MDR1](https://www.cosmosim.org/cms/simulations/mdr1/)
+cosmology, because this was the choice used in our paper:
 ```C++
 // fix the background cosmological model
 // here, that's taken to have parameters matching the MDR1 simulation
