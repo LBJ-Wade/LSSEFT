@@ -40,6 +40,8 @@ class rsd_fit(object):
         theory_file = my_config[my_name, 'multipole_theory']
         data_file = my_config[my_name, 'multipole_data']
 
+        error = my_config[my_name, 'multipole_error']
+
         D_linear = my_config[my_name, 'D_linear']
         D_mu0 = my_config[my_name, 'D_mu0']
         D_mu2 = my_config[my_name, 'D_mu2']
@@ -116,10 +118,10 @@ class rsd_fit(object):
         Delta_P2 = P2 - data_P2
         Delta_P4 = P4 - data_P4
 
-        # estimate sigma at each k as 20% of the power spectrum
-        sigma_P0 = (0.20 * data_P0) * (0.20 * data_P0)
-        sigma_P2 = (0.20 * data_P2) * (0.20 * data_P2)
-        sigma_P4 = (0.20 * data_P4) * (0.20 * data_P4)
+        # estimate sigma at each k as a given fraction of the power spectrum
+        sigma_P0 = (error * data_P0) * (error * data_P0)
+        sigma_P2 = (error * data_P2) * (error * data_P2)
+        sigma_P4 = (error * data_P4) * (error * data_P4)
 
         P0_group = (Delta_P0, P0_mu0, P0_mu2, P0_mu4, P0_mu6, sigma_P0)
         P2_group = (Delta_P2, P2_mu0, P2_mu2, P2_mu4, P2_mu6, sigma_P2)
@@ -131,6 +133,8 @@ class rsd_fit(object):
 
         theory_file = my_config[my_name, 'realspace_theory']
         data_file = my_config[my_name, 'realspace_data']
+
+        error = my_config[my_name, 'realspace_error']
 
         D_linear = my_config[my_name, 'D_linear']
         D_Zdelta = my_config[my_name, 'D_Zdelta']
@@ -165,8 +169,8 @@ class rsd_fit(object):
         # precompute difference between SPT value and measured value
         Delta_Pk = Pk - data_Pk
 
-        # estimate sigma at each k as 5% of the power spectrum
-        sigma_Pk = (0.05 * data_Pk) * (0.05 * data_Pk)
+        # estimate sigma at each k as a given fraction of the power spectrum
+        sigma_Pk = (error * data_Pk) * (error * data_Pk)
 
         return (Delta_Pk, Z2d, sigma_Pk)
 
