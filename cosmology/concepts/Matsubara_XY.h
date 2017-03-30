@@ -39,8 +39,8 @@ class Matsubara_XY
   public:
     
     //! constructor
-    Matsubara_XY(const linear_Pk_token& Pkt, const IR_resum_token& IRt, const Mpc_units::inverse_energy2& _X,
-                 const Mpc_units::inverse_energy2& _Y);
+    Matsubara_XY(const MatsubaraXY_params_token& pt, const linear_Pk_token& Pkt, const IR_resum_token& IRt,
+                 const Mpc_units::inverse_energy2& _X, const Mpc_units::inverse_energy2& _Y);
     
     //! empty constructor, used for receiving MPI payloads
     Matsubara_XY();
@@ -70,7 +70,10 @@ class Matsubara_XY
     //! accessor: Y coefficient
     const Mpc_units::inverse_energy2 get_Y() const { return this->Y; }
 
-    //! accessor for database token
+    //! accessor: parameters token
+    const MatsubaraXY_params_token& get_params_token() const { return this->params_tok; }
+    
+    //! accessor for IR resummation token
     const IR_resum_token& get_IR_resum_token() const { return this->IR_resum_tok; }
     
     //! accessor for power spectrum token
@@ -80,6 +83,9 @@ class Matsubara_XY
     // INTERNAL DATA
   
   private:
+    
+    //! parameters token
+    MatsubaraXY_params_token params_tok;
     
     //! IR resummation scale token
     IR_resum_token IR_resum_tok;
@@ -100,6 +106,7 @@ class Matsubara_XY
     template <typename Archive>
     void serialize(Archive& ar, unsigned int version)
       {
+        ar & params_tok;
         ar & IR_resum_tok;
         ar & Pk_lin;
         ar & X;

@@ -70,11 +70,23 @@ class sqlite3_policy
     //! linear power spectrum table
     const std::string& Pk_linear_table() const { return(this->Pk_linear); }
     
+    //! filtering parameter configurations
+    const std::string& filter_config_table() const { return(this->filter_config); }
+    
+    //! oneloop parameter configurations
+    const std::string& loop_integral_config_table() const { return(this->loop_integral_config); }
+    
+    //! MatsubaraXY parameter configurations
+    const std::string& MatsubaraXY_config_table() const { return(this->MatsubaraXY_config); }
+    
+    //! growth parameter configurations
+    const std::string& growth_config_table() const { return(this->growth_config); }
+    
     //! transfer function table
     const std::string& transfer_table() const { return(this->transfer); }
 
     //! 1-loop growth g-factor table
-    const std::string& g_factor_table() const { return(this->growth_g_factor); }
+    const std::string& D_factor_table() const { return(this->growth_D_factor); }
     
     //! 1-loop growth f-factor table
     const std::string& f_factor_table() const { return(this->growth_f_factor); }
@@ -235,12 +247,24 @@ class sqlite3_policy
     
     //! linear power spectrum data table
     const std::string Pk_linear;
+    
+    //! filtering parameter configurations
+    const std::string filter_config;
+    
+    //! one-loop parameter configurations
+    const std::string loop_integral_config;
+    
+    //! MatsubaraXY parameter configurations
+    const std::string MatsubaraXY_config;
+    
+    //! growth function parameter configurations
+    const std::string growth_config;
 
     //! transfer function table
     const std::string transfer;
 
     //! 1-loop growth g-factor table
-    const std::string growth_g_factor;
+    const std::string growth_D_factor;
     
     //! 1-loop growth f-factor table
     const std::string growth_f_factor;

@@ -32,6 +32,9 @@
 
 #include "localizations/messages.h"
 
+#include "boost/date_time/posix_time/posix_time.hpp"
+#include "boost/date_time/posix_time/time_formatters.hpp"
+
 
 error_handler::error_handler(argument_cache& ac, local_environment& le)
   : arg_cache(ac),
@@ -44,8 +47,11 @@ void error_handler::error(std::string msg)
   {
     bool colour = this->local_env.get_terminal_colour_support() && this->arg_cache.get_colour_output();
 
+    boost::posix_time::ptime now = boost::posix_time::second_clock::universal_time();
+    std::string nowstr = boost::posix_time::to_simple_string(now);
+
     if(colour) std::cout << ANSI_BOLD_RED;
-    std::cout << msg << '\n';
+    std::cout << "lsseft [" << nowstr << "]: " << msg << '\n';
     if(colour) std::cout << ANSI_NORMAL;
   }
 
@@ -54,10 +60,13 @@ void error_handler::warn(std::string msg)
   {
     bool colour = this->local_env.get_terminal_colour_support() && this->arg_cache.get_colour_output();
 
+    boost::posix_time::ptime now = boost::posix_time::second_clock::universal_time();
+    std::string nowstr = boost::posix_time::to_simple_string(now);
+
     if(colour) std::cout << ANSI_BOLD_MAGENTA;
     std::cout << WARNING_LABEL << " ";
     if(colour) std::cout << ANSI_NORMAL;
-    std::cout << msg << '\n';
+    std::cout << "lsseft [" << nowstr << "]: " << msg << '\n';
   }
 
 
@@ -65,8 +74,11 @@ void error_handler::info(std::string msg)
   {
     bool colour = this->local_env.get_terminal_colour_support() && this->arg_cache.get_colour_output();
 
+    boost::posix_time::ptime now = boost::posix_time::second_clock::universal_time();
+    std::string nowstr = boost::posix_time::to_simple_string(now);
+
     if(this->arg_cache.get_verbose())
       {
-        std::cout << msg << '\n';
+        std::cout << "lsseft [" << nowstr << "]: " << msg << '\n';
       }
   }

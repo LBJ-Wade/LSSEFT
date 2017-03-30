@@ -531,9 +531,10 @@ class oneloop_Pk
   public:
     
     //! value constructor
-    oneloop_Pk(const k_token& kt, const linear_Pk_token& Pkt_i, const boost::optional<linear_Pk_token>& Pkt_f,
-               const IR_cutoff_token& IRt, const UV_cutoff_token& UVt, const z_token& zt,
-               const dd_Pk& _dd, const rsd_dd_Pk& _rsd_mu0, const rsd_dd_Pk& _rsd_mu2, const rsd_dd_Pk& _rsd_mu4,
+    oneloop_Pk(const k_token& kt, const growth_params_token& gt, const loop_integral_params_token& lt,
+               const linear_Pk_token& Pkt_i, const boost::optional<linear_Pk_token>& Pkt_f,
+               const IR_cutoff_token& IRt, const UV_cutoff_token& UVt, const z_token& zt, const dd_Pk& _dd,
+               const rsd_dd_Pk& _rsd_mu0, const rsd_dd_Pk& _rsd_mu2, const rsd_dd_Pk& _rsd_mu4,
                const rsd_dd_Pk& _rsd_mu6, const rsd_dd_Pk& _rsd_mu8);
     
     //! empty constructor, used when receiving an MPI payload
@@ -549,6 +550,12 @@ class oneloop_Pk
     
     //! get wavenumber token
     const k_token& get_k_token() const { return this->k; }
+    
+    //! get loop integral parameter token
+    const loop_integral_params_token& get_loop_params() const { return this->loop_params; }
+    
+    //! get growth parameters token
+    const growth_params_token& get_growth_params() const { return this->growth_params; }
     
     //! get initial power spectrum token
     const linear_Pk_token& get_init_Pk_token() const { return this->init_Pk; }
@@ -594,6 +601,12 @@ class oneloop_Pk
     //! wavenumber token
     k_token k;
     
+    //! loop parameters token
+    loop_integral_params_token loop_params;
+    
+    //! growth parameters token
+    growth_params_token growth_params;
+    
     //! initial power spectrum token
     linear_Pk_token init_Pk;
     
@@ -638,6 +651,8 @@ class oneloop_Pk
     void serialize(Archive& ar, unsigned int version)
       {
         ar & k;
+        ar & loop_params;
+        ar & growth_params;
         ar & init_Pk;
         ar & final_Pk;
         ar & UV_cutoff;

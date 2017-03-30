@@ -41,18 +41,19 @@ namespace sqlite3_operations
       {
         assert(db != nullptr);
 
-        double            omega_m  = obj.get_omega_m();
-        double            omega_cc = obj.get_omega_cc();
-        double            h        = obj.get_h();
-        Mpc_units::energy T_CMB    = obj.get_T_CMB();
-        double            Neff     = obj.get_Neff();
-        double            f_baryon = obj.get_f_baryon();
-        double            z_star   = obj.get_z_star();
-        double            z_drag   = obj.get_z_drag();
-        double            z_eq     = obj.get_z_eq();
-        double            A_curv   = obj.get_A_curv();
-        double            ns       = obj.get_ns();
-        Mpc_units::energy k_piv    = obj.get_k_piv();
+        const std::string& name     = obj.get_name();
+        double             omega_m  = obj.get_omega_m();
+        double             omega_cc = obj.get_omega_cc();
+        double             h        = obj.get_h();
+        Mpc_units::energy  T_CMB    = obj.get_T_CMB();
+        double             Neff     = obj.get_Neff();
+        double             f_baryon = obj.get_f_baryon();
+        double             z_star   = obj.get_z_star();
+        double             z_drag   = obj.get_z_drag();
+        double             z_eq     = obj.get_z_eq();
+        double             A_curv   = obj.get_A_curv();
+        double             ns       = obj.get_ns();
+        Mpc_units::energy  k_piv    = obj.get_k_piv();
     
         double T_CMB_in_Kelvin = T_CMB / Mpc_units::Kelvin;
         double k_piv_in_invMpc = k_piv * Mpc_units::Mpc;
@@ -60,7 +61,8 @@ namespace sqlite3_operations
         std::ostringstream select_stmt;
         select_stmt
           << "SELECT id FROM " << policy.FRW_model_table() << " WHERE "
-          << "ABS((omega_m-@om)/omega_m)<@tol "
+          << "name=@name "
+          << "AND ABS((omega_m-@om)/omega_m)<@tol "
           << "AND ABS((omega_cc-@occ)/omega_cc)<@tol "
           << "AND ABS((h-@h)/h)<@tol "
           << "AND ABS((T_CMB-@Tcmb)/T_CMB)<@tol "
@@ -71,13 +73,15 @@ namespace sqlite3_operations
           << "AND ABS((z_eq-@z_eq)/z_eq)<@tol "
           << "AND ABS((A_curv-@A_curv)/A_curv)<@tol "
           << "AND ABS((ns-@ns)/ns)<@tol "
-          << "AND ABS((k_piv-@k_piv)/k_piv)<@tol;";
+          << "AND ABS((k_piv-@k_piv)/k_piv)<@tol"
+          << ";";
 
         // prepare SQL statement
         sqlite3_stmt* stmt;
         check_stmt(db, sqlite3_prepare_v2(db, select_stmt.str().c_str(), select_stmt.str().length()+1, &stmt, nullptr));
 
         // bind values to the parameters
+        check_stmt(db, sqlite3_bind_text(stmt, sqlite3_bind_parameter_index(stmt, "@name"), name.c_str(), name.length(), SQLITE_STATIC));
         check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@tol"), tol));
         check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@om"), omega_m));
         check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@occ"), omega_cc));
@@ -119,25 +123,26 @@ namespace sqlite3_operations
         // get number of rows in table; this will be the identifier for the new model
         unsigned int new_id = count(db, policy.FRW_model_table());
 
-        double            omega_m  = obj.get_omega_m();
-        double            omega_cc = obj.get_omega_cc();
-        double            h        = obj.get_h();
-        Mpc_units::energy T_CMB    = obj.get_T_CMB();
-        double            Neff     = obj.get_Neff();
-        double            f_baryon = obj.get_f_baryon();
-        double            z_star   = obj.get_z_star();
-        double            z_drag   = obj.get_z_drag();
-        double            z_eq     = obj.get_z_eq();
-        double            A_curv   = obj.get_A_curv();
-        double            ns       = obj.get_ns();
-        Mpc_units::energy k_piv    = obj.get_k_piv();
+        const std::string& name     = obj.get_name();
+        double             omega_m  = obj.get_omega_m();
+        double             omega_cc = obj.get_omega_cc();
+        double             h        = obj.get_h();
+        Mpc_units::energy  T_CMB    = obj.get_T_CMB();
+        double             Neff     = obj.get_Neff();
+        double             f_baryon = obj.get_f_baryon();
+        double             z_star   = obj.get_z_star();
+        double             z_drag   = obj.get_z_drag();
+        double             z_eq     = obj.get_z_eq();
+        double             A_curv   = obj.get_A_curv();
+        double             ns       = obj.get_ns();
+        Mpc_units::energy  k_piv    = obj.get_k_piv();
 
         double T_CMB_in_Kelvin = T_CMB / Mpc_units::Kelvin;
         double k_piv_in_invMpc = k_piv * Mpc_units::Mpc;
 
         std::ostringstream insert_stmt;
         insert_stmt
-          << "INSERT INTO " << policy.FRW_model_table() << " VALUES (@id, @omega_m, @omega_cc, @h, @T_CMB, @Neff, @f_baryon, @z_star, @z_drag, @z_eq, @A_curv, @ns, @k_piv);";
+          << "INSERT INTO " << policy.FRW_model_table() << " VALUES (@id, @name, @omega_m, @omega_cc, @h, @T_CMB, @Neff, @f_baryon, @z_star, @z_drag, @z_eq, @A_curv, @ns, @k_piv);";
 
         // prepare SQL statement
         sqlite3_stmt* stmt;
@@ -145,6 +150,7 @@ namespace sqlite3_operations
 
         // bind values to the parameters
         check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@id"), new_id));
+        check_stmt(db, sqlite3_bind_text(stmt, sqlite3_bind_parameter_index(stmt, "@name"), name.c_str(), name.length(), SQLITE_STATIC));
         check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@omega_m"), omega_m));
         check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@omega_cc"), omega_cc));
         check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@h"), h));

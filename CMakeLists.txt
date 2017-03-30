@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 PROJECT(LSSEFT)
 
 LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/)
@@ -20,18 +20,13 @@ ADD_CUSTOM_TARGET(DEPS ALL)
 SET(EXTERNAL_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/thirdparty/dist")
 
 BUILD_SPLINTER(${CMAKE_BINARY_DIR}/thirdparty/SPLINTER ${EXTERNAL_INSTALL_PREFIX})
+BUILD_CUBA(${CMAKE_BINARY_DIR}/thirdparty/Cuba ${EXTERNAL_INSTALL_PREFIX})
 
 # use version of Eigen3 bundled with SPLINTER
 SET(EIGEN3_INCLUDE_DIR "thirdparty/splinter/thirdparty/Eigen")
 
-# Cuba libraries and include files
-SET(CUBA_INCLUDE_DIR "/Users/ds283/Documents/Code/Cuba/Cuba-4.2" "/Users/david/Documents/Code/Cuba/Cuba-4.2" "/usr/local/include")
-SET(CUBA_LIBRARY_DIR "/Users/ds283/Documents/Code/Cuba/Cuba-4.2" "/Users/david/Documents/Code/Cuba/Cuba-4.2" "/usr/local/lib")
-
 SET(LOCALIZATION
   localizations/messages.h)
-
-LINK_DIRECTORIES(${CUBA_LIBRARY_DIR})
 
 SET(LOCALIZATION_EN_GB
   localizations/en_GB/en_GB.h
@@ -79,6 +74,7 @@ SET(MPI_SOURCE_FILES
 SET(COSMOLOGY_SOURCE_FILES
   cosmology/FRW_model.cpp cosmology/FRW_model.h
   cosmology/Planck_defaults.h
+  cosmology/MDR1_sim.h
   cosmology/types.h
   cosmology/constants.h
   cosmology/concepts/range.h
@@ -127,6 +123,7 @@ SET(DATABASE_SOURCE_FILES
   database/data_manager_impl/work_lists.cpp
   database/data_manager_impl/find.cpp
   database/data_manager_impl/transactions.cpp
+  database/data_manager_impl/admin.cpp
   database/tokens.cpp database/tokens.h
   database/transaction_manager.cpp database/transaction_manager.h
   database/wavenumber_database.h
@@ -154,7 +151,11 @@ SET(SQLITE3_DETAIL_SOURCE_FILES
   sqlite3_detail/missing_elements.cpp sqlite3_detail/missing_elements.h
   sqlite3_detail/store.cpp sqlite3_detail/store.h
   sqlite3_detail/find.cpp sqlite3_detail/find.h
-  sqlite3_detail/power_spectrum.h)
+  sqlite3_detail/power_spectrum.h
+  sqlite3_detail/filter_params.cpp sqlite3_detail/filter_params.h
+  sqlite3_detail/oneloop_params.cpp sqlite3_detail/oneloop_params.h
+  sqlite3_detail/MatsubaraXY_params.cpp sqlite3_detail/MatsubaraXY_params.h
+  sqlite3_detail/growth_params.cpp sqlite3_detail/growth_params.h)
 
 SET(SOURCE_FILES
   ${TOP_LEVEL_SOURCE_FILES}
@@ -206,6 +207,7 @@ ADD_EXECUTABLE(lsseft
   database/data_manager_impl/work_lists.cpp
   database/data_manager_impl/find.cpp
   database/data_manager_impl/transactions.cpp
+  database/data_manager_impl/admin.cpp
   database/tokens.cpp
   database/transaction_manager.cpp
   database/z_database.cpp
@@ -215,6 +217,10 @@ ADD_EXECUTABLE(lsseft
   sqlite3_detail/create.cpp
   sqlite3_detail/FRW_model.cpp
   sqlite3_detail/redshift.cpp
+  sqlite3_detail/filter_params.cpp
+  sqlite3_detail/oneloop_params.cpp
+  sqlite3_detail/MatsubaraXY_params.cpp
+  sqlite3_detail/growth_params.cpp
   sqlite3_detail/temporary_tables.cpp
   sqlite3_detail/missing_elements.cpp
   sqlite3_detail/store.cpp
@@ -223,7 +229,7 @@ ADD_EXECUTABLE(lsseft
 
 ADD_DEPENDENCIES(lsseft DEPS)
 
-TARGET_LINK_LIBRARIES(lsseft sqlite3 cuba ${Boost_LIBRARIES} ${MPI_LIBRARIES} ${SPLINTER_LIBRARIES} ${OPENSSL_LIBRARIES})
+TARGET_LINK_LIBRARIES(lsseft sqlite3 ${CUBA_LIBRARIES} ${Boost_LIBRARIES} ${MPI_LIBRARIES} ${SPLINTER_LIBRARIES} ${OPENSSL_LIBRARIES})
 
 TARGET_COMPILE_OPTIONS(lsseft PRIVATE -std=c++14)
 
@@ -234,6 +240,6 @@ TARGET_INCLUDE_DIRECTORIES(lsseft PRIVATE
   ${Boost_INCLUDE_DIRS}
   ${OPENSSL_INCLUDE_DIR}
   ${MPI_CXX_INCLUDE_PATH}
-  ${CUBA_INCLUDE_DIR})
+  ${CUBA_INCLUDE_DIRS})
 
 ADD_EXECUTABLE(dummy_clion_target EXCLUDE_FROM_ALL ${SOURCE_FILES})

@@ -96,7 +96,7 @@ namespace MPI_detail
 
         //! empty constructor: used to receive a payload
         new_transfer_integration()
-          : model(),
+          : model("", 0, 0, 0, Mpc_units::energy(0), 0, 0, 0, 0, 0, 0, 0, Mpc_units::energy(0)),
             k(0),       // note k has no default constructor
             token(0),   // note token has no default constructor
             z_db()
@@ -229,22 +229,26 @@ namespace MPI_detail
         
         //! empty constructor, used to receive a payload
         new_filter_Pk()
-          : model(),
+          : model("", 0, 0, 0, Mpc_units::energy(0), 0, 0, 0, 0, 0, 0, 0, Mpc_units::energy(0)),
             k(0),
             k_tok(0),
             Pk_tok(0),
-            Pk_lin()
+            Pk_lin(),
+            params_tok(0),
+            params()
           {
           }
            
         //! value constructor, used to construct and send a payload
-        new_filter_Pk(const FRW_model& m, const Mpc_units::energy& _k, const k_token& kt,
-                      const linear_Pk_token& Pt, const std::shared_ptr<filterable_Pk>& _Pk)
+        new_filter_Pk(const FRW_model& m, const Mpc_units::energy& _k, const k_token& kt, const linear_Pk_token& Pt,
+                      const std::shared_ptr<filterable_Pk>& _Pk, const filter_params_token& pt, const Pk_filter_params& p)
           : model(m),
             k(_k),
             k_tok(kt),
             Pk_tok(Pt),
-            Pk_lin(_Pk)
+            Pk_lin(_Pk),
+            params_tok(pt),
+            params(p)
           {
           }
         
@@ -270,6 +274,12 @@ namespace MPI_detail
         
         //! get linear power specturm container
         const filterable_Pk& get_Pk_linear() const { return *this->Pk_lin; }
+        
+        //! get filtering parameters token
+        const filter_params_token& get_params_token() const { return this->params_tok; }
+        
+        //! get filtering parameters
+        const Pk_filter_params& get_params() const { return this->params; }
     
     
         // INTERNAL DATA
@@ -290,6 +300,12 @@ namespace MPI_detail
         
         //! linear power spectrum container
         std::shared_ptr<filterable_Pk> Pk_lin;
+        
+        //! token for filtering parameters
+        filter_params_token params_tok;
+        
+        //! filtering parameters
+        Pk_filter_params params;
     
     
         // enable boost::serialization support, and hence automated packing for transmission over MPI
@@ -303,6 +319,8 @@ namespace MPI_detail
             ar & k_tok;
             ar & Pk_tok;
             ar & Pk_lin;
+            ar & params_tok;
+            ar & params;
           }
     
       };
@@ -370,22 +388,24 @@ namespace MPI_detail
 
         //! empty constructor: used to receive a payload
         new_loop_momentum_integration()
-          : model(),
+          : model("", 0, 0, 0, Mpc_units::energy(0), 0, 0, 0, 0, 0, 0, 0, Mpc_units::energy(0)),
             k(0),
             UV_cutoff(0),
             IR_cutoff(0),
             k_tok(0),
             UV_tok(0),
             IR_tok(0),
-            Pk()
+            Pk(),
+            params_tok(0),
+            params()
           {
           }
 
         //! value constructor: used to construct and send a payload
         new_loop_momentum_integration(const FRW_model& m, const Mpc_units::energy& _k, const k_token& kt,
-                                      const Mpc_units::energy& UV, const UV_cutoff_token& UVt,
-                                      const Mpc_units::energy& IR, const IR_cutoff_token& IRt,
-                                      const std::shared_ptr<initial_filtered_Pk>& _Pk)
+                                      const Mpc_units::energy& UV, const UV_cutoff_token& UVt, const Mpc_units::energy& IR,
+                                      const IR_cutoff_token& IRt, const std::shared_ptr<initial_filtered_Pk>& _Pk,
+                                      const loop_integral_params_token& pt, const loop_integral_params& p)
           : model(m),
             k(_k),
             UV_cutoff(UV),
@@ -393,7 +413,9 @@ namespace MPI_detail
             k_tok(kt),
             UV_tok(UVt),
             IR_tok(IRt),
-            Pk(_Pk)
+            Pk(_Pk),
+            params_tok(pt),
+            params(p)
           {
           }
 
@@ -428,6 +450,12 @@ namespace MPI_detail
 
         //! get tree-level power spectrum
         const initial_filtered_Pk& get_tree_power_spectrum() const { return *this->Pk; }
+        
+        //! get parameters token
+        const loop_integral_params_token& get_params_token() const { return this->params_tok; }
+        
+        //! get parameters block
+        const loop_integral_params& get_params() const { return this->params; }
 
 
         // INTERNAL DATA
@@ -457,6 +485,12 @@ namespace MPI_detail
 
         //! tree-level power spectrum
         std::shared_ptr<initial_filtered_Pk> Pk;
+        
+        //! parameters token
+        loop_integral_params_token params_tok;
+        
+        //! parameters block
+        loop_integral_params params;
 
 
         // enable boost::serialization support, and hence automated packing for transmission over MPI
@@ -541,16 +575,21 @@ namespace MPI_detail
         new_Matsubara_XY()
           : IR_resum(0.0),
             IR_resum_tok(0),
-            Pk()
+            Pk(),
+            params_tok(0),
+            params()
           {
           }
         
         //! value constructor: used to construct and send a payload
         new_Matsubara_XY(const Mpc_units::energy& _IR, const IR_resum_token& _IRt,
-                        const std::shared_ptr<initial_filtered_Pk>& _Pk)
+                         const std::shared_ptr<initial_filtered_Pk>& _Pk, const MatsubaraXY_params_token& _pt,
+                         const MatsubaraXY_params& _pm)
           : IR_resum(_IR),
             IR_resum_tok(_IRt),
-            Pk(_Pk)
+            Pk(_Pk),
+            params_tok(_pt),
+            params(_pm)
           {
           }
         
@@ -570,6 +609,12 @@ namespace MPI_detail
     
         //! get tree-level power spectrum
         const initial_filtered_Pk& get_tree_power_spectrum() const { return *this->Pk; }
+        
+        //! get parameters token
+        const MatsubaraXY_params_token& get_params_token() const { return this->params_tok; }
+        
+        //! get parameters block
+        const MatsubaraXY_params& get_params() const { return this->params; }
     
     
         // INTERNAL DATA
@@ -584,6 +629,12 @@ namespace MPI_detail
     
         //! tree-level power spectrum
         std::shared_ptr<initial_filtered_Pk> Pk;
+        
+        //! parameters token
+        MatsubaraXY_params_token params_tok;
+        
+        //! parameters
+        MatsubaraXY_params params;
     
     
         // enable boost::serialization support, and hence automated packing for transmission over MPI
@@ -595,6 +646,8 @@ namespace MPI_detail
             ar & IR_resum;
             ar & IR_resum_tok;
             ar & Pk;
+            ar & params_tok;
+            ar & params;
           }
     
       };
@@ -810,7 +863,7 @@ namespace MPI_detail
           : k(0.0),
             XY(),
             data(),
-            gf_data(),
+            Df_data(),
             Pk_init(),
             Pk_final()
           {
@@ -818,13 +871,13 @@ namespace MPI_detail
     
         //! value constructor: used to construct and send a payload
         new_one_loop_resum_Pk(const Mpc_units::energy& _k, const Matsubara_XY& _XY,
-                              const std::shared_ptr<oneloop_Pk>& _data, const oneloop_growth_record& _gf_data,
+                              const std::shared_ptr<oneloop_Pk>& _data, const oneloop_growth_record& _Df_data,
                               const std::shared_ptr<initial_filtered_Pk>& _Pk_init,
                               const std::shared_ptr<final_filtered_Pk>& _Pk_final)
           : k(_k),
             XY(_XY),
             data(_data),
-            gf_data(_gf_data),
+            Df_data(_Df_data),
             Pk_init(_Pk_init),
             Pk_final(_Pk_final)
           {
@@ -848,7 +901,7 @@ namespace MPI_detail
         const oneloop_Pk& get_oneloop_Pk_data() const { return *this->data; }
     
         //! get gf growth factors
-        const oneloop_growth_record& get_gf_data() const { return this->gf_data; }
+        const oneloop_growth_record& get_Df_data() const { return this->Df_data; }
     
         //! get initial linear power spectrum
         const initial_filtered_Pk& get_init_linear_Pk() const { return *this->Pk_init; }
@@ -877,7 +930,7 @@ namespace MPI_detail
         std::shared_ptr<oneloop_Pk> data;
     
         //! gf growth factors
-        oneloop_growth_record gf_data;
+        oneloop_growth_record Df_data;
     
         //! initial linear power spectrum
         std::shared_ptr<initial_filtered_Pk> Pk_init;
@@ -895,7 +948,7 @@ namespace MPI_detail
             ar & k;
             ar & XY;
             ar & data;
-            ar & gf_data;
+            ar & Df_data;
             ar & Pk_init;
             ar & Pk_final;
           }
@@ -964,7 +1017,7 @@ namespace MPI_detail
           : k(0.0),
             XY(),
             data(),
-            gf_data(),
+            Df_data(),
             Pk_init(),
             Pk_final()
           {
@@ -972,12 +1025,12 @@ namespace MPI_detail
         
         //! value constructor: used to construct and send a payload
         new_multipole_Pk(const Mpc_units::energy& _k, const Matsubara_XY& _XY, const std::shared_ptr<oneloop_Pk>& _data,
-                         const oneloop_growth_record& _gf_data, const std::shared_ptr<initial_filtered_Pk>& _Pk_init,
+                         const oneloop_growth_record& _Df_data, const std::shared_ptr<initial_filtered_Pk>& _Pk_init,
                          const std::shared_ptr<final_filtered_Pk>& _Pk_final)
           : k(_k),
             XY(_XY),
             data(_data),
-            gf_data(_gf_data),
+            Df_data(_Df_data),
             Pk_init(_Pk_init),
             Pk_final(_Pk_final)
           {
@@ -1001,7 +1054,7 @@ namespace MPI_detail
         const oneloop_Pk& get_oneloop_Pk_data() const { return *this->data; }
         
         //! get gf growth factors
-        const oneloop_growth_record& get_gf_data() const { return this->gf_data; }
+        const oneloop_growth_record& get_Df_data() const { return this->Df_data; }
         
         //! get initial linear power spectrum
         const initial_filtered_Pk& get_init_linear_Pk() const { return *this->Pk_init; }
@@ -1030,7 +1083,7 @@ namespace MPI_detail
         std::shared_ptr<oneloop_Pk> data;
         
         //! gf growth factors
-        oneloop_growth_record gf_data;
+        oneloop_growth_record Df_data;
     
         //! initial linear power spectrum
         std::shared_ptr<initial_filtered_Pk> Pk_init;
@@ -1048,7 +1101,7 @@ namespace MPI_detail
             ar & k;
             ar & XY;
             ar & data;
-            ar & gf_data;
+            ar & Df_data;
             ar & Pk_init;
             ar & Pk_final;
           }

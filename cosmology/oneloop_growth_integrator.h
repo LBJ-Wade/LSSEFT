@@ -40,6 +40,67 @@
 #include "boost/timer/timer.hpp"
 
 
+class growth_params
+  {
+    
+    // CONSTRUCTOR, DESTRUCTOR
+  
+  public:
+    
+    //! constructor
+    growth_params(bool EdS=false, double a=LSSEFT_DEFAULT_ODE_ABS_ERR, double r=LSSEFT_DEFAULT_ODE_REL_ERR)
+      : EdS_mode(EdS),
+        abs_err(a),
+        rel_err(r)
+      {
+      }
+    
+    //! destructor is default
+    ~growth_params() = default;
+    
+    
+    // INTERFACE
+  
+  public:
+    
+    //! use EdS mode?
+    bool use_EdS() const { return this->EdS_mode; }
+    
+    //! get abserr
+    double get_abserr() const { return this->abs_err; }
+    
+    //! get relerr
+    double get_relerr() const { return this->rel_err; }
+    
+    
+    // INTERNAL DATA
+  
+  private:
+    
+    //! use Einstein-de Sitter approximations to growth factors?
+    bool EdS_mode;
+    
+    //! absolute tolerance
+    double abs_err;
+    
+    //! relative tolerance
+    double rel_err;
+    
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+    
+    
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & EdS_mode;
+        ar & abs_err;
+        ar & rel_err;
+      }
+    
+  };
+
+
 struct growth_integrator_data
   {
     
@@ -65,7 +126,7 @@ class oneloop_growth_integrator
   public:
 
     //! constructor
-    oneloop_growth_integrator(double a= LSSEFT_DEFAULT_ODE_ABS_ERR, double r= LSSEFT_DEFAULT_ODE_REL_ERR);
+    oneloop_growth_integrator(const growth_params& p, const growth_params_token& t);
 
     //! destructor is default
     ~oneloop_growth_integrator() = default;
@@ -83,13 +144,11 @@ class oneloop_growth_integrator
 
   private:
 
-    // TOLERANCES
-
-    //! required absolute error
-    double abs_err;
-
-    //! required relative error
-    double rel_err;
+    //! parameter block
+    const growth_params params;
+    
+    //! token for parameter block
+    const growth_params_token token;
 
   };
 

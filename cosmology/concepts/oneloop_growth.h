@@ -348,7 +348,7 @@ class oneloop_growth
   public:
 
     //! value constructor
-    oneloop_growth(const z_database& z);
+    oneloop_growth(const growth_params_token& p, const z_database& z);
     
     //! empty constructor used for receiving an MPI payload
     oneloop_growth();
@@ -378,42 +378,42 @@ class oneloop_growth
     iterator begin()
       {
         return(iterator(this->z_db->record_rbegin(),
-                        this->g_linear->begin(), this->A->begin(), this->B->begin(), this->D->begin(), this->E->begin(), this->F->begin(), this->G->begin(), this->J->begin(),
+                        this->D_linear->begin(), this->A->begin(), this->B->begin(), this->D->begin(), this->E->begin(), this->F->begin(), this->G->begin(), this->J->begin(),
                         this->f_linear->begin(), this->fA->begin(), this->fB->begin(), this->fD->begin(), this->fE->begin(), this->fF->begin(), this->fG->begin(), this->fJ->begin()));
       }
 
     iterator end()
       {
         return(iterator(this->z_db->record_rend(),
-                        this->g_linear->end(), this->A->end(), this->B->end(), this->D->end(), this->E->end(), this->F->end(), this->G->end(), this->J->end(),
+                        this->D_linear->end(), this->A->end(), this->B->end(), this->D->end(), this->E->end(), this->F->end(), this->G->end(), this->J->end(),
                         this->f_linear->end(), this->fA->end(), this->fB->end(), this->fD->end(), this->fE->end(), this->fF->end(), this->fG->end(), this->fJ->end()));
       }
 
     const_iterator begin() const
       {
         return(const_iterator(this->z_db->record_crbegin(),
-                              this->g_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->J->cbegin(),
+                              this->D_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->J->cbegin(),
                               this->f_linear->cbegin(), this->fA->cbegin(), this->fB->cbegin(), this->fD->cbegin(), this->fE->cbegin(), this->fF->cbegin(), this->fG->cbegin(), this->fJ->cbegin()));
       }
 
     const_iterator end() const
       {
         return(const_iterator(this->z_db->record_crend(),
-                              this->g_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->J->cend(),
+                              this->D_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->J->cend(),
                               this->f_linear->cend(), this->fA->cend(), this->fB->cend(), this->fD->cend(), this->fE->cend(), this->fF->cend(), this->fG->cend(), this->fJ->cend()));
       }
 
     const_iterator cbegin() const
       {
         return(const_iterator(this->z_db->record_crbegin(),
-                              this->g_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->J->cbegin(),
+                              this->D_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->J->cbegin(),
                               this->f_linear->cbegin(), this->fA->cbegin(), this->fB->cbegin(), this->fD->cbegin(), this->fE->cbegin(), this->fF->cbegin(), this->fG->cbegin(), this->fJ->cbegin()));
       }
 
     const_iterator cend() const
       {
         return(const_iterator(this->z_db->record_crend(),
-                              this->g_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->J->cend(),
+                              this->D_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->J->cend(),
                               this->f_linear->cend(), this->fA->cend(), this->fB->cend(), this->fD->cend(), this->fE->cend(), this->fF->cend(), this->fG->cend(), this->fJ->cend()));
       }
 
@@ -422,11 +422,15 @@ class oneloop_growth
 
   public:
 
+    //! get size
     size_t size() const { return this->z_db->size(); }
     
     //! store components
-    void push_back(double g, double A, double B, double D, double E, double F, double G, double J,
-                   double f, double fA, double fB, double fD, double fE, double fF, double fG, double fJ);
+    void push_back(double D_lin, double A, double B, double D, double E, double F, double G, double J,
+                   double f_lin, double fA, double fB, double fD, double fE, double fF, double fG, double fJ);
+    
+    //! get parameter token
+    const growth_params_token& get_params_token() const { return this->params; }
 
 
     // INTERNAL DATA
@@ -434,6 +438,9 @@ class oneloop_growth
   private:
 
     // CONFIGURATION DATA
+    
+    //! parameter token
+    growth_params_token params;
 
     //! copy of redshift database
     std::unique_ptr<z_database> z_db;
@@ -443,8 +450,8 @@ class oneloop_growth
 
     // these are managed using std::unique_ptr<>s to control their lifetime
 
-    //! linear growth factor g(z)
-    std::unique_ptr< std::vector<double> > g_linear;
+    //! linear growth factor D(z)
+    std::unique_ptr< std::vector<double> > D_linear;
 
     //! A growth factor
     std::unique_ptr< std::vector<double> > A;
@@ -501,7 +508,7 @@ class oneloop_growth
       {
         ar & z_db;
 
-        ar & g_linear;
+        ar & D_linear;
         ar & A;
         ar & B;
         ar & D;

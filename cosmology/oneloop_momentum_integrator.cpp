@@ -39,21 +39,19 @@
 
 
 
-oneloop_momentum_integrator::oneloop_momentum_integrator(double a_13, double r_13, double a_22, double r_22)
-  : abs_err_13(std::abs(a_13)),
-    rel_err_13(std::abs(r_13)),
-    abs_err_22(std::abs(a_22)),
-    rel_err_22(std::abs(r_22))
+oneloop_momentum_integrator::oneloop_momentum_integrator(const loop_integral_params& p, error_handler& e)
+  : params(p),
+    err_handler(e)
   {
     // seed random number generator
     mersenne_twister.seed(random_device());
   }
 
 
-loop_integral oneloop_momentum_integrator::integrate(const FRW_model& model, const Mpc_units::energy& k,
-                                                     const k_token& k_tok, const Mpc_units::energy& UV_cutoff,
-                                                     const UV_cutoff_token& UV_tok, const Mpc_units::energy& IR_cutoff,
-                                                     const IR_cutoff_token& IR_tok, const initial_filtered_Pk& Pk)
+loop_integral
+oneloop_momentum_integrator::integrate(const FRW_model& model, const loop_integral_params_token& params_tok, const Mpc_units::energy& k,
+                                       const k_token& k_tok, const Mpc_units::energy& UV_cutoff, const UV_cutoff_token& UV_tok,
+                                       const Mpc_units::energy& IR_cutoff, const IR_cutoff_token& IR_tok, const initial_filtered_Pk& Pk)
   {
     delta_13_integrals delta13;
     delta_22_integrals delta22;
@@ -110,7 +108,7 @@ loop_integral oneloop_momentum_integrator::integrate(const FRW_model& model, con
        fail_RSD22_C4 || fail_RSD22_D1)
       rsd22.mark_failed();
     
-    loop_integral container(k_tok, Pk.get_token(), UV_tok, IR_tok, delta22, delta13, rsd22, rsd13);
+    loop_integral container(k_tok, params_tok, Pk.get_token(), UV_tok, IR_tok, delta22, delta13, rsd22, rsd13);
 
     return container;
   }
@@ -160,8 +158,8 @@ bool oneloop_momentum_integrator::evaluate_integral(const FRW_model& model, cons
     std::unique_ptr<oneloop_momentum_impl::integrand_data> data =
       std::make_unique<oneloop_momentum_impl::integrand_data>(model, k, UV_cutoff, IR_cutoff, Pk);
     
-    double re = (type == loop_integral_type::P13 ? this->rel_err_13 : this->rel_err_22);
-    double ae = (type == loop_integral_type::P13 ? this->abs_err_13 : this->abs_err_22);
+    double re = (type == loop_integral_type::P13 ? this->params.get_relerr_13() : this->params.get_relerr_22());
+    double ae = (type == loop_integral_type::P13 ? this->params.get_abserr_13() : this->params.get_abserr_22());
 
     constexpr unsigned int MAX_13_TRIES = 5;
     constexpr unsigned int MAX_22_TRIES = 3;
@@ -173,8 +171,10 @@ bool oneloop_momentum_integrator::evaluate_integral(const FRW_model& model, cons
         if(tries > 0)
           {
             re = re * 4.0;
-            std::cout << "lsseft: relaxing error tolerance for kernel = " << name << " (" << component << "), attempt "
-                      << tries << ", now abstol = " << ae << ", reltol = " << re << '\n';
+            std::ostringstream msg;
+            msg << "relaxing error tolerance for kernel = " << name << " (" << component << "), attempt "
+                << tries << ", now abstol = " << ae << ", reltol = " << re;
+            this->err_handler.info(msg.str());
           }
 
         Cuhre(oneloop_momentum_impl::dimensions,
@@ -193,11 +193,12 @@ bool oneloop_momentum_integrator::evaluate_integral(const FRW_model& model, cons
           {
             raw_timer.stop();
     
+            // write values into return structure
             // an overall factor 1/8pi^2 is taken out of the integrand, so remember to put it back here
             result.value = typename IntegralRecord::value_type(integral[0] / (8.0 * M_PI * M_PI));
             result.regions = regions;
             result.evaluations = evaluations;
-            result.error = error[0];
+            result.error = typename IntegralRecord::value_type(error[0]);
             result.time = raw_timer.elapsed().wall;
             
             break;
@@ -207,10 +208,13 @@ bool oneloop_momentum_integrator::evaluate_integral(const FRW_model& model, cons
       }
     
     if(tries >= max_tries)
-      std::cerr << "lsseft: integration failure: kernel = " << name << " (" << component << "), "
-                << "regions = " << regions << ", evaluations = " << evaluations << ", fail = "
-                << fail << ", value = " << integral[0] << ", error = " << error[0] << ", probability = " << prob[0]
-                << '\n';
+      {
+        std::ostringstream msg;
+        msg << "integration failure: kernel = " << name << " (" << component << "), "
+            << "regions = " << regions << ", evaluations = " << evaluations << ", fail = "
+            << fail << ", value = " << integral[0] << ", error = " << error[0] << ", probability = " << prob[0];
+        this->err_handler.warn(msg.str());
+      }
     
     
     return (tries >= max_tries);

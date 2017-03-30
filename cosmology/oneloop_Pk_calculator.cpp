@@ -27,8 +27,7 @@
 
 
 std::list<oneloop_Pk>
-oneloop_Pk_calculator::calculate_dd(const Mpc_units::energy& k, const k_token& k_tok, const IR_cutoff_token& IR_tok,
-                                    const UV_cutoff_token& UV_tok, const oneloop_growth& gf_factors,
+oneloop_Pk_calculator::calculate_dd(const Mpc_units::energy& k, const k_token& k_tok, const oneloop_growth& gf_factors,
                                     const loop_integral& loop_data, const initial_filtered_Pk& Pk_init,
                                     const boost::optional<const final_filtered_Pk&>& Pk_final)
   {
@@ -53,8 +52,9 @@ oneloop_Pk_calculator::calculate_dd(const Mpc_units::energy& k, const k_token& k
         rsd_dd_Pk rsd_mu6 = this->compute_rsd_dd_mu6(k, val.second, loop_data, Ptr_init, Ptr_final);
         rsd_dd_Pk rsd_mu8 = this->compute_rsd_dd_mu8(k, val.second, loop_data, Ptr_init, Ptr_final);
 
-        container.emplace_back(k_tok, Pk_init.get_token(), final_tok, IR_tok, UV_tok, val.first.get_id(), dd,
-                               rsd_mu0, rsd_mu2, rsd_mu4, rsd_mu6, rsd_mu8);
+        container.emplace_back(k_tok, gf_factors.get_params_token(), loop_data.get_params_token(), Pk_init.get_token(),
+                               final_tok, loop_data.get_IR_token(), loop_data.get_UV_token(),
+                               val.first.get_id(), dd, rsd_mu0, rsd_mu2, rsd_mu4, rsd_mu6, rsd_mu8);
       }
     
     return container;
@@ -434,7 +434,7 @@ oneloop_Pk_calculator::compute_rsd_dd_mu8(const Mpc_units::energy& k, const onel
 
 oneloop_resum_Pk
 oneloop_Pk_calculator::calculate_resum_dd(const Mpc_units::energy& k, const Matsubara_XY& XY, const oneloop_Pk& data,
-                                          const oneloop_growth_record& gf_data, const initial_filtered_Pk& init_Pk,
+                                          const oneloop_growth_record& Df_data, const initial_filtered_Pk& init_Pk,
                                           const boost::optional<const final_filtered_Pk&>& final_Pk)
   {
     const auto& input_dd = data.get_dd();
@@ -444,7 +444,7 @@ oneloop_Pk_calculator::calculate_resum_dd(const Mpc_units::energy& k, const Mats
     const auto& input_Z2_delta = input_dd.get_Z2_delta();
     
     // compute Matsubara suppression factor
-    double MatsubaraA   = k*k * gf_data.g*gf_data.g * XY;
+    double MatsubaraA   = k*k * Df_data.g*Df_data.g * XY;
     double MatsubaraExp = std::exp(-MatsubaraA);
     
     auto Ptree       = input_tree.get_nowiggle()     + MatsubaraExp*input_tree.get_wiggle();
@@ -460,7 +460,7 @@ oneloop_Pk_calculator::calculate_resum_dd(const Mpc_units::energy& k, const Mats
     
     resum_dd_Pk Pk_resum(Ptree, P13, P22, P1loop_SPT, Z2_delta);
     
-    return oneloop_resum_Pk(data.get_k_token(), data.get_init_Pk_token(), data.get_final_Pk_token(),
-                            data.get_IR_token(), data.get_UV_token(), data.get_z_token(), XY.get_IR_resum_token(),
-                            Pk_resum);
+    return oneloop_resum_Pk(data.get_k_token(), data.get_growth_params(), data.get_loop_params(), XY.get_params_token(),
+                            data.get_init_Pk_token(), data.get_final_Pk_token(), data.get_IR_token(), data.get_UV_token(),
+                            data.get_z_token(), XY.get_IR_resum_token(), Pk_resum);
   }

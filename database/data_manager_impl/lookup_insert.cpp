@@ -49,7 +49,7 @@
 unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const FRW_model& obj)
   {
     boost::optional<unsigned int> id = sqlite3_operations::lookup_FRW_model(this->handle, mgr, obj, this->policy, this->FRW_model_tol);
-    if(id) return(*id);
+    if(id) return *id;
     
     return sqlite3_operations::insert_FRW_model(this->handle, mgr, obj, this->policy);
   }
@@ -58,7 +58,43 @@ unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const FRW_
 unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, double z)
   {
     boost::optional<unsigned int> id = sqlite3_operations::lookup_redshift(this->handle, mgr, z, this->policy, this->z_tol);
-    if(id) return(*id);
+    if(id) return *id;
     
     return sqlite3_operations::insert_redshift(this->handle, mgr, z, this->policy);
+  }
+
+
+unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const Pk_filter_params& data)
+  {
+    boost::optional<unsigned int> id = sqlite3_operations::lookup_filter_params(this->handle, mgr, data, this->policy, this->filter_tol);
+    if(id) return *id;
+    
+    return sqlite3_operations::insert_filter_params(this->handle, mgr, data, this->policy);
+  }
+
+
+unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const loop_integral_params& data)
+  {
+    boost::optional<unsigned int> id = sqlite3_operations::lookup_oneloop_params(this->handle, mgr, data, this->policy, this->oneloop_tol);
+    if(id) return *id;
+    
+    return sqlite3_operations::insert_oneloop_params(this->handle, mgr, data, this->policy);
+  }
+
+
+unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const MatsubaraXY_params& data)
+  {
+    boost::optional<unsigned int> id = sqlite3_operations::lookup_MatsubaraXY_params(this->handle, mgr, data, this->policy, this->MatsubaraXY_tol);
+    if(id) return *id;
+    
+    return sqlite3_operations::insert_MatsubaraXY_params(this->handle, mgr, data, this->policy);
+  }
+
+
+unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const growth_params& data)
+  {
+    boost::optional<unsigned int> id = sqlite3_operations::lookup_growth_params(this->handle, mgr, data, this->policy, this->growth_tol);
+    if(id) return *id;
+    
+    return sqlite3_operations::insert_growth_params(this->handle, mgr, data, this->policy);
   }

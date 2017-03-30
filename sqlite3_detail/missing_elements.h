@@ -45,6 +45,7 @@ typedef std::unordered_set<data_manager_impl::loop_momentum_configuration> loop_
 typedef std::unordered_set<data_manager_impl::Matsubara_XY_configuration> Matsubara_configs;
 typedef std::unordered_set<data_manager_impl::resummed_Pk_configuration> resum_Pk_configs;
 
+
 namespace sqlite3_operations
   {
 
@@ -60,22 +61,25 @@ namespace sqlite3_operations
     //! ownership of the resulting database is transferred via std::unique_ptr<>
     std::unique_ptr<z_database>
     missing_oneloop_growth_redshifts(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
-                                     const FRW_model_token& model, const z_database& z_db, const std::string& z_table);
+                                         const FRW_model_token& model, const growth_params_token& params,
+                                         const z_database& z_db, const std::string& z_table);
 
 
     //! process a list of configurations for loop momentum integrals;
     //! we detect which ones are already present in the database and avoid computing them
     loop_configs
     missing_loop_integral_configurations(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
-                                         const FRW_model_token& model, const linear_Pk_token& Pk_lin,
-                                         const loop_configs& required_configs);
+                                         const FRW_model_token& model,
+                                         const loop_integral_params_token& params,
+                                         const linear_Pk_token& Pk_lin, const loop_configs& required_configs);
     
     
     //! process a list of configurations for one-loop P(k) calculations;
     //! we detect which ones are already present in the database and avoid computing them
     std::unique_ptr<z_database>
     missing_one_loop_Pk_redshifts(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
-                                      const FRW_model_token& model, const linear_Pk_token& init_Pk,
+                                      const FRW_model_token& model, const growth_params_token& growth_params,
+                                      const loop_integral_params_token& loop_params, const linear_Pk_token& init_Pk,
                                       const boost::optional<linear_Pk_token>& final_Pk, const std::string& z_table,
                                       const z_database& z_db, const loop_configs::value_type& record);
     
@@ -83,14 +87,16 @@ namespace sqlite3_operations
     //! we detect which ones are already present in the database and avoid computing them
     Matsubara_configs
     missing_Matsubara_XY_configurations(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
-                                        const FRW_model_token& model, const linear_Pk_token& Pk,
-                                        const IR_resum_database& IR_db);
+                                            const FRW_model_token& model, const linear_Pk_token& Pk,
+                                            const IR_resum_database& IR_db, const MatsubaraXY_params_token& params_tok);
     
     //! process a list of configurations for a one-loop resummed P(k) calculation;
     //! we detect which ones are already present in the database and avoid computing them
     std::unique_ptr<z_database>
     missing_one_loop_resum_Pk_redshifts(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
-                                            const FRW_model_token& model, const linear_Pk_token& init_Pk,
+                                            const FRW_model_token& model, const growth_params_token& growth_params,
+                                            const loop_integral_params_token& loop_params,
+                                            const MatsubaraXY_params_token& XY_params, const linear_Pk_token& init_Pk,
                                             const boost::optional<linear_Pk_token>& final_Pk, const std::string& z_table,
                                             const z_database& z_db, const resum_Pk_configs::value_type& record);
     
@@ -98,14 +104,17 @@ namespace sqlite3_operations
     //! we detect which ones are already present in the database and avoid computing them
     std::unique_ptr<z_database>
     missing_multipole_Pk_redshifts(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
-                                       const FRW_model_token& model, const linear_Pk_token& init_Pk,
-                                       const boost::optional<linear_Pk_token>& final_Pk, const std::string& z_table,
-                                       const z_database& z_db, const resum_Pk_configs::value_type& record);
+                                       const FRW_model_token& model, const growth_params_token& growth_params,
+                                       const loop_integral_params_token& loop_params, const MatsubaraXY_params_token& XY_params,
+                                       const linear_Pk_token& init_Pk, const boost::optional<linear_Pk_token>& final_Pk,
+                                       const std::string& z_table, const z_database& z_db,
+                                       const resum_Pk_configs::value_type& record);
     
     //! process a list of configurations for filtering the wiggle & no-wiggle part of Pk
     std::unique_ptr<k_database>
     missing_filter_Pk_wavenumbers(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
-                                  const linear_Pk_token& token, const k_database& k_db, const std::string& k_table);
+                                  const linear_Pk_token& Pk_token, const filter_params_token& params_token,
+                                  const k_database& k_db, const std::string& k_table);
 
   }   // namespace sqlite3_operations
 

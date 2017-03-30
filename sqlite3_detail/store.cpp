@@ -89,12 +89,12 @@ namespace sqlite3_operations
     
     
         template <typename KernelType>
-        void store_loop_kernel(sqlite3* db, const std::string& table_name, const KernelType& kernel,
-                               const FRW_model_token& model, const loop_integral& sample)
+        void store_loop_kernel(sqlite3* db, const std::string& table_name, const KernelType& kernel, const FRW_model_token& model,
+                                       const loop_integral_params_token& params, const loop_integral& sample)
           {
             std::ostringstream insert_stmt;
             insert_stmt
-              << "INSERT INTO " << table_name << " VALUES (@mid, @kid, @Pk_id, @IR_id, @UV_id, "
+              << "INSERT INTO " << table_name << " VALUES (@mid, @params_id, @kid, @Pk_id, @IR_id, @UV_id, "
               << "@raw_value, @raw_regions, @raw_evals, @raw_err, @raw_time, "
               << "@nw_value, @nw_regions, @nw_evals, @nw_err, @nw_time);";
             
@@ -104,6 +104,7 @@ namespace sqlite3_operations
             
             // bind parameter values
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@mid"), model.get_id()));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@params_id"), params.get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@kid"), sample.get_k_token().get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_id"), sample.get_Pk_token().get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_id"), sample.get_IR_token().get_id()));
@@ -212,7 +213,7 @@ namespace sqlite3_operations
           {
             std::ostringstream insert_stmt;
             insert_stmt
-              << "INSERT INTO " << table_name << " VALUES (@mid, @zid, @kid, @init_Pk_id, @final_Pk_id, @IR_id, @UV_id, "
+              << "INSERT INTO " << table_name << " VALUES (@mid, @growth_params, @loop_params, @zid, @kid, @init_Pk_id, @final_Pk_id, @IR_id, @UV_id, "
               << "@Ptree_raw, @err_tree_raw, @P13_raw, @err_13_raw, @P22_raw, @err_22_raw, @P1loopSPT_raw, @err_1loopSPT_raw, @Z2_d_raw, "
               << "@Ptree_nw, @err_tree_nw, @P13_nw, @err_13_nw, @P22_nw, @err_22_nw, @P1loopSPT_nw, @err_1loopSPT_nw, @Z2_d_nw"
               << ");";
@@ -223,6 +224,8 @@ namespace sqlite3_operations
     
             // bind parameter values
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@mid"), model.get_id()));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@growth_params"), sample.get_growth_params().get_id()));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@loop_params"), sample.get_loop_params().get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@zid"), sample.get_z_token().get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@kid"), sample.get_k_token().get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@init_Pk_id"), sample.get_init_Pk_token().get_id()));
@@ -255,7 +258,7 @@ namespace sqlite3_operations
           {
             std::ostringstream insert_stmt;
             insert_stmt
-              << "INSERT INTO " << table_name << " VALUES (@mid, @zid, @kid, @init_Pk_id, @final_Pk_id, @IR_id, @UV_id, "
+              << "INSERT INTO " << table_name << " VALUES (@mid, @growth_params, @loop_params, @zid, @kid, @init_Pk_id, @final_Pk_id, @IR_id, @UV_id, "
                                               << "@Ptree_raw, @err_tree_raw, "
                                               << "@P13_raw, @err_13_raw, "
                                               << "@P22_raw, @err_22_raw, "
@@ -274,6 +277,8 @@ namespace sqlite3_operations
         
             // bind parameter values
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@mid"), model.get_id()));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@growth_params"), sample.get_growth_params().get_id()));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@loop_params"), sample.get_loop_params().get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@zid"), sample.get_z_token().get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@kid"), sample.get_k_token().get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@init_Pk_id"), sample.get_init_Pk_token().get_id()));
@@ -313,7 +318,8 @@ namespace sqlite3_operations
           {
             std::ostringstream insert_stmt;
             insert_stmt
-              << "INSERT INTO " << table_name << " VALUES (@mid, @zid, @kid, @init_Pk_id, @final_Pk_id, @IR_cutoff_id, @UV_cutoff_id, @IR_resum_id, "
+              << "INSERT INTO " << table_name << " VALUES (@mid, @growth_params, @loop_params, @XY_params, "
+                                              << "@zid, @kid, @init_Pk_id, @final_Pk_id, @IR_cutoff_id, @UV_cutoff_id, @IR_resum_id, "
                                               << "@Ptree, @Ptree_err, @Ptree_resum, @Ptree_resum_err, "
                                               << "@P13, @P13_err, @P13_resum, @P13_resum_err, "
                                               << "@P22, @P22_err, @P22_resum, @P22_resum_err, "
@@ -359,6 +365,9 @@ namespace sqlite3_operations
             const auto& Z2_mu8 = value.get_Z2_mu8();
             
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@mid"), model.get_id()));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@growth_params"), sample.get_growth_params_token().get_id()));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@loop_params"), sample.get_loop_params_token().get_id()));
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@XY_params"), sample.get_XY_params_token().get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@zid"), sample.get_z_token().get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@kid"), sample.get_k_token().get_id()));
             check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@init_Pk_id"), sample.get_init_Pk_token().get_id()));
@@ -449,41 +458,44 @@ namespace sqlite3_operations
         assert(db != nullptr);
 
         // construct SQL insert statements
-        std::ostringstream insert_g_stmt;
-        insert_g_stmt
-          << "INSERT INTO " << policy.g_factor_table() << " VALUES (@mid, @zid, @g_linear, @A, @B, @D, @E, @F, @G, @J);";
+        std::ostringstream insert_D_stmt;
+        insert_D_stmt
+          << "INSERT INTO " << policy.D_factor_table() << " VALUES (@mid, @params_id, @zid, @D_linear, @A, @B, @D, @E, @F, @G, @J);";
         
         std::ostringstream insert_f_stmt;
         insert_f_stmt
-          << "INSERT INTO " << policy.f_factor_table() << " VALUES (@mid, @zid, @f_linear, @fA, @fB, @fD, @fE, @fF, @fG, @fJ);";
+          << "INSERT INTO " << policy.f_factor_table() << " VALUES (@mid, @params_id, @zid, @f_linear, @fA, @fB, @fD, @fE, @fF, @fG, @fJ);";
 
         // prepare statements
-        sqlite3_stmt* g_stmt;
-        check_stmt(db, sqlite3_prepare_v2(db, insert_g_stmt.str().c_str(), insert_g_stmt.str().length()+1, &g_stmt, nullptr));
+        sqlite3_stmt* D_stmt;
+        check_stmt(db, sqlite3_prepare_v2(db, insert_D_stmt.str().c_str(), insert_D_stmt.str().length()+1, &D_stmt, nullptr));
     
         sqlite3_stmt* f_stmt;
         check_stmt(db, sqlite3_prepare_v2(db, insert_f_stmt.str().c_str(), insert_f_stmt.str().length()+1, &f_stmt, nullptr));
     
         // loop through sample, writing its values into the database
+        const growth_params_token& params = sample.get_params_token();
         for(const oneloop_value& val : sample)
           {
-            // bind values to the g statement
-            check_stmt(db, sqlite3_bind_int(g_stmt, sqlite3_bind_parameter_index(g_stmt, "@mid"), model.get_id()));
-            check_stmt(db, sqlite3_bind_int(g_stmt, sqlite3_bind_parameter_index(g_stmt, "@zid"), val.first.get_id()));
-            check_stmt(db, sqlite3_bind_double(g_stmt, sqlite3_bind_parameter_index(g_stmt, "@g_linear"), val.second.g));
-            check_stmt(db, sqlite3_bind_double(g_stmt, sqlite3_bind_parameter_index(g_stmt, "@A"), val.second.A));
-            check_stmt(db, sqlite3_bind_double(g_stmt, sqlite3_bind_parameter_index(g_stmt, "@B"), val.second.B));
-            check_stmt(db, sqlite3_bind_double(g_stmt, sqlite3_bind_parameter_index(g_stmt, "@D"), val.second.D));
-            check_stmt(db, sqlite3_bind_double(g_stmt, sqlite3_bind_parameter_index(g_stmt, "@E"), val.second.E));
-            check_stmt(db, sqlite3_bind_double(g_stmt, sqlite3_bind_parameter_index(g_stmt, "@F"), val.second.F));
-            check_stmt(db, sqlite3_bind_double(g_stmt, sqlite3_bind_parameter_index(g_stmt, "@G"), val.second.G));
-            check_stmt(db, sqlite3_bind_double(g_stmt, sqlite3_bind_parameter_index(g_stmt, "@J"), val.second.J));
+            // bind values to the D statement
+            check_stmt(db, sqlite3_bind_int(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@mid"), model.get_id()));
+            check_stmt(db, sqlite3_bind_int(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@params_id"), params.get_id()));
+            check_stmt(db, sqlite3_bind_int(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@zid"), val.first.get_id()));
+            check_stmt(db, sqlite3_bind_double(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@D_linear"), val.second.g));
+            check_stmt(db, sqlite3_bind_double(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@A"), val.second.A));
+            check_stmt(db, sqlite3_bind_double(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@B"), val.second.B));
+            check_stmt(db, sqlite3_bind_double(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@D"), val.second.D));
+            check_stmt(db, sqlite3_bind_double(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@E"), val.second.E));
+            check_stmt(db, sqlite3_bind_double(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@F"), val.second.F));
+            check_stmt(db, sqlite3_bind_double(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@G"), val.second.G));
+            check_stmt(db, sqlite3_bind_double(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@J"), val.second.J));
 
-            // perform g insertion
-            check_stmt(db, sqlite3_step(g_stmt), ERROR_SQLITE3_INSERT_GROWTH_G_FAIL, SQLITE_DONE);
+            // perform D insertion
+            check_stmt(db, sqlite3_step(D_stmt), ERROR_SQLITE3_INSERT_GROWTH_D_FAIL, SQLITE_DONE);
     
             // bind values to the f statement
             check_stmt(db, sqlite3_bind_int(f_stmt, sqlite3_bind_parameter_index(f_stmt, "@mid"), model.get_id()));
+            check_stmt(db, sqlite3_bind_int(f_stmt, sqlite3_bind_parameter_index(f_stmt, "@params_id"), params.get_id()));
             check_stmt(db, sqlite3_bind_int(f_stmt, sqlite3_bind_parameter_index(f_stmt, "@zid"), val.first.get_id()));
             check_stmt(db, sqlite3_bind_double(f_stmt, sqlite3_bind_parameter_index(f_stmt, "@f_linear"), val.second.f));
             check_stmt(db, sqlite3_bind_double(f_stmt, sqlite3_bind_parameter_index(f_stmt, "@fA"), val.second.fA));
@@ -498,14 +510,14 @@ namespace sqlite3_operations
             check_stmt(db, sqlite3_step(f_stmt), ERROR_SQLITE3_INSERT_GROWTH_F_FAIL, SQLITE_DONE);
 
             // clear bindings and reset statement
-            check_stmt(db, sqlite3_clear_bindings(g_stmt));
-            check_stmt(db, sqlite3_reset(g_stmt));
+            check_stmt(db, sqlite3_clear_bindings(D_stmt));
+            check_stmt(db, sqlite3_reset(D_stmt));
             check_stmt(db, sqlite3_clear_bindings(f_stmt));
             check_stmt(db, sqlite3_reset(f_stmt));
           }
 
         // finalize statement and release resources
-        check_stmt(db, sqlite3_finalize(g_stmt));
+        check_stmt(db, sqlite3_finalize(D_stmt));
         check_stmt(db, sqlite3_finalize(f_stmt));
       }
 
@@ -521,48 +533,51 @@ namespace sqlite3_operations
 
         if(delta22.get_fail() || delta13.get_fail() || rsd22.get_fail() || rsd13.get_fail())
           {
-            std::cerr << "lsseft: loop kernels not stored (model = " << model.get_id()
-                      << ", k = " << sample.get_k_token().get_id()
-                      << ", P(k) = " << sample.get_Pk_token().get_id()
-                      << ", IR cutoff = " << sample.get_IR_token().get_id()
-                      << ", UV cutoff = " << sample.get_UV_token().get_id() << ") "
-                      << "since marked as failed" << '\n';
-            return;
+            std::ostringstream msg;
+            msg << "loop kernels not stored (model = " << model.get_id()
+                << ", k = " << sample.get_k_token().get_id()
+                << ", P(k) = " << sample.get_Pk_token().get_id()
+                << ", IR cutoff = " << sample.get_IR_token().get_id()
+                << ", UV cutoff = " << sample.get_UV_token().get_id() << ") "
+                << "since marked as failed";
+            throw runtime_exception(exception_type::store_error, msg.str());
           }
+    
+        const loop_integral_params_token& params = sample.get_params_token();
         
-        store_impl::store_loop_kernel(db, policy.AA_table(), delta22.get_AA(), model, sample);
-        store_impl::store_loop_kernel(db, policy.AB_table(), delta22.get_AB(), model, sample);
-        store_impl::store_loop_kernel(db, policy.BB_table(), delta22.get_BB(), model, sample);
-
-        store_impl::store_loop_kernel(db, policy.D_table(), delta13.get_D(), model, sample);
-        store_impl::store_loop_kernel(db, policy.E_table(), delta13.get_E(), model, sample);
-        store_impl::store_loop_kernel(db, policy.F_table(), delta13.get_F(), model, sample);
-        store_impl::store_loop_kernel(db, policy.G_table(), delta13.get_G(), model, sample);
-        store_impl::store_loop_kernel(db, policy.J1_table(), delta13.get_J1(), model, sample);
-        store_impl::store_loop_kernel(db, policy.J2_table(), delta13.get_J2(), model, sample);
-        
-        store_impl::store_loop_kernel(db, policy.RSD13_a_table(), rsd13.get_a(), model, sample);
-        store_impl::store_loop_kernel(db, policy.RSD13_b_table(), rsd13.get_b(), model, sample);
-        store_impl::store_loop_kernel(db, policy.RSD13_c_table(), rsd13.get_c(), model, sample);
-        store_impl::store_loop_kernel(db, policy.RSD13_d_table(), rsd13.get_d(), model, sample);
-        store_impl::store_loop_kernel(db, policy.RSD13_e_table(), rsd13.get_e(), model, sample);
-        store_impl::store_loop_kernel(db, policy.RSD13_f_table(), rsd13.get_f(), model, sample);
-        store_impl::store_loop_kernel(db, policy.RSD13_g_table(), rsd13.get_g(), model, sample);
-
-        store_impl::store_loop_kernel(db, policy.RSD22_A1_table(), rsd22.get_A1(), model, sample);
-        store_impl::store_loop_kernel(db, policy.RSD22_A2_table(), rsd22.get_A2(), model, sample);
-        store_impl::store_loop_kernel(db, policy.RSD22_A3_table(), rsd22.get_A3(), model, sample);
-        store_impl::store_loop_kernel(db, policy.RSD22_A4_table(), rsd22.get_A4(), model, sample);
-        store_impl::store_loop_kernel(db, policy.RSD22_A5_table(), rsd22.get_A5(), model, sample);
-        store_impl::store_loop_kernel(db, policy.RSD22_B2_table(), rsd22.get_B2(), model, sample);
-        store_impl::store_loop_kernel(db, policy.RSD22_B3_table(), rsd22.get_B3(), model, sample);
-        store_impl::store_loop_kernel(db, policy.RSD22_B6_table(), rsd22.get_B6(), model, sample);
-        store_impl::store_loop_kernel(db, policy.RSD22_B8_table(), rsd22.get_B8(), model, sample);
-        store_impl::store_loop_kernel(db, policy.RSD22_B9_table(), rsd22.get_B9(), model, sample);
-        store_impl::store_loop_kernel(db, policy.RSD22_C1_table(), rsd22.get_C1(), model, sample);
-        store_impl::store_loop_kernel(db, policy.RSD22_C2_table(), rsd22.get_C2(), model, sample);
-        store_impl::store_loop_kernel(db, policy.RSD22_C4_table(), rsd22.get_C4(), model, sample);
-        store_impl::store_loop_kernel(db, policy.RSD22_D1_table(), rsd22.get_D1(), model, sample);
+        store_impl::store_loop_kernel(db, policy.AA_table(), delta22.get_AA(), model, params, sample);
+        store_impl::store_loop_kernel(db, policy.AB_table(), delta22.get_AB(), model, params, sample);
+        store_impl::store_loop_kernel(db, policy.BB_table(), delta22.get_BB(), model, params, sample);
+    
+        store_impl::store_loop_kernel(db, policy.D_table(), delta13.get_D(), model, params, sample);
+        store_impl::store_loop_kernel(db, policy.E_table(), delta13.get_E(), model, params, sample);
+        store_impl::store_loop_kernel(db, policy.F_table(), delta13.get_F(), model, params, sample);
+        store_impl::store_loop_kernel(db, policy.G_table(), delta13.get_G(), model, params, sample);
+        store_impl::store_loop_kernel(db, policy.J1_table(), delta13.get_J1(), model, params, sample);
+        store_impl::store_loop_kernel(db, policy.J2_table(), delta13.get_J2(), model, params, sample);
+    
+        store_impl::store_loop_kernel(db, policy.RSD13_a_table(), rsd13.get_a(), model, params, sample);
+        store_impl::store_loop_kernel(db, policy.RSD13_b_table(), rsd13.get_b(), model, params, sample);
+        store_impl::store_loop_kernel(db, policy.RSD13_c_table(), rsd13.get_c(), model, params, sample);
+        store_impl::store_loop_kernel(db, policy.RSD13_d_table(), rsd13.get_d(), model, params, sample);
+        store_impl::store_loop_kernel(db, policy.RSD13_e_table(), rsd13.get_e(), model, params, sample);
+        store_impl::store_loop_kernel(db, policy.RSD13_f_table(), rsd13.get_f(), model, params, sample);
+        store_impl::store_loop_kernel(db, policy.RSD13_g_table(), rsd13.get_g(), model, params, sample);
+    
+        store_impl::store_loop_kernel(db, policy.RSD22_A1_table(), rsd22.get_A1(), model, params, sample);
+        store_impl::store_loop_kernel(db, policy.RSD22_A2_table(), rsd22.get_A2(), model, params, sample);
+        store_impl::store_loop_kernel(db, policy.RSD22_A3_table(), rsd22.get_A3(), model, params, sample);
+        store_impl::store_loop_kernel(db, policy.RSD22_A4_table(), rsd22.get_A4(), model, params, sample);
+        store_impl::store_loop_kernel(db, policy.RSD22_A5_table(), rsd22.get_A5(), model, params, sample);
+        store_impl::store_loop_kernel(db, policy.RSD22_B2_table(), rsd22.get_B2(), model, params, sample);
+        store_impl::store_loop_kernel(db, policy.RSD22_B3_table(), rsd22.get_B3(), model, params, sample);
+        store_impl::store_loop_kernel(db, policy.RSD22_B6_table(), rsd22.get_B6(), model, params, sample);
+        store_impl::store_loop_kernel(db, policy.RSD22_B8_table(), rsd22.get_B8(), model, params, sample);
+        store_impl::store_loop_kernel(db, policy.RSD22_B9_table(), rsd22.get_B9(), model, params, sample);
+        store_impl::store_loop_kernel(db, policy.RSD22_C1_table(), rsd22.get_C1(), model, params, sample);
+        store_impl::store_loop_kernel(db, policy.RSD22_C2_table(), rsd22.get_C2(), model, params, sample);
+        store_impl::store_loop_kernel(db, policy.RSD22_C4_table(), rsd22.get_C4(), model, params, sample);
+        store_impl::store_loop_kernel(db, policy.RSD22_D1_table(), rsd22.get_D1(), model, params, sample);
       }
     
     
@@ -599,7 +614,7 @@ namespace sqlite3_operations
         
         std::ostringstream insert_stmt;
         insert_stmt
-          << "INSERT INTO " << policy.Matsubara_XY_table() << " VALUES (@mid, @Pk_id, @IR_resum_id, @X, @Y);";
+          << "INSERT INTO " << policy.Matsubara_XY_table() << " VALUES (@mid, @params_id, @Pk_id, @IR_resum_id, @X, @Y);";
     
         // prepare statement
         sqlite3_stmt* stmt;
@@ -607,6 +622,7 @@ namespace sqlite3_operations
     
         // bind parameter values
         check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@mid"), model.get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@params_id"), sample.get_params_token().get_id()));
         check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_id"), sample.get_Pk_token().get_id()));
         check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_resum_id"), sample.get_IR_resum_token().get_id()));
         check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@X"), store_impl::make_dimensionless(sample.get_X())));
@@ -628,29 +644,37 @@ namespace sqlite3_operations
         
         if(sample.get_fail())
           {
-            std::cerr << "lsseft: filtered Pk not stored (Pk_id = " << sample.get_Pk_token().get_id() << ", "
-                      << "kid = " << sample.get_k_token().get_id() << ") "
-                      << "since marked as failed" << '\n';
-            return;
+            std::ostringstream msg;
+            msg << "filtered Pk not stored (Pk_id = " << sample.get_Pk_token().get_id() << ", "
+                << "kid = " << sample.get_k_token().get_id() << ") "
+                << "since marked as failed";
+            throw runtime_exception(exception_type::store_error, msg.str());
           }
 
         std::ostringstream insert_stmt;
         insert_stmt
-          << "INSERT INTO " << policy.Pk_linear_table() << " VALUES (@Pk_id, @kid, @Pk_raw, @Pk_nw, @Pk_ref);";
+          << "INSERT INTO " << policy.Pk_linear_table() << " VALUES (@Pk_id, @params_id, @kid, @Pk_raw, @Pk_nw, @Pk_ref, @Pk_nw_err, @regions, @evaluations, @time);";
     
         // prepare statement
         sqlite3_stmt* stmt;
         check_stmt(db, sqlite3_prepare_v2(db, insert_stmt.str().c_str(), insert_stmt.str().length()+1, &stmt, nullptr));
     
         // bind parameter values
+        const Pk_filter_result& Pk_nw = sample.get_Pk_nowiggle();
+        
         check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_id"), sample.get_Pk_token().get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@params_id"), sample.get_params_token().get_id()));
         check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@kid"), sample.get_k_token().get_id()));
         check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_raw"), store_impl::make_dimensionless(sample.get_Pk_raw())));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_nw"), store_impl::make_dimensionless(sample.get_Pk_nowiggle())));
+        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_nw"), store_impl::make_dimensionless(Pk_nw.value)));
         check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_ref"), store_impl::make_dimensionless(sample.get_Pk_ref())));
+        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_nw_err"), store_impl::make_dimensionless(Pk_nw.error)));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@regions"), Pk_nw.regions));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@evaluations"), Pk_nw.evaluations));
+        check_stmt(db, sqlite3_bind_int64(stmt, sqlite3_bind_parameter_index(stmt, "@time"), Pk_nw.time));
     
         // perform insertion
-        check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_MATSUBARA_XY_FAIL, SQLITE_DONE);
+        check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_PK_LINEAR_DATA_FAIL, SQLITE_DONE);
     
         // clear bindings and release
         check_stmt(db, sqlite3_clear_bindings(stmt));
@@ -665,7 +689,8 @@ namespace sqlite3_operations
         
         std::ostringstream insert_stmt;
         insert_stmt
-          << "INSERT INTO " << policy.dd_Pk_resum_table() << " VALUES (@mid, @zid, @kid, @init_Pk_id, @final_Pk_id, @IR_cutoff_id, @UV_cutoff_id, @IR_resum_id, "
+          << "INSERT INTO " << policy.dd_Pk_resum_table() << " VALUES (@mid, @growth_params, @loop_params, @XY_params, "
+          << "@zid, @kid, @init_Pk_id, @final_Pk_id, @IR_cutoff_id, @UV_cutoff_id, @IR_resum_id, "
           << "@Ptree, @err_tree, @P13, @err_13, @P22, @err_22, @P1loop_SPT, @err_1loop_SPT, @Z2_d);";
     
         // prepare statement
@@ -674,6 +699,9 @@ namespace sqlite3_operations
     
         // bind parameter values
         check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@mid"), model.get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@growth_params"), sample.get_growth_params_token().get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@loop_params"), sample.get_loop_params_token().get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@XY_params"), sample.get_XY_params_token().get_id()));
         check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@zid"), sample.get_z_token().get_id()));
         check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@kid"), sample.get_k_token().get_id()));
         check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@init_Pk_id"), sample.get_init_Pk_token().get_id()));

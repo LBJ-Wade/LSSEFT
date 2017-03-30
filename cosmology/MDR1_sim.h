@@ -1,5 +1,5 @@
 //
-// Created by David Seery on 11/08/2015.
+// Created by David Seery on 13/03/2017.
 // --@@ // Copyright (c) 2017 University of Sussex. All rights reserved.
 //
 // This file is part of the Sussex Effective Field Theory for
@@ -23,67 +23,67 @@
 // --@@
 //
 
-#ifndef LSSEFT_PLANCK_DEFAULTS_H
-#define LSSEFT_PLANCK_DEFAULTS_H
+#ifndef LSSEFT_MDR1_SIM_H
+#define LSSEFT_MDR1_SIM_H
 
 
 #include "units/Mpc_units.h"
 
 
-// Planck 2013+WP 'best fit' parameters from Table 2 on p.11 of arXiv:1303.5076
-namespace Planck2013
+// Parameters for the MDR1 simulation from https://www.cosmosim.org/cms/simulations/mdr1/
+namespace MDR1
   {
     
-    const     std::string       name     = "Planck2013 best-fit TT+TE+EE+lowP+lensing+ext cosmology";
-
-    constexpr double            omega_cc = 0.6817;
-    constexpr double            omega_m  = 1.0 - omega_cc;
-    constexpr double            h        = 0.6704;
-    constexpr double            f_baryon = 0.15401;
-    constexpr Mpc_units::energy H0       = 100 * h * Mpc_units::Kilometre / (Mpc_units::Second * Mpc_units::Mpc);
-    constexpr Mpc_units::energy T_CMB    = 2.7255 * Mpc_units::Kelvin;
-    constexpr double            Neff     = 3.046;   // Standard Model value
-
-    // fluctuation two-point function
-    constexpr double Acurv           = 2.2150E-9;
-    constexpr double ns              = 0.9619;
-    constexpr Mpc_units::energy kpiv = 0.05 / Mpc_units::Mpc;
-    constexpr double sigma8          = 0.8347;
-
-    // CMB-related redshifts
-    constexpr double z_star = 1090.48;
-    constexpr double z_drag = 1059.25;
-    constexpr double z_eq   = 3403;
-
-  }   // namespace Planck2013
-
-
-// Planck 2015 TT+TE+EE+lowP+lensing+ext parameters from Table 4 on p.31 of arXiv:1502.01589
-namespace Planck2015
-  {
-   
-    const     std::string       name     = "Planck2015 best-fit TT+TE+EE+lowP+lensing+ext cosmology";
+    const     std::string       name     = "Matches MDR1 simulation https://www.cosmosim.org/cms/simulations/mdr1";
     
-    constexpr double            omega_cc = 0.6911;
-    constexpr double            omega_m  = 1.0 - omega_cc;
-    constexpr double            h        = 0.6774;
-    constexpr double            f_baryon = 0.156821;
+    constexpr double            omega_cc = 0.73;
+    constexpr double            omega_m  = 0.27;
+    constexpr double            h        = 0.70;
+    constexpr double            f_baryon = 0.0469/omega_m;
     constexpr Mpc_units::energy H0       = 100 * h * Mpc_units::Kilometre / (Mpc_units::Second * Mpc_units::Mpc);
     constexpr Mpc_units::energy T_CMB    = 2.7255 * Mpc_units::Kelvin;
     constexpr double            Neff     = 3.046;   // Standard Model value
     
     // fluctuation two-point function
-    constexpr double Acurv           = 2.1420E-9;
-    constexpr double ns              = 0.9667;
+    constexpr double Acurv           = 2.3650e-9;
+    constexpr double ns              = 0.95;
     constexpr Mpc_units::energy kpiv = 0.05 / Mpc_units::Mpc;
-    constexpr double sigma8          = 0.8159;
+    constexpr double sigma8          = 0.8200;
     
-    // CMB-related redshifts
-    constexpr double z_star = 1089.90;
-    constexpr double z_drag = 1059.68;
-    constexpr double z_eq   = 3371;
+    // CMB-related redshifts (extracted from CAMB)
+    constexpr double z_star = 1088.02;
+    constexpr double z_drag = 1060.39;
+    constexpr double z_eq   = 3161.49;
     
   }
 
 
-#endif //LSSEFT_PLANCK_DEFAULTS_H
+// Parameters for the Big MultiDark Planck simulation from https://www.cosmosim.org/cms/simulations/bigmdpl/
+namespace BigMDPL
+  {
+    
+    const     std::string       name     = "Matches BigMDPL simulation https://www.cosmosim.org/cms/simulations/bigmdpl/";
+    
+    constexpr double            omega_cc = 0.692885;
+    constexpr double            omega_m  = 0.307115;
+    constexpr double            h        = 0.6777;
+    constexpr double            f_baryon = 0.048206/omega_m;
+    constexpr Mpc_units::energy H0       = 100 * h * Mpc_units::Kilometre / (Mpc_units::Second * Mpc_units::Mpc);
+    constexpr Mpc_units::energy T_CMB    = 2.7255 * Mpc_units::Kelvin;
+    constexpr double            Neff     = 3.046;   // Standard Model value
+    
+    // fluctuation two-point function
+    constexpr double Acurv           = 1.9716e-9;
+    constexpr double ns              = 0.96;
+    constexpr Mpc_units::energy kpiv = 0.05 / Mpc_units::Mpc;
+    constexpr double sigma8          = 0.8228;
+    
+    // CMB-related redshifts (extracted from CAMB)
+    constexpr double z_star = 1088.75;
+    constexpr double z_drag = 1063.06;
+    constexpr double z_eq   = 3596.22;
+    
+  }
+
+
+#endif //LSSEFT_MDR1_SIM_H

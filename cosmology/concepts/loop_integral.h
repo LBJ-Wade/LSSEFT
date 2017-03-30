@@ -55,6 +55,7 @@ class loop_integral_result
     //! destructor is default
     ~loop_integral_result() = default;
 
+    
     // DATA
   
   public:
@@ -638,9 +639,9 @@ class loop_integral
   public:
 
     //! value constructor
-    loop_integral(const k_token& kt, const linear_Pk_token& Pt, const UV_cutoff_token& UVt, const IR_cutoff_token& IRt,
-                  const delta_22_integrals& d22, const delta_13_integrals& d13,
-                  const rsd_22_integrals& r22, const rsd_13_integrals& r13);
+    loop_integral(const k_token& kt, const loop_integral_params_token& pt, const linear_Pk_token& Pt,
+                  const UV_cutoff_token& UVt, const IR_cutoff_token& IRt, const delta_22_integrals& d22,
+                  const delta_13_integrals& d13, const rsd_22_integrals& r22, const rsd_13_integrals& r13);
     
     //! empty constructor, used for constructing an empty container to be overwritten by an MPI payload
     loop_integral();
@@ -652,6 +653,9 @@ class loop_integral
     // INTERFACE
 
   public:
+    
+    //! get parameters token
+    const loop_integral_params_token& get_params_token() const { return this->params; }
 
     //! get wavenumber token
     const k_token& get_k_token() const { return this->k; }
@@ -685,6 +689,9 @@ class loop_integral
   private:
 
     // CONFIGURATION DATA
+    
+    //! parameters token
+    loop_integral_params_token params;
 
     //! wavenumber token
     k_token k;
