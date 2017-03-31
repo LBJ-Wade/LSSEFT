@@ -263,12 +263,12 @@ namespace sqlite3_operations
                                               << "@P13_raw, @err_13_raw, "
                                               << "@P22_raw, @err_22_raw, "
                                               << "@P1loopSPT_raw, @err_1loopSPT_raw, "
-                                              << "@Z2_d_raw, @Z0_v_raw, @Z2_v_raw, @Z0_vd_raw, @Z2_vd_raw, @Z2_vv_raw, @Z2_vvd_raw, @Z2_vvv_raw, @Z2_total_raw, "
+                                              << "@Z2_d_raw, @Z0_v_raw, @Z2_v_raw, @Z0_vd_raw, @Z2_vd_raw, @Z2_vv_A_raw, @Z2_vv_B_raw, @Z2_vvd_raw, @Z2_vvv_raw, @Z2_total_raw, "
                                               << "@Ptree_nw, @err_tree_nw, "
                                               << "@P13_nw, @err_13_nw, "
                                               << "@P22_nw, @err_22_nw, "
                                               << "@P1loopSPT_nw, @err_1loopSPT_nw, "
-                                              << "@Z2_d_nw, @Z0_v_nw, @Z2_v_nw, @Z0_vd_nw, @Z2_vd_nw, @Z2_vv_nw, @Z2_vvd_nw, @Z2_vvv_nw, @Z2_total_nw"
+                                              << "@Z2_d_nw, @Z0_v_nw, @Z2_v_nw, @Z0_vd_nw, @Z2_vd_nw, @Z2_vv_A_nw, @Z2_vv_B_nw, @Z2_vvd_nw, @Z2_vvv_nw, @Z2_total_nw"
                                               << ");";
         
             // prepare statement
@@ -299,7 +299,8 @@ namespace sqlite3_operations
             store_Pk_value(db, stmt, "@Z2_v_raw", "@Z2_v_nw", value.get_Z2_v());
             store_Pk_value(db, stmt, "@Z0_vd_raw", "@Z0_vd_nw", value.get_Z0_vdelta());
             store_Pk_value(db, stmt, "@Z2_vd_raw", "@Z2_vd_nw", value.get_Z2_vdelta());
-            store_Pk_value(db, stmt, "@Z2_vv_raw", "@Z2_vv_nw", value.get_Z2_vv());
+            store_Pk_value(db, stmt, "@Z2_vv_A_raw", "@Z2_vv_A_nw", value.get_Z2_vv_A());
+            store_Pk_value(db, stmt, "@Z2_vv_B_raw", "@Z2_vv_B_nw", value.get_Z2_vv_B());
             store_Pk_value(db, stmt, "@Z2_vvd_raw", "@Z2_vvd_nw", value.get_Z2_vvdelta());
             store_Pk_value(db, stmt, "@Z2_vvv_raw", "@Z2_vvv_nw", value.get_Z2_vvv());
             store_Pk_value(db, stmt, "@Z2_total_raw", "@Z2_total_nw", value.get_Z2_total());
@@ -329,7 +330,8 @@ namespace sqlite3_operations
                                               << "@Z2_v, @Z2_v_resum, "
                                               << "@Z0_vd, @Z0_vd_resum, "
                                               << "@Z2_vd, @Z2_vd_resum, "
-                                              << "@Z2_vv, @Z2_vv_resum, "
+                                              << "@Z2_vv_A, @Z2_vv_A_resum, "
+                                              << "@Z2_vv_B, @Z2_vv_B_resum, "
                                               << "@Z2_vvd, @Z2_vvd_resum, "
                                               << "@Z2_vvv, @Z2_vvv_resum, "
                                               << "@Z2_mu0, @Z2_mu0_resum, "
@@ -354,7 +356,8 @@ namespace sqlite3_operations
             const auto& Z2_v = value.get_Z2_v();
             const auto& Z0_vdelta = value.get_Z0_vdelta();
             const auto& Z2_vdelta = value.get_Z2_vdelta();
-            const auto& Z2_vv = value.get_Z2_vv();
+            const auto& Z2_vv_A = value.get_Z2_vv_A();
+            const auto& Z2_vv_B = value.get_Z2_vv_B();
             const auto& Z2_vvdelta = value.get_Z2_vvdelta();
             const auto& Z2_vvv = value.get_Z2_vvv();
 
@@ -390,7 +393,8 @@ namespace sqlite3_operations
             store_Pell_value(db, stmt, "@Z2_v", "@Z2_v_resum", Z2_v);
             store_Pell_value(db, stmt, "@Z0_vd", "@Z0_vd_resum", Z0_vdelta);
             store_Pell_value(db, stmt, "@Z2_vd", "@Z2_vd_resum", Z2_vdelta);
-            store_Pell_value(db, stmt, "@Z2_vv", "@Z2_vv_resum", Z2_vv);
+            store_Pell_value(db, stmt, "@Z2_vv_A", "@Z2_vv_A_resum", Z2_vv_A);
+            store_Pell_value(db, stmt, "@Z2_vv_B", "@Z2_vv_B_resum", Z2_vv_B);
             store_Pell_value(db, stmt, "@Z2_vvd", "@Z2_vvd_resum", Z2_vvdelta);
             store_Pell_value(db, stmt, "@Z2_vvv", "@Z2_vvv_resum", Z2_vvv);
     

@@ -68,11 +68,10 @@ oneloop_Pk::oneloop_Pk()
   }
 
 
-rsd_dd_Pk::rsd_dd_Pk(const Pk_value& _Pt, const Pk_value& _P13, const Pk_value& _P22,
-                     const k2_Pk_value& _Z2d, const Pk_value& _Z0v, const k2_Pk_value& _Z2v,
-                     const Pk_value& _Z0vd, const k2_Pk_value& _Z2vd,
-                     const k2_Pk_value& _Z2vv, const k2_Pk_value& _Z2vvd, const k2_Pk_value& _Z2vvv,
-                     const k2_Pk_value& _Z2_total)
+rsd_dd_Pk::rsd_dd_Pk(const Pk_value& _Pt, const Pk_value& _P13, const Pk_value& _P22, const k2_Pk_value& _Z2d,
+                     const Pk_value& _Z0v, const k2_Pk_value& _Z2v, const Pk_value& _Z0vd, const k2_Pk_value& _Z2vd,
+                     const k2_Pk_value& _Z2vvA, const k2_Pk_value& _Z2vvB, const k2_Pk_value& _Z2vvd,
+                     const k2_Pk_value& _Z2vvv, const k2_Pk_value& _Z2_total)
   : Ptree(_Pt),
     P13(_P13),
     P22(_P22),
@@ -82,7 +81,8 @@ rsd_dd_Pk::rsd_dd_Pk(const Pk_value& _Pt, const Pk_value& _P13, const Pk_value& 
     Z2_v(_Z2v),
     Z0_vdelta(_Z0vd),
     Z2_vdelta(_Z2vd),
-    Z2_vv(_Z2vv),
+    Z2_vv_A(_Z2vvA),
+    Z2_vv_B(_Z2vvB),
     Z2_vvdelta(_Z2vvd),
     Z2_vvv(_Z2vvv),
     Z2_total(_Z2_total)
@@ -100,7 +100,8 @@ rsd_dd_Pk::rsd_dd_Pk()
     Z2_v(),
     Z0_vdelta(),
     Z2_vdelta(),
-    Z2_vv(),
+    Z2_vv_A(),
+    Z2_vv_B(),
     Z2_vvdelta(),
     Z2_vvv(),
     Z2_total()

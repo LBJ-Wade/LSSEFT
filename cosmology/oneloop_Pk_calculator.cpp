@@ -148,7 +148,9 @@ oneloop_Pk_calculator::compute_rsd_dd_mu0(const Mpc_units::energy& k, const onel
     
     k2_Pk_value Z2_vdelta;    // no contribution at mu^0
     
-    k2_Pk_value Z2_vv;    // no contribution at mu^0
+    k2_Pk_value Z2_vv_A;    // no contribution at mu^0
+    
+    k2_Pk_value Z2_vv_B;    // no contribution at mu^0
     
     k2_Pk_value Z2_vvdelta;   // no contribution at mu^0
     
@@ -156,7 +158,7 @@ oneloop_Pk_calculator::compute_rsd_dd_mu0(const Mpc_units::energy& k, const onel
     
     k2_Pk_value Z_total = 2*val.g*(18*val.D + 28*val.E - 7*val.F - 2*val.G - 13*val.J)*k*k * Ptr_init;
     
-    return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv, Z_total);
+    return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv_A, Z2_vv_B, Z2_vvdelta, Z2_vvv, Z_total);
   }
 
 
@@ -222,7 +224,9 @@ oneloop_Pk_calculator::compute_rsd_dd_mu2(const Mpc_units::energy& k, const onel
     
     k2_Pk_value Z2_vdelta = 2*val.g*val.g*(-12*val.A*val.fA - 12*val.B*val.fB + 5*val.A*val.f + 10*val.B*val.f + 12*val.f*val.g*val.g)*k*k * Ptr_init;
     
-    k2_Pk_value Z2_vv = -16*val.f*val.g*val.g*(-(val.A*val.fA) - val.B*val.fB + val.f*val.g*val.g)*k*k * Ptr_init;
+    k2_Pk_value Z2_vv_A = (-40*val.f*val.g*val.g*(-(val.A*val.fA) - val.B*val.fB + val.f*val.g*val.g)*k*k)/3.0 * Ptr_init;
+    
+    k2_Pk_value Z2_vv_B = (-8*val.f*val.g*val.g*(-(val.A*val.fA) - val.B*val.fB + val.f*val.g*val.g)*k*k)/3.0 * Ptr_init;
     
     k2_Pk_value Z2_vvdelta = 5*val.f*val.f*val.g*val.g*val.g*val.g*k*k * Ptr_init;
     
@@ -231,7 +235,7 @@ oneloop_Pk_calculator::compute_rsd_dd_mu2(const Mpc_units::energy& k, const onel
     k2_Pk_value Z2_total = val.g*(36*val.D*(val.fD + val.f) + 56*val.E*(val.fE + val.f) - 14*val.fF*val.F - 14*val.f*val.F + 16*val.A*val.fA*val.f*val.g + 16*val.B*val.fB*val.f*val.g - 11*val.f*val.f*val.g*val.g*val.g - 4*val.fG*val.G - 4*val.f*val.G -
                                26*val.fJ*val.J - 26*val.f*val.J)*k*k * Ptr_init;
     
-    return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv, Z2_total);
+    return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv_A, Z2_vv_B, Z2_vvdelta, Z2_vvv, Z2_total);
   }
 
 
@@ -302,7 +306,9 @@ oneloop_Pk_calculator::compute_rsd_dd_mu4(const Mpc_units::energy& k, const onel
     
     k2_Pk_value Z2_vdelta = 2*val.f*val.g*val.g*(-12*val.A*val.fA - 12*val.B*val.fB + 5*val.A*val.f + 10*val.B*val.f + 12*val.f*val.g*val.g)*k*k * Ptr_init;
     
-    k2_Pk_value Z2_vv = 2*val.f*val.g*val.g*(2*val.B*val.fB*(3 + 4*val.f) + val.A*(val.fA + 8*val.fA*val.f) - val.f*(1 + 8*val.f)*val.g*val.g)*k*k * Ptr_init;
+    k2_Pk_value Z2_vv_A = (-40*val.f*val.f*val.g*val.g*(-(val.A*val.fA) - val.B*val.fB + val.f*val.g*val.g)*k*k)/3.0 * Ptr_init;
+    
+    k2_Pk_value Z2_vv_B = (-2*val.f*val.g*val.g*(-2*val.B*val.fB*(9 + 2*val.f) - val.A*val.fA*(3 + 4*val.f) + val.f*(3 + 4*val.f)*val.g*val.g)*k*k)/3.0 * Ptr_init;
     
     k2_Pk_value Z2_vvdelta = 5*val.f*val.f*val.f*val.g*val.g*val.g*val.g*k*k * Ptr_init;
     
@@ -311,7 +317,9 @@ oneloop_Pk_calculator::compute_rsd_dd_mu4(const Mpc_units::energy& k, const onel
     k2_Pk_value Z2_total = -2*val.f*val.g*(-18*val.D*val.fD - 28*val.E*val.fE + 7*val.fF*val.F - val.A*val.fA*val.g - 6*val.B*val.fB*val.g - 8*val.A*val.fA*val.f*val.g - 8*val.B*val.fB*val.f*val.g + val.f*val.g*val.g*val.g + 3*val.f*val.f*val.g*val.g*val.g + 2*val.fG*val.G +
                                      13*val.fJ*val.J)*k*k * Ptr_init;
     
-    return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv, Z2_total);
+    return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v,
+                     Z0_vdelta, Z2_vdelta, Z2_vv_A, Z2_vv_B, Z2_vvdelta, Z2_vvv,
+                     Z2_total);
   }
 
 
@@ -369,7 +377,9 @@ oneloop_Pk_calculator::compute_rsd_dd_mu6(const Mpc_units::energy& k, const onel
     
     k2_Pk_value Z2_vdelta;    // no contribution at mu^6
     
-    k2_Pk_value Z2_vv = 2*val.f*val.f*val.g*val.g*(val.A*val.fA + 6*val.B*val.fB - val.f*val.g*val.g)*k*k * Ptr_init;
+    k2_Pk_value Z2_vv_A;    // no contribution at mu^6
+    
+    k2_Pk_value Z2_vv_B = 2*val.f*val.f*val.g*val.g*(val.A*val.fA + 6*val.B*val.fB - val.f*val.g*val.g)*k*k * Ptr_init;
     
     k2_Pk_value Z2_vvdelta;   // no contribution at mu^6
     
@@ -377,7 +387,7 @@ oneloop_Pk_calculator::compute_rsd_dd_mu6(const Mpc_units::energy& k, const onel
     
     k2_Pk_value Z2_total = val.f*val.f*val.g*val.g*(2*val.A*val.fA + 12*val.B*val.fB + val.f*(-2 + 5*val.f)*val.g*val.g)*k*k * Ptr_init;
     
-    return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv, Z2_total);
+    return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv_A, Z2_vv_B, Z2_vvdelta, Z2_vvv, Z2_total);
   }
 
 
@@ -420,7 +430,9 @@ oneloop_Pk_calculator::compute_rsd_dd_mu8(const Mpc_units::energy& k, const onel
     
     k2_Pk_value Z2_vdelta;    // no contribution at mu^8
     
-    k2_Pk_value Z2_vv;    // no contribution at mu^8
+    k2_Pk_value Z2_vv_A;    // no contribution at mu^8
+    
+    k2_Pk_value Z2_vv_B;    // no contribution at mu^8
     
     k2_Pk_value Z2_vvdelta;   // no contribution at mu^8
     
@@ -428,7 +440,7 @@ oneloop_Pk_calculator::compute_rsd_dd_mu8(const Mpc_units::energy& k, const onel
     
     k2_Pk_value Z2_total;   // no contribution at mu^8
     
-    return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv, Z2_total);
+    return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv_A, Z2_vv_B, Z2_vvdelta, Z2_vvv, Z2_total);
   }
 
 

@@ -382,11 +382,10 @@ class rsd_dd_Pk
   public:
     
     //! value constructor
-    rsd_dd_Pk(const Pk_value& _Pt, const Pk_value& _P13, const Pk_value& _P22,
-              const k2_Pk_value& _Z2d, const Pk_value& _Z0v, const k2_Pk_value& _Z2v,
-              const Pk_value& _Z0vd, const k2_Pk_value& _Z2vd,
-              const k2_Pk_value& _Z2vv, const k2_Pk_value& _Z2vvd, const k2_Pk_value& _Z2vvv,
-              const k2_Pk_value& _Z2_total);
+    rsd_dd_Pk(const Pk_value& _Pt, const Pk_value& _P13, const Pk_value& _P22, const k2_Pk_value& _Z2d,
+              const Pk_value& _Z0v, const k2_Pk_value& _Z2v, const Pk_value& _Z0vd, const k2_Pk_value& _Z2vd,
+              const k2_Pk_value& _Z2vvA, const k2_Pk_value& _Z2vvB, const k2_Pk_value& _Z2vvd,
+              const k2_Pk_value& _Z2vvv, const k2_Pk_value& _Z2_total);
     
     //! empty constructor for use when overwriting with MPI payloads
     rsd_dd_Pk();
@@ -438,9 +437,13 @@ class rsd_dd_Pk
     k2_Pk_value& get_Z2_vdelta() { return this->Z2_vdelta; }
     const k2_Pk_value& get_Z2_vdelta() const { return this->Z2_vdelta; }
     
-    //! get Z2_vv counterterm
-    k2_Pk_value& get_Z2_vv() { return this->Z2_vv; }
-    const k2_Pk_value& get_Z2_vv() const { return this->Z2_vv; }
+    //! get A-type Z2_vv counterterm
+    k2_Pk_value& get_Z2_vv_A() { return this->Z2_vv_A; }
+    const k2_Pk_value& get_Z2_vv_A() const { return this->Z2_vv_A; }
+    
+    //! get B-type Z2_vv counterterm
+    k2_Pk_value& get_Z2_vv_B() { return this->Z2_vv_B; }
+    const k2_Pk_value& get_Z2_vv_B() const { return this->Z2_vv_B; }
     
     //! get Z2_vvdelta counterterm
     k2_Pk_value& get_Z2_vvdelta() { return this->Z2_vvdelta; }
@@ -486,8 +489,11 @@ class rsd_dd_Pk
     //! coefficient of the counterterm Z2_vd
     k2_Pk_value Z2_vdelta;
     
-    //! coefficient of the counterterm Z2_vv
-    k2_Pk_value Z2_vv;
+    //! coefficient of the A-type counterterm Z2_vv_B
+    k2_Pk_value Z2_vv_A;
+    
+    //! coefficient of the B-type counterterm Z2_vv_B
+    k2_Pk_value Z2_vv_B;
     
     //! coefficient of the counterterm Z2_vvdelta
     k2_Pk_value Z2_vvdelta;
@@ -514,7 +520,8 @@ class rsd_dd_Pk
         ar & Z2_v;
         ar & Z0_vdelta;
         ar & Z2_vdelta;
-        ar & Z2_vv;
+        ar & Z2_vv_A;
+        ar & Z2_vv_B;
         ar & Z2_vvdelta;
         ar & Z2_vvv;
         ar & Z2_total;

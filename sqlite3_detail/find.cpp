@@ -215,9 +215,9 @@ namespace sqlite3_operations
             read_stmt
               << "SELECT "
               << "Ptree_raw, err_tree_raw, P13_raw, err_13_raw, P22_raw, err_22_raw, P1loopSPT_raw, err_1loopSPT_raw, "
-              << "Z2_d_raw, Z0_v_raw, Z2_v_raw, Z0_vd_raw, Z2_vd_raw, Z2_vv_raw, Z2_vvd_raw, Z2_vvv_raw, Z2_total_raw, "
+              << "Z2_d_raw, Z0_v_raw, Z2_v_raw, Z0_vd_raw, Z2_vd_raw, Z2_vv_A_raw, Z2_vv_B_raw, Z2_vvd_raw, Z2_vvv_raw, Z2_total_raw, "
               << "Ptree_nw, err_tree_nw, P13_nw, err_13_nw, P22_nw, err_22_nw, P1loopSPT_nw, err_1loopSPT_nw, "
-              << "Z2_d_nw, Z0_v_nw, Z2_v_nw, Z0_vd_nw, Z2_vd_nw, Z2_vv_nw, Z2_vvd_nw, Z2_vvv_nw, Z2_total_nw "
+              << "Z2_d_nw, Z0_v_nw, Z2_v_nw, Z0_vd_nw, Z2_vd_nw, Z2_vv_A_nw, Z2_vv_B_nw, Z2_vvd_nw, Z2_vvv_nw, Z2_total_nw "
               << "FROM " << table << " "
               << "WHERE mid=@mid AND growth_params=@growth_params AND loop_params=@loop_params "
               << "AND zid=@zid AND kid=@kid AND init_Pk_id=@init_Pk_id "
@@ -236,27 +236,29 @@ namespace sqlite3_operations
             constexpr unsigned int Z2_v_raw = 10;
             constexpr unsigned int Z0_vd_raw = 11;
             constexpr unsigned int Z2_vd_raw = 12;
-            constexpr unsigned int Z2_vv_raw = 13;
-            constexpr unsigned int Z2_vvd_raw = 14;
-            constexpr unsigned int Z2_vvv_raw = 15;
-            constexpr unsigned int Z2_total_raw = 16;
-            constexpr unsigned int Ptree_nw = 17;
-            constexpr unsigned int err_tree_nw = 18;
-            constexpr unsigned int P13_nw = 19;
-            constexpr unsigned int err_13_nw = 20;
-            constexpr unsigned int P22_nw = 21;
-            constexpr unsigned int err_22_nw = 22;
-            constexpr unsigned int P1loopSPT_nw = 23;
-            constexpr unsigned int err_1loopSPT_nw = 24;
-            constexpr unsigned int Z2_d_nw = 25;
-            constexpr unsigned int Z0_v_nw = 26;
-            constexpr unsigned int Z2_v_nw = 27;
-            constexpr unsigned int Z0_vd_nw = 28;
-            constexpr unsigned int Z2_vd_nw = 29;
-            constexpr unsigned int Z2_vv_nw = 30;
-            constexpr unsigned int Z2_vvd_nw = 31;
-            constexpr unsigned int Z2_vvv_nw = 32;
-            constexpr unsigned int Z2_total_nw = 33;
+            constexpr unsigned int Z2_vv_A_raw = 13;
+            constexpr unsigned int Z2_vv_B_raw = 14;
+            constexpr unsigned int Z2_vvd_raw = 15;
+            constexpr unsigned int Z2_vvv_raw = 16;
+            constexpr unsigned int Z2_total_raw = 17;
+            constexpr unsigned int Ptree_nw = 18;
+            constexpr unsigned int err_tree_nw = 19;
+            constexpr unsigned int P13_nw = 20;
+            constexpr unsigned int err_13_nw = 21;
+            constexpr unsigned int P22_nw = 22;
+            constexpr unsigned int err_22_nw = 23;
+            constexpr unsigned int P1loopSPT_nw = 24;
+            constexpr unsigned int err_1loopSPT_nw = 25;
+            constexpr unsigned int Z2_d_nw = 26;
+            constexpr unsigned int Z0_v_nw = 27;
+            constexpr unsigned int Z2_v_nw = 28;
+            constexpr unsigned int Z0_vd_nw = 29;
+            constexpr unsigned int Z2_vd_nw = 30;
+            constexpr unsigned int Z2_vv_A_nw = 31;
+            constexpr unsigned int Z2_vv_B_nw = 32;
+            constexpr unsigned int Z2_vvd_nw = 33;
+            constexpr unsigned int Z2_vvv_nw = 34;
+            constexpr unsigned int Z2_total_nw = 35;
             
             // prepare statement
             sqlite3_stmt* stmt;
@@ -292,7 +294,8 @@ namespace sqlite3_operations
                     read_Pk_value(stmt, Z2_v_raw, Z2_v_nw, Pk.get_Z2_v());
                     read_Pk_value(stmt, Z0_vd_raw, Z0_vd_nw, Pk.get_Z0_vdelta());
                     read_Pk_value(stmt, Z2_vd_raw, Z2_vd_nw, Pk.get_Z2_vdelta());
-                    read_Pk_value(stmt, Z2_vv_raw, Z2_vv_nw, Pk.get_Z2_vv());
+                    read_Pk_value(stmt, Z2_vv_A_raw, Z2_vv_A_nw, Pk.get_Z2_vv_A());
+                    read_Pk_value(stmt, Z2_vv_B_raw, Z2_vv_B_nw, Pk.get_Z2_vv_B());
                     read_Pk_value(stmt, Z2_vvd_raw, Z2_vvd_nw, Pk.get_Z2_vvdelta());
                     read_Pk_value(stmt, Z2_vvv_raw, Z2_vvv_nw, Pk.get_Z2_vvv());
                     read_Pk_value(stmt, Z2_total_raw, Z2_total_nw, Pk.get_Z2_total());

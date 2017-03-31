@@ -128,9 +128,10 @@ class Pk_ell
     //! value constructor
     Pk_ell(const Pk_resum& _tree, const Pk_resum& _P13, const Pk_resum& _P22, const Pk_resum& _PSPT,
            const k2_Pk_resum& _Z2_d, const Pk_resum& _Z0_v, const k2_Pk_resum& _Z2_v, const Pk_resum& _Z0_vd,
-           const k2_Pk_resum& _Z2_vd, const k2_Pk_resum& _Z2_vv, const k2_Pk_resum& _Z2_vvd,
-           const k2_Pk_resum& _Z2_vvv, const k2_Pk_resum& _Z2_mu0, const k2_Pk_resum& _Z2_mu2,
-           const k2_Pk_resum& _Z2_mu4, const k2_Pk_resum& _Z2_mu6, const k2_Pk_resum& _Z2_mu8);
+           const k2_Pk_resum& _Z2_vd, const k2_Pk_resum& _Z2_vv_A, const k2_Pk_resum& _Z2_vv_B,
+           const k2_Pk_resum& _Z2_vvd, const k2_Pk_resum& _Z2_vvv, const k2_Pk_resum& _Z2_mu0,
+           const k2_Pk_resum& _Z2_mu2, const k2_Pk_resum& _Z2_mu4, const k2_Pk_resum& _Z2_mu6,
+           const k2_Pk_resum& _Z2_mu8);
     
     //! destructor is default
     ~Pk_ell() = default;
@@ -167,8 +168,11 @@ class Pk_ell
     //! get Z2_vdelta counterterm
     const k2_Pk_resum& get_Z2_vdelta() const { return Z2_vd; }
     
-    //! get Z2_v counterterm
-    const k2_Pk_resum& get_Z2_vv() const { return Z2_vv; }
+    //! get Z2_v counterterm - A coefficient
+    const k2_Pk_resum& get_Z2_vv_A() const { return Z2_vv_A; }
+    
+    //! get Z2_v counterterm - B coefficient
+    const k2_Pk_resum& get_Z2_vv_B() const { return Z2_vv_B; }
     
     //! get Z2_vvdelta counterterm
     const k2_Pk_resum& get_Z2_vvdelta() const { return Z2_vvd; }
@@ -226,8 +230,11 @@ class Pk_ell
     //! Z2_vdelta
     k2_Pk_resum Z2_vd;
     
-    //! Z2_vv
-    k2_Pk_resum Z2_vv;
+    //! Z2_vv - A coefficient
+    k2_Pk_resum Z2_vv_A;
+    
+    //! Z2_vv - B coefficient
+    k2_Pk_resum Z2_vv_B;
     
     //! Z2_vvdelta
     k2_Pk_resum Z2_vvd;
@@ -266,7 +273,8 @@ class Pk_ell
         ar & Z2_v;
         ar & Z0_vd;
         ar & Z2_vd;
-        ar & Z2_vv;
+        ar & Z2_vv_A;
+        ar & Z2_vv_B;
         ar & Z2_vvd;
         ar & Z2_vvv;
         ar & Z2_mu0;
@@ -296,7 +304,7 @@ namespace boost
             // invoke in-place constructor with zero elements; will be overwritten during deserialization
             ::new(t) Pk_ell(Pk_resum(), Pk_resum(), Pk_resum(), Pk_resum(), k2_Pk_resum(), Pk_resum(),
                             k2_Pk_resum(), Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(),
-                            k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum());
+                            k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum());
           }
         
       }   // namespace serialization
@@ -466,7 +474,7 @@ namespace boost
             
             Pk_ell empty(empty_Pk, empty_Pk, empty_Pk, empty_Pk, empty_k2_Pk, empty_Pk,
                          empty_k2_Pk, empty_Pk, empty_k2_Pk, empty_k2_Pk, empty_k2_Pk, empty_k2_Pk,
-                         empty_k2_Pk, empty_k2_Pk, empty_k2_Pk, empty_k2_Pk, empty_k2_Pk);
+                         empty_k2_Pk, empty_k2_Pk, empty_k2_Pk, empty_k2_Pk, empty_k2_Pk, empty_k2_Pk);
     
             ::new(t) multipole_Pk(k_token(0), growth_params_token(0), loop_integral_params_token(0),
                                   MatsubaraXY_params_token(0), linear_Pk_token(0),
