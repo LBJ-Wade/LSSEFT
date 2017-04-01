@@ -147,10 +147,10 @@ void master_controller::execute()
     std::unique_ptr<FRW_model_token> model = dmgr.tokenize(cosmology_model);
 
     // set up a list of wavenumbers to sample for the transfer functions, measured in h/Mpc
-    stepping_range<Mpc_units::energy> transfer_k_samples(0.01, 0.8, 30, 1.0 / Mpc_units::Mpc, spacing_type::linear);
+    // stepping_range<Mpc_units::energy> transfer_k_samples(0.01, 0.8, 30, 1.0 / Mpc_units::Mpc, spacing_type::linear);
 
     // set up a list of redshifts at which to sample the transfer functions
-    stepping_range<double> hi_redshift_samples(1000.0, 1500.0, 5, 1.0, spacing_type::linear);
+    // stepping_range<double> hi_redshift_samples(1000.0, 1500.0, 5, 1.0, spacing_type::linear);
 
     // set up a list of redshifts at which to sample the late-time growth functions
     stepping_range<double> z0(0.0, 0.0, 0, 1.0, spacing_type::linear);
@@ -173,9 +173,9 @@ void master_controller::execute()
     stepping_range<Mpc_units::energy> IR_resummation(1.4, 1.4, 0, 1.0 / Mpc_units::Mpc, spacing_type::linear);
 
     // exchange these sample ranges for iterable databases
-    std::unique_ptr<z_database> hi_z_db              = dmgr.build_redshift_db(hi_redshift_samples);
+    // std::unique_ptr<z_database> hi_z_db              = dmgr.build_redshift_db(hi_redshift_samples);
     std::unique_ptr<z_database> lo_z_db              = dmgr.build_redshift_db(lo_redshift_samples);
-    std::unique_ptr<k_database> transfer_k_db        = dmgr.build_k_db(transfer_k_samples);
+    // std::unique_ptr<k_database> transfer_k_db        = dmgr.build_k_db(transfer_k_samples);
 
     std::unique_ptr<UV_cutoff_database> UV_cutoff_db = dmgr.build_UV_cutoff_db(UV_cutoffs);
     std::unique_ptr<IR_cutoff_database> IR_cutoff_db = dmgr.build_IR_cutoff_db(IR_cutoffs);
@@ -209,10 +209,10 @@ void master_controller::execute()
     // plus the time-dependent 1-loop kernels through the subsequent evolution
 
     // build a work list for transfer functions
-    std::unique_ptr<transfer_work_list> transfer_work = dmgr.build_transfer_work_list(*model, *transfer_k_db, *hi_z_db);
+    // std::unique_ptr<transfer_work_list> transfer_work = dmgr.build_transfer_work_list(*model, *transfer_k_db, *hi_z_db);
     
     // distribute this work list among the worker processes
-    if(transfer_work) this->scatter(cosmology_model, *model, *transfer_work, dmgr);
+    // if(transfer_work) this->scatter(cosmology_model, *model, *transfer_work, dmgr);
 
     // build a work list for linear and one-loop growth functions (and their growth rates);
     // we inherit ownership of its lifetime using std::unique_ptr<>
