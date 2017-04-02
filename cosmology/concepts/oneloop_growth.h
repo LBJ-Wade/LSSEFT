@@ -506,6 +506,7 @@ class oneloop_growth
     template <typename Archive>
     void serialize(Archive& ar, unsigned int version)
       {
+        ar & params;
         ar & z_db;
 
         ar & D_linear;
