@@ -55,8 +55,8 @@ SET(CONTROLLER_SOURCE_FILES
   controller/slave_controller.cpp controller/slave_controller.h
   controller/local_environment.cpp controller/local_environment.h
   controller/scheduler.cpp controller/scheduler.h
-  controller/Planck2015_controller.cpp
-  controller/MDR1_controller.cpp)
+  controller/work_functions/Planck2015_controller.cpp
+  controller/work_functions/MDR1_controller.cpp)
 
 SET(UTILITY_SOURCE_FILES
   utilities/python_finder.cpp utilities/python_finder.h
@@ -75,8 +75,8 @@ SET(MPI_SOURCE_FILES
 
 SET(COSMOLOGY_SOURCE_FILES
   cosmology/FRW_model.cpp cosmology/FRW_model.h
-  cosmology/Planck_defaults.h
-  cosmology/MDR1_sim.h
+  cosmology/models/Planck_defaults.h
+  cosmology/models/MDR1_sim.h
   cosmology/types.h
   cosmology/constants.h
   cosmology/concepts/range.h
@@ -181,7 +181,7 @@ ADD_EXECUTABLE(lsseft-Planck2015
   controller/slave_controller.cpp
   controller/task_manager.cpp
   controller/scheduler.cpp
-  controller/Planck2015_controller.cpp
+  controller/work_functions/Planck2015_controller.cpp
   error/error_handler.cpp
   utilities/python_finder.cpp
   utilities/formatter.cpp
@@ -250,7 +250,7 @@ ADD_EXECUTABLE(lsseft-MDR1
   controller/slave_controller.cpp
   controller/task_manager.cpp
   controller/scheduler.cpp
-  controller/MDR1_controller.cpp
+  controller/work_functions/MDR1_controller.cpp
   error/error_handler.cpp
   utilities/python_finder.cpp
   utilities/formatter.cpp

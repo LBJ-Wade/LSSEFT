@@ -25,8 +25,8 @@
 
 #include "core.h"
 
-#include "master_controller.h"
-#include "cosmology/Planck_defaults.h"
+#include "controller/master_controller.h"
+#include "cosmology/MDR1_sim.h"
 
 
 void master_controller::execute()
@@ -42,7 +42,8 @@ void master_controller::execute()
     
     // fix the background cosmological model
     // here, that's taken to have parameters matching the MDR1 simulation
-    FRW_model cosmology_model;
+    FRW_model cosmology_model(MDR1::name, MDR1::omega_m, MDR1::omega_cc, MDR1::h, MDR1::T_CMB, MDR1::Neff,
+                              MDR1::f_baryon, MDR1::z_star, MDR1::z_drag, MDR1::z_eq, MDR1::Acurv, MDR1::ns, MDR1::kpiv);
     std::unique_ptr<FRW_model_token> model = dmgr.tokenize(cosmology_model);
     
     // set up a list of wavenumbers to sample for the transfer functions, measured in h/Mpc
@@ -52,7 +53,12 @@ void master_controller::execute()
     // stepping_range<double> hi_redshift_samples(1000.0, 1500.0, 5, 1.0, spacing_type::linear);
     
     // set up a list of redshifts at which to sample the late-time growth functions
-    stepping_range<double> lo_redshift_samples(0.0, 0.0, 0, 1.0, spacing_type::linear);
+    stepping_range<double> z0(0.0, 0.0, 0, 1.0, spacing_type::linear);
+    stepping_range<double> z025(0.25, 0.25, 0, 1.0, spacing_type::linear);
+    stepping_range<double> z05(0.5, 0.5, 0, 1.0, spacing_type::linear);
+    stepping_range<double> z075(0.75, 0.75, 0, 1.0, spacing_type::linear);
+    stepping_range<double> z1(1.0, 1.0, 0, 1.0, spacing_type::linear);
+    auto lo_redshift_samples = z0 + z025 + z05 + z075 + z1;
     
     // set up a list of UV cutoffs, measured in h/Mpc, to be used with the loop integrals
     stepping_range<Mpc_units::energy> UV_cutoffs(1.4, 1.4, 0, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);

@@ -27,7 +27,7 @@
 #define LSSEFT_FRW_MODEL_H
 
 
-#include "Planck_defaults.h"
+#include "cosmology/models/Planck_defaults.h"
 
 #include "boost/serialization/serialization.hpp"
 
