@@ -511,7 +511,9 @@ namespace sqlite3_operations
               << "CREATE TABLE " << policy.MatsubaraXY_config_table() << "("
               << "id INTEGER PRIMARY KEY, "
               << "abserr DOUBLE, "
-              << "relerr DOUBLE"
+              << "relerr DOUBLE, "
+              << "qmin DOUBLE, "
+              << "qmax DOUBLE"
               << ");";
         
             exec(db, stmt.str());

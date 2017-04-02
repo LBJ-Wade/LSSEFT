@@ -194,6 +194,7 @@ void master_controller::execute()
     std::unique_ptr<growth_params_token> growth_tok = dmgr.tokenize(Df_params);
     
     // set up parameters for Matsubara X&Y integral
+    // defauts to qmin = 10 Mpc/h, qmax = 300 Mpc/h
     MatsubaraXY_params XY_params;
     std::unique_ptr<MatsubaraXY_params_token> XY_tok = dmgr.tokenize(XY_params);
     

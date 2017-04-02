@@ -167,8 +167,8 @@ Matsubara_XY_calculator::compute_XY(const Mpc_units::energy& IR_resum, const Mpc
     int evaluations;
     int fail;
     
-    const Mpc_units::inverse_energy qmin = 10 * Mpc_units::Mpc;
-    const Mpc_units::inverse_energy qmax = 300 * Mpc_units::Mpc;
+    const Mpc_units::inverse_energy& qmin = this->params.get_qmin();
+    const Mpc_units::inverse_energy& qmax = this->params.get_qmax();
     
     const double dimless_qvolume = (qmax*qmax*qmax - qmin*qmin*qmin) / Mpc_units::Mpc3;
     
