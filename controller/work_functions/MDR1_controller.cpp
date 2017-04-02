@@ -26,7 +26,7 @@
 #include "core.h"
 
 #include "controller/master_controller.h"
-#include "cosmology/MDR1_sim.h"
+#include "cosmology/models/MDR1_sim.h"
 
 
 void master_controller::execute()
@@ -52,13 +52,15 @@ void master_controller::execute()
     // set up a list of redshifts at which to sample the transfer functions
     // stepping_range<double> hi_redshift_samples(1000.0, 1500.0, 5, 1.0, spacing_type::linear);
     
-    // set up a list of redshifts at which to sample the late-time growth functions
+    // set up a list of redshifts at which to sample the late-time growth functions; we need the z=50 point
+    // to define where the integration starts
+    stepping_range<double> z50(50.0, 50.0, 0, 1.0, spacing_type::linear);
     stepping_range<double> z0(0.0, 0.0, 0, 1.0, spacing_type::linear);
     stepping_range<double> z025(0.25, 0.25, 0, 1.0, spacing_type::linear);
     stepping_range<double> z05(0.5, 0.5, 0, 1.0, spacing_type::linear);
     stepping_range<double> z075(0.75, 0.75, 0, 1.0, spacing_type::linear);
     stepping_range<double> z1(1.0, 1.0, 0, 1.0, spacing_type::linear);
-    auto lo_redshift_samples = z0 + z025 + z05 + z075 + z1;
+    auto lo_redshift_samples = z0 + z025 + z05 + z075 + z1 + z50;
     
     // set up a list of UV cutoffs, measured in h/Mpc, to be used with the loop integrals
     stepping_range<Mpc_units::energy> UV_cutoffs(1.4, 1.4, 0, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
