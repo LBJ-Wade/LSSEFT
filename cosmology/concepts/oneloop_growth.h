@@ -42,7 +42,7 @@
 
 struct oneloop_growth_record
   {
-    double g;
+    double D_lin;
     double A;
     double B;
     double D;
@@ -51,7 +51,7 @@ struct oneloop_growth_record
     double G;
     double J;
     
-    double f;
+    double f_lin;
     double fA;
     double fB;
     double fD;
@@ -67,7 +67,7 @@ struct oneloop_growth_record
     template <typename Archive>
     void serialize(Archive& ar, unsigned int version)
       {
-        ar & g;
+        ar & D_lin;
         ar & A;
         ar & B;
         ar & D;
@@ -76,7 +76,7 @@ struct oneloop_growth_record
         ar & G;
         ar & J;
 
-        ar & f;
+        ar & f_lin;
         ar & fA;
         ar & fB;
         ar & fD;
@@ -116,12 +116,12 @@ namespace oneloop_growth_impl
 
         //! value constructor; points to a given element in the transfer function sample
         generic_tokenized_database_iterator(record_iterator r,
-                                            value_iterator g, value_iterator A, value_iterator B, value_iterator D,
+                                            value_iterator D_lin, value_iterator A, value_iterator B, value_iterator D,
                                             value_iterator E, value_iterator F, value_iterator G, value_iterator J,
-                                            value_iterator f, value_iterator fA, value_iterator fB, value_iterator fD,
+                                            value_iterator f_lin, value_iterator fA, value_iterator fB, value_iterator fD,
                                             value_iterator fE, value_iterator fF, value_iterator fG, value_iterator fJ)
           : record_iter(r),
-            g_iter(g),
+            D_lin_iter(D_lin),
             A_iter(A),
             B_iter(B),
             D_iter(D),
@@ -129,7 +129,7 @@ namespace oneloop_growth_impl
             F_iter(F),
             G_iter(G),
             J_iter(J),
-            f_iter(f),
+            f_lin_iter(f_lin),
             fA_iter(fA),
             fB_iter(fB),
             fD_iter(fD),
@@ -143,7 +143,7 @@ namespace oneloop_growth_impl
         //! copy constructor; allows implicit conversion from a regular iterator to a const iterator
         generic_tokenized_database_iterator(const generic_tokenized_database_iterator<RecordIterator, ConstRecordIterator, ValueIterator, ConstValueIterator, false>& obj)
           : record_iter(obj.record_iter),
-            g_iter(obj.g_iter),
+            D_lin_iter(obj.D_lin_iter),
             A_iter(obj.A_iter),
             B_iter(obj.B_iter),
             D_iter(obj.D_iter),
@@ -151,7 +151,7 @@ namespace oneloop_growth_impl
             F_iter(obj.F_iter),
             G_iter(obj.G_iter),
             J_iter(obj.J_iter),
-            f_iter(obj.f_iter),
+            f_lin_iter(obj.f_lin_iter),
             fA_iter(obj.fA_iter),
             fB_iter(obj.fB_iter),
             fD_iter(obj.fD_iter),
@@ -191,7 +191,7 @@ namespace oneloop_growth_impl
           {
             oneloop_growth_record rec;
 
-            rec.g = *this->g_iter;
+            rec.D_lin = *this->D_lin_iter;
             rec.A = *this->A_iter;
             rec.B = *this->B_iter;
             rec.D = *this->D_iter;
@@ -200,7 +200,7 @@ namespace oneloop_growth_impl
             rec.G = *this->G_iter;
             rec.J = *this->J_iter;
             
-            rec.f = *this->f_iter;
+            rec.f_lin = *this->f_lin_iter;
             rec.fA = *this->fA_iter;
             rec.fB = *this->fB_iter;
             rec.fD = *this->fD_iter;
@@ -220,7 +220,7 @@ namespace oneloop_growth_impl
         //! prefix decrement
         generic_tokenized_database_iterator& operator--()
           {
-            --this->g_iter;
+            --this->D_lin_iter;
             --this->A_iter;
             --this->B_iter;
             --this->D_iter;
@@ -243,7 +243,7 @@ namespace oneloop_growth_impl
         //! prefix increment
         generic_tokenized_database_iterator& operator++()
           {
-            ++this->g_iter;
+            ++this->D_lin_iter;
             ++this->A_iter;
             ++this->B_iter;
             ++this->D_iter;
@@ -252,7 +252,7 @@ namespace oneloop_growth_impl
             ++this->G_iter;
             ++this->J_iter;
             
-            ++this->f_iter;
+            ++this->f_lin_iter;
             ++this->fA_iter;
             ++this->fB_iter;
             ++this->fD_iter;
@@ -287,7 +287,7 @@ namespace oneloop_growth_impl
         record_iterator record_iter;
 
         //! iterator into linear growth factor sample
-        value_iterator g_iter;
+        value_iterator D_lin_iter;
 
         //! iterator into A sample
         value_iterator A_iter;
@@ -311,7 +311,7 @@ namespace oneloop_growth_impl
         value_iterator J_iter;
         
         //! iterator into linear growth rate sample
-        value_iterator f_iter;
+        value_iterator f_lin_iter;
         
         //! iterator into fA sample
         value_iterator fA_iter;

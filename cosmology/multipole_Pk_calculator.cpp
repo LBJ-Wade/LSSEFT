@@ -301,7 +301,7 @@ namespace multipole_Pk_calculator_impl
       public:
 
         resum_adjuster(const Mpc_units::energy& _k, double _XY, const oneloop_growth_record& _gf, const Pk_value& _Pk_tree)
-          : f(_gf.f),
+          : f(_gf.f_lin),
             // the factor appearing in each subtraction is k^2 (X+Y) P_lin,w
             // here, k^2 (X+Y) is our variable XY
             // P_lin,w is the wiggle part of the density-density power spectrum
@@ -577,9 +577,9 @@ multipole_Pk multipole_Pk_calculator::calculate_Legendre(const Mpc_units::energy
     
     // get Matsubara X+Y suppression factor (remember we have to scale up by the square of the linear growth factor,
     // since we store just the raw integral over the early-time tree-level power spectrum)
-    double Matsubara_XY = Df_data.g*Df_data.g * k*k * XY;
+    double Matsubara_XY = Df_data.D_lin*Df_data.D_lin * k*k * XY;
     
-    double A_coeff = Df_data.f*(Df_data.f+2.0) * Matsubara_XY;
+    double A_coeff = Df_data.f_lin*(Df_data.f_lin+2.0) * Matsubara_XY;
     double B_coeff = Matsubara_XY;
     
     // set policy objects to adjust the different mu dependences to account for resummation

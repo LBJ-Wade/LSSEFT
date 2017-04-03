@@ -478,7 +478,7 @@ namespace sqlite3_operations
             check_stmt(db, sqlite3_bind_int(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@mid"), model.get_id()));
             check_stmt(db, sqlite3_bind_int(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@params_id"), params.get_id()));
             check_stmt(db, sqlite3_bind_int(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@zid"), val.first.get_id()));
-            check_stmt(db, sqlite3_bind_double(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@D_linear"), val.second.g));
+            check_stmt(db, sqlite3_bind_double(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@D_linear"), val.second.D_lin));
             check_stmt(db, sqlite3_bind_double(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@A"), val.second.A));
             check_stmt(db, sqlite3_bind_double(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@B"), val.second.B));
             check_stmt(db, sqlite3_bind_double(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@D"), val.second.D));
@@ -494,7 +494,7 @@ namespace sqlite3_operations
             check_stmt(db, sqlite3_bind_int(f_stmt, sqlite3_bind_parameter_index(f_stmt, "@mid"), model.get_id()));
             check_stmt(db, sqlite3_bind_int(f_stmt, sqlite3_bind_parameter_index(f_stmt, "@params_id"), params.get_id()));
             check_stmt(db, sqlite3_bind_int(f_stmt, sqlite3_bind_parameter_index(f_stmt, "@zid"), val.first.get_id()));
-            check_stmt(db, sqlite3_bind_double(f_stmt, sqlite3_bind_parameter_index(f_stmt, "@f_linear"), val.second.f));
+            check_stmt(db, sqlite3_bind_double(f_stmt, sqlite3_bind_parameter_index(f_stmt, "@f_linear"), val.second.f_lin));
             check_stmt(db, sqlite3_bind_double(f_stmt, sqlite3_bind_parameter_index(f_stmt, "@fA"), val.second.fA));
             check_stmt(db, sqlite3_bind_double(f_stmt, sqlite3_bind_parameter_index(f_stmt, "@fB"), val.second.fB));
             check_stmt(db, sqlite3_bind_double(f_stmt, sqlite3_bind_parameter_index(f_stmt, "@fD"), val.second.fD));
