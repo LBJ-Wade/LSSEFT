@@ -90,9 +90,7 @@ oneloop_Pk_calculator::compute_dd(const Mpc_units::energy& k, const oneloop_grow
     
     // COUNTERTERMS
     
-    k2_Pk_value Z2_delta = -2.0
-                           * (-18.0*val.D - 28.0*val.E + 7.0*val.F + 2.0*val.G + 13.0*val.J)
-                           * val.g * k*k * Ptr_init;
+    k2_Pk_value Z2_delta = 2*val.g*(18*val.D + 28*val.E - 7*val.F - 2*val.G - 13*val.J)*k*k * Ptr_init;
     
     return std::move(dd_Pk(tree, P13, P22, Z2_delta));
   }
@@ -138,7 +136,7 @@ oneloop_Pk_calculator::compute_rsd_dd_mu0(const Mpc_units::energy& k, const onel
     
     // COUNTERTERMS
     
-    k2_Pk_value Z2_delta = 2.0 * val.g * (18.0*val.D + 28.0*val.E - 7.0*val.F - 2.0*val.G - 13.0*val.J) * k*k * Ptr_init;
+    k2_Pk_value Z2_delta = 2*val.g*(18*val.D + 28*val.E - 7*val.F - 2*val.G - 13*val.J)*k*k * Ptr_init;
 
     Pk_value Z0_v;    // no contribution at mu^0
     
@@ -157,6 +155,30 @@ oneloop_Pk_calculator::compute_rsd_dd_mu0(const Mpc_units::energy& k, const onel
     k2_Pk_value Z2_vvv;   // no contribution at mu^0
     
     k2_Pk_value Z_total = 2*val.g*(18*val.D + 28*val.E - 7*val.F - 2*val.G - 13*val.J)*k*k * Ptr_init;
+    
+    // validation: check that components sum up to the total counterterm
+    k2_Pk_value validate = Z_total - Z2_delta - Z2_v - Z2_vdelta - Z2_vv_A - Z2_vv_B - Z2_vvdelta - Z2_vvv;
+    const auto& validate_value = validate.get_raw().get_value();
+    const auto& total_value = Z_total.get_raw().get_value();
+    bool ok = true;
+    if(std::abs(total_value / Mpc_units::Mpc) > 1E-8)
+      {
+        double fractional_err = validate_value / total_value;
+        if(std::abs(fractional_err) > 1E-6) ok = false;
+      }
+    else
+      {
+        if(std::abs((total_value - validate_value) / Mpc_units::Mpc) > 1E-6) ok = false;
+      }
+    if(!ok)
+      {
+        std::ostringstream msg;
+        msg
+          << ERROR_MU_COUNTERTERM_MISMATCH_A << "0, "
+          << ERROR_MU_COUNTERTERM_MISMATCH_B << total_value / Mpc_units::Mpc << " Mpc/h, "
+          << ERROR_MU_COUNTERTERM_MISMATCH_C << validate_value / Mpc_units::Mpc << " Mpc/h";
+        throw runtime_exception(exception_type::counterterm_error, msg.str());
+      }
     
     return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv_A, Z2_vv_B, Z2_vvdelta, Z2_vvv, Z_total);
   }
@@ -214,11 +236,11 @@ oneloop_Pk_calculator::compute_rsd_dd_mu2(const Mpc_units::energy& k, const onel
     
     // COUNTERTERMS
     
-    k2_Pk_value Z2_delta = 2*val.g*(18*val.D*(val.fD + val.f) + 28*val.E*(val.fE + val.f) - 7*val.fF*val.F - 7*val.f*val.F - 2*val.fG*val.G - 2*val.f*val.G - 13*(val.fJ + val.f)*val.J)*k*k * Ptr_init;
+    k2_Pk_value Z2_delta = 2*val.f*val.g*(18*val.D + 28*val.E - 7*val.F - 2*val.G - 13*val.J)*k*k * Ptr_init;
     
     Pk_value Z0_v = -2*val.g*val.g*(-2*val.B*val.fB + 2*val.B*val.f + val.A*(-val.fA + val.f) + val.f*val.g*val.g) * Ptr_init;
     
-    k2_Pk_value Z2_v = -2*val.g*val.g*(-12*val.A*val.fA - 12*val.B*val.fB + 5*val.A*val.f + 10*val.B*val.f + 12*val.f*val.g*val.g)*k*k * Ptr_init;
+    k2_Pk_value Z2_v = -2*val.g*(-18*val.D*val.fD - 28*val.E*val.fE + 7*val.fF*val.F - 12*val.A*val.fA*val.g - 12*val.B*val.fB*val.g + 5*val.A*val.f*val.g + 10*val.B*val.f*val.g + 12*val.f*val.g*val.g*val.g + 2*val.fG*val.G + 13*val.fJ*val.J)*k*k * Ptr_init;
     
     Pk_value Z0_vdelta = 2*val.g*val.g*(-2*val.B*val.fB + 2*val.B*val.f + val.A*(-val.fA + val.f) + val.f*val.g*val.g) * Ptr_init;
     
@@ -234,6 +256,30 @@ oneloop_Pk_calculator::compute_rsd_dd_mu2(const Mpc_units::energy& k, const onel
     
     k2_Pk_value Z2_total = val.g*(36*val.D*(val.fD + val.f) + 56*val.E*(val.fE + val.f) - 14*val.fF*val.F - 14*val.f*val.F + 16*val.A*val.fA*val.f*val.g + 16*val.B*val.fB*val.f*val.g - 11*val.f*val.f*val.g*val.g*val.g - 4*val.fG*val.G - 4*val.f*val.G -
                                26*val.fJ*val.J - 26*val.f*val.J)*k*k * Ptr_init;
+    
+    // validation: check that components sum up to the total counterterm
+    k2_Pk_value validate = Z2_total - Z2_delta - Z2_v - Z2_vdelta - Z2_vv_A - Z2_vv_B - Z2_vvdelta - Z2_vvv;
+    const auto& validate_value = validate.get_raw().get_value();
+    const auto& total_value = Z2_total.get_raw().get_value();
+    bool ok = true;
+    if(std::abs(total_value / Mpc_units::Mpc) > 1E-8)
+      {
+        double fractional_err = validate_value / total_value;
+        if(std::abs(fractional_err) > 1E-6) ok = false;
+      }
+    else
+      {
+        if(std::abs((total_value - validate_value) / Mpc_units::Mpc) > 1E-6) ok = false;
+      }
+    if(!ok)
+      {
+        std::ostringstream msg;
+        msg
+          << ERROR_MU_COUNTERTERM_MISMATCH_A << "2, "
+          << ERROR_MU_COUNTERTERM_MISMATCH_B << total_value / Mpc_units::Mpc << " Mpc/h, "
+          << ERROR_MU_COUNTERTERM_MISMATCH_C << validate_value / Mpc_units::Mpc << " Mpc/h";
+        throw runtime_exception(exception_type::counterterm_error, msg.str());
+      }
     
     return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv_A, Z2_vv_B, Z2_vvdelta, Z2_vvv, Z2_total);
   }
@@ -296,11 +342,11 @@ oneloop_Pk_calculator::compute_rsd_dd_mu4(const Mpc_units::energy& k, const onel
     
     // COUNTERTERMS
     
-    k2_Pk_value Z2_delta = 2*val.f*val.g*(18*val.D*val.fD + 28*val.E*val.fE - 7*val.fF*val.F - 2*val.fG*val.G - 13*val.fJ*val.J)*k*k * Ptr_init;
+    k2_Pk_value Z2_delta;   // absent at mu^4
     
     Pk_value Z0_v = -2*val.f*val.g*val.g*(-2*val.B*val.fB + 2*val.B*val.f + val.A*(-val.fA + val.f) + val.f*val.g*val.g) * Ptr_init;
     
-    k2_Pk_value Z2_v = -2*val.f*val.g*val.g*(-12*val.A*val.fA - 12*val.B*val.fB + 5*val.A*val.f + 10*val.B*val.f + 12*val.f*val.g*val.g)*k*k * Ptr_init;
+    k2_Pk_value Z2_v = -2*val.f*val.g*(-18*val.D*val.fD - 28*val.E*val.fE + 7*val.fF*val.F - 12*val.A*val.fA*val.g - 12*val.B*val.fB*val.g + 5*val.A*val.f*val.g + 10*val.B*val.f*val.g + 12*val.f*val.g*val.g*val.g + 2*val.fG*val.G + 13*val.fJ*val.J)*k*k * Ptr_init;
     
     Pk_value Z0_vdelta = 2*val.f*val.g*val.g*(-2*val.B*val.fB + 2*val.B*val.f + val.A*(-val.fA + val.f) + val.f*val.g*val.g) * Ptr_init;
     
@@ -316,6 +362,30 @@ oneloop_Pk_calculator::compute_rsd_dd_mu4(const Mpc_units::energy& k, const onel
     
     k2_Pk_value Z2_total = -2*val.f*val.g*(-18*val.D*val.fD - 28*val.E*val.fE + 7*val.fF*val.F - val.A*val.fA*val.g - 6*val.B*val.fB*val.g - 8*val.A*val.fA*val.f*val.g - 8*val.B*val.fB*val.f*val.g + val.f*val.g*val.g*val.g + 3*val.f*val.f*val.g*val.g*val.g + 2*val.fG*val.G +
                                      13*val.fJ*val.J)*k*k * Ptr_init;
+    
+    // validation: check that components sum up to the total counterterm
+    k2_Pk_value validate = Z2_total - Z2_delta - Z2_v - Z2_vdelta - Z2_vv_A - Z2_vv_B - Z2_vvdelta - Z2_vvv;
+    const auto& validate_value = validate.get_raw().get_value();
+    const auto& total_value = Z2_total.get_raw().get_value();
+    bool ok = true;
+    if(std::abs(total_value / Mpc_units::Mpc) > 1E-8)
+      {
+        double fractional_err = validate_value / total_value;
+        if(std::abs(fractional_err) > 1E-6) ok = false;
+      }
+    else
+      {
+        if(std::abs((total_value - validate_value) / Mpc_units::Mpc) > 1E-6) ok = false;
+      }
+    if(!ok)
+      {
+        std::ostringstream msg;
+        msg
+          << ERROR_MU_COUNTERTERM_MISMATCH_A << "4, "
+          << ERROR_MU_COUNTERTERM_MISMATCH_B << total_value / Mpc_units::Mpc << " Mpc/h, "
+          << ERROR_MU_COUNTERTERM_MISMATCH_C << validate_value / Mpc_units::Mpc << " Mpc/h";
+        throw runtime_exception(exception_type::counterterm_error, msg.str());
+      }
     
     return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v,
                      Z0_vdelta, Z2_vdelta, Z2_vv_A, Z2_vv_B, Z2_vvdelta, Z2_vvv,
@@ -386,6 +456,30 @@ oneloop_Pk_calculator::compute_rsd_dd_mu6(const Mpc_units::energy& k, const onel
     k2_Pk_value Z2_vvv = 5 * val.f*val.f*val.f*val.f * val.g*val.g*val.g*val.g * k*k * Ptr_init;
     
     k2_Pk_value Z2_total = val.f*val.f*val.g*val.g*(2*val.A*val.fA + 12*val.B*val.fB + val.f*(-2 + 5*val.f)*val.g*val.g)*k*k * Ptr_init;
+    
+    // validation: check that components sum up to the total counterterm
+    k2_Pk_value validate = Z2_total - Z2_delta - Z2_v - Z2_vdelta - Z2_vv_A - Z2_vv_B - Z2_vvdelta - Z2_vvv;
+    const auto& total_value = Z2_total.get_raw().get_value();
+    const auto& validate_value = validate.get_raw().get_value();
+    bool ok = true;
+    if(std::abs(total_value / Mpc_units::Mpc) > 1E-8)
+      {
+        double fractional_err = validate_value / total_value;
+        if(std::abs(fractional_err) > 1E-6) ok = false;
+      }
+    else
+      {
+        if(std::abs((total_value - validate_value) / Mpc_units::Mpc) > 1E-6) ok = false;
+      }
+    if(!ok)
+      {
+        std::ostringstream msg;
+        msg
+          << ERROR_MU_COUNTERTERM_MISMATCH_A << "6, "
+          << ERROR_MU_COUNTERTERM_MISMATCH_B << total_value / Mpc_units::Mpc << " Mpc/h, "
+          << ERROR_MU_COUNTERTERM_MISMATCH_C << validate_value / Mpc_units::Mpc << " Mpc/h";
+        throw runtime_exception(exception_type::counterterm_error, msg.str());
+      }
     
     return rsd_dd_Pk(tree, P13, P22, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv_A, Z2_vv_B, Z2_vvdelta, Z2_vvv, Z2_total);
   }

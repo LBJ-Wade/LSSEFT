@@ -1,5 +1,5 @@
 //
-// Created by David Seery on 10/08/2015.
+// Created by David Seery on 03/04/2017.
 // --@@ // Copyright (c) 2017 University of Sussex. All rights reserved.
 //
 // This file is part of the Sussex Effective Field Theory for
@@ -23,25 +23,11 @@
 // --@@
 //
 
-#ifndef LSSEFT_EN_GB_H
-#define LSSEFT_EN_GB_H
+#ifndef LSSEFT_ONELOOP_PK_CALCULATOR_EN_GB_H
+#define LSSEFT_ONELOOP_PK_CALCULATOR_EN_GB_H
 
+constexpr auto ERROR_MU_COUNTERTERM_MISMATCH_A = "failed total counterterm validation for mu";
+constexpr auto ERROR_MU_COUNTERTERM_MISMATCH_B = "total = ";
+constexpr auto ERROR_MU_COUNTERTERM_MISMATCH_C = "component sum = ";
 
-#include "command_line.h"
-
-#include "task_manager.h"
-#include "error_handler.h"
-#include "database.h"
-#include "transaction_manager.h"
-#include "range.h"
-#include "format.h"
-#include "master_controller.h"
-#include "power_spectrum.h"
-#include "Pk_filter.h"
-#include "oneloop_Pk_calculator.h"
-
-// note this sqlite3.h is the messages file in the same subdirectory, not the main sqlite3.h include
-#include "sqlite3.h"
-
-
-#endif //LSSEFT_EN_GB_H
+#endif //LSSEFT_ONELOOP_PK_CALCULATOR_EN_GB_H

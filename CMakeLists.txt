@@ -40,7 +40,8 @@ SET(LOCALIZATION_EN_GB
   localizations/en_GB/format.h
   localizations/en_GB/master_controller.h
   localizations/en_GB/power_spectrum.h
-  localizations/en_GB/Pk_filter.h)
+  localizations/en_GB/Pk_filter.h
+  localizations/en_GB/oneloop_Pk_calculator.h)
 
 SET(TOP_LEVEL_SOURCE_FILES
   main.cpp
