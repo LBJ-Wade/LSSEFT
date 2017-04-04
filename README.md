@@ -80,28 +80,44 @@ successfully.
 
 ## Performing calculations
 
-For most calculations you will wish to modify the
-`master_controller.cpp` file, which controls what is actually computed
+The calculations performed by *LSSEFT* are controlled by
+the `master_controller::execute()` method. To customize
+*LSSEFT* for your own use you would normally wish to supply
+a new implementation of this method; the other
+methods in `master_controller` usually do not need to be changed.
+There are two bundled implementations, in `controller/work_functions`.
+One of these is for the Planck2015 cosmology, and the other is for
+the [MDR1](https://www.cosmosim.org/cms/simulations/mdr1/)
+model.
+
+In *LSSEFT* the desired computation is modelled
 by setting up C++ objects that model the calculation.
 Most of these objects require a specification of the background
-cosmological parameters. These are currently set up to match the
-[MDR1](https://www.cosmosim.org/cms/simulations/mdr1/)
-cosmology, because this was the choice used in our paper:
+cosmological parameters.
+For example, in the MDR `master_controller::execute()`
+we use
 ```C++
 // fix the background cosmological model
 // here, that's taken to have parameters matching the MDR1 simulation
 FRW_model cosmology_model(MDR1::name, MDR1::omega_m, MDR1::omega_cc, MDR1::h, MDR1::T_CMB, MDR1::Neff,
                           MDR1::f_baryon, MDR1::z_star, MDR1::z_drag, MDR1::z_eq, MDR1::Acurv, MDR1::ns, MDR1::kpiv);
 ```
-To do a real calculation requires setting up a grid of wavenumbers
+Practical calculations require setting up a grid of wavenumbers
 at which the one-loop integrals (and hence power spectra) are to be
-computed, and a grid of redshifts at which we wish to sample the results.
+computed, and also a
+grid of redshifts at which we wish to sample the results.
 *LSSEFT* provides a `stepping_range<>` object to make it easy to
 construct suitable ranges, spaced linearly or logarithmically:
 ```C++
-
-    // set up a list of redshifts at which to sample the late-time growth functions
-    stepping_range<double> lo_redshift_samples(0.0, 50.0, 250, 1.0, spacing_type::logarithmic_bottom);
+    // set up a list of redshifts at which to sample the late-time growth functions; we need the z=50 point
+    // to define where the integration starts
+    stepping_range<double> z50(50.0, 50.0, 0, 1.0, spacing_type::linear);
+    stepping_range<double> z0(0.0, 0.0, 0, 1.0, spacing_type::linear);
+    stepping_range<double> z025(0.25, 0.25, 0, 1.0, spacing_type::linear);
+    stepping_range<double> z05(0.5, 0.5, 0, 1.0, spacing_type::linear);
+    stepping_range<double> z075(0.75, 0.75, 0, 1.0, spacing_type::linear);
+    stepping_range<double> z1(1.0, 1.0, 0, 1.0, spacing_type::linear);
+    auto lo_redshift_samples = z0 + z025 + z05 + z075 + z1 + z50;
 
     // set up a list of UV cutoffs, measured in h/Mpc, to be used with the loop integrals
     stepping_range<Mpc_units::energy> UV_cutoffs(1.4, 1.4, 0, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
@@ -115,8 +131,24 @@ construct suitable ranges, spaced linearly or logarithmically:
     // set up a list of IR resummation scales, measured in h/Mpc
     stepping_range<Mpc_units::energy> IR_resummation(1.4, 1.4, 0, 1.0 / Mpc_units::Mpc, spacing_type::linear);
 ```
-Ranges can be composed to build aggregate ranges. These don't have to
-be contigious, or to use the same spacing.
+Notice that
+ranges can be composed to build aggregate ranges, as for
+`lo_redshift_samples`, which is composed from six individual atomic ranges.
+(Currently these have to be set up as shown, but in future it would be
+nice to allow conversion from a `std::initializer_list`.)
+These subranges don't have to be contigious, or to use the same spacing.
+The earliest redshift is taken as the starting point, and the linear
+growth factor D(z) is normalized to unity at that time.
+
+The range `loop_k_samples` will define the grid of k-modes at which
+we sample the integrals.
+The other ranges used here are `UV_cutoffs`, `IR_cutoffs`,
+and `IR_resummation`, which defined parameters controlling how these
+integrals are performed. If you specify multiple values then
+*LSSEFT* will produce results for each possible combination.
+This is a simple way to check for cutoff dependence of the loop integrals,
+or even the final power spectrum, either in the ultraviolet or
+infrared.
 
 Some parts of the computation are parametrized, such as the filtering
 of an initial power spectrum into 'wiggle' and 'no-wiggle' components.
@@ -153,6 +185,12 @@ The current `master_controller.cpp` accepts some command-line switches:
 * `--database` or `-d`: Specify database file [mandatory]
 * `--initial-powerspectrum` or `-i`: Specify linear power spectrum to be used when computing the one-loop integrals. *LSSEFT* remembers which linear power spectrum was used for each result in the database, and computes the MD5 hash to be sure that you cannot inadvertently change the powerspectrum file without being aware that it may no longer be compatible with the database [mandatory for power-spectrum calculations]
 * `--final-powerspectrum` or `-f`: Optionally specify a second linear power spectrum to be used to compute the tree-level part of each one-loop result. This is often slightly more accurate than using the growth factors computed by *LSSEFT* to rescale the initial power spectrum to the final redshift. (For example, *LSSEFT* ignores neutrinos and the influence of any residual radiation component at the initial time, which would be included in the power spectrum computed by a Boltzmann code.)
+* `--EdS-mode`: use the Einstein--de Sitter approximation for
+growth functions and growth factors. In this approxmation the growth
+functions D_i(z) can be written as powers of the
+linear growth factor D(z),
+and the growth factors f_i(z) can be written as multiples of the linear
+growth factor f(z).
 
 ## Known issues
 
