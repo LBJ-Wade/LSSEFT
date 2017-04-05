@@ -27,12 +27,12 @@
 #define LSSEFT_DEFAULTS_H
 
 
+#include "units/Mpc_units.h"
+
+
 // default Python location
 
 #define LSSEFT_DEFAULT_PYTHON_PATH "/usr/local/python"
-
-// enforce strict database consistency?
-#define LSSEFT_STRICT_DATABASE_CONSISTENCY
 
 // database search tolerances
 
@@ -62,5 +62,8 @@ constexpr double LSSEFT_DEFAULT_FILTER_PK_REL_ERR                   = (1E-6);
 constexpr double LSSEFT_DEFAULT_FILTER_PK_AMPLITUDE                 = (0.25);
 constexpr double LSSEFT_DEFAULT_FILTER_PK_PIVOT                     = (0.07);
 constexpr double LSSEFT_DEFAULT_FILTER_PK_INDEX                     = (0.04);
+
+constexpr Mpc_units::inverse_energy LSSEFT_DEFAULT_RESUM_QMIN       = 10 * Mpc_units::Mpc;
+constexpr Mpc_units::inverse_energy LSSEFT_DEFAULT_RESUM_QMAX       = 300 * Mpc_units::Mpc;
 
 #endif //LSSEFT_DEFAULTS_H

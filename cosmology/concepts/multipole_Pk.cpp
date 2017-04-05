@@ -29,9 +29,10 @@
 
 Pk_ell::Pk_ell(const Pk_resum& _tree, const Pk_resum& _P13, const Pk_resum& _P22, const Pk_resum& _PSPT,
                const k2_Pk_resum& _Z2_d, const Pk_resum& _Z0_v, const k2_Pk_resum& _Z2_v, const Pk_resum& _Z0_vd,
-               const k2_Pk_resum& _Z2_vd, const k2_Pk_resum& _Z2_vv, const k2_Pk_resum& _Z2_vvd,
-               const k2_Pk_resum& _Z2_vvv, const k2_Pk_resum& _Z2_mu0, const k2_Pk_resum& _Z2_mu2,
-               const k2_Pk_resum& _Z2_mu4, const k2_Pk_resum& _Z2_mu6, const k2_Pk_resum& _Z2_mu8)
+               const k2_Pk_resum& _Z2_vd, const k2_Pk_resum& _Z2_vv_A, const k2_Pk_resum& _Z2_vv_B,
+               const k2_Pk_resum& _Z2_vvd, const k2_Pk_resum& _Z2_vvv, const k2_Pk_resum& _Z2_mu0,
+               const k2_Pk_resum& _Z2_mu2, const k2_Pk_resum& _Z2_mu4, const k2_Pk_resum& _Z2_mu6,
+               const k2_Pk_resum& _Z2_mu8)
   : Ptree(std::move(_tree)),
     P13(std::move(_P13)),
     P22(std::move(_P22)),
@@ -41,7 +42,8 @@ Pk_ell::Pk_ell(const Pk_resum& _tree, const Pk_resum& _P13, const Pk_resum& _P22
     Z2_v(std::move(_Z2_v)),
     Z0_vd(std::move(_Z0_vd)),
     Z2_vd(std::move(_Z2_vd)),
-    Z2_vv(std::move(_Z2_vv)),
+    Z2_vv_A(std::move(_Z2_vv_A)),
+    Z2_vv_B(std::move(_Z2_vv_B)),
     Z2_vvd(std::move(_Z2_vvd)),
     Z2_vvv(std::move(_Z2_vvv)),
     Z2_mu0(std::move(_Z2_mu0)),
@@ -87,12 +89,12 @@ multipole_Pk::multipole_Pk()
     IR_resum(0),
     P0(Pk_resum(), Pk_resum(), Pk_resum(), Pk_resum(), k2_Pk_resum(), Pk_resum(),
        k2_Pk_resum(), Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(),
-       k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum()),
+       k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum()),
     P2(Pk_resum(), Pk_resum(), Pk_resum(), Pk_resum(), k2_Pk_resum(), Pk_resum(),
        k2_Pk_resum(), Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(),
-       k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum()),
+       k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum()),
     P4(Pk_resum(), Pk_resum(), Pk_resum(), Pk_resum(), k2_Pk_resum(), Pk_resum(),
        k2_Pk_resum(), Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(),
-       k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum())
+       k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum())
   {
   }

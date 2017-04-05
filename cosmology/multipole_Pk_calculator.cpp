@@ -301,7 +301,7 @@ namespace multipole_Pk_calculator_impl
       public:
 
         resum_adjuster(const Mpc_units::energy& _k, double _XY, const oneloop_growth_record& _gf, const Pk_value& _Pk_tree)
-          : f(_gf.f),
+          : f(_gf.f_lin),
             // the factor appearing in each subtraction is k^2 (X+Y) P_lin,w
             // here, k^2 (X+Y) is our variable XY
             // P_lin,w is the wiggle part of the density-density power spectrum
@@ -535,19 +535,19 @@ namespace multipole_Pk_calculator_impl
     
     
     template <typename Pk_Accessor, typename k2_Pk_Accessor>
-    Pk_ell make_Pk_ell(const Pk_resum_multiplet& tree, const Pk_resum_multiplet& P13,
-                       const Pk_resum_multiplet& P22, const Pk_resum_multiplet& PSPT,
-                       const k2_Pk_resum_multiplet& Z2_d, const Pk_resum_multiplet& Z0_v, const k2_Pk_resum_multiplet& Z2_v,
-                       const Pk_resum_multiplet& Z0_vd, const k2_Pk_resum_multiplet& Z2_vd,
-                       const k2_Pk_resum_multiplet& Z2_vv, const k2_Pk_resum_multiplet& Z2_vvd,
-                       const k2_Pk_resum_multiplet& Z2_vvv, const k2_Pk_resum_multiplet& Z2_mu0,
-                       const k2_Pk_resum_multiplet& Z2_mu2, const k2_Pk_resum_multiplet& Z2_mu4,
-                       const k2_Pk_resum_multiplet& Z2_mu6, const k2_Pk_resum_multiplet& Z2_mu8,
-                       Pk_Accessor a, k2_Pk_Accessor b)
+    Pk_ell make_Pk_ell(const Pk_resum_multiplet& tree, const Pk_resum_multiplet& P13, const Pk_resum_multiplet& P22,
+                           const Pk_resum_multiplet& PSPT, const k2_Pk_resum_multiplet& Z2_d, const Pk_resum_multiplet& Z0_v,
+                           const k2_Pk_resum_multiplet& Z2_v, const Pk_resum_multiplet& Z0_vd,
+                           const k2_Pk_resum_multiplet& Z2_vd, const k2_Pk_resum_multiplet& Z2_vv_A,
+                           const k2_Pk_resum_multiplet& Z2_vv_B, const k2_Pk_resum_multiplet& Z2_vvd,
+                           const k2_Pk_resum_multiplet& Z2_vvv, const k2_Pk_resum_multiplet& Z2_mu0,
+                           const k2_Pk_resum_multiplet& Z2_mu2, const k2_Pk_resum_multiplet& Z2_mu4,
+                           const k2_Pk_resum_multiplet& Z2_mu6, const k2_Pk_resum_multiplet& Z2_mu8, Pk_Accessor a,
+                           k2_Pk_Accessor b)
       {
         return Pk_ell(a(tree), a(P13), a(P22), a(PSPT), b(Z2_d), a(Z0_v),
-                      b(Z2_v), a(Z0_vd), b(Z2_vd), b(Z2_vv), b(Z2_vvd), b(Z2_vvv),
-                      b(Z2_mu0), b(Z2_mu2), b(Z2_mu4), b(Z2_mu6), b(Z2_mu8));
+                      b(Z2_v), a(Z0_vd), b(Z2_vd), b(Z2_vv_A), b(Z2_vv_B), b(Z2_vvd),
+                      b(Z2_vvv), b(Z2_mu0), b(Z2_mu2), b(Z2_mu4), b(Z2_mu6), b(Z2_mu8));
       };
 
     
@@ -570,15 +570,16 @@ multipole_Pk multipole_Pk_calculator::calculate_Legendre(const Mpc_units::energy
     auto get_Z2v      = [](const rsd_dd_Pk& pkg) -> k2_Pk_value  { return pkg.get_Z2_v(); };
     auto get_Z0vd     = [](const rsd_dd_Pk& pkg) -> Pk_value     { return pkg.get_Z0_vdelta(); };
     auto get_Z2vd     = [](const rsd_dd_Pk& pkg) -> k2_Pk_value  { return pkg.get_Z2_vdelta(); };
-    auto get_Z2vv     = [](const rsd_dd_Pk& pkg) -> k2_Pk_value  { return pkg.get_Z2_vv(); };
+    auto get_Z2vv_A   = [](const rsd_dd_Pk& pkg) -> k2_Pk_value  { return pkg.get_Z2_vv_A(); };
+    auto get_Z2vv_B   = [](const rsd_dd_Pk& pkg) -> k2_Pk_value  { return pkg.get_Z2_vv_B(); };
     auto get_Z2vvd    = [](const rsd_dd_Pk& pkg) -> k2_Pk_value  { return pkg.get_Z2_vvdelta(); };
     auto get_Z2vvv    = [](const rsd_dd_Pk& pkg) -> k2_Pk_value  { return pkg.get_Z2_vvv(); };
     
     // get Matsubara X+Y suppression factor (remember we have to scale up by the square of the linear growth factor,
     // since we store just the raw integral over the early-time tree-level power spectrum)
-    double Matsubara_XY = Df_data.g*Df_data.g * k*k * XY;
+    double Matsubara_XY = Df_data.D_lin*Df_data.D_lin * k*k * XY;
     
-    double A_coeff = Df_data.f*(Df_data.f+2.0) * Matsubara_XY;
+    double A_coeff = Df_data.f_lin*(Df_data.f_lin+2.0) * Matsubara_XY;
     double B_coeff = Matsubara_XY;
     
     // set policy objects to adjust the different mu dependences to account for resummation
@@ -613,7 +614,8 @@ multipole_Pk multipole_Pk_calculator::calculate_Legendre(const Mpc_units::energy
     k2_Pk_resum_multiplet Z2_v = k2_decomp.compute(get_Z2v, k2_Pk_null);
     Pk_resum_multiplet Z0_vdelta = decomp.compute(get_Z0vd, Pk_null);
     k2_Pk_resum_multiplet Z2_vdelta = k2_decomp.compute(get_Z2vd, k2_Pk_null);
-    k2_Pk_resum_multiplet Z2_vv = k2_decomp.compute(get_Z2vv, k2_Pk_null);
+    k2_Pk_resum_multiplet Z2_vv_A = k2_decomp.compute(get_Z2vv_A, k2_Pk_null);
+    k2_Pk_resum_multiplet Z2_vv_B = k2_decomp.compute(get_Z2vv_B, k2_Pk_null);
     k2_Pk_resum_multiplet Z2_vvdelta = k2_decomp.compute(get_Z2vvd, k2_Pk_null);
     k2_Pk_resum_multiplet Z2_vvv = k2_decomp.compute(get_Z2vvv, k2_Pk_null);
 
@@ -628,12 +630,18 @@ multipole_Pk multipole_Pk_calculator::calculate_Legendre(const Mpc_units::energy
     k2_Pk_resum_multiplet Z2_mu8 = proj.compute(mu_power::mu8);
     
     // slice these multiplets into Pk_ell containers for the ell=0, ell=2 and ell=4 modes
-    Pk_ell P0 = make_Pk_ell(tree, P13, P22, PSPT, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv,
-                            Z2_mu0, Z2_mu2, Z2_mu4, Z2_mu6, Z2_mu8, get_ell0<Pk_resum_multiplet>(), get_ell0<k2_Pk_resum_multiplet>());
-    Pk_ell P2 = make_Pk_ell(tree, P13, P22, PSPT, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv,
-                            Z2_mu0, Z2_mu2, Z2_mu4, Z2_mu6, Z2_mu8, get_ell2<Pk_resum_multiplet>(), get_ell2<k2_Pk_resum_multiplet>());
-    Pk_ell P4 = make_Pk_ell(tree, P13, P22, PSPT, Z2_delta, Z0_v, Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv, Z2_vvdelta, Z2_vvv,
-                            Z2_mu0, Z2_mu2, Z2_mu4, Z2_mu6, Z2_mu8, get_ell4<Pk_resum_multiplet>(), get_ell4<k2_Pk_resum_multiplet>());
+    Pk_ell P0 = make_Pk_ell(tree, P13, P22, PSPT, Z2_delta, Z0_v,
+                            Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv_A, Z2_vv_B, Z2_vvdelta,
+                            Z2_vvv, Z2_mu0, Z2_mu2, Z2_mu4, Z2_mu6, Z2_mu8,
+                            get_ell0<Pk_resum_multiplet>(), get_ell0<k2_Pk_resum_multiplet>());
+    Pk_ell P2 = make_Pk_ell(tree, P13, P22, PSPT, Z2_delta, Z0_v,
+                            Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv_A, Z2_vv_B, Z2_vvdelta,
+                            Z2_vvv, Z2_mu0, Z2_mu2, Z2_mu4, Z2_mu6, Z2_mu8,
+                            get_ell2<Pk_resum_multiplet>(), get_ell2<k2_Pk_resum_multiplet>());
+    Pk_ell P4 = make_Pk_ell(tree, P13, P22, PSPT, Z2_delta, Z0_v,
+                            Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv_A, Z2_vv_B, Z2_vvdelta,
+                            Z2_vvv, Z2_mu0, Z2_mu2, Z2_mu4, Z2_mu6, Z2_mu8,
+                            get_ell4<Pk_resum_multiplet>(), get_ell4<k2_Pk_resum_multiplet>());
     
     // package everything up as as multiplet_Pk and return it
     return multipole_Pk(data.get_k_token(), data.get_growth_params(), data.get_loop_params(), XY.get_params_token(),

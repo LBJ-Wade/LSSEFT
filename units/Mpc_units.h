@@ -386,5 +386,44 @@ namespace std
   }   // namespace std
 
 
+// set up preferred units for making dimensionless objects
+
+
+template <typename DimensionfulType>
+inline DimensionfulType dimensionful_unit();
+
+
+template <>
+inline double dimensionful_unit<double>()
+  {
+    return 1.0;
+  }
+
+template <>
+inline Mpc_units::inverse_energy dimensionful_unit<Mpc_units::inverse_energy>()
+  {
+    return Mpc_units::Mpc;
+  }
+
+template <>
+inline Mpc_units::inverse_energy2 dimensionful_unit<Mpc_units::inverse_energy2>()
+  {
+    return Mpc_units::Mpc2;
+  }
+
+template <>
+inline Mpc_units::inverse_energy3 dimensionful_unit<Mpc_units::inverse_energy3>()
+  {
+    return Mpc_units::Mpc3;
+  }
+
+
+template <typename ValueType>
+double make_dimensionless(const ValueType& value)
+  {
+    return value / dimensionful_unit<ValueType>();
+  }
+
+
 
 #endif //LSSEFT_UNITS_H

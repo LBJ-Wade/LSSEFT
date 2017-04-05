@@ -645,7 +645,7 @@ PkContainer& data_manager::rescale_final_Pk(const FRW_model_token& model, const 
     oneloop_value z_init = *data->begin();
     oneloop_value z_final = *(--data->end());
     
-    double rescale = z_init.second.g / z_final.second.g;
+    double rescale = z_init.second.D_lin / z_final.second.D_lin;
     
     // rescaling for power spectrum goes like the square of the growth factor
     Pk.set_rescaling(rescale*rescale);

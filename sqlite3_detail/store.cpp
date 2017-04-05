@@ -39,13 +39,6 @@ namespace sqlite3_operations
     namespace store_impl
       {
         
-        template <typename ValueType>
-        double make_dimensionless(const ValueType& value)
-          {
-            return value / dimensionful_unit<ValueType>();
-          }
-        
-        
         template <typename ValueContainer>
         auto extract_value(const ValueContainer& container) -> decltype(container.value)
           {
@@ -263,12 +256,12 @@ namespace sqlite3_operations
                                               << "@P13_raw, @err_13_raw, "
                                               << "@P22_raw, @err_22_raw, "
                                               << "@P1loopSPT_raw, @err_1loopSPT_raw, "
-                                              << "@Z2_d_raw, @Z0_v_raw, @Z2_v_raw, @Z0_vd_raw, @Z2_vd_raw, @Z2_vv_raw, @Z2_vvd_raw, @Z2_vvv_raw, @Z2_total_raw, "
+                                              << "@Z2_d_raw, @Z0_v_raw, @Z2_v_raw, @Z0_vd_raw, @Z2_vd_raw, @Z2_vv_A_raw, @Z2_vv_B_raw, @Z2_vvd_raw, @Z2_vvv_raw, @Z2_total_raw, "
                                               << "@Ptree_nw, @err_tree_nw, "
                                               << "@P13_nw, @err_13_nw, "
                                               << "@P22_nw, @err_22_nw, "
                                               << "@P1loopSPT_nw, @err_1loopSPT_nw, "
-                                              << "@Z2_d_nw, @Z0_v_nw, @Z2_v_nw, @Z0_vd_nw, @Z2_vd_nw, @Z2_vv_nw, @Z2_vvd_nw, @Z2_vvv_nw, @Z2_total_nw"
+                                              << "@Z2_d_nw, @Z0_v_nw, @Z2_v_nw, @Z0_vd_nw, @Z2_vd_nw, @Z2_vv_A_nw, @Z2_vv_B_nw, @Z2_vvd_nw, @Z2_vvv_nw, @Z2_total_nw"
                                               << ");";
         
             // prepare statement
@@ -299,7 +292,8 @@ namespace sqlite3_operations
             store_Pk_value(db, stmt, "@Z2_v_raw", "@Z2_v_nw", value.get_Z2_v());
             store_Pk_value(db, stmt, "@Z0_vd_raw", "@Z0_vd_nw", value.get_Z0_vdelta());
             store_Pk_value(db, stmt, "@Z2_vd_raw", "@Z2_vd_nw", value.get_Z2_vdelta());
-            store_Pk_value(db, stmt, "@Z2_vv_raw", "@Z2_vv_nw", value.get_Z2_vv());
+            store_Pk_value(db, stmt, "@Z2_vv_A_raw", "@Z2_vv_A_nw", value.get_Z2_vv_A());
+            store_Pk_value(db, stmt, "@Z2_vv_B_raw", "@Z2_vv_B_nw", value.get_Z2_vv_B());
             store_Pk_value(db, stmt, "@Z2_vvd_raw", "@Z2_vvd_nw", value.get_Z2_vvdelta());
             store_Pk_value(db, stmt, "@Z2_vvv_raw", "@Z2_vvv_nw", value.get_Z2_vvv());
             store_Pk_value(db, stmt, "@Z2_total_raw", "@Z2_total_nw", value.get_Z2_total());
@@ -329,7 +323,8 @@ namespace sqlite3_operations
                                               << "@Z2_v, @Z2_v_resum, "
                                               << "@Z0_vd, @Z0_vd_resum, "
                                               << "@Z2_vd, @Z2_vd_resum, "
-                                              << "@Z2_vv, @Z2_vv_resum, "
+                                              << "@Z2_vv_A, @Z2_vv_A_resum, "
+                                              << "@Z2_vv_B, @Z2_vv_B_resum, "
                                               << "@Z2_vvd, @Z2_vvd_resum, "
                                               << "@Z2_vvv, @Z2_vvv_resum, "
                                               << "@Z2_mu0, @Z2_mu0_resum, "
@@ -354,7 +349,8 @@ namespace sqlite3_operations
             const auto& Z2_v = value.get_Z2_v();
             const auto& Z0_vdelta = value.get_Z0_vdelta();
             const auto& Z2_vdelta = value.get_Z2_vdelta();
-            const auto& Z2_vv = value.get_Z2_vv();
+            const auto& Z2_vv_A = value.get_Z2_vv_A();
+            const auto& Z2_vv_B = value.get_Z2_vv_B();
             const auto& Z2_vvdelta = value.get_Z2_vvdelta();
             const auto& Z2_vvv = value.get_Z2_vvv();
 
@@ -390,7 +386,8 @@ namespace sqlite3_operations
             store_Pell_value(db, stmt, "@Z2_v", "@Z2_v_resum", Z2_v);
             store_Pell_value(db, stmt, "@Z0_vd", "@Z0_vd_resum", Z0_vdelta);
             store_Pell_value(db, stmt, "@Z2_vd", "@Z2_vd_resum", Z2_vdelta);
-            store_Pell_value(db, stmt, "@Z2_vv", "@Z2_vv_resum", Z2_vv);
+            store_Pell_value(db, stmt, "@Z2_vv_A", "@Z2_vv_A_resum", Z2_vv_A);
+            store_Pell_value(db, stmt, "@Z2_vv_B", "@Z2_vv_B_resum", Z2_vv_B);
             store_Pell_value(db, stmt, "@Z2_vvd", "@Z2_vvd_resum", Z2_vvdelta);
             store_Pell_value(db, stmt, "@Z2_vvv", "@Z2_vvv_resum", Z2_vvv);
     
@@ -481,7 +478,7 @@ namespace sqlite3_operations
             check_stmt(db, sqlite3_bind_int(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@mid"), model.get_id()));
             check_stmt(db, sqlite3_bind_int(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@params_id"), params.get_id()));
             check_stmt(db, sqlite3_bind_int(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@zid"), val.first.get_id()));
-            check_stmt(db, sqlite3_bind_double(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@D_linear"), val.second.g));
+            check_stmt(db, sqlite3_bind_double(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@D_linear"), val.second.D_lin));
             check_stmt(db, sqlite3_bind_double(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@A"), val.second.A));
             check_stmt(db, sqlite3_bind_double(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@B"), val.second.B));
             check_stmt(db, sqlite3_bind_double(D_stmt, sqlite3_bind_parameter_index(D_stmt, "@D"), val.second.D));
@@ -497,7 +494,7 @@ namespace sqlite3_operations
             check_stmt(db, sqlite3_bind_int(f_stmt, sqlite3_bind_parameter_index(f_stmt, "@mid"), model.get_id()));
             check_stmt(db, sqlite3_bind_int(f_stmt, sqlite3_bind_parameter_index(f_stmt, "@params_id"), params.get_id()));
             check_stmt(db, sqlite3_bind_int(f_stmt, sqlite3_bind_parameter_index(f_stmt, "@zid"), val.first.get_id()));
-            check_stmt(db, sqlite3_bind_double(f_stmt, sqlite3_bind_parameter_index(f_stmt, "@f_linear"), val.second.f));
+            check_stmt(db, sqlite3_bind_double(f_stmt, sqlite3_bind_parameter_index(f_stmt, "@f_linear"), val.second.f_lin));
             check_stmt(db, sqlite3_bind_double(f_stmt, sqlite3_bind_parameter_index(f_stmt, "@fA"), val.second.fA));
             check_stmt(db, sqlite3_bind_double(f_stmt, sqlite3_bind_parameter_index(f_stmt, "@fB"), val.second.fB));
             check_stmt(db, sqlite3_bind_double(f_stmt, sqlite3_bind_parameter_index(f_stmt, "@fD"), val.second.fD));
@@ -625,8 +622,8 @@ namespace sqlite3_operations
         check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@params_id"), sample.get_params_token().get_id()));
         check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_id"), sample.get_Pk_token().get_id()));
         check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_resum_id"), sample.get_IR_resum_token().get_id()));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@X"), store_impl::make_dimensionless(sample.get_X())));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Y"), store_impl::make_dimensionless(sample.get_Y())));
+        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@X"), make_dimensionless(sample.get_X())));
+        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Y"), make_dimensionless(sample.get_Y())));
     
         // perform insertion
         check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_MATSUBARA_XY_FAIL, SQLITE_DONE);
@@ -665,10 +662,10 @@ namespace sqlite3_operations
         check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_id"), sample.get_Pk_token().get_id()));
         check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@params_id"), sample.get_params_token().get_id()));
         check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@kid"), sample.get_k_token().get_id()));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_raw"), store_impl::make_dimensionless(sample.get_Pk_raw())));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_nw"), store_impl::make_dimensionless(Pk_nw.value)));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_ref"), store_impl::make_dimensionless(sample.get_Pk_ref())));
-        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_nw_err"), store_impl::make_dimensionless(Pk_nw.error)));
+        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_raw"), make_dimensionless(sample.get_Pk_raw())));
+        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_nw"), make_dimensionless(Pk_nw.value)));
+        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_ref"), make_dimensionless(sample.get_Pk_ref())));
+        check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, "@Pk_nw_err"), make_dimensionless(Pk_nw.error)));
         check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@regions"), Pk_nw.regions));
         check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@evaluations"), Pk_nw.evaluations));
         check_stmt(db, sqlite3_bind_int64(stmt, sqlite3_bind_parameter_index(stmt, "@time"), Pk_nw.time));

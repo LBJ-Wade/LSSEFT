@@ -45,9 +45,13 @@ class MatsubaraXY_params
   public:
     
     //! constructor
-    MatsubaraXY_params(double a=LSSEFT_DEFAULT_INTEGRAL_ABS_ERR_22, double r=LSSEFT_DEFAULT_INTEGRAL_REL_ERR_22)
+    MatsubaraXY_params(Mpc_units::inverse_energy qmn=LSSEFT_DEFAULT_RESUM_QMIN,
+                       Mpc_units::inverse_energy qmx=LSSEFT_DEFAULT_RESUM_QMAX,
+                       double a=LSSEFT_DEFAULT_INTEGRAL_ABS_ERR_22, double r=LSSEFT_DEFAULT_INTEGRAL_REL_ERR_22)
       : abs_err(a),
-        rel_err(r)
+        rel_err(r),
+        qmin(qmn),
+        qmax(qmx)
       {
       }
     
@@ -65,6 +69,12 @@ class MatsubaraXY_params
     //! get relerr
     double get_relerr() const { return this->rel_err; }
     
+    //! get qmin
+    const Mpc_units::inverse_energy& get_qmin() const { return this->qmin; }
+    
+    //! get qmax
+    const Mpc_units::inverse_energy& get_qmax() const { return this->qmax; }
+    
     
     // INTERNAL DATA
   
@@ -76,6 +86,12 @@ class MatsubaraXY_params
     //! relative tolerance
     double rel_err;
     
+    //! minimum scale to use in averaging
+    Mpc_units::inverse_energy qmin;
+    
+    //! maximum scale to use in averaging
+    Mpc_units::inverse_energy qmax;
+    
     // enable boost::serialization support, and hence automated packing for transmission over MPI
     friend class boost::serialization::access;
     
@@ -84,6 +100,8 @@ class MatsubaraXY_params
       {
         ar & abs_err;
         ar & rel_err;
+        ar & qmin;
+        ar & qmax;
       }
     
   };

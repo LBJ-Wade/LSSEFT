@@ -63,8 +63,8 @@ class oneloop_Pk_calculator
     //! calculate power spectrum
     std::list<oneloop_Pk>
     calculate_dd(const Mpc_units::energy& k, const k_token& k_tok, const oneloop_growth& gf_factors,
-                     const loop_integral& loop_data, const initial_filtered_Pk& Pk_init,
-                     const boost::optional<const final_filtered_Pk&>& Pk_final);
+                 const loop_integral& loop_data, const initial_filtered_Pk& Pk_init,
+                 const boost::optional<const final_filtered_Pk&>& Pk_final);
     
     //! calculate resummed power spectrum
     
