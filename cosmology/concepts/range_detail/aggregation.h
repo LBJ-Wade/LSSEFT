@@ -126,8 +126,9 @@ class aggregation_range: public range<Value>
     //! grid of values
     std::vector<Value> elements;
 
-    //! set up type alias for subrange list; use std::unique_ptr<> to manage lifetime of instances
-    typedef std::list< std::unique_ptr< range<Value> > > subrange_list_type;
+    //! set up type alias for subrange list; use std::shared_ptr<> to manage lifetime of instances
+    //! so that we can construct copies without a large overhead in copying subranges
+    typedef std::list< std::shared_ptr< range<Value> > > subrange_list_type;
 
     //! list of subranges
     subrange_list_type subrange_list;

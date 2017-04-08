@@ -48,7 +48,7 @@ namespace oneloop_momentum_impl
         
         Mpc_units::energy2 intg = (data->k*data->k*data->k*data->k/(s_sq*s_sq)) * (data->k - 2.0*q*z)*(data->k - 2.0*q*z) * (z*z - 1.0);
         
-        f[0] = (data->jacobian_2d * intg * Pq * Ps) / Mpc_units::Mpc3;
+        f[0] = (data->jacobian_dqdx * intg * Pq * Ps) / Mpc_units::Mpc3;
 
         return 0;
       }
@@ -69,7 +69,7 @@ namespace oneloop_momentum_impl
         
         Mpc_units::energy2 intg = (data->k*data->k*data->k*data->k/(s_sq*s_sq)) * q * (q + data->k*z - 2.0*q*z*z) * (z*z - 1.0);
         
-        f[0] = (data->jacobian_2d * intg * Pq * Ps) / Mpc_units::Mpc3;
+        f[0] = (data->jacobian_dqdx * intg * Pq * Ps) / Mpc_units::Mpc3;
         
         return 0;
       }
@@ -90,7 +90,7 @@ namespace oneloop_momentum_impl
         
         Mpc_units::energy2 intg = (data->k*data->k*data->k*data->k/(s_sq*s_sq)) * (q + data->k*z - 2.0*q*z*z)*(q + data->k*z - 2.0*q*z*z);
         
-        f[0] = (data->jacobian_2d * intg * Pq * Ps) / Mpc_units::Mpc3;
+        f[0] = (data->jacobian_dqdx * intg * Pq * Ps) / Mpc_units::Mpc3;
         
         return 0;
       }
@@ -111,7 +111,7 @@ namespace oneloop_momentum_impl
         
         Mpc_units::energy2 intg = (data->k*data->k*data->k*data->k/(s_sq*s_sq)) * q * z * (data->k - q*z) * (z*z - 1.0);
         
-        f[0] = (data->jacobian_2d * intg * Pq * Ps) / Mpc_units::Mpc3;
+        f[0] = (data->jacobian_dqdx * intg * Pq * Ps) / Mpc_units::Mpc3;
         
         return 0;
       }
@@ -132,7 +132,7 @@ namespace oneloop_momentum_impl
         
         Mpc_units::energy2 intg = (data->k*data->k*data->k*data->k/(s_sq*s_sq)) * z * (data->k*data->k*z + q*q*z*(2.0*z*z-1.0) + data->k*(q - 3.0*q*z*z));
         
-        f[0] = (data->jacobian_2d * intg * Pq * Ps) / Mpc_units::Mpc3;
+        f[0] = (data->jacobian_dqdx * intg * Pq * Ps) / Mpc_units::Mpc3;
         
         return 0;
       }
@@ -151,9 +151,9 @@ namespace oneloop_momentum_impl
         Mpc_units::inverse_energy3 Pq = data->Pk(q);
         Mpc_units::inverse_energy3 Ps = s > data->IR_cutoff && s < data->UV_cutoff ? data->Pk(s) : Mpc_units::inverse_energy3(0);
         
-        Mpc_units::energy2 intg = (data->k*data->k*data->k*data->k/(s_sq*s_sq)) * q*q * (z*z - 1.0);
+        Mpc_units::energy2 intg = (data->k*data->k*data->k*data->k/(s_sq*s_sq)) * q*q * (z*z - 1.0)*(z*z - 1.0);
         
-        f[0] = (data->jacobian_2d * intg * Pq * Ps) / Mpc_units::Mpc3;
+        f[0] = (data->jacobian_dqdx * intg * Pq * Ps) / Mpc_units::Mpc3;
         
         return 0;
       }
@@ -174,7 +174,7 @@ namespace oneloop_momentum_impl
         
         Mpc_units::energy2 intg = (data->k*data->k*data->k*data->k/(s_sq*s_sq)) * (2.0*q*q + (data->k - 2.0*q*z)*(data->k + 2.0*q*z + data->k*z*z - 2.0*q*z*z*z));
         
-        f[0] = (data->jacobian_2d * intg * Pq * Ps) / Mpc_units::Mpc3;
+        f[0] = (data->jacobian_dqdx * intg * Pq * Ps) / Mpc_units::Mpc3;
         
         return 0;
       }
@@ -195,7 +195,7 @@ namespace oneloop_momentum_impl
         
         Mpc_units::energy2 intg = (data->k*data->k*data->k*data->k/(s_sq*s_sq)) * z * (data->k - q*z) * (q + data->k*z - 2.0*q*z*z);
         
-        f[0] = (data->jacobian_2d * intg * Pq * Ps) / Mpc_units::Mpc3;
+        f[0] = (data->jacobian_dqdx * intg * Pq * Ps) / Mpc_units::Mpc3;
         
         return 0;
       }
@@ -216,7 +216,7 @@ namespace oneloop_momentum_impl
         
         Mpc_units::energy2 intg = (data->k*data->k*data->k*data->k/(s_sq*s_sq)) * (2.0*data->k*data->k*z*z + data->k*q*z*(3.0-7.0*z*z) + q*q*(1.0-5.0*z*z+6.0*z*z*z*z));
         
-        f[0] = (data->jacobian_2d * intg * Pq * Ps) / Mpc_units::Mpc3;
+        f[0] = (data->jacobian_dqdx * intg * Pq * Ps) / Mpc_units::Mpc3;
         
         return 0;
       }
@@ -235,9 +235,9 @@ namespace oneloop_momentum_impl
         Mpc_units::inverse_energy3 Pq = data->Pk(q);
         Mpc_units::inverse_energy3 Ps = s > data->IR_cutoff && s < data->UV_cutoff ? data->Pk(s) : Mpc_units::inverse_energy3(0);
         
-        Mpc_units::energy2 intg = (data->k*data->k*data->k*data->k/(s_sq*s_sq)) * z * (2.0*data->k*data->k*z*z + q*q*z*(-1.0+3.0*z*z) + data->k*(q - 5.0*q*z*z));
+        Mpc_units::energy2 intg = (data->k*data->k*data->k*data->k/(s_sq*s_sq)) * z * (2.0*data->k*data->k*z + q*q*z*(-1.0+3.0*z*z) + data->k*(q - 5.0*q*z*z));
         
-        f[0] = (data->jacobian_2d * intg * Pq * Ps) / Mpc_units::Mpc3;
+        f[0] = (data->jacobian_dqdx * intg * Pq * Ps) / Mpc_units::Mpc3;
         
         return 0;
       }
@@ -258,7 +258,7 @@ namespace oneloop_momentum_impl
         
         Mpc_units::energy2 intg = (data->k*data->k*data->k*data->k/(s_sq*s_sq)) * (q + 2.0*data->k*z - 3.0*q*z*z) * (q + data->k*z - 2.0*q*z*z);
         
-        f[0] = (data->jacobian_2d * intg * Pq * Ps) / Mpc_units::Mpc3;
+        f[0] = (data->jacobian_dqdx * intg * Pq * Ps) / Mpc_units::Mpc3;
         
         return 0;
       }
@@ -279,7 +279,7 @@ namespace oneloop_momentum_impl
         
         Mpc_units::energy2 intg = (data->k*data->k*data->k*data->k/(s_sq*s_sq)) * z * (data->k - q*z) * (q + 2.0*data->k*z - 3.0*q*z*z);
         
-        f[0] = (data->jacobian_2d * intg * Pq * Ps) / Mpc_units::Mpc3;
+        f[0] = (data->jacobian_dqdx * intg * Pq * Ps) / Mpc_units::Mpc3;
         
         return 0;
       }
@@ -300,7 +300,7 @@ namespace oneloop_momentum_impl
         
         Mpc_units::energy2 intg = (data->k*data->k*data->k*data->k/(s_sq*s_sq)) * (z*z - 1.0) * (2.0*data->k*data->k - 12.0*data->k*q*z + 3.0*q*q*(-1.0 + 5.0*z*z));
         
-        f[0] = (data->jacobian_2d * intg * Pq * Ps) / Mpc_units::Mpc3;
+        f[0] = (data->jacobian_dqdx * intg * Pq * Ps) / Mpc_units::Mpc3;
         
         return 0;
       }
@@ -321,7 +321,7 @@ namespace oneloop_momentum_impl
         
         Mpc_units::energy2 intg = (data->k*data->k*data->k*data->k/(s_sq*s_sq)) * (8.0*data->k*q*z*(3.0 - 5.0*z*z) + 4.0*data->k*data->k*(-1.0 + 3.0*z*z) + q*q*(3.0 - 30.0*z*z + 35.0*z*z*z*z));
         
-        f[0] = (data->jacobian_2d * intg * Pq * Ps) / Mpc_units::Mpc3;
+        f[0] = (data->jacobian_dqdx * intg * Pq * Ps) / Mpc_units::Mpc3;
         
         return 0;
       }

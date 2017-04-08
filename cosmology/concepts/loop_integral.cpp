@@ -145,10 +145,11 @@ rsd_13_integrals::rsd_13_integrals(const dimless_integral& _a, const dimless_int
   }
 
 
-loop_integral::loop_integral(const k_token& kt, const linear_Pk_token& Pkt, const UV_cutoff_token& UVt, const IR_cutoff_token& IRt,
-                             const delta_22_integrals& d22, const delta_13_integrals& d13,
-                             const rsd_22_integrals& r22, const rsd_13_integrals& r13)
+loop_integral::loop_integral(const k_token& kt, const loop_integral_params_token& pt, const linear_Pk_token& Pkt,
+                             const UV_cutoff_token& UVt, const IR_cutoff_token& IRt, const delta_22_integrals& d22,
+                             const delta_13_integrals& d13, const rsd_22_integrals& r22, const rsd_13_integrals& r13)
   : k(kt),
+    params(pt),
     Pk_lin(Pkt),
     UV_cutoff(UVt),
     IR_cutoff(IRt),
@@ -162,6 +163,7 @@ loop_integral::loop_integral(const k_token& kt, const linear_Pk_token& Pkt, cons
 
 loop_integral::loop_integral()
   : k(0),
+    params(0),
     Pk_lin(0),
     UV_cutoff(0),
     IR_cutoff(0),

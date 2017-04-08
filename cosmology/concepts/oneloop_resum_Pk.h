@@ -35,11 +35,9 @@
 
 // define convenience types for resummed versions of the basic power spectrum (~ 1/k^3) and k^2 * basic power spectrum (~ 1/k)
 // these differ from Pk_value and k2_Pk_value by dropping the need to keep raw & nowiggle information
-typedef Pk_value_group<Mpc_units::inverse_energy3> resum_Pk_value;
-typedef Pk_value_group<Mpc_units::inverse_energy>  k2_resum_Pk_value;
 
 // define a container class for the power spectrum data
-typedef generic_dd_Pk<resum_Pk_value, k2_resum_Pk_value> resum_dd_Pk;
+typedef generic_dd_Pk<Pk_element, k2_Pk_element> resum_dd_Pk;
 
 
 class oneloop_resum_Pk
@@ -50,7 +48,9 @@ class oneloop_resum_Pk
   public:
     
     //! value constructor
-    oneloop_resum_Pk(const k_token& kt, const linear_Pk_token& Pkt_i, const boost::optional<linear_Pk_token>& Pkt_f,
+    oneloop_resum_Pk(const k_token& kt, const growth_params_token& gp,
+                     const loop_integral_params_token& lp, const MatsubaraXY_params_token& XYp,
+                     const linear_Pk_token& Pkt_i, const boost::optional<linear_Pk_token>& Pkt_f,
                      const IR_cutoff_token& IRt, const UV_cutoff_token& UVt, const z_token& zt,
                      const IR_resum_token& IRrt, const resum_dd_Pk& Pkr);
     
@@ -67,6 +67,15 @@ class oneloop_resum_Pk
     
     //! get wavenumber token
     const k_token& get_k_token() const { return this->k; }
+    
+    //! get growth parameters token
+    const growth_params_token& get_growth_params_token() const { return this->growth_params; }
+    
+    //! get loop integral parameters token
+    const loop_integral_params_token& get_loop_params_token() const { return this->loop_params; }
+    
+    //! get XY parameters token
+    const MatsubaraXY_params_token& get_XY_params_token() const { return this->XY_params; }
     
     //! get initial power spectrum token
     const linear_Pk_token& get_init_Pk_token() const { return this->init_Pk; }
@@ -98,6 +107,15 @@ class oneloop_resum_Pk
     
     //! wavenumber token
     k_token k;
+    
+    //! growth parameters token
+    growth_params_token growth_params;
+    
+    //! loop parameters token
+    loop_integral_params_token loop_params;
+    
+    //! XY parameters token
+    MatsubaraXY_params_token XY_params;
     
     //! initial power spectrum token
     linear_Pk_token init_Pk;
@@ -131,6 +149,9 @@ class oneloop_resum_Pk
     void serialize(Archive& ar, unsigned int version)
       {
         ar & k;
+        ar & growth_params;
+        ar & loop_params;
+        ar & XY_params;
         ar & init_Pk;
         ar & final_Pk;
         ar & UV_cutoff;

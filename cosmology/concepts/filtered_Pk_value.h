@@ -30,7 +30,10 @@
 #include "database/tokens.h"
 #include "units/Mpc_units.h"
 
+#include "cosmology/Pk_filter.h"
+
 #include "boost/serialization/serialization.hpp"
+
 
 class filtered_Pk_value
   {
@@ -40,8 +43,9 @@ class filtered_Pk_value
   public:
     
     //! value constructor
-    filtered_Pk_value(const k_token& kt, const linear_Pk_token& Pt, Mpc_units::inverse_energy3 _Pk_nw,
-                Mpc_units::inverse_energy3 _Pk_raw, Mpc_units::inverse_energy3 _Pk_ref);
+    filtered_Pk_value(const k_token& kt, const linear_Pk_token& Pt, const filter_params_token& pt,
+                      Pk_filter_result _Pk_nw, Mpc_units::inverse_energy3 _Pk_raw,
+                      Mpc_units::inverse_energy3 _Pk_ref);
     
     //! empty constructor, used only for receiving MPI payloads
     filtered_Pk_value();
@@ -67,11 +71,14 @@ class filtered_Pk_value
     //! get power spectrum token
     const linear_Pk_token& get_Pk_token() const { return this->Pk_tok; }
     
+    //! get filtering parameters token
+    const filter_params_token& get_params_token() const { return this->params_tok; }
+    
     //! get no-wiggle power spectrum
-    const Mpc_units::inverse_energy3 get_Pk_nowiggle() const { return this->Pk_nw; }
+    const Pk_filter_result get_Pk_nowiggle() const { return this->Pk_nw; }
     
     //! get raw power spectrum
-    const Mpc_units::inverse_energy3 get_Pk_raw() const { return this->Pk_raw; }
+    const Mpc_units::inverse_energy3& get_Pk_raw() const { return this->Pk_raw; }
     
     //! get reference power spectrum
     const Mpc_units::inverse_energy3 get_Pk_ref() const { return this->Pk_ref; }
@@ -93,11 +100,14 @@ class filtered_Pk_value
     //! power spectrum token
     linear_Pk_token Pk_tok;
     
+    //! parameters token
+    filter_params_token params_tok;
+    
     
     // PAYLOAD DATA
     
     //! no-wiggle power spectrum
-    Mpc_units::inverse_energy3 Pk_nw;
+    Pk_filter_result Pk_nw;
     
     //! raw power spectrum
     Mpc_units::inverse_energy3 Pk_raw;
@@ -115,6 +125,7 @@ class filtered_Pk_value
         ar & fail;
         ar & k_tok;
         ar & Pk_tok;
+        ar & params_tok;
         ar & Pk_nw;
         ar & Pk_raw;
         ar & Pk_ref;

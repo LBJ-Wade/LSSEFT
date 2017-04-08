@@ -81,6 +81,24 @@ class generic_Pk
                   double bottom_clearance = SPLINE_PK_DEFAULT_BOTTOM_CLEARANCE,
                   double top_clearance = SPLINE_PK_DEFAULT_TOP_CLEARANCE) const;
     
+    //! get smallest k-value we can evaluate
+    Mpc_units::energy get_min_k(double bottom_clearance = SPLINE_PK_DEFAULT_BOTTOM_CLEARANCE) const;
+    
+    //! get largest k-value we can evalute
+    Mpc_units::energy get_max_k(double top_clearance = SPLINE_PK_DEFAULT_TOP_CLEARANCE) const;
+    
+    
+    // RESCALING
+    
+  public:
+    
+    //! set rescaling factor
+    generic_Pk& set_rescaling(double f=1.0)
+      {
+        if(f > 0.0) this->rescale_factor = std::abs(f);
+        return *this;
+      }
+    
     
     // EVALUATION
     
@@ -116,8 +134,10 @@ class generic_Pk
 
     //! splines representing power spectrum
     std::unique_ptr<SPLINTER::DataTable> table;
-
     std::unique_ptr<SPLINTER::BSpline> spline;
+    
+    //! rescaling factor
+    double rescale_factor;
 
 
     // enable boost::serialization support and hence automated packing for transmission over MPI
@@ -128,12 +148,14 @@ class generic_Pk
     void save(Archive& ar, unsigned int version) const
       {
         ar << database;
+        ar << rescale_factor;
       }
     
     template <typename Archive>
     void load(Archive& ar, unsigned int version)
       {
         ar >> database;
+        ar >> rescale_factor;
         if(database.size() > 0) this->recalculate_spline();
       }
     
@@ -144,7 +166,8 @@ class generic_Pk
 
 template <typename Tag, typename Dimension, bool protect>
 generic_Pk<Tag, Dimension, protect>::generic_Pk(const Pk_database<Dimension>& db)
-  : database(db)
+  : database(db),
+    rescale_factor(1.0)
   {
     if(database.size() > 0) this->recalculate_spline();
   }
@@ -212,7 +235,7 @@ Dimension generic_Pk<Tag, Dimension, protect>::evaluate(const Mpc_units::energy&
     SPLINTER::DenseVector x(1);
     x(0) = k * Mpc_units::Mpc;
     
-    return(this->spline->eval(x) * Pk_database_impl::DimensionTraits<Dimension>().unit());
+    return(this->rescale_factor * this->spline->eval(x) * Pk_database_impl::DimensionTraits<Dimension>().unit());
   }
 
 
@@ -230,6 +253,20 @@ bool generic_Pk<Tag, Dimension, protect>::is_valid(const Mpc_units::energy& k, d
     if(k < bottom_clearance * this->database.get_k_min()) return false;
     
     return true;
+  }
+
+
+template <typename Tag, typename Dimension, bool protect>
+Mpc_units::energy generic_Pk<Tag, Dimension, protect>::get_min_k(double bottom_clearance) const
+  {
+    return bottom_clearance * this->database.get_k_min();
+  }
+
+
+template <typename Tag, typename Dimension, bool protect>
+Mpc_units::energy generic_Pk<Tag, Dimension, protect>::get_max_k(double top_clearance) const
+  {
+    return top_clearance * this->database.get_k_max();
   }
 
 

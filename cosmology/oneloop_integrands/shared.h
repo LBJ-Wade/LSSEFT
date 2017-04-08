@@ -81,14 +81,18 @@ namespace oneloop_momentum_impl
             UV_cutoff(UV),
             IR_cutoff(IR),
             Pk(_Pk),
-            // Jacobian for 2D integrals (over q and x)
+            // Jacobian for a d^3 q type integral (in practice, over q and x)
             // Jacobian for angular directions is 2 * 2pi = 4pi;
             // the integral over phi isn't done (the integrand doesn't depend on it), but the 2pi accounts for its contribution;
             // the theta integral has been switched to d(cos theta) which runs from -1 to +2 and contributes a factor 2
             // in practice we remove the pi to get a common factor of 1/8pi^2 in all integrals
-            jacobian_2d(2.0 * 2.0 * (UV_cutoff-IR_cutoff)),
-            // Jacobian for 1D integrals (over q alone) has no angular directions
-            jacobian_1d(UV_cutoff - IR_cutoff),
+            jacobian_d3q(2.0 * 2.0 * (UV_cutoff-IR_cutoff)),
+            // Jacobian for a dq dx type integral
+            // from dx there is a 2, and from dq we get UV-IR as usual
+            // the difference to d^3 q is that there is no integral over theta, so no 2pi to account for
+            jacobian_dqdx(2.0 * (UV_cutoff - IR_cutoff)),
+            // Jacobian for a dq type integral (ie., over q alone) -- no angular directions
+            jacobian_dq(UV_cutoff - IR_cutoff),
             q_range(UV_cutoff - IR_cutoff),
             k_sq(k*k)
           {
@@ -100,8 +104,9 @@ namespace oneloop_momentum_impl
         const Mpc_units::energy& IR_cutoff;
         const spline_Pk& Pk;
         
-        Mpc_units::energy  jacobian_2d;
-        Mpc_units::energy  jacobian_1d;
+        Mpc_units::energy  jacobian_d3q;
+        Mpc_units::energy  jacobian_dqdx;
+        Mpc_units::energy  jacobian_dq;
         Mpc_units::energy  q_range;
         Mpc_units::energy2 k_sq;
       };

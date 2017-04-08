@@ -26,11 +26,15 @@
 #include "oneloop_resum_Pk.h"
 
 
-oneloop_resum_Pk::oneloop_resum_Pk(const k_token& kt, const linear_Pk_token& Pkt_i,
-                                   const boost::optional<linear_Pk_token>& Pkt_f,
+oneloop_resum_Pk::oneloop_resum_Pk(const k_token& kt, const growth_params_token& gp,
+                                   const loop_integral_params_token& lp, const MatsubaraXY_params_token& XYp,
+                                   const linear_Pk_token& Pkt_i, const boost::optional<linear_Pk_token>& Pkt_f,
                                    const IR_cutoff_token& IRt, const UV_cutoff_token& UVt, const z_token& zt,
                                    const IR_resum_token& IRrt, const resum_dd_Pk& Pkr)
   : k(kt),
+    growth_params(gp),
+    loop_params(lp),
+    XY_params(XYp),
     init_Pk(Pkt_i),
     final_Pk(Pkt_f),
     IR_cutoff(IRt),
@@ -44,6 +48,9 @@ oneloop_resum_Pk::oneloop_resum_Pk(const k_token& kt, const linear_Pk_token& Pkt
 
 oneloop_resum_Pk::oneloop_resum_Pk()
   : k(0.0),
+    growth_params(0),
+    loop_params(0),
+    XY_params(0),
     init_Pk(0),
     final_Pk(boost::none),
     IR_cutoff(0),

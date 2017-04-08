@@ -27,7 +27,7 @@
 #define LSSEFT_ONE_LOOP_PK_H
 
 
-#include "loop_integral.h"
+#include "Pk_value.h"
 
 #include "database/tokens.h"
 #include "units/Mpc_units.h"
@@ -40,279 +40,24 @@
 
 
 template <typename ValueType>
-class Pk_value_group
-  {
-    
-  public:
-    
-    typedef ValueType value_type;
-    typedef ValueType error_type;
-    
-    //! value constructor
-    Pk_value_group(value_type v, value_type e=value_type(0.0))
-      : value(std::move(v)),
-        error(std::move(e))
-      {
-      }
-    
-    //! empty constructor
-    Pk_value_group()
-      : value(value_type(0.0)),
-        error(value_type(0.0))
-    {
-    }
-    
-    
-    // ACCESSORS
-    
-  public:
-    
-    //! get value
-    const value_type& get_value() const { return this->value; }
-    
-    //! get error
-    const value_type& get_error() const { return this->error; }
-    
-    
-    // INTERNAL DATA
-    
-  private:
-    
-    //! value for this Pk component
-    value_type value;
-    
-    //! erorr estimate for this Pk component
-    value_type error;
-  
-  
-  private:
-    
-    // enable boost::serialization support
-    friend class boost::serialization::access;
-    
-    template <typename Archive>
-    void serialize(Archive& ar, unsigned int version)
-      {
-        ar & value;
-        ar & error;
-      }
-    
-  };
-
-
-//! overload + and -
-template <typename ValueType>
-Pk_value_group<ValueType> operator+(const Pk_value_group<ValueType>& A, const Pk_value_group<ValueType>& B)
-  {
-    auto value = A.get_value() + B.get_value();
-    
-    double A_error = static_cast<double>(A.get_error());
-    double B_error = static_cast<double>(B.get_error());
-    double error = std::sqrt(A_error * A_error + B_error * B_error);
-    
-    return Pk_value_group<ValueType>(value, ValueType(error));
-  }
-
-template <typename ValueType>
-Pk_value_group<ValueType> operator-(const Pk_value_group<ValueType>& A, const Pk_value_group<ValueType>& B)
-  {
-    auto value = A.get_value() - B.get_value();
-    
-    double A_error = static_cast<double>(A.get_error());
-    double B_error = static_cast<double>(B.get_error());
-    double error = std::sqrt(A_error * A_error + B_error * B_error);
-    
-    return Pk_value_group<ValueType>(value, ValueType(error));
-  }
-
-
-//! overload scalar multiplication
-template <typename PkType, typename ScalarType, typename std::enable_if_t< !std::is_integral<ScalarType>::value >* = nullptr>
-auto operator*(const ScalarType& S, const Pk_value_group<PkType>& P) -> Pk_value_group<decltype(S*P.get_value())>
-  {
-    auto value = S * P.get_value();
-    auto error = std::abs(S) * P.get_error();
-    
-    return Pk_value_group<decltype(value)>(value, error);
-  }
-
-template <typename PkType, typename ScalarType, typename std::enable_if_t< !std::is_integral<ScalarType>::value >* = nullptr>
-auto operator*(const Pk_value_group<PkType>& P, const ScalarType& S) -> Pk_value_group<decltype(S*P.get_value())>
-  {
-    auto value = S * P.get_value();
-    auto error = std::abs(S) * P.get_error();
-    
-    return Pk_value_group<decltype(value)>(value, error);
-  }
-
-
-//! overload scalar division
-template <typename PkType, typename ScalarType, typename std::enable_if_t< !std::is_integral<ScalarType>::value >* = nullptr>
-auto operator/(const Pk_value_group<PkType>& P, const ScalarType& S) -> Pk_value_group<decltype(P.get_value()/S)>
-  {
-    auto value = P.get_value() / S;
-    auto error = P.get_error() / std::abs(S);
-    
-    return Pk_value_group<decltype(value)>(value, error);
-  }
-
-
-// AUTOMATIC CONVERSION OF LOOP INTEGRAL KERNELS TO PK VALUES
-
-
-// addition and subtraction of loop integral results gives a Pk_value_group
-template <typename ValueType>
-Pk_value_group<ValueType> operator+(const loop_integral_result<ValueType>& A, const loop_integral_result<ValueType>& B)
-  {
-    auto value = A.value + B.value;
-    double error = std::sqrt(static_cast<double>(A.error)*static_cast<double>(A.error) + static_cast<double>(B.error)*static_cast<double>(B.error));
-    
-    return Pk_value_group<ValueType>(value, ValueType(error));
-  }
-
-template <typename ValueType>
-Pk_value_group<ValueType> operator-(const loop_integral_result<ValueType>& A, const loop_integral_result<ValueType>& B)
-  {
-    auto value = A.value - B.value;
-    double error = std::sqrt(static_cast<double>(A.error)*static_cast<double>(A.error) + static_cast<double>(B.error)*static_cast<double>(B.error));
-    
-    return Pk_value_group<ValueType>(value, ValueType(error));
-  }
-
-
-// addition and subtraction of loop integral results with Pk_value_group<>s gives Pk_value_group<>
-template <typename ValueType>
-Pk_value_group<ValueType> operator+(const Pk_value_group<ValueType>& A, const loop_integral_result<ValueType>& B)
-  {
-    auto value = A.get_value() + B.value;
-    
-    double A_error = static_cast<double>(A.get_error());
-    double B_error = static_cast<double>(B.error);
-    double error = std::sqrt(A_error * A_error + B_error * B_error);
-    
-    return Pk_value_group<ValueType>(value, ValueType(error));
-  }
-
-
-template <typename ValueType>
-Pk_value_group<ValueType> operator+(const loop_integral_result<ValueType>& A, const Pk_value_group<ValueType>& B)
-  {
-    auto value = A.value + B.get_value();
-    
-    double A_error = static_cast<double>(A.error);
-    double B_error = static_cast<double>(B.get_error());
-    double error = std::sqrt(A_error * A_error + B_error * B_error);
-    
-    return Pk_value_group<ValueType>(value, ValueType(error));
-  }
-
-
-template <typename ValueType>
-Pk_value_group<ValueType> operator-(const Pk_value_group<ValueType>& A, const loop_integral_result<ValueType>& B)
-  {
-    auto value = A.get_value() - B.value;
-    
-    double A_error = static_cast<double>(A.get_error());
-    double B_error = static_cast<double>(B.error);
-    double error = std::sqrt(A_error * A_error + B_error * B_error);
-    
-    return Pk_value_group<ValueType>(value, ValueType(error));
-  }
-
-
-template <typename ValueType>
-Pk_value_group<ValueType> operator-(const loop_integral_result<ValueType>& A, const Pk_value_group<ValueType>& B)
-  {
-    auto value = A.value - B.get_value();
-    
-    double A_error = static_cast<double>(A.error);
-    double B_error = static_cast<double>(B.get_error());
-    double error = std::sqrt(A_error * A_error + B_error * B_error);
-    
-    return Pk_value_group<ValueType>(value, ValueType(error));
-  }
-
-
-// allow multiplication of loop integral results by scalar-type objects
-template <typename ScalarType, typename LoopType, typename std::enable_if_t< !std::is_integral<ScalarType>::value >* = nullptr>
-auto operator*(const ScalarType& S, const loop_integral_result<LoopType>& L) -> Pk_value_group<decltype(S*L.value)>
-{
-    return Pk_value_group<decltype(S*L.value)>(S * L.value, std::abs(S) * L.error);
-  };
-
-
-template <typename ScalarType, typename LoopType, typename std::enable_if_t< !std::is_integral<ScalarType>::value >* = nullptr>
-auto operator*(const loop_integral_result<LoopType>& L, const ScalarType& S) -> Pk_value_group<decltype(S*L.value)>
-  {
-    return Pk_value_group<decltype(S*L.value)>(S * L.value, std::abs(S) * L.error);
-  };
-
-
-// multiplication of loop integral results by Pk_value_group<> gives a Pk_value_group<>
-template <typename PkType, typename LoopType>
-auto operator*(const Pk_value_group<PkType> P, const loop_integral_result<LoopType>& L) -> Pk_value_group<decltype(P.get_value()*L.value)>
-  {
-    auto value = P.get_value() * L.value;
-    
-    double relP_err = P.get_error() / P.get_value();
-    double relL_err = L.error / L.value;
-    
-    if(!std::isfinite(relP_err)) relP_err = 0.0;
-    if(!std::isfinite(relL_err)) relL_err = 0.0;
-    
-    double quadrature = std::sqrt(relP_err * relP_err + relL_err * relL_err);
-    
-    return Pk_value_group<decltype(value)>(value, std::abs(value) * quadrature);
-  };
-
-
-template <typename PkType, typename LoopType>
-auto operator*(const loop_integral_result<LoopType>& L, const Pk_value_group<PkType> P) -> Pk_value_group<decltype(P.get_value()*L.value)>
-  {
-    auto value = P.get_value() * L.value;
-    
-    double relP_err = P.get_error() / P.get_value();
-    double relL_err = L.error / L.value;
-    
-    if(!std::isfinite(relP_err)) relP_err = 0.0;
-    if(!std::isfinite(relL_err)) relL_err = 0.0;
-    
-    double quadrature = std::sqrt(relP_err * relP_err + relL_err * relL_err);
-    
-    return Pk_value_group<decltype(value)>(value, std::abs(value) * quadrature);
-  };
-
-
-// allow multiplication of Pk_value_group<> objects by other Pk_value_group<> objects
-template <typename PkTypeA, typename PkTypeB>
-auto operator*(const Pk_value_group<PkTypeA> PA, const Pk_value_group<PkTypeB>& PB) -> Pk_value_group<decltype(PA.get_value()*PB.get_value())>
-  {
-    auto value = PA.get_value() * PB.get_value();
-    
-    double relPA_err = PA.get_error() / PA.get_value();
-    double relPB_err = PB.get_error() / PB.get_value();
-    
-    if(!std::isfinite(relPA_err)) relPA_err = 0.0;
-    if(!std::isfinite(relPB_err)) relPB_err = 0.0;
-    
-    double quadrature = std::sqrt(relPA_err * relPA_err + relPB_err * relPB_err);
-    
-    return Pk_value_group<decltype(value)>(value, std::abs(value) * quadrature);
-  };
-
-
-template <typename ValueType>
 class raw_wiggle_Pk_component
   {
+    
+    // TYPES
     
   public:
     
     typedef ValueType value_type;
     typedef Pk_value_group<ValueType> container_type;
     
+    
+    // CONSTRUCTOR, DESTRUCTOR
+    
+  public:
+    
     //! value constructor; error is zero if not specified which allows
     //! assignment-on-construction to a fixed number
-    raw_wiggle_Pk_component(Pk_value_group<ValueType> r, Pk_value_group<ValueType> nw)
+    raw_wiggle_Pk_component(container_type r, container_type nw)
       : raw(std::move(r)),
         nowiggle(std::move(nw))
       {
@@ -331,19 +76,19 @@ class raw_wiggle_Pk_component
   public:
     
     //! get raw data
-    const Pk_value_group<ValueType>& get_raw() const { return this->raw; }
+    const container_type& get_raw() const { return this->raw; }
     
     //! get wiggle data
-    const Pk_value_group<ValueType> get_wiggle() const { return this->raw - this->nowiggle; }
+    const container_type get_wiggle() const { return this->raw - this->nowiggle; }
     
     //! get no-wiggle data
-    const Pk_value_group<ValueType>& get_nowiggle() const { return this->nowiggle; }
+    const container_type& get_nowiggle() const { return this->nowiggle; }
     
     //! set raw data
-    void set_raw(Pk_value_group<ValueType> r) { this->raw = r; }
+    raw_wiggle_Pk_component<ValueType>& set_raw(Pk_value_group<ValueType> r) { this->raw = std::move(r); return *this; }
     
     //! set wiggle data
-    void set_nowiggle(Pk_value_group<ValueType> w) { this->nowiggle = w; }
+    raw_wiggle_Pk_component<ValueType>& set_nowiggle(Pk_value_group<ValueType> w) { this->nowiggle = std::move(w); return *this; }
     
     
     // DATA
@@ -351,10 +96,10 @@ class raw_wiggle_Pk_component
   private:
     
     //! raw data
-    Pk_value_group<ValueType> raw;
+    container_type raw;
     
     //! wiggle data
-    Pk_value_group<ValueType> nowiggle;
+    container_type nowiggle;
   
   
   private:
@@ -421,6 +166,14 @@ template <typename ScalarType, typename PkType, typename std::enable_if_t< !std:
 auto operator/(const raw_wiggle_Pk_component<PkType>& P, const ScalarType& S) -> raw_wiggle_Pk_component<decltype(P.get_raw().get_value()/S)>
   {
     return raw_wiggle_Pk_component<decltype(P.get_raw().get_value()/S)>(P.get_raw() / S, P.get_nowiggle() / S);
+  }
+
+
+//! overload multiplication of raw_wiggle_Pk_component<>s
+template <typename PkTypeA, typename PkTypeB>
+auto operator*(const raw_wiggle_Pk_component<PkTypeA> PA, const raw_wiggle_Pk_component<PkTypeB>& PB) -> raw_wiggle_Pk_component<decltype(PA.get_raw().get_value()*PB.get_raw().get_value())>
+  {
+    return raw_wiggle_Pk_component<decltype(PA.get_raw().get_value()*PB.get_raw().get_value())>(PA.get_raw() * PB.get_raw(), PA.get_nowiggle() * PB.get_nowiggle());
   }
 
 
@@ -493,14 +246,6 @@ template <typename ValueType>
 raw_wiggle_Pk_component<ValueType> operator-(const loop_integral_output<ValueType>& A, const raw_wiggle_Pk_component<ValueType>& B)
   {
     return raw_wiggle_Pk_component<ValueType>(A.get_raw() - B.get_raw(), A.get_nowiggle() - B.get_nowiggle());
-  }
-
-
-// multiplication of raw_wiggle_Pk_component<>s
-template <typename PkTypeA, typename PkTypeB>
-auto operator*(const raw_wiggle_Pk_component<PkTypeA> PA, const raw_wiggle_Pk_component<PkTypeB>& PB) -> raw_wiggle_Pk_component<decltype(PA.get_raw().get_value()*PB.get_raw().get_value())>
-  {
-    return raw_wiggle_Pk_component<decltype(PA.get_raw().get_value()*PB.get_raw().get_value())>(PA.get_raw() * PB.get_raw(), PA.get_nowiggle() * PB.get_nowiggle());
   }
 
 
@@ -637,10 +382,10 @@ class rsd_dd_Pk
   public:
     
     //! value constructor
-    rsd_dd_Pk(const Pk_value& _Pt, const Pk_value& _P13, const Pk_value& _P22,
-              const k2_Pk_value& _Z2d, const Pk_value& _Z0v, const k2_Pk_value& _Z2v,
-              const Pk_value& _Z0vd, const k2_Pk_value& _Z2vd,
-              const k2_Pk_value& _Z2vv, const k2_Pk_value& _Z2vvd, const k2_Pk_value& _Z2vvv);
+    rsd_dd_Pk(const Pk_value& _Pt, const Pk_value& _P13, const Pk_value& _P22, const k2_Pk_value& _Z2d,
+              const Pk_value& _Z0v, const k2_Pk_value& _Z2v, const Pk_value& _Z0vd, const k2_Pk_value& _Z2vd,
+              const k2_Pk_value& _Z2vvA, const k2_Pk_value& _Z2vvB, const k2_Pk_value& _Z2vvd,
+              const k2_Pk_value& _Z2vvv, const k2_Pk_value& _Z2_total);
     
     //! empty constructor for use when overwriting with MPI payloads
     rsd_dd_Pk();
@@ -692,9 +437,13 @@ class rsd_dd_Pk
     k2_Pk_value& get_Z2_vdelta() { return this->Z2_vdelta; }
     const k2_Pk_value& get_Z2_vdelta() const { return this->Z2_vdelta; }
     
-    //! get Z2_vv counterterm
-    k2_Pk_value& get_Z2_vv() { return this->Z2_vv; }
-    const k2_Pk_value& get_Z2_vv() const { return this->Z2_vv; }
+    //! get A-type Z2_vv counterterm
+    k2_Pk_value& get_Z2_vv_A() { return this->Z2_vv_A; }
+    const k2_Pk_value& get_Z2_vv_A() const { return this->Z2_vv_A; }
+    
+    //! get B-type Z2_vv counterterm
+    k2_Pk_value& get_Z2_vv_B() { return this->Z2_vv_B; }
+    const k2_Pk_value& get_Z2_vv_B() const { return this->Z2_vv_B; }
     
     //! get Z2_vvdelta counterterm
     k2_Pk_value& get_Z2_vvdelta() { return this->Z2_vvdelta; }
@@ -703,6 +452,10 @@ class rsd_dd_Pk
     //! get Z2_vvv counterterm
     k2_Pk_value& get_Z2_vvv() { return this->Z2_vvv; }
     const k2_Pk_value& get_Z2_vvv() const { return this->Z2_vvv; }
+    
+    //± get total Z2_total counterterm
+    k2_Pk_value& get_Z2_total() { return this->Z2_total; }
+    const k2_Pk_value& get_Z2_total() const { return this->Z2_total; }
     
     
     // INTERNAL DATA
@@ -736,14 +489,20 @@ class rsd_dd_Pk
     //! coefficient of the counterterm Z2_vd
     k2_Pk_value Z2_vdelta;
     
-    //! coefficient of the counterterm Z2_vv
-    k2_Pk_value Z2_vv;
+    //! coefficient of the A-type counterterm Z2_vv_B
+    k2_Pk_value Z2_vv_A;
+    
+    //! coefficient of the B-type counterterm Z2_vv_B
+    k2_Pk_value Z2_vv_B;
     
     //! coefficient of the counterterm Z2_vvdelta
     k2_Pk_value Z2_vvdelta;
     
     //! coefficient of the counterterm Z2_vvv
     k2_Pk_value Z2_vvv;
+    
+    //! coefficient of the total counterterm for this power of mu
+    k2_Pk_value Z2_total;
     
     
     // enable boost::serialization support
@@ -761,9 +520,11 @@ class rsd_dd_Pk
         ar & Z2_v;
         ar & Z0_vdelta;
         ar & Z2_vdelta;
-        ar & Z2_vv;
+        ar & Z2_vv_A;
+        ar & Z2_vv_B;
         ar & Z2_vvdelta;
         ar & Z2_vvv;
+        ar & Z2_total;
       }
     
   };
@@ -777,9 +538,10 @@ class oneloop_Pk
   public:
     
     //! value constructor
-    oneloop_Pk(const k_token& kt, const linear_Pk_token& Pkt_i, const boost::optional<linear_Pk_token>& Pkt_f,
-               const IR_cutoff_token& IRt, const UV_cutoff_token& UVt, const z_token& zt,
-               const dd_Pk& _dd, const rsd_dd_Pk& _rsd_mu0, const rsd_dd_Pk& _rsd_mu2, const rsd_dd_Pk& _rsd_mu4,
+    oneloop_Pk(const k_token& kt, const growth_params_token& gt, const loop_integral_params_token& lt,
+               const linear_Pk_token& Pkt_i, const boost::optional<linear_Pk_token>& Pkt_f,
+               const IR_cutoff_token& IRt, const UV_cutoff_token& UVt, const z_token& zt, const dd_Pk& _dd,
+               const rsd_dd_Pk& _rsd_mu0, const rsd_dd_Pk& _rsd_mu2, const rsd_dd_Pk& _rsd_mu4,
                const rsd_dd_Pk& _rsd_mu6, const rsd_dd_Pk& _rsd_mu8);
     
     //! empty constructor, used when receiving an MPI payload
@@ -795,6 +557,12 @@ class oneloop_Pk
     
     //! get wavenumber token
     const k_token& get_k_token() const { return this->k; }
+    
+    //! get loop integral parameter token
+    const loop_integral_params_token& get_loop_params() const { return this->loop_params; }
+    
+    //! get growth parameters token
+    const growth_params_token& get_growth_params() const { return this->growth_params; }
     
     //! get initial power spectrum token
     const linear_Pk_token& get_init_Pk_token() const { return this->init_Pk; }
@@ -840,6 +608,12 @@ class oneloop_Pk
     //! wavenumber token
     k_token k;
     
+    //! loop parameters token
+    loop_integral_params_token loop_params;
+    
+    //! growth parameters token
+    growth_params_token growth_params;
+    
     //! initial power spectrum token
     linear_Pk_token init_Pk;
     
@@ -884,6 +658,8 @@ class oneloop_Pk
     void serialize(Archive& ar, unsigned int version)
       {
         ar & k;
+        ar & loop_params;
+        ar & growth_params;
         ar & init_Pk;
         ar & final_Pk;
         ar & UV_cutoff;

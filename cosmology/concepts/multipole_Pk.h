@@ -27,11 +27,95 @@
 #define LSSEFT_MULTIPOLE_PK_H
 
 
+#include "Pk_resum_value.h"
+
 #include "database/tokens.h"
 #include "units/Mpc_units.h"
 
 #include "boost/timer/timer.hpp"
 #include "boost/serialization/serialization.hpp"
+
+
+template <typename ValueType>
+class Legendre_multiplet
+  {
+    
+    // TYPES
+  
+  public:
+    
+    typedef ValueType value_type;
+    
+    
+    // CONSTRUCTOR, DESTSRUCTOR
+    
+  public:
+    
+    //! constructor
+    Legendre_multiplet(value_type ell0_, value_type ell2_, value_type ell4_)
+      : ell0(std::move(ell0_)),
+        ell2(std::move(ell2_)),
+        ell4(std::move(ell4_))
+      {
+      }
+    
+    //! empty constructor
+    Legendre_multiplet()
+      : ell0(),
+        ell2(),
+        ell4()
+      {
+      }
+    
+    //! destructor is default
+    ~Legendre_multiplet() = default;
+    
+    
+    // ACCESSORS
+    
+  public:
+    
+    //! get ell = 0 mode
+    const value_type& get_ell0() const { return this->ell0; }
+    
+    //! get ell = 2 mode
+    const value_type& get_ell2() const { return this->ell2; }
+    
+    //! get ell = 4 mode
+    const value_type& get_ell4() const { return this->ell4; }
+    
+    
+    // INTERNAL DATA
+    
+  private:
+    
+    //! ell = 0 mode
+    value_type ell0;
+    
+    //! ell = 2 mode
+    value_type ell2;
+    
+    //! ell = 4 mode
+    value_type ell4;
+    
+    
+    // enable boost::serialization support
+    friend class boost::serialization::access;
+    
+    
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & ell0;
+        ar & ell2;
+        ar & ell4;
+      }
+    
+  };
+
+
+typedef Legendre_multiplet<k2_Pk_resum> k2_Pk_resum_multiplet;
+typedef Legendre_multiplet<Pk_resum> Pk_resum_multiplet;
 
 
 class Pk_ell
@@ -42,17 +126,12 @@ class Pk_ell
   public:
     
     //! value constructor
-    Pk_ell(const Mpc_units::inverse_energy3& _Pt, const Mpc_units::inverse_energy3& _Pt_resum,
-           const Mpc_units::inverse_energy3& _P13, const Mpc_units::inverse_energy3& _P13_resum,
-           const Mpc_units::inverse_energy3& _P22, const Mpc_units::inverse_energy3& _P22_resum,
-           const Mpc_units::inverse_energy3& _PSPT, const Mpc_units::inverse_energy3& _PSPT_resum,
-           const Mpc_units::inverse_energy& _Z2d, const Mpc_units::inverse_energy3& _Z0v,
-           const Mpc_units::inverse_energy& _Z2v, const Mpc_units::inverse_energy3& _Z0vd,
-           const Mpc_units::inverse_energy& _Z2vd, const Mpc_units::inverse_energy& _Z2vv,
-           const Mpc_units::inverse_energy& _Z2vvd, const Mpc_units::inverse_energy& _Z2vvv);
-    
-    //! empty constructor for use when overwriting with MPI payloads
-    Pk_ell();
+    Pk_ell(const Pk_resum& _tree, const Pk_resum& _P13, const Pk_resum& _P22, const Pk_resum& _PSPT,
+           const k2_Pk_resum& _Z2_d, const Pk_resum& _Z0_v, const k2_Pk_resum& _Z2_v, const Pk_resum& _Z0_vd,
+           const k2_Pk_resum& _Z2_vd, const k2_Pk_resum& _Z2_vv_A, const k2_Pk_resum& _Z2_vv_B,
+           const k2_Pk_resum& _Z2_vvd, const k2_Pk_resum& _Z2_vvv, const k2_Pk_resum& _Z2_mu0,
+           const k2_Pk_resum& _Z2_mu2, const k2_Pk_resum& _Z2_mu4, const k2_Pk_resum& _Z2_mu6,
+           const k2_Pk_resum& _Z2_mu8);
     
     //! destructor is default
     ~Pk_ell() = default;
@@ -63,68 +142,58 @@ class Pk_ell
   public:
 
     //! get tree value
-    Mpc_units::inverse_energy3& get_tree() { return Ptree; }
-    const Mpc_units::inverse_energy3& get_tree() const { return Ptree; }
-    
-    //! get resummed tree value
-    Mpc_units::inverse_energy3& get_tree_resum() { return Ptree_resum; }
-    const Mpc_units::inverse_energy3& get_tree_resum() const { return Ptree_resum; }
+    const Pk_resum& get_tree() const { return Ptree; }
     
     //! get 13 term
-    Mpc_units::inverse_energy3& get_13() { return P13; }
-    const Mpc_units::inverse_energy3& get_13() const { return P13; }
-    
-    //! get resummed 13 term
-    Mpc_units::inverse_energy3& get_13_resum() { return P13_resum; }
-    const Mpc_units::inverse_energy3& get_13_resum() const { return P13_resum; }
+    const Pk_resum& get_13() const { return P13; }
     
     //! get 22 term
-    Mpc_units::inverse_energy3& get_22() { return P22; }
-    const Mpc_units::inverse_energy3& get_22() const { return P22; }
-    
-    //! get resummed 22 term
-    Mpc_units::inverse_energy3& get_22_resum() { return P22_resum; }
-    const Mpc_units::inverse_energy3& get_22_resum() const { return P22_resum; }
+    const Pk_resum& get_22() const { return P22; }
 
     //! get full 1-loop SPT
-    Mpc_units::inverse_energy3& get_1loop_SPT() { return PSPT; }
-    const Mpc_units::inverse_energy3& get_1loop_SPT() const { return PSPT; }
-    
-    //! get full 1-loop SPT resummed
-    Mpc_units::inverse_energy3& get_1loop_SPT_resum() { return PSPT_resum; }
-    const Mpc_units::inverse_energy3& get_1loop_SPT_resum() const { return PSPT_resum; }
+    const Pk_resum& get_1loop_SPT() const { return PSPT; }
     
     //! get Z2_delta counterterm
-    Mpc_units::inverse_energy& get_Z2_delta() { return Z2_delta; }
-    const Mpc_units::inverse_energy& get_Z2_delta() const { return Z2_delta; }
+    const k2_Pk_resum& get_Z2_delta() const { return Z2_d; }
     
     //! get Z0_v counterterm
-    Mpc_units::inverse_energy3& get_Z0_v() { return Z0_v; }
-    const Mpc_units::inverse_energy3& get_Z0_v() const { return Z0_v; }
+    const Pk_resum& get_Z0_v() const { return Z0_v; }
     
     //! get Z2_v counterterm
-    Mpc_units::inverse_energy& get_Z2_v() { return Z2_v; }
-    const Mpc_units::inverse_energy& get_Z2_v() const { return Z2_v; }
+    const k2_Pk_resum& get_Z2_v() const { return Z2_v; }
     
     //! get Z0_vdelta counterterm
-    Mpc_units::inverse_energy3& get_Z0_vdelta() { return Z0_vdelta; }
-    const Mpc_units::inverse_energy3& get_Z0_vdelta() const { return Z0_vdelta; }
+    const Pk_resum& get_Z0_vdelta() const { return Z0_vd; }
     
     //! get Z2_vdelta counterterm
-    Mpc_units::inverse_energy& get_Z2_vdelta() { return Z2_vdelta; }
-    const Mpc_units::inverse_energy& get_Z2_vdelta() const { return Z2_vdelta; }
+    const k2_Pk_resum& get_Z2_vdelta() const { return Z2_vd; }
     
-    //! get Z2_v counterterm
-    Mpc_units::inverse_energy& get_Z2_vv() { return Z2_vv; }
-    const Mpc_units::inverse_energy& get_Z2_vv() const { return Z2_vv; }
+    //! get Z2_v counterterm - A coefficient
+    const k2_Pk_resum& get_Z2_vv_A() const { return Z2_vv_A; }
+    
+    //! get Z2_v counterterm - B coefficient
+    const k2_Pk_resum& get_Z2_vv_B() const { return Z2_vv_B; }
     
     //! get Z2_vvdelta counterterm
-    Mpc_units::inverse_energy& get_Z2_vvdelta() { return Z2_vvdelta; }
-    const Mpc_units::inverse_energy& get_Z2_vvdelta() const { return Z2_vvdelta; }
+    const k2_Pk_resum& get_Z2_vvdelta() const { return Z2_vvd; }
     
     //! get Z2_vvv counterterm
-    Mpc_units::inverse_energy& get_Z2_vvv() { return Z2_vvv; }
-    const Mpc_units::inverse_energy& get_Z2_vvv() const { return Z2_vvv; }
+    const k2_Pk_resum& get_Z2_vvv() const { return Z2_vvv; }
+    
+    //! get mu^0 counterterm
+    const k2_Pk_resum& get_Z2_mu0() const { return Z2_mu0; }
+    
+    //! get mu^2 counterterm
+    const k2_Pk_resum& get_Z2_mu2() const { return Z2_mu2; }
+    
+    //! get mu^4 counterterm
+    const k2_Pk_resum& get_Z2_mu4() const { return Z2_mu4; }
+    
+    //! get mu^6 counterterm
+    const k2_Pk_resum& get_Z2_mu6() const { return Z2_mu6; }
+    
+    //! get mu^8 counterterm
+    const k2_Pk_resum& get_Z2_mu8() const { return Z2_mu8; }
     
     
     // INTERNAL DATA
@@ -132,55 +201,61 @@ class Pk_ell
   private:
     
     //! tree term
-    Mpc_units::inverse_energy3 Ptree;
-  
-    //! tree term - resummed
-    Mpc_units::inverse_energy3 Ptree_resum;
+    Pk_resum Ptree;
     
     //! 13 term
-    Mpc_units::inverse_energy3 P13;
-    
-    //! 13 term - resummed
-    Mpc_units::inverse_energy3 P13_resum;
+    Pk_resum P13;
     
     //! 22 term
-    Mpc_units::inverse_energy3 P22;
-    
-    //! 22 term - resummed
-    Mpc_units::inverse_energy3 P22_resum;
+    Pk_resum P22;
     
     //! full 1-loop SPT power spectrum
-    Mpc_units::inverse_energy3 PSPT;
-    
-    //! full 1-loop SPT power spectrum - resummed
-    Mpc_units::inverse_energy3 PSPT_resum;
+    Pk_resum PSPT;
     
     
     // COUNTERTERMS
     
     //! Z2_delta
-    Mpc_units::inverse_energy Z2_delta;
+    k2_Pk_resum Z2_d;
     
     //! Z0_v
-    Mpc_units::inverse_energy3 Z0_v;
+    Pk_resum Z0_v;
     
     //! Z2_v
-    Mpc_units::inverse_energy Z2_v;
+    k2_Pk_resum Z2_v;
     
     //! Z0_vdelta
-    Mpc_units::inverse_energy3 Z0_vdelta;
+    Pk_resum Z0_vd;
     
     //! Z2_vdelta
-    Mpc_units::inverse_energy Z2_vdelta;
+    k2_Pk_resum Z2_vd;
     
-    //! Z2_vv
-    Mpc_units::inverse_energy Z2_vv;
+    //! Z2_vv - A coefficient
+    k2_Pk_resum Z2_vv_A;
+    
+    //! Z2_vv - B coefficient
+    k2_Pk_resum Z2_vv_B;
     
     //! Z2_vvdelta
-    Mpc_units::inverse_energy Z2_vvdelta;
+    k2_Pk_resum Z2_vvd;
     
     //! Z2_vvv
-    Mpc_units::inverse_energy Z2_vvv;
+    k2_Pk_resum Z2_vvv;
+    
+    //! Z2 counterterm for mu^0
+    k2_Pk_resum Z2_mu0;
+    
+    //! Z2 counterterm for mu^2
+    k2_Pk_resum Z2_mu2;
+    
+    //! Z2 counterterm for mu^4
+    k2_Pk_resum Z2_mu4;
+    
+    //! Z2 counterterm for mu^6
+    k2_Pk_resum Z2_mu6;
+    
+    //! Z2 counterterm for mu^8
+    k2_Pk_resum Z2_mu8;
     
     
     // enable boost::serialization support
@@ -190,24 +265,51 @@ class Pk_ell
     void serialize(Archive& ar, unsigned int version)
       {
         ar & Ptree;
-        ar & Ptree_resum;
         ar & P13;
-        ar & P13_resum;
         ar & P22;
-        ar & P22_resum;
         ar & PSPT;
-        ar & PSPT_resum;
-        ar & Z2_delta;
+        ar & Z2_d;
         ar & Z0_v;
         ar & Z2_v;
-        ar & Z0_vdelta;
-        ar & Z2_vdelta;
-        ar & Z2_vv;
-        ar & Z2_vvdelta;
+        ar & Z0_vd;
+        ar & Z2_vd;
+        ar & Z2_vv_A;
+        ar & Z2_vv_B;
+        ar & Z2_vvd;
         ar & Z2_vvv;
+        ar & Z2_mu0;
+        ar & Z2_mu2;
+        ar & Z2_mu4;
+        ar & Z2_mu6;
+        ar & Z2_mu8;
       }
     
   };
+
+
+namespace boost
+  {
+    
+    namespace serialization
+      {
+        
+        template <typename Archive>
+        inline void save_construct_data(Archive& ar, const Pk_ell* t, const unsigned int file_version)
+          {
+          }
+        
+        template <typename Archive>
+        inline void load_construct_data(Archive& ar, Pk_ell* t, const unsigned int file_version)
+          {
+            // invoke in-place constructor with zero elements; will be overwritten during deserialization
+            ::new(t) Pk_ell(Pk_resum(), Pk_resum(), Pk_resum(), Pk_resum(), k2_Pk_resum(), Pk_resum(),
+                            k2_Pk_resum(), Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(),
+                            k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum());
+          }
+        
+      }   // namespace serialization
+    
+  }   // namespace boost
 
 
 class multipole_Pk
@@ -218,11 +320,12 @@ class multipole_Pk
   public:
     
     //! value constructor
-    multipole_Pk(const k_token& kt, const linear_Pk_token& Pkt_i, const boost::optional<linear_Pk_token>& Pkt_f,
-                 const IR_cutoff_token& IRt, const UV_cutoff_token& UVt, const z_token& zt, const IR_resum_token& IRrt,
-                 const Pk_ell& _P0, const Pk_ell& _P2, const Pk_ell& _P4);
+    multipole_Pk(const k_token kt, const growth_params_token& gp, const loop_integral_params_token& lp,
+                 const MatsubaraXY_params_token& XYp, const linear_Pk_token Pkt_i,
+                 const boost::optional<linear_Pk_token> Pkt_f, const IR_cutoff_token IRt, const UV_cutoff_token UVt,
+                 const z_token zt, const IR_resum_token IRrt, const Pk_ell _P0, const Pk_ell _P2, const Pk_ell _P4);
     
-    //! empty constructor used for receiving MPI payloads
+    //! empty constructor for us in MPI payloads
     multipole_Pk();
     
     //! destructor is default
@@ -235,6 +338,15 @@ class multipole_Pk
     
     //! get wavenumber token
     const k_token& get_k_token() const { return this->k; }
+    
+    //! get growth parameters token
+    const growth_params_token& get_growth_params_token() const { return this->growth_params; }
+    
+    //! get loop integral parameters token
+    const loop_integral_params_token& get_loop_params_token() const { return this->loop_params; }
+    
+    //! get XY parameters token
+    const MatsubaraXY_params_token& get_XY_params_token() const { return this->XY_params; }
     
     //! get UV cutoff token
     const UV_cutoff_token& get_UV_cutoff_token() const { return this->UV_cutoff; }
@@ -278,6 +390,15 @@ class multipole_Pk
     //! wavenumber token
     k_token k;
     
+    //! growth parameters token
+    growth_params_token growth_params;
+    
+    //! loop parameters token
+    loop_integral_params_token loop_params;
+    
+    //! XY parameters token
+    MatsubaraXY_params_token XY_params;
+    
     //! initial linear power spectrum token
     linear_Pk_token init_Pk;
     
@@ -316,7 +437,11 @@ class multipole_Pk
     void serialize(Archive& ar, unsigned int version)
       {
         ar & k;
+        ar & growth_params;
+        ar & loop_params;
+        ar & XY_params;
         ar & init_Pk;
+        ar & final_Pk;
         ar & UV_cutoff;
         ar & IR_cutoff;
         ar & z;
@@ -327,6 +452,39 @@ class multipole_Pk
       }
 
   };
+
+
+namespace boost
+  {
+    
+    namespace serialization
+      {
+        
+        template <typename Archive>
+        inline void save_construct_data(Archive& ar, const multipole_Pk* t, const unsigned int file_version)
+          {
+          }
+        
+        template <typename Archive>
+        inline void load_construct_data(Archive& ar, multipole_Pk* t, const unsigned int file_version)
+          {
+            // invoke in-place constructor with zero elements; will be overwritten during deserialization
+            Pk_resum empty_Pk;
+            k2_Pk_resum empty_k2_Pk;
+            
+            Pk_ell empty(empty_Pk, empty_Pk, empty_Pk, empty_Pk, empty_k2_Pk, empty_Pk,
+                         empty_k2_Pk, empty_Pk, empty_k2_Pk, empty_k2_Pk, empty_k2_Pk, empty_k2_Pk,
+                         empty_k2_Pk, empty_k2_Pk, empty_k2_Pk, empty_k2_Pk, empty_k2_Pk, empty_k2_Pk);
+    
+            ::new(t) multipole_Pk(k_token(0), growth_params_token(0), loop_integral_params_token(0),
+                                  MatsubaraXY_params_token(0), linear_Pk_token(0),
+                                  boost::none, IR_cutoff_token(0), UV_cutoff_token(0), z_token(0), IR_resum_token(0),
+                                  empty, empty, empty);
+          }
+        
+      }   // namespace serialization
+    
+  }   // namespace boost
 
 
 #endif //LSSEFT_MULTIPOLE_PK_H

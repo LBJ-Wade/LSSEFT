@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 PROJECT(LSSEFT)
 
 LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/)
@@ -20,18 +20,13 @@ ADD_CUSTOM_TARGET(DEPS ALL)
 SET(EXTERNAL_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/thirdparty/dist")
 
 BUILD_SPLINTER(${CMAKE_BINARY_DIR}/thirdparty/SPLINTER ${EXTERNAL_INSTALL_PREFIX})
+BUILD_CUBA(${CMAKE_BINARY_DIR}/thirdparty/Cuba ${EXTERNAL_INSTALL_PREFIX})
 
 # use version of Eigen3 bundled with SPLINTER
 SET(EIGEN3_INCLUDE_DIR "thirdparty/splinter/thirdparty/Eigen")
 
-# Cuba libraries and include files
-SET(CUBA_INCLUDE_DIR "/Users/ds283/Documents/Code/Cuba/Cuba-4.2" "/Users/david/Documents/Code/Cuba/Cuba-4.2" "/usr/local/include")
-SET(CUBA_LIBRARY_DIR "/Users/ds283/Documents/Code/Cuba/Cuba-4.2" "/Users/david/Documents/Code/Cuba/Cuba-4.2" "/usr/local/lib")
-
 SET(LOCALIZATION
   localizations/messages.h)
-
-LINK_DIRECTORIES(${CUBA_LIBRARY_DIR})
 
 SET(LOCALIZATION_EN_GB
   localizations/en_GB/en_GB.h
@@ -45,7 +40,8 @@ SET(LOCALIZATION_EN_GB
   localizations/en_GB/format.h
   localizations/en_GB/master_controller.h
   localizations/en_GB/power_spectrum.h
-  localizations/en_GB/Pk_filter.h)
+  localizations/en_GB/Pk_filter.h
+  localizations/en_GB/oneloop_Pk_calculator.h)
 
 SET(TOP_LEVEL_SOURCE_FILES
   main.cpp
@@ -59,7 +55,9 @@ SET(CONTROLLER_SOURCE_FILES
   controller/master_controller.cpp controller/master_controller.h
   controller/slave_controller.cpp controller/slave_controller.h
   controller/local_environment.cpp controller/local_environment.h
-  controller/scheduler.cpp controller/scheduler.h)
+  controller/scheduler.cpp controller/scheduler.h
+  controller/work_functions/Planck2015_controller.cpp
+  controller/work_functions/MDR1_controller.cpp)
 
 SET(UTILITY_SOURCE_FILES
   utilities/python_finder.cpp utilities/python_finder.h
@@ -78,7 +76,8 @@ SET(MPI_SOURCE_FILES
 
 SET(COSMOLOGY_SOURCE_FILES
   cosmology/FRW_model.cpp cosmology/FRW_model.h
-  cosmology/Planck_defaults.h
+  cosmology/models/Planck_defaults.h
+  cosmology/models/MDR1_sim.h
   cosmology/types.h
   cosmology/constants.h
   cosmology/concepts/range.h
@@ -100,6 +99,8 @@ SET(COSMOLOGY_SOURCE_FILES
   cosmology/concepts/oneloop_resum_Pk.cpp cosmology/concepts/oneloop_resum_Pk.h
   cosmology/concepts/Matsubara_XY.cpp cosmology/concepts/Matsubara_XY.h
   cosmology/concepts/filtered_Pk_value.cpp cosmology/concepts/filtered_Pk_value.h
+  cosmology/concepts/Pk_value.h
+  cosmology/concepts/Pk_resum_value.h
   cosmology/oneloop_integrands/shared.h
   cosmology/oneloop_integrands/delta_13.h
   cosmology/oneloop_integrands/delta_22.h
@@ -125,6 +126,7 @@ SET(DATABASE_SOURCE_FILES
   database/data_manager_impl/work_lists.cpp
   database/data_manager_impl/find.cpp
   database/data_manager_impl/transactions.cpp
+  database/data_manager_impl/admin.cpp
   database/tokens.cpp database/tokens.h
   database/transaction_manager.cpp database/transaction_manager.h
   database/wavenumber_database.h
@@ -152,7 +154,11 @@ SET(SQLITE3_DETAIL_SOURCE_FILES
   sqlite3_detail/missing_elements.cpp sqlite3_detail/missing_elements.h
   sqlite3_detail/store.cpp sqlite3_detail/store.h
   sqlite3_detail/find.cpp sqlite3_detail/find.h
-  sqlite3_detail/power_spectrum.h)
+  sqlite3_detail/power_spectrum.h
+  sqlite3_detail/filter_params.cpp sqlite3_detail/filter_params.h
+  sqlite3_detail/oneloop_params.cpp sqlite3_detail/oneloop_params.h
+  sqlite3_detail/MatsubaraXY_params.cpp sqlite3_detail/MatsubaraXY_params.h
+  sqlite3_detail/growth_params.cpp sqlite3_detail/growth_params.h)
 
 SET(SOURCE_FILES
   ${TOP_LEVEL_SOURCE_FILES}
@@ -168,7 +174,7 @@ SET(SOURCE_FILES
   ${LOCALIZATION}
   ${LOCALIZATION_EN_GB})
 
-ADD_EXECUTABLE(lsseft
+ADD_EXECUTABLE(lsseft-Planck2015
   main.cpp
   controller/argument_cache.cpp
   controller/local_environment.cpp
@@ -176,6 +182,7 @@ ADD_EXECUTABLE(lsseft
   controller/slave_controller.cpp
   controller/task_manager.cpp
   controller/scheduler.cpp
+  controller/work_functions/Planck2015_controller.cpp
   error/error_handler.cpp
   utilities/python_finder.cpp
   utilities/formatter.cpp
@@ -204,6 +211,7 @@ ADD_EXECUTABLE(lsseft
   database/data_manager_impl/work_lists.cpp
   database/data_manager_impl/find.cpp
   database/data_manager_impl/transactions.cpp
+  database/data_manager_impl/admin.cpp
   database/tokens.cpp
   database/transaction_manager.cpp
   database/z_database.cpp
@@ -213,25 +221,95 @@ ADD_EXECUTABLE(lsseft
   sqlite3_detail/create.cpp
   sqlite3_detail/FRW_model.cpp
   sqlite3_detail/redshift.cpp
+  sqlite3_detail/filter_params.cpp
+  sqlite3_detail/oneloop_params.cpp
+  sqlite3_detail/MatsubaraXY_params.cpp
+  sqlite3_detail/growth_params.cpp
   sqlite3_detail/temporary_tables.cpp
   sqlite3_detail/missing_elements.cpp
   sqlite3_detail/store.cpp
   sqlite3_detail/find.cpp
   sqlite3_detail/sqlite3_policy.cpp)
 
-ADD_DEPENDENCIES(lsseft DEPS)
-
-TARGET_LINK_LIBRARIES(lsseft sqlite3 cuba ${Boost_LIBRARIES} ${MPI_LIBRARIES} ${SPLINTER_LIBRARIES} ${OPENSSL_LIBRARIES})
-
-TARGET_COMPILE_OPTIONS(lsseft PRIVATE -std=c++14)
-
-TARGET_INCLUDE_DIRECTORIES(lsseft PRIVATE
+ADD_DEPENDENCIES(lsseft-Planck2015 DEPS)
+TARGET_LINK_LIBRARIES(lsseft-Planck2015 sqlite3 ${CUBA_LIBRARIES} ${Boost_LIBRARIES} ${MPI_LIBRARIES} ${SPLINTER_LIBRARIES} ${OPENSSL_LIBRARIES})
+TARGET_COMPILE_OPTIONS(lsseft-Planck2015 PRIVATE -std=c++14)
+TARGET_INCLUDE_DIRECTORIES(lsseft-Planck2015 PRIVATE
   ./
   ${CMAKE_CURRENT_BINARY_DIR}
   ${SPLINTER_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
   ${OPENSSL_INCLUDE_DIR}
   ${MPI_CXX_INCLUDE_PATH}
-  ${CUBA_INCLUDE_DIR})
+  ${CUBA_INCLUDE_DIRS})
+
+ADD_EXECUTABLE(lsseft-MDR1
+  main.cpp
+  controller/argument_cache.cpp
+  controller/local_environment.cpp
+  controller/master_controller.cpp
+  controller/slave_controller.cpp
+  controller/task_manager.cpp
+  controller/scheduler.cpp
+  controller/work_functions/MDR1_controller.cpp
+  error/error_handler.cpp
+  utilities/python_finder.cpp
+  utilities/formatter.cpp
+  cosmology/FRW_model.cpp
+  cosmology/concepts/transfer_function.cpp
+  cosmology/concepts/oneloop_growth.cpp
+  cosmology/concepts/loop_integral.cpp
+  cosmology/concepts/oneloop_Pk.cpp
+  cosmology/concepts/oneloop_resum_Pk.cpp
+  cosmology/concepts/multipole_Pk.cpp
+  cosmology/concepts/Matsubara_XY.cpp
+  cosmology/concepts/filtered_Pk_value.cpp
+  cosmology/concepts/power_spectrum_detail/wiggle.cpp
+  cosmology/concepts/power_spectrum_detail/spline.cpp
+  cosmology/transfer_integrator.cpp
+  cosmology/oneloop_growth_integrator.cpp
+  cosmology/oneloop_momentum_integrator.cpp
+  cosmology/oneloop_Pk_calculator.cpp
+  cosmology/multipole_Pk_calculator.cpp
+  cosmology/Pk_filter.cpp
+  cosmology/Matsubara_XY_calculator.cpp
+  database/data_manager_impl/data_manager.cpp
+  database/data_manager_impl/build_database.cpp
+  database/data_manager_impl/tokenize.cpp
+  database/data_manager_impl/lookup_insert.cpp
+  database/data_manager_impl/work_lists.cpp
+  database/data_manager_impl/find.cpp
+  database/data_manager_impl/transactions.cpp
+  database/data_manager_impl/admin.cpp
+  database/tokens.cpp
+  database/transaction_manager.cpp
+  database/z_database.cpp
+  database/z_record.cpp
+  MPI_detail/mpi_payloads.cpp
+  sqlite3_detail/utilities.cpp
+  sqlite3_detail/create.cpp
+  sqlite3_detail/FRW_model.cpp
+  sqlite3_detail/redshift.cpp
+  sqlite3_detail/filter_params.cpp
+  sqlite3_detail/oneloop_params.cpp
+  sqlite3_detail/MatsubaraXY_params.cpp
+  sqlite3_detail/growth_params.cpp
+  sqlite3_detail/temporary_tables.cpp
+  sqlite3_detail/missing_elements.cpp
+  sqlite3_detail/store.cpp
+  sqlite3_detail/find.cpp
+  sqlite3_detail/sqlite3_policy.cpp)
+
+ADD_DEPENDENCIES(lsseft-MDR1 DEPS)
+TARGET_LINK_LIBRARIES(lsseft-MDR1 sqlite3 ${CUBA_LIBRARIES} ${Boost_LIBRARIES} ${MPI_LIBRARIES} ${SPLINTER_LIBRARIES} ${OPENSSL_LIBRARIES})
+TARGET_COMPILE_OPTIONS(lsseft-MDR1 PRIVATE -std=c++14)
+TARGET_INCLUDE_DIRECTORIES(lsseft-MDR1 PRIVATE
+  ./
+  ${CMAKE_CURRENT_BINARY_DIR}
+  ${SPLINTER_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
+  ${OPENSSL_INCLUDE_DIR}
+  ${MPI_CXX_INCLUDE_PATH}
+  ${CUBA_INCLUDE_DIRS})
 
 ADD_EXECUTABLE(dummy_clion_target EXCLUDE_FROM_ALL ${SOURCE_FILES})

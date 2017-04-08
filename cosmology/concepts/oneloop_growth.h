@@ -42,7 +42,7 @@
 
 struct oneloop_growth_record
   {
-    double g;
+    double D_lin;
     double A;
     double B;
     double D;
@@ -51,7 +51,7 @@ struct oneloop_growth_record
     double G;
     double J;
     
-    double f;
+    double f_lin;
     double fA;
     double fB;
     double fD;
@@ -67,7 +67,7 @@ struct oneloop_growth_record
     template <typename Archive>
     void serialize(Archive& ar, unsigned int version)
       {
-        ar & g;
+        ar & D_lin;
         ar & A;
         ar & B;
         ar & D;
@@ -76,7 +76,7 @@ struct oneloop_growth_record
         ar & G;
         ar & J;
 
-        ar & f;
+        ar & f_lin;
         ar & fA;
         ar & fB;
         ar & fD;
@@ -116,12 +116,12 @@ namespace oneloop_growth_impl
 
         //! value constructor; points to a given element in the transfer function sample
         generic_tokenized_database_iterator(record_iterator r,
-                                            value_iterator g, value_iterator A, value_iterator B, value_iterator D,
+                                            value_iterator D_lin, value_iterator A, value_iterator B, value_iterator D,
                                             value_iterator E, value_iterator F, value_iterator G, value_iterator J,
-                                            value_iterator f, value_iterator fA, value_iterator fB, value_iterator fD,
+                                            value_iterator f_lin, value_iterator fA, value_iterator fB, value_iterator fD,
                                             value_iterator fE, value_iterator fF, value_iterator fG, value_iterator fJ)
           : record_iter(r),
-            g_iter(g),
+            D_lin_iter(D_lin),
             A_iter(A),
             B_iter(B),
             D_iter(D),
@@ -129,7 +129,7 @@ namespace oneloop_growth_impl
             F_iter(F),
             G_iter(G),
             J_iter(J),
-            f_iter(f),
+            f_lin_iter(f_lin),
             fA_iter(fA),
             fB_iter(fB),
             fD_iter(fD),
@@ -143,7 +143,7 @@ namespace oneloop_growth_impl
         //! copy constructor; allows implicit conversion from a regular iterator to a const iterator
         generic_tokenized_database_iterator(const generic_tokenized_database_iterator<RecordIterator, ConstRecordIterator, ValueIterator, ConstValueIterator, false>& obj)
           : record_iter(obj.record_iter),
-            g_iter(obj.g_iter),
+            D_lin_iter(obj.D_lin_iter),
             A_iter(obj.A_iter),
             B_iter(obj.B_iter),
             D_iter(obj.D_iter),
@@ -151,7 +151,7 @@ namespace oneloop_growth_impl
             F_iter(obj.F_iter),
             G_iter(obj.G_iter),
             J_iter(obj.J_iter),
-            f_iter(obj.f_iter),
+            f_lin_iter(obj.f_lin_iter),
             fA_iter(obj.fA_iter),
             fB_iter(obj.fB_iter),
             fD_iter(obj.fD_iter),
@@ -191,7 +191,7 @@ namespace oneloop_growth_impl
           {
             oneloop_growth_record rec;
 
-            rec.g = *this->g_iter;
+            rec.D_lin = *this->D_lin_iter;
             rec.A = *this->A_iter;
             rec.B = *this->B_iter;
             rec.D = *this->D_iter;
@@ -200,7 +200,7 @@ namespace oneloop_growth_impl
             rec.G = *this->G_iter;
             rec.J = *this->J_iter;
             
-            rec.f = *this->f_iter;
+            rec.f_lin = *this->f_lin_iter;
             rec.fA = *this->fA_iter;
             rec.fB = *this->fB_iter;
             rec.fD = *this->fD_iter;
@@ -220,7 +220,7 @@ namespace oneloop_growth_impl
         //! prefix decrement
         generic_tokenized_database_iterator& operator--()
           {
-            --this->g_iter;
+            --this->D_lin_iter;
             --this->A_iter;
             --this->B_iter;
             --this->D_iter;
@@ -243,7 +243,7 @@ namespace oneloop_growth_impl
         //! prefix increment
         generic_tokenized_database_iterator& operator++()
           {
-            ++this->g_iter;
+            ++this->D_lin_iter;
             ++this->A_iter;
             ++this->B_iter;
             ++this->D_iter;
@@ -252,7 +252,7 @@ namespace oneloop_growth_impl
             ++this->G_iter;
             ++this->J_iter;
             
-            ++this->f_iter;
+            ++this->f_lin_iter;
             ++this->fA_iter;
             ++this->fB_iter;
             ++this->fD_iter;
@@ -287,7 +287,7 @@ namespace oneloop_growth_impl
         record_iterator record_iter;
 
         //! iterator into linear growth factor sample
-        value_iterator g_iter;
+        value_iterator D_lin_iter;
 
         //! iterator into A sample
         value_iterator A_iter;
@@ -311,7 +311,7 @@ namespace oneloop_growth_impl
         value_iterator J_iter;
         
         //! iterator into linear growth rate sample
-        value_iterator f_iter;
+        value_iterator f_lin_iter;
         
         //! iterator into fA sample
         value_iterator fA_iter;
@@ -348,7 +348,7 @@ class oneloop_growth
   public:
 
     //! value constructor
-    oneloop_growth(const z_database& z);
+    oneloop_growth(const growth_params_token& p, const z_database& z);
     
     //! empty constructor used for receiving an MPI payload
     oneloop_growth();
@@ -378,42 +378,42 @@ class oneloop_growth
     iterator begin()
       {
         return(iterator(this->z_db->record_rbegin(),
-                        this->g_linear->begin(), this->A->begin(), this->B->begin(), this->D->begin(), this->E->begin(), this->F->begin(), this->G->begin(), this->J->begin(),
+                        this->D_linear->begin(), this->A->begin(), this->B->begin(), this->D->begin(), this->E->begin(), this->F->begin(), this->G->begin(), this->J->begin(),
                         this->f_linear->begin(), this->fA->begin(), this->fB->begin(), this->fD->begin(), this->fE->begin(), this->fF->begin(), this->fG->begin(), this->fJ->begin()));
       }
 
     iterator end()
       {
         return(iterator(this->z_db->record_rend(),
-                        this->g_linear->end(), this->A->end(), this->B->end(), this->D->end(), this->E->end(), this->F->end(), this->G->end(), this->J->end(),
+                        this->D_linear->end(), this->A->end(), this->B->end(), this->D->end(), this->E->end(), this->F->end(), this->G->end(), this->J->end(),
                         this->f_linear->end(), this->fA->end(), this->fB->end(), this->fD->end(), this->fE->end(), this->fF->end(), this->fG->end(), this->fJ->end()));
       }
 
     const_iterator begin() const
       {
         return(const_iterator(this->z_db->record_crbegin(),
-                              this->g_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->J->cbegin(),
+                              this->D_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->J->cbegin(),
                               this->f_linear->cbegin(), this->fA->cbegin(), this->fB->cbegin(), this->fD->cbegin(), this->fE->cbegin(), this->fF->cbegin(), this->fG->cbegin(), this->fJ->cbegin()));
       }
 
     const_iterator end() const
       {
         return(const_iterator(this->z_db->record_crend(),
-                              this->g_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->J->cend(),
+                              this->D_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->J->cend(),
                               this->f_linear->cend(), this->fA->cend(), this->fB->cend(), this->fD->cend(), this->fE->cend(), this->fF->cend(), this->fG->cend(), this->fJ->cend()));
       }
 
     const_iterator cbegin() const
       {
         return(const_iterator(this->z_db->record_crbegin(),
-                              this->g_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->J->cbegin(),
+                              this->D_linear->cbegin(), this->A->cbegin(), this->B->cbegin(), this->D->cbegin(), this->E->cbegin(), this->F->cbegin(), this->G->cbegin(), this->J->cbegin(),
                               this->f_linear->cbegin(), this->fA->cbegin(), this->fB->cbegin(), this->fD->cbegin(), this->fE->cbegin(), this->fF->cbegin(), this->fG->cbegin(), this->fJ->cbegin()));
       }
 
     const_iterator cend() const
       {
         return(const_iterator(this->z_db->record_crend(),
-                              this->g_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->J->cend(),
+                              this->D_linear->cend(), this->A->cend(), this->B->cend(), this->D->cend(), this->E->cend(), this->F->cend(), this->G->cend(), this->J->cend(),
                               this->f_linear->cend(), this->fA->cend(), this->fB->cend(), this->fD->cend(), this->fE->cend(), this->fF->cend(), this->fG->cend(), this->fJ->cend()));
       }
 
@@ -422,11 +422,15 @@ class oneloop_growth
 
   public:
 
+    //! get size
     size_t size() const { return this->z_db->size(); }
     
     //! store components
-    void push_back(double g, double A, double B, double D, double E, double F, double G, double J,
-                   double f, double fA, double fB, double fD, double fE, double fF, double fG, double fJ);
+    void push_back(double D_lin, double A, double B, double D, double E, double F, double G, double J,
+                   double f_lin, double fA, double fB, double fD, double fE, double fF, double fG, double fJ);
+    
+    //! get parameter token
+    const growth_params_token& get_params_token() const { return this->params; }
 
 
     // INTERNAL DATA
@@ -434,6 +438,9 @@ class oneloop_growth
   private:
 
     // CONFIGURATION DATA
+    
+    //! parameter token
+    growth_params_token params;
 
     //! copy of redshift database
     std::unique_ptr<z_database> z_db;
@@ -443,8 +450,8 @@ class oneloop_growth
 
     // these are managed using std::unique_ptr<>s to control their lifetime
 
-    //! linear growth factor g(z)
-    std::unique_ptr< std::vector<double> > g_linear;
+    //! linear growth factor D(z)
+    std::unique_ptr< std::vector<double> > D_linear;
 
     //! A growth factor
     std::unique_ptr< std::vector<double> > A;
@@ -499,9 +506,10 @@ class oneloop_growth
     template <typename Archive>
     void serialize(Archive& ar, unsigned int version)
       {
+        ar & params;
         ar & z_db;
 
-        ar & g_linear;
+        ar & D_linear;
         ar & A;
         ar & B;
         ar & D;

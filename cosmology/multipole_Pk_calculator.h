@@ -63,7 +63,7 @@ class multipole_Pk_calculator
     //! calculate power spectra decomposition into Legendre modes
     multipole_Pk
     calculate_Legendre(const Mpc_units::energy& k, const Matsubara_XY& XY, const oneloop_Pk& data,
-                       const oneloop_growth_record& gf_data, const initial_filtered_Pk& Pk_init,
+                       const oneloop_growth_record& Df_data, const initial_filtered_Pk& Pk_init,
                        const boost::optional<const final_filtered_Pk&>& Pk_final);
     
   private:

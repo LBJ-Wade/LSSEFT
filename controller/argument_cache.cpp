@@ -27,10 +27,11 @@
 
 
 argument_cache::argument_cache()
+  : verbose(false),
+    colour_output(true),
+    EdS_mode(false),
+    network_mode(false)
   {
-    verbose = false;
-    colour_output = true;
-
     // no default database
     database.clear();
   }

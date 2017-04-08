@@ -37,8 +37,10 @@ enum class exception_type
     sqlite3_error,
     transaction_error,
     runtime_error,
+    counterterm_error,
     spline_error,
-    filter_failure
+    filter_failure,
+    store_error
   };
 
 

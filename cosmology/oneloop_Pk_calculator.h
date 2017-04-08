@@ -62,8 +62,7 @@ class oneloop_Pk_calculator
     
     //! calculate power spectrum
     std::list<oneloop_Pk>
-    calculate_dd(const Mpc_units::energy& k, const k_token& k_tok, const IR_cutoff_token& IR_tok,
-                 const UV_cutoff_token& UV_tok, const oneloop_growth& gf_factors,
+    calculate_dd(const Mpc_units::energy& k, const k_token& k_tok, const oneloop_growth& gf_factors,
                  const loop_integral& loop_data, const initial_filtered_Pk& Pk_init,
                  const boost::optional<const final_filtered_Pk&>& Pk_final);
     
@@ -71,7 +70,7 @@ class oneloop_Pk_calculator
     
     oneloop_resum_Pk
     calculate_resum_dd(const Mpc_units::energy& k, const Matsubara_XY& XY, const oneloop_Pk& data,
-                       const oneloop_growth_record& gf_data, const initial_filtered_Pk& init_Pk,
+                       const oneloop_growth_record& Df_data, const initial_filtered_Pk& init_Pk,
                        const boost::optional<const final_filtered_Pk&>& final_Pk);
 
     

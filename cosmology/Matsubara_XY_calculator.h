@@ -36,6 +36,77 @@
 
 #include "cuba.h"
 
+
+class MatsubaraXY_params
+  {
+    
+    // CONSTRUCTOR, DESTRUCTOR
+  
+  public:
+    
+    //! constructor
+    MatsubaraXY_params(Mpc_units::inverse_energy qmn=LSSEFT_DEFAULT_RESUM_QMIN,
+                       Mpc_units::inverse_energy qmx=LSSEFT_DEFAULT_RESUM_QMAX,
+                       double a=LSSEFT_DEFAULT_INTEGRAL_ABS_ERR_22, double r=LSSEFT_DEFAULT_INTEGRAL_REL_ERR_22)
+      : abs_err(a),
+        rel_err(r),
+        qmin(qmn),
+        qmax(qmx)
+      {
+      }
+    
+    //! destructor is default
+    ~MatsubaraXY_params() = default;
+    
+    
+    // INTERFACE
+  
+  public:
+    
+    //! get abserr
+    double get_abserr() const { return this->abs_err; }
+    
+    //! get relerr
+    double get_relerr() const { return this->rel_err; }
+    
+    //! get qmin
+    const Mpc_units::inverse_energy& get_qmin() const { return this->qmin; }
+    
+    //! get qmax
+    const Mpc_units::inverse_energy& get_qmax() const { return this->qmax; }
+    
+    
+    // INTERNAL DATA
+  
+  private:
+    
+    //! absolute tolerance
+    double abs_err;
+    
+    //! relative tolerance
+    double rel_err;
+    
+    //! minimum scale to use in averaging
+    Mpc_units::inverse_energy qmin;
+    
+    //! maximum scale to use in averaging
+    Mpc_units::inverse_energy qmax;
+    
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+    
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & abs_err;
+        ar & rel_err;
+        ar & qmin;
+        ar & qmax;
+      }
+    
+  };
+
+
 class Matsubara_XY_calculator
   {
     
@@ -44,10 +115,8 @@ class Matsubara_XY_calculator
   public:
     
     //! constructor
-    Matsubara_XY_calculator(double r = LSSEFT_DEFAULT_INTEGRAL_REL_ERR_22,
-                            double a = LSSEFT_DEFAULT_INTEGRAL_ABS_ERR_22)
-      : rel_err(std::abs(r)),
-        abs_err(std::abs(a))
+    Matsubara_XY_calculator(const MatsubaraXY_params& p)
+      : params(p)
       {
       }
     
@@ -62,7 +131,8 @@ class Matsubara_XY_calculator
     //! calculate Matsubara X & Y coefficients
     Matsubara_XY
     calculate_Matsubara_XY(const Mpc_units::energy& IR_resum, const IR_resum_token& IR_resum_tok,
-                           const initial_filtered_Pk& Pk_lin);
+                           const initial_filtered_Pk& Pk_lin,
+                           const MatsubaraXY_params_token& params_tok);
 
     
     // INTERNAL API
@@ -79,11 +149,8 @@ class Matsubara_XY_calculator
   
   private:
     
-    //! relative error
-    double rel_err;
-    
-    //! absolute error
-    double abs_err;
+    //! parameter block
+    MatsubaraXY_params params;
     
   };
 

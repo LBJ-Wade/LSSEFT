@@ -52,25 +52,25 @@ namespace sqlite3_operations
     //! extract one-loop growth g- and f-functions for a given set of redshifts
     std::unique_ptr<oneloop_growth>
     find(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& token,
-         const z_database& z_db);
+             const growth_params_token& params, const z_database& z_db);
     
     //! extract loop integrals for a given wavenumber, linear power spectrum, UV-cutoff and IR-cutoff combination
     std::unique_ptr<loop_integral>
     find(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model,
-         const k_token& k, const linear_Pk_token& Pk, const IR_cutoff_token& IR_cutoff,
-         const UV_cutoff_token& UV_cutoff);
+         const loop_integral_params_token& params, const k_token& k, const linear_Pk_token& Pk,
+         const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
     
     //! extract P(k) data for a given wavenumber, z-value, linear power spectrum, UV-cutoff and IR-cutoff combination
     std::unique_ptr<oneloop_Pk>
     find(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model,
-         const k_token& k, const z_token& z, const linear_Pk_token& init_Pk_lin,
-         const boost::optional<linear_Pk_token>& final_Pk_lin,
-         const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
+             const growth_params_token& growth_params, const loop_integral_params_token& loop_params, const k_token& k,
+             const z_token& z, const linear_Pk_token& init_Pk_lin, const boost::optional<linear_Pk_token>& final_Pk_lin,
+             const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff);
     
     //! extract Matsubara X & Y coefficient sfor a given linear power spectrum and IR resummation scale
     std::unique_ptr<Matsubara_XY>
     find(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model,
-         const linear_Pk_token& Pk, const IR_resum_token& IR_resum);
+         const MatsubaraXY_params_token& params, const linear_Pk_token& Pk, const IR_resum_token& IR_resum);
     
     
     //! extract filtered linear power spectrum (of given type Payload) for a given set of k-modes

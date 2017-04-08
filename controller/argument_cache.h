@@ -73,13 +73,19 @@ class argument_cache
   public:
 
     //! get database path
-    const boost::filesystem::path& get_database_path() const { return(this->database); }
+    const boost::filesystem::path& get_database_path() const { return this->database; }
 
     //! set database path
     void set_database_path(const std::string& p) { this->database = p; }
 
     //! determine if a database has been set
-    bool get_database_set() const { return(!this->database.empty()); }
+    bool is_database_set() const { return !this->database.empty(); }
+    
+    //! is network mode enables
+    bool is_network_mode() const { return this->network_mode; }
+    
+    //! set network mode
+    void set_network_mode(bool m) { this->network_mode = m; }
     
     
     // INTERFACE -- INITIAL AND FINAL POWER SPECTRA
@@ -103,6 +109,17 @@ class argument_cache
     
     //! determine whether a final linear power spectrum has been set
     bool is_final_powerspectrum_set() const { return(!this->final_linear_Pk.empty()); }
+    
+    
+    // INTERFACE -- CALCULATION PARAMETERS
+    
+  public:
+    
+    //! query whether we are using EdS approximations to the growth functions
+    bool use_EdS() const { return this->EdS_mode; }
+    
+    //! set EdS mode
+    void set_EdS_mode(bool m) { this->EdS_mode = m; }
 
 
     // INTERNAL DATA
@@ -114,6 +131,12 @@ class argument_cache
 
     //! generate colourized output?
     bool colour_output;
+    
+    //! use Einstein-de Sitter approximations to growth functions?
+    bool EdS_mode;
+    
+    //! should we use network mode, ie. disable write-ahead log?
+    bool network_mode;
 
     //! database path
     boost::filesystem::path database;
@@ -133,6 +156,8 @@ class argument_cache
       {
         ar & verbose;
         ar & colour_output;
+        ar & EdS_mode;
+        ar & network_mode;
         ar & database;
         ar & init_linear_Pk;
         ar & final_linear_Pk;

@@ -38,6 +38,8 @@
 
 #include "cosmology/types.h"
 
+#include "error/error_handler.h"
+
 
 slave_controller::slave_controller(boost::mpi::environment& me, boost::mpi::communicator& mw, argument_cache& ac)
   : mpi_env(me),
@@ -78,7 +80,7 @@ void slave_controller::execute()
             case MPI_detail::MESSAGE_NEW_LOOP_INTEGRAL_TASK:
               {
                 this->mpi_world.recv(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_NEW_LOOP_INTEGRAL_TASK);
-                this->process_task<loop_momentum_work_record>();
+                this->process_task<loop_integral_work_record>();
                 break;
               }
     
@@ -174,9 +176,6 @@ void slave_controller::process_item(MPI_detail::new_transfer_integration& payloa
     const Mpc_units::energy& k = payload.get_k();
     const k_token& tok = payload.get_token();
     const z_database& z_db = payload.get_z_db();
-    
-//    std::cout << "Worker " << this->worker_number() << " processing transfer item: id = " << tok.get_id() << " for k = "
-//              << k * Mpc_units::Mpc << " h/Mpc = " << k / Mpc_units::eV << " eV" << '\n';
 
     transfer_integrator integrator;
     transfer_function sample = integrator.integrate(model, k, tok, z_db);
@@ -193,23 +192,25 @@ void slave_controller::process_item(MPI_detail::new_filter_Pk& payload)
     const FRW_model& model = payload.get_model();
     const Mpc_units::energy& k = payload.get_k();
     const filterable_Pk& Pk_lin = payload.get_Pk_linear();
+    const Pk_filter_params& params = payload.get_params();
     
     const k_token& k_tok = payload.get_k_token();
     const linear_Pk_token& Pk_tok = payload.get_Pk_token();
+    const filter_params_token& params_tok = payload.get_params_token();
     
     filtered_Pk_value sample;
     try
       {
-        Pk_filter filter;
+        Pk_filter filter(params);
         auto out = filter(model, Pk_lin, k);
-        sample = filtered_Pk_value(k_tok, Pk_tok, out.first, Pk_lin(k), out.second);
+        sample = filtered_Pk_value(k_tok, Pk_tok, params_tok, out.first, Pk_lin(k), out.second);
       }
     catch(runtime_exception& xe)
       {
         if(xe.get_exception_code() == exception_type::filter_failure)
           {
-            std::cerr << "lsseft: " << xe.what() << '\n';
-            sample = filtered_Pk_value(k_tok, Pk_tok, 0.0, Pk_lin(k), 0.0);
+            this->err_handler.error(xe.what());
+            sample = filtered_Pk_value(k_tok, Pk_tok, params_tok, Pk_filter_result(), Pk_lin(k), 0.0);
             sample.mark_failed();
           }
         else
@@ -231,18 +232,16 @@ void slave_controller::process_item(MPI_detail::new_loop_momentum_integration& p
     const Mpc_units::energy& k = payload.get_k();
     const Mpc_units::energy& UV_cutoff = payload.get_UV_cutoff();
     const Mpc_units::energy& IR_cutoff = payload.get_IR_cutoff();
+    const loop_integral_params& params = payload.get_params();
 
     const k_token& k_tok = payload.get_k_token();
     const UV_cutoff_token& UV_tok = payload.get_UV_token();
     const IR_cutoff_token& IR_tok = payload.get_IR_token();
     const initial_filtered_Pk& Pk = payload.get_tree_power_spectrum();
-    
-//    std::cout << "Worker " << this->worker_number() << " processing loop integral item: k-id = " << k_tok.get_id()
-//              << " for k = " << k * Mpc_units::Mpc << " h/Mpc, IR cutoff = " << IR_cutoff * Mpc_units::Mpc
-//              << " h/Mpc, UV cutoff = " << UV_cutoff * Mpc_units::Mpc << " h/Mpc" << '\n';
+    const loop_integral_params_token& params_tok = payload.get_params_token();
 
-    oneloop_momentum_integrator integrator;
-    loop_integral sample = integrator.integrate(model, k, k_tok, UV_cutoff, UV_tok, IR_cutoff, IR_tok, Pk);
+    oneloop_momentum_integrator integrator(params, this->err_handler);
+    loop_integral sample = integrator.integrate(model, params_tok, k, k_tok, UV_cutoff, UV_tok, IR_cutoff, IR_tok, Pk);
 
     // inform master process that we have completed work on this integration
     MPI_detail::loop_momentum_integration_ready return_payload(sample);
@@ -255,11 +254,13 @@ void slave_controller::process_item(MPI_detail::new_Matsubara_XY& payload)
   {
     const Mpc_units::energy& IR_resum = payload.get_IR_resum();
     const initial_filtered_Pk& Pk = payload.get_tree_power_spectrum();
+    const MatsubaraXY_params& params = payload.get_params();
     
     const IR_resum_token& IR_resum_tok = payload.get_IR_resum_token();
+    const MatsubaraXY_params_token params_tok = payload.get_params_token();
     
-    Matsubara_XY_calculator calculator;
-    Matsubara_XY item = calculator.calculate_Matsubara_XY(IR_resum, IR_resum_tok, Pk);
+    Matsubara_XY_calculator calculator(params);
+    Matsubara_XY item = calculator.calculate_Matsubara_XY(IR_resum, IR_resum_tok, Pk, params_tok);
     
     // inform master process that the calculation is finished
     MPI_detail::Matsubara_XY_ready return_payload(item);
@@ -279,14 +280,11 @@ void slave_controller::process_item(MPI_detail::new_one_loop_Pk& payload)
     const k_token& k_tok = loop_data.get_k_token();
     const IR_cutoff_token& IR_tok = loop_data.get_IR_token();
     const UV_cutoff_token& UV_tok = loop_data.get_UV_token();
-    
-//    std::cout << "Worker " << this->worker_number() << " processing 1-loop P(k) for"
-//              << " k-id = " << k_tok.get_id() << ", IR-id = " << IR_tok.get_id() << ", UV-id = " << UV_tok.get_id()
-//              << "; " << gf_factors.size() << " redshifts to process" << '\n';
+    const loop_integral_params_token& loop_tok = loop_data.get_params_token();
+    const growth_params_token& growth_tok = gf_factors.get_params_token();
     
     oneloop_Pk_calculator calculator;
-    std::list<oneloop_Pk> sample = calculator.calculate_dd(k, k_tok, IR_tok, UV_tok, gf_factors, loop_data,
-                                                           Pk_init, Pk_final);
+    std::list<oneloop_Pk> sample = calculator.calculate_dd(k, k_tok, gf_factors, loop_data, Pk_init, Pk_final);
     
     // inform master process that the calculation is finished
     std::list<boost::mpi::request> acks;
@@ -304,12 +302,12 @@ void slave_controller::process_item(MPI_detail::new_one_loop_resum_Pk& payload)
     const Mpc_units::energy& k = payload.get_k();
     const Matsubara_XY& XY = payload.get_Matsubara_XY();
     const oneloop_Pk& oneloop_data = payload.get_oneloop_Pk_data();
-    const oneloop_growth_record& gf_data = payload.get_gf_data();
+    const oneloop_growth_record& Df_data = payload.get_Df_data();
     const initial_filtered_Pk& Pk_init = payload.get_init_linear_Pk();
     boost::optional<const final_filtered_Pk&> Pk_final = payload.get_final_linear_Pk();
     
     oneloop_Pk_calculator calculator;
-    oneloop_resum_Pk sample = calculator.calculate_resum_dd(k, XY, oneloop_data, gf_data, Pk_init, Pk_final);
+    oneloop_resum_Pk sample = calculator.calculate_resum_dd(k, XY, oneloop_data, Df_data, Pk_init, Pk_final);
     
     // inform master process that the calculation is finished
     MPI_detail::one_loop_resum_Pk_ready return_payload(sample);
@@ -323,19 +321,12 @@ void slave_controller::process_item(MPI_detail::new_multipole_Pk& payload)
     const Mpc_units::energy& k = payload.get_k();
     const Matsubara_XY& XY = payload.get_Matsubara_XY();
     const oneloop_Pk& oneloop_data = payload.get_oneloop_Pk_data();
-    const oneloop_growth_record& gf_data = payload.get_gf_data();
+    const oneloop_growth_record& Df_data = payload.get_Df_data();
     const initial_filtered_Pk& Pk_init = payload.get_init_linear_Pk();
     boost::optional<const final_filtered_Pk&> Pk_final = payload.get_final_linear_Pk();
     
-//    std::cout << "Worker " << this->worker_number() << " processing multipole P(k) for"
-//              << " k-id = " << oneloop_data.get_k_token().get_id()
-//              << ", z-id = " << oneloop_data.get_z_token().get_id()
-//              << ", IR-id = " << oneloop_data.get_IR_token().get_id()
-//              << ", UV-id = " << oneloop_data.get_UV_token().get_id()
-//              << ", IR-resum-id = " << IR_resum_tok.get_id() << '\n';
-    
     multipole_Pk_calculator calculator;
-    multipole_Pk sample = calculator.calculate_Legendre(k, XY, oneloop_data, gf_data, Pk_init, Pk_final);
+    multipole_Pk sample = calculator.calculate_Legendre(k, XY, oneloop_data, Df_data, Pk_init, Pk_final);
     
     // inform master process that the calculation is finished
     MPI_detail::multipole_Pk_ready return_payload(sample);
