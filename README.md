@@ -8,9 +8,15 @@ This version of *LSSEFT* has been written by David Seery at the University of Su
 
 # Releases
 
-The current release of *LSSEFT* is 2017.1, and can be identified via a DOI linking to a deposit at [zenodo.org](https://zenodo.org). The same .tar.gz archives for each release are available directly from GitHub, but for citations please use the [zenodo.org](https://zenodo.org) versions.
+The current release of *LSSEFT* is 2017.1.
+It can be downloaded from the link below.
 
-- 2017.1 (x March 2017) Source code DOI:xxx
+The same .tar.gz archives for each release are available from the GitHub
+[Releases](https://github.com/ds283/LSSEFT/releases)
+page, but for citations please use the
+[zenodo.org](https://zenodo.org) DOI.
+
+- 2017.1 (8 April 2017) Source code [![DOI](https://zenodo.org/badge/85569146.svg)](https://zenodo.org/badge/latestdoi/85569146)
 
 # How to install and use *LSSEFT*
 
