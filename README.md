@@ -14,10 +14,14 @@ The current release of *LSSEFT* is 2017.1, and can be identified via a DOI linki
 
 # How to install and use *LSSEFT*
 
+*LSSEFT* will build and run on Linux or macOS. Windows is not
+currently a supported platform.
+
 To obtain the source code, either clone this repository
-or download a release as a tar archive. The build process is managed
-by [CMake](https://cmake.org) and requires at least version 3.0.
-It is easiest to build in a separate directory. The name doesn't
+or download a tar archive for the most recent release.
+The build process is managed by [CMake](https://cmake.org)
+and requires at least version 3.0.
+It is easiest to build in a separate directory; the name doesn't
 matter, and `build` is as good as any other.
 Create this directory at the top level, change into it, and then run
 `cmake` specifying that you wish to build with the `Release` configuration:
@@ -26,32 +30,45 @@ mkdir build
 cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
 ```
+By default, CMake will build *LSSEFT* with the default toolchain
+for your platform.
 If you wish to build with a non-standard toolchain then you can specify
 the C and C++ compilers here. For example, to use the Intel compiler
 you should invoke `cmake` using
 ```bash
 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=icc -DCMAKE_CXX_COMPILER=icpc
 ```
+*LSSEFT* has been tested to build correctly with
+[gcc](https://gcc.gnu.org),
+[Clang](https://clang.llvm.org)
+and the Intel compiler.
 
 ## Dependencies
 
 *LSSEFT* depends on a number of other libraries:
 
 * An MPI library. Normally [OpenMPI](https://www.open-mpi.org) is a good
-choice. Depending on your system it is usually easy to install,
+choice. Depending on your system it may be installed already.
+If not, it is usually easy to install,
 either via a standard package management framework (on Linux) or
 [MacPorts](https://www.macports.org)/[Homebrew](https://www.macports.org)
 (on macOS).
 
 * The [OpenSSH](https://www.openssh.com) library,
 which is used to compute MD5 hashes. This is typically available under
-the same package management systems.
+the same package management system used for your MPI library.
 
 * The [Boost](http://www.boost.org) library, with the MPI module
 enabled and compiled against whatever MPI library you wish to use.
 
-These dependencies should be installed on your system before you
-invoke `cmake`. If `cmake` is unable to locate them, the build
+These dependencies are very common, or large, and are best installed
+as system-wide shared resources. For this reason *LSSEFT* does not
+bundle them: it expects them to be pre-installed.
+They should be discoverable via one of CMake's standard
+search strategies (eg. via `pkg-config`, or installation in a
+standard location)
+before you invoke CMake.
+If it is unable to locate them, the build
 configuration process will fail with an error.
 
 *LSSEFT* also depends on two less common libraries. Since these are unlikely
@@ -82,23 +99,23 @@ successfully.
 
 The calculations performed by *LSSEFT* are controlled by
 the `master_controller::execute()` method. To customize
-*LSSEFT* for your own use you would normally wish to supply
+*LSSEFT* for your own use, you would normally supply
 a new implementation of this method; the other
 methods in `master_controller` usually do not need to be changed.
 There are two bundled implementations, in `controller/work_functions`.
 One of these is for the Planck2015 cosmology, and the other is for
 the [MDR1](https://www.cosmosim.org/cms/simulations/mdr1/)
-model.
+model. These are the cosmologies that were used in the first
+*LSSEFT* paper; see [below](#how-to-cite-lsseft).
 
 In *LSSEFT* the desired computation is modelled
-by setting up C++ objects that model the calculation.
+by setting up C++ objects that describe the calculation.
 Most of these objects require a specification of the background
 cosmological parameters.
 For example, in the MDR `master_controller::execute()`
 we use
 ```C++
 // fix the background cosmological model
-// here, that's taken to have parameters matching the MDR1 simulation
 FRW_model cosmology_model(MDR1::name, MDR1::omega_m, MDR1::omega_cc, MDR1::h, MDR1::T_CMB, MDR1::Neff,
                           MDR1::f_baryon, MDR1::z_star, MDR1::z_drag, MDR1::z_eq, MDR1::Acurv, MDR1::ns, MDR1::kpiv);
 ```
@@ -136,9 +153,9 @@ ranges can be composed to build aggregate ranges, as for
 `lo_redshift_samples`, which is composed from six individual atomic ranges.
 (Currently these have to be set up as shown, but in future it would be
 nice to allow conversion from a `std::initializer_list`.)
-These subranges don't have to be contigious, or to use the same spacing.
+These subranges don't have to be contiguous, or to use the same spacing.
 The earliest redshift is taken as the starting point, and the linear
-growth factor D(z) is normalized to unity at that time.
+growth factor `D(z)` is normalized to unity at that time.
 
 The range `loop_k_samples` will define the grid of k-modes at which
 we sample the integrals.
@@ -165,6 +182,7 @@ growth_params Df_params(this->arg_cache.use_EdS());
 std::unique_ptr<growth_params_token> growth_tok = dmgr.tokenize(Df_params);
 
 // set up parameters for Matsubara X&Y integral
+// defauts to qmin = 10 Mpc/h, qmax = 300 Mpc/h
 MatsubaraXY_params XY_params;
 std::unique_ptr<MatsubaraXY_params_token> XY_tok = dmgr.tokenize(XY_params);
 
@@ -172,7 +190,11 @@ std::unique_ptr<MatsubaraXY_params_token> XY_tok = dmgr.tokenize(XY_params);
 loop_integral_params loop_params;
 std::unique_ptr<loop_integral_params_token> loop_tok = dmgr.tokenize(loop_params);
 ```
-The current version of `master_controller.cpp` then uses these
+The parameters of the filter may need to be changed, if the default
+set do not give good results. You may also wish to change the
+`qmin` and `qmax` set by `MatsubaraXY_params`.
+
+The current version of `master_controller.cpp` uses these
 ranges and parameters to perform a computation of the one-loop
 real-space and redshift-space power spectra. It decomposes the redshift-space power spectrum into multipoles and applies a resummation
 prescription.
