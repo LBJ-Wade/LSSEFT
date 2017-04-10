@@ -553,9 +553,9 @@ oneloop_Pk_calculator::calculate_resum_dd(const Mpc_units::energy& k, const Mats
     double MatsubaraA   = k*k * Df_data.D_lin*Df_data.D_lin * XY;
     double MatsubaraExp = std::exp(-MatsubaraA);
     
-    auto Ptree       = input_tree.get_nowiggle()     + MatsubaraExp*input_tree.get_wiggle();
-    auto P13         = input_13.get_nowiggle()       + MatsubaraExp*input_13.get_wiggle();
-    auto P22         = input_22.get_nowiggle()       + MatsubaraExp*input_22.get_wiggle();
+    auto Ptree    = input_tree.get_nowiggle()     + MatsubaraExp*input_tree.get_wiggle();
+    auto P13      = input_13.get_nowiggle()       + MatsubaraExp*input_13.get_wiggle();
+    auto P22      = input_22.get_nowiggle()       + MatsubaraExp*input_22.get_wiggle();
     auto Z2_delta = input_Z2_delta.get_nowiggle() + MatsubaraExp*input_Z2_delta.get_wiggle();
 
     auto SPT_nowiggle = input_tree.get_nowiggle() + input_13.get_nowiggle() + input_22.get_nowiggle();
