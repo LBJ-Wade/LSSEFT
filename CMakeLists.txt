@@ -113,7 +113,7 @@ SET(COSMOLOGY_SOURCE_FILES
   cosmology/multipole_Pk_calculator.cpp cosmology/multipole_Pk_calculator.h
   cosmology/Pk_filter.cpp cosmology/Pk_filter.h
   cosmology/Matsubara_XY_calculator.cpp cosmology/Matsubara_XY_calculator.h
-  cosmology/EdS_growth.cpp cosmology/EdS_growth.h)
+  cosmology/EdS_growth.h)
 
 SET(UNITS_SOURCE_FILES
   units/Mpc_units.h)
