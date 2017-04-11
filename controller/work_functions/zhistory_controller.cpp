@@ -46,7 +46,7 @@ void master_controller::execute()
     std::unique_ptr<FRW_model_token> model = dmgr.tokenize(cosmology_model);
     
     // set up a list of redshifts at which to sample the late-time growth functions
-    stepping_range<double> lo_redshift_samples(0.0, 50.0, 200, 1.0, spacing_type::linear);
+    stepping_range<double> lo_redshift_samples(0.001, 50.0, 500, 1.0, spacing_type::logarithmic_bottom);
     
     std::unique_ptr<z_database> lo_z_db = dmgr.build_redshift_db(lo_redshift_samples);
     
