@@ -27,6 +27,7 @@
 
 #include "oneloop_growth_integrator.h"
 #include "constants.h"
+#include "EdS_growth.h"
 
 #include "units/Mpc_units.h"
 
@@ -65,7 +66,7 @@ class oneloop_functor
   public:
 
     //! constructor
-    oneloop_functor(const FRW_model& m);
+    oneloop_functor(const FRW_model& m, const growth_params& p);
 
     //! destructor is default
     ~oneloop_functor() = default;
@@ -88,6 +89,9 @@ class oneloop_functor
 
     //! reference to FRW model
     const FRW_model& model;
+    
+    //! reference to parameter block
+    const growth_params& params;
 
     //! cache H0
     Mpc_units::energy H0;
@@ -171,7 +175,7 @@ oneloop_growth_integrator::integrate(const FRW_model& model, z_database& z_db)
     std::unique_ptr<oneloop_growth> ctr = std::make_unique<oneloop_growth>(this->token, z_db);
 
     // set up a functor for the ODE system
-    oneloop_functor rhs(model);
+    oneloop_functor rhs(model, this->params);
 
     // set up an observer
     oneloop_observer obs(*ctr, this->params);
@@ -206,8 +210,9 @@ oneloop_growth_integrator::integrate(const FRW_model& model, z_database& z_db)
 // ONELOOP_FUNCTOR METHODS
 
 
-oneloop_functor::oneloop_functor(const FRW_model& m)
+oneloop_functor::oneloop_functor(const FRW_model& m, const growth_params& p)
   : model(m),
+    params(p),
     H0(model.get_h() * 100.0 * Mpc_units::Kilometre / Mpc_units::Second / Mpc_units::Mpc),
     rho_cc(3.0 * H0*H0 * Mpc_units::PlanckMass*Mpc_units::PlanckMass * model.get_omega_cc())
   {
@@ -308,17 +313,30 @@ void oneloop_functor::ics(state_vector& x, double z)
     // initial conditions for linear growth factor
     // to get the derviative, assume that we are early in matter domination and D(z) grows like a(z).
     // so D(z) = a(z)/a_init(z). Then dD/dz = -da/dz / a_init = (a_0/a_init) / (1+z)^2 = 1/(1+z).
+    state_vector::value_type D_lin = 1.0;
+    state_vector::value_type f_lin = 1.0;
+    
     x[ELEMENT_Dlin] = 1.0;
-    x[ELEMENT_dDlindz] = -1.0 / (1.0+z);
+    x[ELEMENT_dDlindz] = -1.0 * D_lin * f_lin / (1.0+z);
 
-    // initial conditions for one-loop kernel
-    x[ELEMENT_A] = x[ELEMENT_dAdz] = 0.0;
-    x[ELEMENT_B] = x[ELEMENT_dBdz] = 0.0;
-    x[ELEMENT_D] = x[ELEMENT_dDdz] = 0.0;
-    x[ELEMENT_E] = x[ELEMENT_dEdz] = 0.0;
-    x[ELEMENT_F] = x[ELEMENT_dFdz] = 0.0;
-    x[ELEMENT_G] = x[ELEMENT_dGdz] = 0.0;
-    x[ELEMENT_J] = x[ELEMENT_dJdz] = 0.0;
+    // initial conditions for one-loop growth functions/factors
+    bool EdS_ics = this->params.use_EdS_ics();
+    EdS_growth<state_vector::value_type> EdS(D_lin, f_lin);
+
+    x[ELEMENT_A]    = EdS_ics ? EdS.DA() : 0.0;
+    x[ELEMENT_B]    = EdS_ics ? EdS.DA() : 0.0;
+    x[ELEMENT_D]    = EdS_ics ? EdS.DA() : 0.0;
+    x[ELEMENT_E]    = EdS_ics ? EdS.DA() : 0.0;
+    x[ELEMENT_F]    = EdS_ics ? EdS.DA() : 0.0;
+    x[ELEMENT_G]    = EdS_ics ? EdS.DA() : 0.0;
+    x[ELEMENT_J]    = EdS_ics ? EdS.DA() : 0.0;
+    x[ELEMENT_dAdz] = EdS_ics ? -1.0 * EdS.DA() * EdS.fA() / (1.0+z) : 0.0;
+    x[ELEMENT_dBdz] = EdS_ics ? -1.0 * EdS.DB() * EdS.fB() / (1.0+z) : 0.0;
+    x[ELEMENT_dDdz] = EdS_ics ? -1.0 * EdS.DD() * EdS.fD() / (1.0+z) : 0.0;
+    x[ELEMENT_dEdz] = EdS_ics ? -1.0 * EdS.DE() * EdS.fE() / (1.0+z) : 0.0;
+    x[ELEMENT_dFdz] = EdS_ics ? -1.0 * EdS.DF() * EdS.fF() / (1.0+z) : 0.0;
+    x[ELEMENT_dGdz] = EdS_ics ? -1.0 * EdS.DG() * EdS.fG() / (1.0+z) : 0.0;
+    x[ELEMENT_dJdz] = EdS_ics ? -1.0 * EdS.DJ() * EdS.fJ() / (1.0+z) : 0.0;
   }
 
 
@@ -356,27 +374,26 @@ boost::timer::nanosecond_type oneloop_observer::read_timer()
 void oneloop_observer::operator()(const state_vector& x, double z)
   {
     state_vector::value_type D_lin = x[ELEMENT_Dlin];
-    
-    state_vector::value_type D_lin_sq = D_lin*D_lin;
-    state_vector::value_type D_lin_cb = D_lin*D_lin*D_lin;
-    
-    state_vector::value_type A     = this->use_EdS ? 3.0*D_lin_sq/7.0  : x[ELEMENT_A];
-    state_vector::value_type B     = this->use_EdS ? 2.0*D_lin_sq/7.0  : x[ELEMENT_B];
-    state_vector::value_type D     = this->use_EdS ? 2.0*D_lin_cb/21.0 : x[ELEMENT_D];
-    state_vector::value_type E     = this->use_EdS ? 4.0*D_lin_cb/63.0 : x[ELEMENT_E];
-    state_vector::value_type F     = this->use_EdS ? 1.0*D_lin_cb/14.0 : x[ELEMENT_F];
-    state_vector::value_type G     = this->use_EdS ? 1.0*D_lin_cb/21.0 : x[ELEMENT_G];
-    state_vector::value_type J     = this->use_EdS ? 1.0*D_lin_cb/9.0  : x[ELEMENT_J];
-    
     state_vector::value_type f_lin = - (1.0+z) * x[ELEMENT_dDlindz] / D_lin;
+    
+    // set up EdS growth function calculator with these linear values
+    EdS_growth<state_vector::value_type> EdS(D_lin, f_lin);
+    
+    state_vector::value_type A  = this->use_EdS ? EdS.DA() : x[ELEMENT_A];
+    state_vector::value_type B  = this->use_EdS ? EdS.DB() : x[ELEMENT_B];
+    state_vector::value_type D  = this->use_EdS ? EdS.DD() : x[ELEMENT_D];
+    state_vector::value_type E  = this->use_EdS ? EdS.DE() : x[ELEMENT_E];
+    state_vector::value_type F  = this->use_EdS ? EdS.DF() : x[ELEMENT_F];
+    state_vector::value_type G  = this->use_EdS ? EdS.DG() : x[ELEMENT_G];
+    state_vector::value_type J  = this->use_EdS ? EdS.DJ() : x[ELEMENT_J];
 
-    state_vector::value_type fA    = this->use_EdS ? 2.0*f_lin : - (1.0+z) * x[ELEMENT_dAdz] / (std::fabs(A) > 0.0 ? A : 1.0);
-    state_vector::value_type fB    = this->use_EdS ? 2.0*f_lin : - (1.0+z) * x[ELEMENT_dBdz] / (std::fabs(B) > 0.0 ? B : 1.0);
-    state_vector::value_type fD    = this->use_EdS ? 3.0*f_lin : - (1.0+z) * x[ELEMENT_dDdz] / (std::fabs(D) > 0.0 ? D : 1.0);
-    state_vector::value_type fE    = this->use_EdS ? 3.0*f_lin : - (1.0+z) * x[ELEMENT_dEdz] / (std::fabs(E) > 0.0 ? E : 1.0);
-    state_vector::value_type fF    = this->use_EdS ? 3.0*f_lin : - (1.0+z) * x[ELEMENT_dFdz] / (std::fabs(F) > 0.0 ? F : 1.0);
-    state_vector::value_type fG    = this->use_EdS ? 3.0*f_lin : - (1.0+z) * x[ELEMENT_dGdz] / (std::fabs(G) > 0.0 ? G : 1.0);
-    state_vector::value_type fJ    = this->use_EdS ? 3.0*f_lin : - (1.0+z) * x[ELEMENT_dJdz] / (std::fabs(J) > 0.0 ? J : 1.0);
+    state_vector::value_type fA = this->use_EdS ? EdS.fA() : - (1.0+z) * x[ELEMENT_dAdz] / (std::fabs(A) > 0.0 ? A : 1.0);
+    state_vector::value_type fB = this->use_EdS ? EdS.fB() : - (1.0+z) * x[ELEMENT_dBdz] / (std::fabs(B) > 0.0 ? B : 1.0);
+    state_vector::value_type fD = this->use_EdS ? EdS.fD() : - (1.0+z) * x[ELEMENT_dDdz] / (std::fabs(D) > 0.0 ? D : 1.0);
+    state_vector::value_type fE = this->use_EdS ? EdS.fE() : - (1.0+z) * x[ELEMENT_dEdz] / (std::fabs(E) > 0.0 ? E : 1.0);
+    state_vector::value_type fF = this->use_EdS ? EdS.fF() : - (1.0+z) * x[ELEMENT_dFdz] / (std::fabs(F) > 0.0 ? F : 1.0);
+    state_vector::value_type fG = this->use_EdS ? EdS.fG() : - (1.0+z) * x[ELEMENT_dGdz] / (std::fabs(G) > 0.0 ? G : 1.0);
+    state_vector::value_type fJ = this->use_EdS ? EdS.fJ() : - (1.0+z) * x[ELEMENT_dJdz] / (std::fabs(J) > 0.0 ? J : 1.0);
     
     this->container.push_back(D_lin, A, B, D, E, F, G, J,
                               f_lin, fA, fB, fD, fE, fF, fG, fJ);
