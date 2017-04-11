@@ -91,7 +91,8 @@ void master_controller::execute()
     Pk_filter_params filter_params(0.25, 0.05 / Mpc_units::Mpc, 0.02);
     std::unique_ptr<filter_params_token> filter_tok = dmgr.tokenize(filter_params);
     
-    // set up parameters for growth function
+    // set up parameters for growth function;
+    // allow specification of full or EdS growth function on command line, but always use EdS ics
     growth_params Df_params(this->arg_cache.use_EdS());
     std::unique_ptr<growth_params_token> growth_tok = dmgr.tokenize(Df_params);
     

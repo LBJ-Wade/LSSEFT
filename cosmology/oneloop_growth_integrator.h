@@ -48,8 +48,10 @@ class growth_params
   public:
     
     //! constructor
-    growth_params(bool EdS=false, double a=LSSEFT_DEFAULT_ODE_ABS_ERR, double r=LSSEFT_DEFAULT_ODE_REL_ERR)
+    growth_params(bool EdS=false, bool EdSi=true,
+                  double a=LSSEFT_DEFAULT_ODE_ABS_ERR, double r=LSSEFT_DEFAULT_ODE_REL_ERR)
       : EdS_mode(EdS),
+        EdS_ics(EdSi),
         abs_err(a),
         rel_err(r)
       {
@@ -66,6 +68,9 @@ class growth_params
     //! use EdS mode?
     bool use_EdS() const { return this->EdS_mode; }
     
+    //! use EdS initial conditions?
+    bool use_EdS_ics() const { return this->EdS_ics; }
+    
     //! get abserr
     double get_abserr() const { return this->abs_err; }
     
@@ -79,6 +84,9 @@ class growth_params
     
     //! use Einstein-de Sitter approximations to growth factors?
     bool EdS_mode;
+    
+    //! use Einstien-de Sitter initial conditions for growth factors?
+    bool EdS_ics;
     
     //! absolute tolerance
     double abs_err;
@@ -94,6 +102,7 @@ class growth_params
     void serialize(Archive& ar, unsigned int version)
       {
         ar & EdS_mode;
+        ar & EdS_ics;
         ar & abs_err;
         ar & rel_err;
       }

@@ -528,7 +528,8 @@ namespace sqlite3_operations
               << "id INTEGER PRIMARY KEY, "
               << "abserr DOUBLE, "
               << "relerr DOUBLE, "
-              << "use_EdS INTEGER"
+              << "use_EdS INTEGER, "
+              << "use_EdS_ics INTEGER"
               << ");";
         
             exec(db, stmt.str());
