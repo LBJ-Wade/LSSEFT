@@ -324,12 +324,12 @@ void oneloop_functor::ics(state_vector& x, double z)
     EdS_growth<state_vector::value_type> EdS(D_lin, f_lin);
 
     x[ELEMENT_A]    = EdS_ics ? EdS.DA() : 0.0;
-    x[ELEMENT_B]    = EdS_ics ? EdS.DA() : 0.0;
-    x[ELEMENT_D]    = EdS_ics ? EdS.DA() : 0.0;
-    x[ELEMENT_E]    = EdS_ics ? EdS.DA() : 0.0;
-    x[ELEMENT_F]    = EdS_ics ? EdS.DA() : 0.0;
-    x[ELEMENT_G]    = EdS_ics ? EdS.DA() : 0.0;
-    x[ELEMENT_J]    = EdS_ics ? EdS.DA() : 0.0;
+    x[ELEMENT_B]    = EdS_ics ? EdS.DB() : 0.0;
+    x[ELEMENT_D]    = EdS_ics ? EdS.DD() : 0.0;
+    x[ELEMENT_E]    = EdS_ics ? EdS.DE() : 0.0;
+    x[ELEMENT_F]    = EdS_ics ? EdS.DF() : 0.0;
+    x[ELEMENT_G]    = EdS_ics ? EdS.DG() : 0.0;
+    x[ELEMENT_J]    = EdS_ics ? EdS.DJ() : 0.0;
     x[ELEMENT_dAdz] = EdS_ics ? -1.0 * EdS.DA() * EdS.fA() / (1.0+z) : 0.0;
     x[ELEMENT_dBdz] = EdS_ics ? -1.0 * EdS.DB() * EdS.fB() / (1.0+z) : 0.0;
     x[ELEMENT_dDdz] = EdS_ics ? -1.0 * EdS.DD() * EdS.fD() / (1.0+z) : 0.0;
