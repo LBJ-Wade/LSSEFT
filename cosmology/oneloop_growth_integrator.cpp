@@ -303,18 +303,21 @@ void oneloop_functor::ics(state_vector& x, double z)
 
     Mpc_units::energy4 rho_m = rho_m0 * a_three;
     Mpc_units::energy4 rho_r = rho_r0 * a_four;
+    Mpc_units::energy4 rho   = rho_m + rho_r + this->rho_cc;
+    
+    double Omega_m = rho_m / rho;
 
     // initial conditions for background; we need to decide which units are going to be used to
     // represent these during the integration.
-    // We used 1/Mpc^4
+    // We use 1/Mpc^4
     x[RHO_M] = rho_m * Mpc_units::Mpc4;
     x[RHO_R] = rho_r * Mpc_units::Mpc4;
 
     // initial conditions for linear growth factor
-    // to get the derviative, assume that we are early in matter domination and D(z) grows like a(z).
-    // so D(z) = a(z)/a_init(z). Then dD/dz = -da/dz / a_init = (a_0/a_init) / (1+z)^2 = 1/(1+z).
+    // the initial value D_lin(z*) = 1 is just a normalization convention
+    // its growth rate can be approximated using the Linder parametrization f ~ Omega_m^(0.55-1)
     state_vector::value_type D_lin = 1.0;
-    state_vector::value_type f_lin = 1.0;
+    state_vector::value_type f_lin = std::pow(Omega_m, 0.55-1.0);
     
     x[ELEMENT_Dlin] = 1.0;
     x[ELEMENT_dDlindz] = -1.0 * D_lin * f_lin / (1.0+z);
