@@ -16,8 +16,7 @@ The same .tar.gz archives for each release are available from the GitHub
 page, but for citations please use the
 [zenodo.org](https://zenodo.org) DOI.
 
-- 2017.2 (17 April 2017) Source code
-[![DOI](missing)](missing)
+- 2017.2 (17 April 2017) Source code [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.546725.svg)](https://doi.org/10.5281/zenodo.546725)
 
 - 2017.1 (8 April 2017) Source code [![DOI](https://zenodo.org/badge/85569146.svg)](https://zenodo.org/badge/latestdoi/85569146)
 
