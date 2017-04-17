@@ -44,6 +44,25 @@
 #include "boost/timer/timer.hpp"
 
 
+void report_attach(error_handler& e, const boost::filesystem::path& ctr)
+  {
+    std::ostringstream msg;
+    
+    msg << DATABASE_ATTACHED << " '";
+    if(ctr.has_leaf())
+      {
+        msg << ctr.leaf().string();
+      }
+    else
+      {
+        msg << ctr.string();
+      }
+    msg << "'";
+
+    e.announce(msg.str());
+  }
+
+
 data_manager::data_manager(const boost::filesystem::path& c, error_handler& e, const argument_cache& ac)
   : container(c),
     err_handler(e),
@@ -70,6 +89,7 @@ data_manager::data_manager(const boost::filesystem::path& c, error_handler& e, c
                 throw runtime_exception(exception_type::database_error, msg.str());
               }
 
+            report_attach(this->err_handler, container);
             return;
           }
         else
@@ -90,6 +110,8 @@ data_manager::data_manager(const boost::filesystem::path& c, error_handler& e, c
 
     // set up tables
     sqlite3_operations::create_tables(handle, policy);
+    
+    report_attach(this->err_handler, container);
   }
 
 

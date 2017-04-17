@@ -36,5 +36,6 @@
 #define ERROR_TRANSACTION_IN_PROGRESS       "transaction already open"
 #define ERROR_NO_TRANSACTION_IN_PROGRESS    "attempt to release transaction when none is currently open"
 
+#define DATABASE_ATTACHED                   "attached to database"
 
 #endif //LSSEFT_DATABASE_EN_GB_H

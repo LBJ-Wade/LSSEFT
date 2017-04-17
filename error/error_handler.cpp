@@ -82,3 +82,19 @@ void error_handler::info(std::string msg)
         std::cout << "lsseft [" << nowstr << "]: " << msg << '\n';
       }
   }
+
+
+void error_handler::announce(std::string msg)
+  {
+    bool colour = this->local_env.get_terminal_colour_support() && this->arg_cache.get_colour_output();
+    
+    boost::posix_time::ptime now = boost::posix_time::second_clock::universal_time();
+    std::string nowstr = boost::posix_time::to_simple_string(now);
+    
+    if(this->arg_cache.get_verbose())
+      {
+        if(colour) std::cout << ANSI_BOLD_GREEN;
+        std::cout << "lsseft [" << nowstr << "]: " << msg << '\n';
+        if(colour) std::cout << ANSI_NORMAL;
+      }
+  }

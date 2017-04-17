@@ -59,6 +59,9 @@ class error_handler
 
     //! report an information message
     void info(std::string msg);
+    
+    //! make an announcement
+    void announce(std::string msg);
 
 
     // INTERNAL DATA
