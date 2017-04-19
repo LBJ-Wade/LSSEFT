@@ -9,7 +9,7 @@ This version of *LSSEFT* has been written by David Seery at the University of Su
 # Releases
 
 The current release of *LSSEFT* is 2017.2.
-It can be downloaded from the link below.
+It can be downloaded from the links below.
 
 The same .tar.gz archives for each release are available from the GitHub
 [Releases](https://github.com/ds283/LSSEFT/releases)
@@ -213,7 +213,7 @@ The current `master_controller.cpp` accepts some command-line switches:
 * `--verbose` or `-v`: Emit verbose status messages
 * `--no-colour` or `--no-color`: Suppress colourized terminal messages
 * `--database` or `-d`: Specify database file [mandatory]
-* `--initial-powerspectrum` or `-i`: Specify linear power spectrum to be used when computing the one-loop integrals. *LSSEFT* remembers which linear power spectrum was used for each result in the database, and computes the MD5 hash to be sure that you cannot inadvertently change the powerspectrum file without being aware that it may no longer be compatible with the database [mandatory for power-spectrum calculations]
+* `--initial-powerspectrum` or `-i`: Specify linear power spectrum to be used when computing the one-loop integrals. *LSSEFT* remembers which linear power spectrum was used for each result in the database, and computes the MD5 hash to be sure that you cannot inadvertently change the power spectrum file without being aware that it may no longer be compatible with the database [mandatory for power spectrum calculations]
 * `--final-powerspectrum` or `-f`: Optionally specify a second linear power spectrum to be used to compute the tree-level part of each one-loop result. This is often slightly more accurate than using the growth factors computed by *LSSEFT* to rescale the initial power spectrum to the final redshift. (For example, *LSSEFT* ignores neutrinos and the influence of any residual radiation component at the initial time, which would be included in the power spectrum computed by a Boltzmann code.)
 * `--EdS-mode`: use the Einstein--de Sitter approximation for
 growth functions and growth factors. In this approxmation the growth
@@ -252,34 +252,34 @@ or (at your option) any later version. This license is bundled with the source c
 
 Further development of *LSSEFT* depends on demonstrating its usefulness to funding agencies. If you use *LSSEFT* to produce numerical results supporting your research then we would appreciate a citation to the paper
 
-- _The matter power spectrum in redshift space using effective ﬁeld theory_, Lucía Fonseca de la Bella, Donough Regan, David Seery and Shaun Hotchkiss. arXiv:xxxx.xxxxx DOI:xxx
+- _The matter power spectrum in redshift space using effective field theory_, Lucía Fonseca de la Bella, Donough Regan, David Seery and Shaun Hotchkiss. [arXiv:1704.05309](http://arxiv.org/abs/arXiv:1704.05309)
 
 # References
 
 The effective field theory of large-scale structure was proposed by
 
-- Baumann, Nicolis, Senatore & Zaldarriaga, _Cosmological Non-Linearities as an Effective Fluid_, JCAP *1207* (2012) 051 [DOI:10.1088/1475-7516/2012/07/051](http://dx.doi.org/10.1088/1475-7516/2012/07/051), [arXiv:1004.2488](http://arxiv.org/abs/arXiv:1004.2488)
+- Baumann, Nicolis, Senatore & Zaldarriaga, _Cosmological Non-Linearities as an Effective Fluid_, JCAP **1207** (2012) 051 [DOI:10.1088/1475-7516/2012/07/051](http://dx.doi.org/10.1088/1475-7516/2012/07/051), [arXiv:1004.2488](http://arxiv.org/abs/arXiv:1004.2488)
 
 The theory was subsqeuently developed in
 
-- Carrasco, Hertzberg & Senatore, _The Effective Field Theory of Cosmological Large Scale Structures_, JHEP *1209* (2012) 082 [DOI:10.1007/JHEP09(2012)082](http://dx.doi.org/10.1007/JHEP09(2012)082) [arXiv:1206.2926](http://arxiv.org/abs/arXiv:1206.2926)
+- Carrasco, Hertzberg & Senatore, _The Effective Field Theory of Cosmological Large Scale Structures_, JHEP **1209** (2012) 082 [DOI:10.1007/JHEP09(2012)082](http://dx.doi.org/10.1007/JHEP09(2012)082) [arXiv:1206.2926](http://arxiv.org/abs/arXiv:1206.2926)
 
-- Carrasco, Foreman, Green & Senatore, _The Effective Field Theory of Large Scale Structures at Two Loops_, JCAP *1407* (2014) 057 [DOI:10.1088/1475-7516/2014/07/057](http://dx.doi.org/10.1088/1475-7516/2014/07/057) [arXiv:1310.0464](http://arxiv.org/abs/arXiv:1310.0464)
+- Carrasco, Foreman, Green & Senatore, _The Effective Field Theory of Large Scale Structures at Two Loops_, JCAP **1407** (2014) 057 [DOI:10.1088/1475-7516/2014/07/057](http://dx.doi.org/10.1088/1475-7516/2014/07/057) [arXiv:1310.0464](http://arxiv.org/abs/arXiv:1310.0464)
 
 and other publications; for a fuller list, see the bibliography of
 [the paper linked above](#how-to-cite-lsseft). Details of the velocity power spectrum and its renormalization, which is important in redshift space, were studied by Mercolli & Pajer
 
-- Mercolli & Pajer, _On the velocity in the Effective Field Theory of Large Scale Structures_, JCAP *1403* (2014) 006 [DOI:10.1088/1475-7516/2014/03/006](http://dx.doi.org/10.1088/1475-7516/2014/03/006) [arXiv:1307.3220](http://arxiv.org/abs/arXiv:1307.3220)
+- Mercolli & Pajer, _On the velocity in the Effective Field Theory of Large Scale Structures_, JCAP **1403** (2014) 006 [DOI:10.1088/1475-7516/2014/03/006](http://dx.doi.org/10.1088/1475-7516/2014/03/006) [arXiv:1307.3220](http://arxiv.org/abs/arXiv:1307.3220)
 
 The importance of a resummation scheme to damp the amplitude of baryon acoustic oscillations was discussed by Senatore & Zaldarriaga
 
-- Senatore & Zaldarriaga, _The IR-resummed Effective Field Theory of Large Scale Structures_, JCAP *1502* (205) 013 [DOI:10.1088/1475-7516/2015/02/013](http://dx.doi.org/10.1088/1475-7516/2015/02/013) [arXiv:1404.5954](http://arxiv.org/abs/arXiv:1404.5954)
+- Senatore & Zaldarriaga, _The IR-resummed Effective Field Theory of Large Scale Structures_, JCAP **1502** (205) 013 [DOI:10.1088/1475-7516/2015/02/013](http://dx.doi.org/10.1088/1475-7516/2015/02/013) [arXiv:1404.5954](http://arxiv.org/abs/arXiv:1404.5954)
 
 The particular resummation scheme implemented by *LSSEFT* was proposed by Vlah et al.
 
-- Vlah, Seljak, Chu & Feng, _Perturbation theory, effective field theory, and oscillations in the power spectrum_, JCAP *1603* (2016) 057 [DOI:10.1088/1475-7516/2016/03/057](http://dx.doi.org/10.1088/1475-7516/2016/03/057) [arXiv:1509.02120](http://arxiv.org/abs/arXiv:1509.02120)
+- Vlah, Seljak, Chu & Feng, _Perturbation theory, effective field theory, and oscillations in the power spectrum_, JCAP **1603** (2016) 057 [DOI:10.1088/1475-7516/2016/03/057](http://dx.doi.org/10.1088/1475-7516/2016/03/057) [arXiv:1509.02120](http://arxiv.org/abs/arXiv:1509.02120)
 
-# Acknowledgments
+# Acknowledgements
 
 Development of the *LSSEFT* code has been supported by the grant _Precision tests of the inflationary scenario_, funded by the European Union's Seventh Framework Programme (FP/2007–2013) and ERC Grant Agreement No. 308082.
 
