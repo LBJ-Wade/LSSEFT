@@ -62,7 +62,7 @@ namespace sqlite3_operations
     void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model, const Matsubara_XY& sample);
     
     //! store a one-loop Pk sample
-    void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model, const oneloop_Pk& sample);
+    void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model, const std::list<oneloop_Pk>& sample);
     
     //! store a resummed one-loop Pk sample
     void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model, const oneloop_resum_Pk& sample);

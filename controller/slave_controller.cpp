@@ -287,13 +287,9 @@ void slave_controller::process_item(MPI_detail::new_one_loop_Pk& payload)
     std::list<oneloop_Pk> sample = calculator.calculate_dd(k, k_tok, gf_factors, loop_data, Pk_init, Pk_final);
     
     // inform master process that the calculation is finished
-    std::list<boost::mpi::request> acks;
-    for(oneloop_Pk& record : sample)
-      {
-        MPI_detail::one_loop_Pk_ready return_payload(record);
-        acks.push_back(this->mpi_world.isend(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_WORK_PRODUCT_READY, return_payload));
-      }
-    boost::mpi::wait_all(acks.begin(), acks.end());
+    MPI_detail::one_loop_Pk_ready return_payload(sample);
+    boost::mpi::request ack = this->mpi_world.isend(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_WORK_PRODUCT_READY, return_payload);
+    ack.wait();
   }
 
 

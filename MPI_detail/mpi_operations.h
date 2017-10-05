@@ -815,7 +815,7 @@ namespace MPI_detail
           }
         
         //! value constructor: used to construct and send a payload
-        one_loop_Pk_ready(const oneloop_Pk& Pk)
+        one_loop_Pk_ready(const std::list<oneloop_Pk>& Pk)
           : data(Pk)
           {
           }
@@ -828,7 +828,7 @@ namespace MPI_detail
         
       public:
         
-        const oneloop_Pk& get_data() const { return this->data; }
+        const std::list<oneloop_Pk>& get_data() const { return this->data; }
         
         
         // INTERNAL DATA
@@ -836,7 +836,7 @@ namespace MPI_detail
       private:
         
         //! one-loop Pk container
-        oneloop_Pk data;
+        std::list<oneloop_Pk> data;
     
     
         // enable boost::serialization support, and hence automated packing for transmission over MPI

@@ -579,17 +579,20 @@ namespace sqlite3_operations
     
     
     void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model,
-               const oneloop_Pk& sample)
+               const std::list<oneloop_Pk>& sample)
       {
         assert(db != nullptr);
-        
-        store_impl::store_one_loop_Pk(db, policy.dd_Pk_table(), sample.get_dd(), model, sample);
 
-        store_impl::store_one_loop_rsd_Pk(db, policy.dd_rsd_mu0_Pk_table(), sample.get_dd_rsd_mu0(), model, sample);
-        store_impl::store_one_loop_rsd_Pk(db, policy.dd_rsd_mu2_Pk_table(), sample.get_dd_rsd_mu2(), model, sample);
-        store_impl::store_one_loop_rsd_Pk(db, policy.dd_rsd_mu4_Pk_table(), sample.get_dd_rsd_mu4(), model, sample);
-        store_impl::store_one_loop_rsd_Pk(db, policy.dd_rsd_mu6_Pk_table(), sample.get_dd_rsd_mu6(), model, sample);
-        store_impl::store_one_loop_rsd_Pk(db, policy.dd_rsd_mu8_Pk_table(), sample.get_dd_rsd_mu8(), model, sample);
+        for(const oneloop_Pk& record : sample)
+          {
+            store_impl::store_one_loop_Pk(db, policy.dd_Pk_table(), record.get_dd(), model, record);
+
+            store_impl::store_one_loop_rsd_Pk(db, policy.dd_rsd_mu0_Pk_table(), record.get_dd_rsd_mu0(), model, record);
+            store_impl::store_one_loop_rsd_Pk(db, policy.dd_rsd_mu2_Pk_table(), record.get_dd_rsd_mu2(), model, record);
+            store_impl::store_one_loop_rsd_Pk(db, policy.dd_rsd_mu4_Pk_table(), record.get_dd_rsd_mu4(), model, record);
+            store_impl::store_one_loop_rsd_Pk(db, policy.dd_rsd_mu6_Pk_table(), record.get_dd_rsd_mu6(), model, record);
+            store_impl::store_one_loop_rsd_Pk(db, policy.dd_rsd_mu8_Pk_table(), record.get_dd_rsd_mu8(), model, record);
+          }
       }
     
     
