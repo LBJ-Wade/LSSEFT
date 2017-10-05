@@ -26,37 +26,46 @@
 #include "spline.h"
 
 
-wiggle_Pk_raw_adapter::wiggle_Pk_raw_adapter(const initial_filtered_Pk& w)
-  : container(w)
+wiggle_Pk_raw_adapter::wiggle_Pk_raw_adapter(const initial_filtered_Pk& w, const Mpc_units::energy& klo_, const Mpc_units::energy& khi_)
+  : container(w),
+    klo(klo_),
+    khi(khi_)
   {
   }
 
 
 Mpc_units::inverse_energy3 wiggle_Pk_raw_adapter::operator()(const Mpc_units::energy& k) const
   {
+    if(k < this->klo || k > this->khi) return 0.0;
     return this->container.Pk_raw(k);
   }
 
 
-wiggle_Pk_wiggle_adapter::wiggle_Pk_wiggle_adapter(const initial_filtered_Pk& w)
-  : container(w)
+wiggle_Pk_wiggle_adapter::wiggle_Pk_wiggle_adapter(const initial_filtered_Pk& w, const Mpc_units::energy& klo_, const Mpc_units::energy& khi_)
+  : container(w),
+    klo(klo_),
+    khi(khi_)
   {
   }
 
 
 Mpc_units::inverse_energy3 wiggle_Pk_wiggle_adapter::operator()(const Mpc_units::energy& k) const
   {
+    if(k < this->klo || k > this->khi) return 0.0;
     return this->container.Pk_wiggle(k);
   }
 
 
-wiggle_Pk_nowiggle_adapter::wiggle_Pk_nowiggle_adapter(const initial_filtered_Pk& w)
-  : container(w)
+wiggle_Pk_nowiggle_adapter::wiggle_Pk_nowiggle_adapter(const initial_filtered_Pk& w, const Mpc_units::energy& klo_, const Mpc_units::energy& khi_)
+  : container(w),
+    klo(klo_),
+    khi(khi_)
   {
   }
 
 
 Mpc_units::inverse_energy3 wiggle_Pk_nowiggle_adapter::operator()(const Mpc_units::energy& k) const
   {
+    if(k < this->klo || k > this->khi) return 0.0;
     return this->container.Pk_nowiggle(k);
   }

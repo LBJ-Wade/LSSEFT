@@ -363,8 +363,8 @@ namespace multipole_Pk_calculator_impl
         typedef typename MultipletType::value_type resum_type;
         
         //! constructor
-        //! PlainDecomposer should be a triple of decomposers for the Legendre modes ell = 0, ell = 2, ell = 4
-        //! ExpDecomposer should be a triple of decomposer for the Legendre modes ell = 0, ell = 2, ell = 4
+        //! PlainDecomposer should be a triplet of decomposers for the Legendre modes ell = 0, ell = 2, ell = 4
+        //! ExpDecomposer should be a triplet of decomposer for the Legendre modes ell = 0, ell = 2, ell = 4
         decomposer(const oneloop_Pk& d, PlainDecomposeMultiplet p, ExpDecomposeMultiplet e)
           : data(d),
             plain_decompose(std::move(p)),
@@ -447,71 +447,7 @@ namespace multipole_Pk_calculator_impl
         ExpDecomposeMultiplet exp_decompose;
         
       };
-    
-    
-    // project a single mu^n term into its Legendre multipoles
-    template <typename MultipletType, typename PlainDecomposeMultiplet, typename ExpDecomposeMultiplet>
-    class projector
-      {
-      
-      public:
-    
-        // element_type will be Pk_element or k2_Pk_element or similar -- a container holding a value and an error
-        typedef typename MultipletType::value_type::element_type element_type;
-    
-        // resum_type will be a container such as Pk_resum or k2_Pk_resum holding two element_types
-        typedef typename MultipletType::value_type resum_type;
-    
-        //! constructor
-        //! PlainDecomposer should be a triple of decomposers for the Legendre modes ell = 0, ell = 2, ell = 4
-        //! ExpDecomposer should be a triple of decomposer for the Legendre modes ell = 0, ell = 2, ell = 4
-        projector(const oneloop_Pk& d, PlainDecomposeMultiplet p, ExpDecomposeMultiplet e)
-          : data(d),
-            plain_decompose(std::move(p)),
-            exp_decompose(std::move(e))
-          {
-          }
-        
-        // project a mu^n coefficient into its Legendre decomposition
-        MultipletType compute(mu_power p)
-          {
-            k2_Pk_value ele;
-            switch(p)
-              {
-                case mu_power::mu0: { ele = this->data.get_dd_rsd_mu0().get_Z2_total(); break; }
-                case mu_power::mu2: { ele = this->data.get_dd_rsd_mu2().get_Z2_total(); break; }
-                case mu_power::mu4: { ele = this->data.get_dd_rsd_mu4().get_Z2_total(); break; }
-                case mu_power::mu6: { ele = this->data.get_dd_rsd_mu6().get_Z2_total(); break; }
-                case mu_power::mu8: { ele = this->data.get_dd_rsd_mu8().get_Z2_total(); break; }
-              }
-            
-            element_type raw = ele.get_raw();
-            element_type w = ele.get_wiggle();
-            element_type nw = ele.get_nowiggle();
-            
-            element_type raw_ell0 = raw * std::get<0>(this->plain_decompose)(p);
-            element_type raw_ell2 = raw * std::get<1>(this->plain_decompose)(p);
-            element_type raw_ell4 = raw * std::get<2>(this->plain_decompose)(p);
-            
-            element_type resum_ell0 = nw * std::get<0>(this->plain_decompose)(p) + w * std::get<0>(this->exp_decompose)(p);
-            element_type resum_ell2 = nw * std::get<1>(this->plain_decompose)(p) + w * std::get<1>(this->exp_decompose)(p);
-            element_type resum_ell4 = nw * std::get<2>(this->plain_decompose)(p) + w * std::get<2>(this->exp_decompose)(p);
-            
-            resum_type ell0(raw_ell0, resum_ell0);
-            resum_type ell2(raw_ell2, resum_ell2);
-            resum_type ell4(raw_ell4, resum_ell4);
-            
-            return MultipletType(ell0, ell2, ell4);
-          }
-        
-      private:
-        
-        const oneloop_Pk& data;
-        PlainDecomposeMultiplet plain_decompose;
-        ExpDecomposeMultiplet exp_decompose;
-        
-      };
-    
+
     
     // accessors for ell0, ell2, ell4 from a Legendre_multiplet<>
 
@@ -534,29 +470,21 @@ namespace multipole_Pk_calculator_impl
       };
     
     
-    template <typename Pk_Accessor, typename k2_Pk_Accessor>
+    template <typename Pk_Accessor>
     Pk_ell make_Pk_ell(const Pk_resum_multiplet& tree, const Pk_resum_multiplet& P13, const Pk_resum_multiplet& P22,
-                           const Pk_resum_multiplet& PSPT, const k2_Pk_resum_multiplet& Z2_d, const Pk_resum_multiplet& Z0_v,
-                           const k2_Pk_resum_multiplet& Z2_v, const Pk_resum_multiplet& Z0_vd,
-                           const k2_Pk_resum_multiplet& Z2_vd, const k2_Pk_resum_multiplet& Z2_vv_A,
-                           const k2_Pk_resum_multiplet& Z2_vv_B, const k2_Pk_resum_multiplet& Z2_vvd,
-                           const k2_Pk_resum_multiplet& Z2_vvv, const k2_Pk_resum_multiplet& Z2_mu0,
-                           const k2_Pk_resum_multiplet& Z2_mu2, const k2_Pk_resum_multiplet& Z2_mu4,
-                           const k2_Pk_resum_multiplet& Z2_mu6, const k2_Pk_resum_multiplet& Z2_mu8, Pk_Accessor a,
-                           k2_Pk_Accessor b)
+                       const Pk_resum_multiplet& PSPT, Pk_Accessor a)
       {
-        return Pk_ell(a(tree), a(P13), a(P22), a(PSPT), b(Z2_d), a(Z0_v),
-                      b(Z2_v), a(Z0_vd), b(Z2_vd), b(Z2_vv_A), b(Z2_vv_B), b(Z2_vvd),
-                      b(Z2_vvv), b(Z2_mu0), b(Z2_mu2), b(Z2_mu4), b(Z2_mu6), b(Z2_mu8));
+        return Pk_ell(a(tree), a(P13), a(P22), a(PSPT));
       };
 
     
   }   // namespace multipole_Pk_calculator_impl
 
 
-multipole_Pk multipole_Pk_calculator::calculate_Legendre(const Mpc_units::energy& k, const Matsubara_XY& XY, const oneloop_Pk& data,
-                                                         const oneloop_growth_record& Df_data, const initial_filtered_Pk& Pk_init,
-                                                         const boost::optional<const final_filtered_Pk&>& Pk_final)
+multipole_Pk_set
+multipole_Pk_calculator::calculate_Legendre(const Mpc_units::energy& k, const Matsubara_XY& XY, const oneloop_Pk_set& data,
+                                            const oneloop_growth_record& Df_data, const initial_filtered_Pk& Pk_init,
+                                            const boost::optional<const final_filtered_Pk&>& Pk_final)
   {
     using namespace multipole_Pk_calculator_impl;
     
@@ -565,16 +493,7 @@ multipole_Pk multipole_Pk_calculator::calculate_Legendre(const Mpc_units::energy
     auto get_13       = [](const rsd_dd_Pk& pkg) -> Pk_value     { return pkg.get_13(); };
     auto get_22       = [](const rsd_dd_Pk& pkg) -> Pk_value     { return pkg.get_22(); };
     auto get_SPT      = [](const rsd_dd_Pk& pkg) -> Pk_value     { return pkg.get_1loop_SPT(); };
-    auto get_Z2d      = [](const rsd_dd_Pk& pkg) -> k2_Pk_value  { return pkg.get_Z2_delta(); };
-    auto get_Z0v      = [](const rsd_dd_Pk& pkg) -> Pk_value     { return pkg.get_Z0_v(); };
-    auto get_Z2v      = [](const rsd_dd_Pk& pkg) -> k2_Pk_value  { return pkg.get_Z2_v(); };
-    auto get_Z0vd     = [](const rsd_dd_Pk& pkg) -> Pk_value     { return pkg.get_Z0_vdelta(); };
-    auto get_Z2vd     = [](const rsd_dd_Pk& pkg) -> k2_Pk_value  { return pkg.get_Z2_vdelta(); };
-    auto get_Z2vv_A   = [](const rsd_dd_Pk& pkg) -> k2_Pk_value  { return pkg.get_Z2_vv_A(); };
-    auto get_Z2vv_B   = [](const rsd_dd_Pk& pkg) -> k2_Pk_value  { return pkg.get_Z2_vv_B(); };
-    auto get_Z2vvd    = [](const rsd_dd_Pk& pkg) -> k2_Pk_value  { return pkg.get_Z2_vvdelta(); };
-    auto get_Z2vvv    = [](const rsd_dd_Pk& pkg) -> k2_Pk_value  { return pkg.get_Z2_vvv(); };
-    
+
     // get Matsubara X+Y suppression factor (remember we have to scale up by the square of the linear growth factor,
     // since we store just the raw integral over the early-time tree-level power spectrum)
     double Matsubara_XY = Df_data.D_lin*Df_data.D_lin * k*k * XY;
@@ -583,10 +502,10 @@ multipole_Pk multipole_Pk_calculator::calculate_Legendre(const Mpc_units::energy
     double B_coeff = Matsubara_XY;
     
     // set policy objects to adjust the different mu dependences to account for resummation
-    resum_adjuster Pk_adj(k, Matsubara_XY, Df_data, data.get_dd().get_tree());
+    Pk_value Ptree = Df_data.D_lin*Df_data.D_lin * build_Pk_value(k, Pk_init);
+    resum_adjuster Pk_adj(k, Matsubara_XY, Df_data, Ptree);
     null_adjuster<Mpc_units::inverse_energy3> Pk_null;
-    null_adjuster<Mpc_units::inverse_energy> k2_Pk_null;
-    
+
     // set up multiplet of plain decomposition coefficients
     mu_to_ell0 plain_ell0;
     mu_to_ell2 plain_ell2;
@@ -598,53 +517,40 @@ multipole_Pk multipole_Pk_calculator::calculate_Legendre(const Mpc_units::energy
     mu_to_ell2_expXY exp_ell2(A_coeff, B_coeff);
     mu_to_ell4_expXY exp_ell4(A_coeff, B_coeff);
     auto exp_multiplet = std::make_tuple(exp_ell0, exp_ell2, exp_ell4);
-    
-    // create decomposer object
-    decomposer<Pk_resum_multiplet, decltype(plain_multiplet), decltype(exp_multiplet)> decomp(data, plain_multiplet, exp_multiplet);
-    decomposer<k2_Pk_resum_multiplet, decltype(plain_multiplet), decltype(exp_multiplet)> k2_decomp(data, plain_multiplet, exp_multiplet);
-    
-    // get Legendre multiplets for each element of interest
-    Pk_resum_multiplet tree = decomp.compute(get_tree, Pk_null);
-    Pk_resum_multiplet P13 = decomp.compute(get_13, Pk_null);
-    Pk_resum_multiplet P22 = decomp.compute(get_22, Pk_null);
-    Pk_resum_multiplet PSPT = decomp.compute(get_SPT, Pk_adj);
 
-    k2_Pk_resum_multiplet Z2_delta = k2_decomp.compute(get_Z2d, k2_Pk_null);
-    Pk_resum_multiplet Z0_v = decomp.compute(get_Z0v, Pk_null);
-    k2_Pk_resum_multiplet Z2_v = k2_decomp.compute(get_Z2v, k2_Pk_null);
-    Pk_resum_multiplet Z0_vdelta = decomp.compute(get_Z0vd, Pk_null);
-    k2_Pk_resum_multiplet Z2_vdelta = k2_decomp.compute(get_Z2vd, k2_Pk_null);
-    k2_Pk_resum_multiplet Z2_vv_A = k2_decomp.compute(get_Z2vv_A, k2_Pk_null);
-    k2_Pk_resum_multiplet Z2_vv_B = k2_decomp.compute(get_Z2vv_B, k2_Pk_null);
-    k2_Pk_resum_multiplet Z2_vvdelta = k2_decomp.compute(get_Z2vvd, k2_Pk_null);
-    k2_Pk_resum_multiplet Z2_vvv = k2_decomp.compute(get_Z2vvv, k2_Pk_null);
+    using decompose_type = decomposer<Pk_resum_multiplet, decltype(plain_multiplet), decltype(exp_multiplet)>;
 
-    // create projector object
-    projector<k2_Pk_resum_multiplet, decltype(plain_multiplet), decltype(exp_multiplet)> proj(data, plain_multiplet, exp_multiplet);
-    
-    // project mu^n counterterms into Legendre modes
-    k2_Pk_resum_multiplet Z2_mu0 = proj.compute(mu_power::mu0);
-    k2_Pk_resum_multiplet Z2_mu2 = proj.compute(mu_power::mu2);
-    k2_Pk_resum_multiplet Z2_mu4 = proj.compute(mu_power::mu4);
-    k2_Pk_resum_multiplet Z2_mu6 = proj.compute(mu_power::mu6);
-    k2_Pk_resum_multiplet Z2_mu8 = proj.compute(mu_power::mu8);
-    
-    // slice these multiplets into Pk_ell containers for the ell=0, ell=2 and ell=4 modes
-    Pk_ell P0 = make_Pk_ell(tree, P13, P22, PSPT, Z2_delta, Z0_v,
-                            Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv_A, Z2_vv_B, Z2_vvdelta,
-                            Z2_vvv, Z2_mu0, Z2_mu2, Z2_mu4, Z2_mu6, Z2_mu8,
-                            get_ell0<Pk_resum_multiplet>(), get_ell0<k2_Pk_resum_multiplet>());
-    Pk_ell P2 = make_Pk_ell(tree, P13, P22, PSPT, Z2_delta, Z0_v,
-                            Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv_A, Z2_vv_B, Z2_vvdelta,
-                            Z2_vvv, Z2_mu0, Z2_mu2, Z2_mu4, Z2_mu6, Z2_mu8,
-                            get_ell2<Pk_resum_multiplet>(), get_ell2<k2_Pk_resum_multiplet>());
-    Pk_ell P4 = make_Pk_ell(tree, P13, P22, PSPT, Z2_delta, Z0_v,
-                            Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv_A, Z2_vv_B, Z2_vvdelta,
-                            Z2_vvv, Z2_mu0, Z2_mu2, Z2_mu4, Z2_mu6, Z2_mu8,
-                            get_ell4<Pk_resum_multiplet>(), get_ell4<k2_Pk_resum_multiplet>());
-    
-    // package everything up as as multiplet_Pk and return it
-    return multipole_Pk(data.get_k_token(), data.get_growth_params(), data.get_loop_params(), XY.get_params_token(),
-                        data.get_init_Pk_token(), data.get_final_Pk_token(), data.get_IR_token(), data.get_UV_token(),
-                        data.get_z_token(), XY.get_IR_resum_token(), P0, P2, P4);
+    multipole_Pk_set rval;
+
+    auto apply = [&](std::string tag) -> void
+      {
+        const oneloop_Pk& Pk = data.at(tag);
+
+        // create decomposer object
+        decompose_type decomp(Pk, plain_multiplet, exp_multiplet);
+
+        // get Legendre multiplets for each element of the power spectrum
+        Pk_resum_multiplet tree = decomp.compute(get_tree, Pk_null);
+        Pk_resum_multiplet P13 = decomp.compute(get_13, Pk_null);
+        Pk_resum_multiplet P22 = decomp.compute(get_22, Pk_null);
+        Pk_resum_multiplet PSPT = decomp.compute(get_SPT, Pk_adj);
+
+        // reorganize these multiplets into Pk_ell containers for the ell=0, ell=2 and ell=4 modes
+        Pk_ell P0 = make_Pk_ell(tree, P13, P22, PSPT, get_ell0<Pk_resum_multiplet>());
+        Pk_ell P2 = make_Pk_ell(tree, P13, P22, PSPT, get_ell2<Pk_resum_multiplet>());
+        Pk_ell P4 = make_Pk_ell(tree, P13, P22, PSPT, get_ell4<Pk_resum_multiplet>());
+
+        // package everything up as as multiplet_Pk and emplace it with a matching tag
+        rval.emplace(
+          std::make_pair(tag,
+            multipole_Pk{Pk.get_k_token(), Pk.get_growth_params(), Pk.get_loop_params(), XY.get_params_token(),
+                         Pk.get_init_Pk_token(), Pk.get_final_Pk_token(), Pk.get_IR_token(), Pk.get_UV_token(),
+                         Pk.get_z_token(), XY.get_IR_resum_token(), P0, P2, P4}
+          )
+        );
+      };
+
+#include "autogenerated/multipole_compute_stmts.cpp"
+
+    return rval;
   }

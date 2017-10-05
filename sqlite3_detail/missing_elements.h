@@ -89,17 +89,7 @@ namespace sqlite3_operations
     missing_Matsubara_XY_configurations(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
                                             const FRW_model_token& model, const linear_Pk_token& Pk,
                                             const IR_resum_database& IR_db, const MatsubaraXY_params_token& params_tok);
-    
-    //! process a list of configurations for a one-loop resummed P(k) calculation;
-    //! we detect which ones are already present in the database and avoid computing them
-    std::unique_ptr<z_database>
-    missing_one_loop_resum_Pk_redshifts(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
-                                            const FRW_model_token& model, const growth_params_token& growth_params,
-                                            const loop_integral_params_token& loop_params,
-                                            const MatsubaraXY_params_token& XY_params, const linear_Pk_token& init_Pk,
-                                            const boost::optional<linear_Pk_token>& final_Pk, const std::string& z_table,
-                                            const z_database& z_db, const resum_Pk_configs::value_type& record);
-    
+
     //! process a list of configurations for calculation of the one-loop multipole P(k);
     //! we detect which ones are already present in the database and avoid computing them
     std::unique_ptr<z_database>

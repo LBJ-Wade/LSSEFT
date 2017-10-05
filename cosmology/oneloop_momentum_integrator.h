@@ -141,11 +141,6 @@ class oneloop_momentum_integrator
                                 const k_token& k_tok, const Mpc_units::energy& UV_cutoff, const UV_cutoff_token& UV_tok,
                                 const Mpc_units::energy& IR_cutoff, const IR_cutoff_token& IR_tok, const initial_filtered_Pk& Pk);
 
-    //! output integrands for inspection
-    void write_integrands(const FRW_model& model, const Mpc_units::energy& k,
-                          const Mpc_units::energy& UV_cutoff, const Mpc_units::energy& IR_cutoff,
-                          const spline_Pk& Pk, unsigned int Npoints);
-
     // INTERNAL API
 
   private:

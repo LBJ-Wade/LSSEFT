@@ -144,19 +144,7 @@ class data_manager
                                 k_database& k_db, IR_cutoff_database& IR_db, UV_cutoff_database& UV_db,
                                 std::shared_ptr<initial_filtered_Pk>& Pk_init,
                                 std::shared_ptr<final_filtered_Pk>& Pk_final);
-    
-    //! build a work list represenitng (k, z, IR_cutoff, UV_cutoff, IR_resum) combinations of the one-loop
-    //! power spectrum that are missing from the SQLite backing store
-    //! generates a new transaction on the database; will fail if a transaction is in progress
-    std::unique_ptr<one_loop_resum_Pk_work_list>
-    build_one_loop_resum_Pk_work_list(const FRW_model_token& model, const growth_params_token& growth_params,
-                                          const loop_integral_params_token& loop_params,
-                                          const MatsubaraXY_params_token& XY_params, z_database& z_db,
-                                          k_database& k_db, IR_cutoff_database& IR_cutoff_db,
-                                          UV_cutoff_database& UV_cutoff_db, IR_resum_database& IR_resum_db,
-                                          std::shared_ptr<initial_filtered_Pk>& Pk_init,
-                                          std::shared_ptr<final_filtered_Pk>& Pk_final);
-    
+
     //! build a work list representing (k, z, IR_cutoff, UV_cutoff, IR_resum) combinations of the one-loop
     //! multipole power spectra that are missing from the SQLite backing store.
     //! generates a new transaction on the database; will fail if a transaction is in progress
@@ -288,10 +276,7 @@ class data_manager
     
     //! prepare to write to the one-loop power spectrum table
     void setup_write(one_loop_Pk_work_list& work);
-    
-    //! prepare to write to the one-loop resummed power spectrum table
-    void setup_write(one_loop_resum_Pk_work_list& work);
-    
+
     //! prepare to write to the multipole power spectrum table
     void setup_write(multipole_Pk_work_list& work);
     
@@ -317,10 +302,7 @@ class data_manager
     
     //! finish writing to the one-loop power spectrum table
     void finalize_write(one_loop_Pk_work_list& work);
-    
-    //! finish writing to the one-loop resummed power spectrum table
-    void finalize_write(one_loop_resum_Pk_work_list& work);
-    
+
     //! finish writing to the multipole power spectrum table
     void finalize_write(multipole_Pk_work_list& work);
     
@@ -361,7 +343,7 @@ class data_manager
     //! extract a sample of a P(k)-like quantity that is k-dependent, z-dependent,
     //! and IR/UV-cutoff dependent
     template <typename PayloadType>
-    std::unique_ptr<oneloop_Pk>
+    std::unique_ptr<oneloop_Pk_set>
     find(transaction_manager& mgr, const FRW_model_token& model, const growth_params_token& growth_params,
          const loop_integral_params_token& loop_params, const k_token& k, const z_token& z,
          const linear_Pk_token& Pk_init, const boost::optional<linear_Pk_token>& Pk_final,

@@ -34,7 +34,6 @@
 #include "cosmology/concepts/transfer_function.h"
 #include "cosmology/concepts/loop_integral.h"
 #include "cosmology/concepts/oneloop_Pk.h"
-#include "cosmology/concepts/oneloop_resum_Pk.h"
 #include "cosmology/concepts/multipole_Pk.h"
 #include "cosmology/concepts/Matsubara_XY.h"
 #include "cosmology/concepts/filtered_Pk_value.h"
@@ -44,6 +43,7 @@
 
 #include "boost/serialization/serialization.hpp"
 #include "boost/serialization/shared_ptr.hpp"
+#include "boost/serialization/map.hpp"
 
 
 namespace MPI_detail
@@ -71,9 +71,6 @@ namespace MPI_detail
     
     constexpr unsigned int MESSAGE_NEW_MULTIPOLE_PK_TASK      = 50;
     constexpr unsigned int MESSAGE_NEW_MULTIPOLE_PK           = 51;
-    
-    constexpr unsigned int MESSAGE_NEW_ONE_LOOP_RESUM_PK_TASK = 60;
-    constexpr unsigned int MESSAGE_NEW_ONE_LOOP_RESUM_PK      = 61;
 
     constexpr unsigned int MESSAGE_WORKER_READY               = 90;
     constexpr unsigned int MESSAGE_WORK_PRODUCT_READY         = 91;
@@ -815,8 +812,8 @@ namespace MPI_detail
           }
         
         //! value constructor: used to construct and send a payload
-        one_loop_Pk_ready(const oneloop_Pk& Pk)
-          : data(Pk)
+        one_loop_Pk_ready(const oneloop_Pk_set& Pks)
+          : data(Pks)
           {
           }
         
@@ -828,7 +825,7 @@ namespace MPI_detail
         
       public:
         
-        const oneloop_Pk& get_data() const { return this->data; }
+        const oneloop_Pk_set& get_data() const { return this->data; }
         
         
         // INTERNAL DATA
@@ -836,7 +833,7 @@ namespace MPI_detail
       private:
         
         //! one-loop Pk container
-        oneloop_Pk data;
+        oneloop_Pk_set data;
     
     
         // enable boost::serialization support, and hence automated packing for transmission over MPI
@@ -849,161 +846,7 @@ namespace MPI_detail
           }
         
       };
-    
-    
-    class new_one_loop_resum_Pk
-      {
-        
-        // CONSTRUCTOR, DESTRUCTOR
-        
-      public:
-        
-        //! empty constructor: used to receive a payload
-        new_one_loop_resum_Pk()
-          : k(0.0),
-            XY(),
-            data(),
-            Df_data(),
-            Pk_init(),
-            Pk_final()
-          {
-          }
-    
-        //! value constructor: used to construct and send a payload
-        new_one_loop_resum_Pk(const Mpc_units::energy& _k, const Matsubara_XY& _XY,
-                              const std::shared_ptr<oneloop_Pk>& _data, const oneloop_growth_record& _Df_data,
-                              const std::shared_ptr<initial_filtered_Pk>& _Pk_init,
-                              const std::shared_ptr<final_filtered_Pk>& _Pk_final)
-          : k(_k),
-            XY(_XY),
-            data(_data),
-            Df_data(_Df_data),
-            Pk_init(_Pk_init),
-            Pk_final(_Pk_final)
-          {
-          }
-    
-        //! destructor is default
-        ~new_one_loop_resum_Pk() = default;
-    
-    
-        // ACCESS PAYLOAD
-  
-      public:
-    
-        //! get wavenumber
-        const Mpc_units::energy& get_k() const { return this->k; }
-    
-        //! get Matsubara X & Y coefficients
-        const Matsubara_XY& get_Matsubara_XY() const { return this->XY; }
-    
-        //! get one-loop data
-        const oneloop_Pk& get_oneloop_Pk_data() const { return *this->data; }
-    
-        //! get gf growth factors
-        const oneloop_growth_record& get_Df_data() const { return this->Df_data; }
-    
-        //! get initial linear power spectrum
-        const initial_filtered_Pk& get_init_linear_Pk() const { return *this->Pk_init; }
-    
-        //! get final linear power spectrum, if provided
-        boost::optional<const final_filtered_Pk&> get_final_linear_Pk() const
-          {
-            if(this->Pk_final) return *this->Pk_final;
-            return boost::none;
-          }
-    
-    
-        // INTERNAL DATA
-  
-      private:
-    
-        // Payload data
-    
-        //! physical scale k
-        Mpc_units::energy k;
-    
-        //! Matsubara X & Y coefficients
-        Matsubara_XY XY;
-    
-        //! one-loop power spectrum data
-        std::shared_ptr<oneloop_Pk> data;
-    
-        //! gf growth factors
-        oneloop_growth_record Df_data;
-    
-        //! initial linear power spectrum
-        std::shared_ptr<initial_filtered_Pk> Pk_init;
-        
-        //! final linear power spectrum, if provided
-        std::shared_ptr<final_filtered_Pk> Pk_final;
-    
-    
-        // enable boost::serialization support, and hence automated packing for transmission over MPI
-        friend class boost::serialization::access;
-    
-        template <typename Archive>
-        void serialize(Archive& ar, unsigned int version)
-          {
-            ar & k;
-            ar & XY;
-            ar & data;
-            ar & Df_data;
-            ar & Pk_init;
-            ar & Pk_final;
-          }
-    
-      };
-    
-    
-    class one_loop_resum_Pk_ready
-      {
-        
-        // CONSTRUCTOR, DESTRUCTOR
-      
-      public:
-        
-        //! empty constructor: used to receive a payload
-        one_loop_resum_Pk_ready()
-          {
-          }
-        
-        //! value constructor: used to construct and send a payload
-        one_loop_resum_Pk_ready(const oneloop_resum_Pk& Pk)
-          : data(Pk)
-          {
-          }
-        
-        //! destructor is default
-        ~one_loop_resum_Pk_ready() = default;
-        
-        
-        // INTERFACE
-      
-      public:
-        
-        const oneloop_resum_Pk& get_data() const { return this->data; }
-        
-        
-        // INTERNAL DATA
-      
-      private:
-        
-        //! resummed 1-loop Pk container
-        oneloop_resum_Pk data;
-        
-        
-        // enable boost::serialization support, and hence automated packing for transmission over MPI
-        friend class boost::serialization::access;
-        
-        template <typename Archive>
-        void serialize(Archive& ar, unsigned int version)
-          {
-            ar & data;
-          }
-        
-      };
-    
+
     
     class new_multipole_Pk
       {
@@ -1024,7 +867,7 @@ namespace MPI_detail
           }
         
         //! value constructor: used to construct and send a payload
-        new_multipole_Pk(const Mpc_units::energy& _k, const Matsubara_XY& _XY, const std::shared_ptr<oneloop_Pk>& _data,
+        new_multipole_Pk(const Mpc_units::energy& _k, const Matsubara_XY& _XY, const std::shared_ptr<oneloop_Pk_set>& _data,
                          const oneloop_growth_record& _Df_data, const std::shared_ptr<initial_filtered_Pk>& _Pk_init,
                          const std::shared_ptr<final_filtered_Pk>& _Pk_final)
           : k(_k),
@@ -1051,7 +894,7 @@ namespace MPI_detail
         const Matsubara_XY& get_Matsubara_XY() const { return this->XY; }
         
         //! get one-loop data
-        const oneloop_Pk& get_oneloop_Pk_data() const { return *this->data; }
+        const oneloop_Pk_set& get_oneloop_Pk_data() const { return *this->data; }
         
         //! get gf growth factors
         const oneloop_growth_record& get_Df_data() const { return this->Df_data; }
@@ -1080,7 +923,7 @@ namespace MPI_detail
         Matsubara_XY XY;
     
         //! one-loop power spectrum data
-        std::shared_ptr<oneloop_Pk> data;
+        std::shared_ptr<oneloop_Pk_set> data;
         
         //! gf growth factors
         oneloop_growth_record Df_data;
@@ -1122,7 +965,7 @@ namespace MPI_detail
           }
         
         //! value constructor: used to construct and send a payload
-        multipole_Pk_ready(const multipole_Pk& Pk)
+        multipole_Pk_ready(const multipole_Pk_set& Pk)
           : data(Pk)
           {
           }
@@ -1135,7 +978,7 @@ namespace MPI_detail
         
       public:
         
-        const multipole_Pk& get_data() const { return this->data; }
+        const multipole_Pk_set& get_data() const { return this->data; }
         
         
         // INTERNAL DATA
@@ -1143,7 +986,7 @@ namespace MPI_detail
       private:
         
         //! multipole Pk container
-        multipole_Pk data;
+        multipole_Pk_set data;
         
 
         // enable boost::serialization support, and hence automated packing for transmission over MPI

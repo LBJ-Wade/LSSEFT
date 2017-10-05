@@ -27,13 +27,17 @@
 #define LSSEFT_MULTIPOLE_PK_H
 
 
+#include <map>
+
 #include "Pk_resum_value.h"
 
 #include "database/tokens.h"
 #include "units/Mpc_units.h"
 
 #include "boost/timer/timer.hpp"
+#include "boost/optional.hpp"
 #include "boost/serialization/serialization.hpp"
+#include "boost/serialization/map.hpp"
 
 
 template <typename ValueType>
@@ -126,12 +130,7 @@ class Pk_ell
   public:
     
     //! value constructor
-    Pk_ell(const Pk_resum& _tree, const Pk_resum& _P13, const Pk_resum& _P22, const Pk_resum& _PSPT,
-           const k2_Pk_resum& _Z2_d, const Pk_resum& _Z0_v, const k2_Pk_resum& _Z2_v, const Pk_resum& _Z0_vd,
-           const k2_Pk_resum& _Z2_vd, const k2_Pk_resum& _Z2_vv_A, const k2_Pk_resum& _Z2_vv_B,
-           const k2_Pk_resum& _Z2_vvd, const k2_Pk_resum& _Z2_vvv, const k2_Pk_resum& _Z2_mu0,
-           const k2_Pk_resum& _Z2_mu2, const k2_Pk_resum& _Z2_mu4, const k2_Pk_resum& _Z2_mu6,
-           const k2_Pk_resum& _Z2_mu8);
+    Pk_ell(const Pk_resum& _tree, const Pk_resum& _P13, const Pk_resum& _P22, const Pk_resum& _PSPT);
     
     //! destructor is default
     ~Pk_ell() = default;
@@ -152,49 +151,7 @@ class Pk_ell
 
     //! get full 1-loop SPT
     const Pk_resum& get_1loop_SPT() const { return PSPT; }
-    
-    //! get Z2_delta counterterm
-    const k2_Pk_resum& get_Z2_delta() const { return Z2_d; }
-    
-    //! get Z0_v counterterm
-    const Pk_resum& get_Z0_v() const { return Z0_v; }
-    
-    //! get Z2_v counterterm
-    const k2_Pk_resum& get_Z2_v() const { return Z2_v; }
-    
-    //! get Z0_vdelta counterterm
-    const Pk_resum& get_Z0_vdelta() const { return Z0_vd; }
-    
-    //! get Z2_vdelta counterterm
-    const k2_Pk_resum& get_Z2_vdelta() const { return Z2_vd; }
-    
-    //! get Z2_v counterterm - A coefficient
-    const k2_Pk_resum& get_Z2_vv_A() const { return Z2_vv_A; }
-    
-    //! get Z2_v counterterm - B coefficient
-    const k2_Pk_resum& get_Z2_vv_B() const { return Z2_vv_B; }
-    
-    //! get Z2_vvdelta counterterm
-    const k2_Pk_resum& get_Z2_vvdelta() const { return Z2_vvd; }
-    
-    //! get Z2_vvv counterterm
-    const k2_Pk_resum& get_Z2_vvv() const { return Z2_vvv; }
-    
-    //! get mu^0 counterterm
-    const k2_Pk_resum& get_Z2_mu0() const { return Z2_mu0; }
-    
-    //! get mu^2 counterterm
-    const k2_Pk_resum& get_Z2_mu2() const { return Z2_mu2; }
-    
-    //! get mu^4 counterterm
-    const k2_Pk_resum& get_Z2_mu4() const { return Z2_mu4; }
-    
-    //! get mu^6 counterterm
-    const k2_Pk_resum& get_Z2_mu6() const { return Z2_mu6; }
-    
-    //! get mu^8 counterterm
-    const k2_Pk_resum& get_Z2_mu8() const { return Z2_mu8; }
-    
+
     
     // INTERNAL DATA
     
@@ -211,52 +168,7 @@ class Pk_ell
     
     //! full 1-loop SPT power spectrum
     Pk_resum PSPT;
-    
-    
-    // COUNTERTERMS
-    
-    //! Z2_delta
-    k2_Pk_resum Z2_d;
-    
-    //! Z0_v
-    Pk_resum Z0_v;
-    
-    //! Z2_v
-    k2_Pk_resum Z2_v;
-    
-    //! Z0_vdelta
-    Pk_resum Z0_vd;
-    
-    //! Z2_vdelta
-    k2_Pk_resum Z2_vd;
-    
-    //! Z2_vv - A coefficient
-    k2_Pk_resum Z2_vv_A;
-    
-    //! Z2_vv - B coefficient
-    k2_Pk_resum Z2_vv_B;
-    
-    //! Z2_vvdelta
-    k2_Pk_resum Z2_vvd;
-    
-    //! Z2_vvv
-    k2_Pk_resum Z2_vvv;
-    
-    //! Z2 counterterm for mu^0
-    k2_Pk_resum Z2_mu0;
-    
-    //! Z2 counterterm for mu^2
-    k2_Pk_resum Z2_mu2;
-    
-    //! Z2 counterterm for mu^4
-    k2_Pk_resum Z2_mu4;
-    
-    //! Z2 counterterm for mu^6
-    k2_Pk_resum Z2_mu6;
-    
-    //! Z2 counterterm for mu^8
-    k2_Pk_resum Z2_mu8;
-    
+
     
     // enable boost::serialization support
     friend class boost::serialization::access;
@@ -268,20 +180,6 @@ class Pk_ell
         ar & P13;
         ar & P22;
         ar & PSPT;
-        ar & Z2_d;
-        ar & Z0_v;
-        ar & Z2_v;
-        ar & Z0_vd;
-        ar & Z2_vd;
-        ar & Z2_vv_A;
-        ar & Z2_vv_B;
-        ar & Z2_vvd;
-        ar & Z2_vvv;
-        ar & Z2_mu0;
-        ar & Z2_mu2;
-        ar & Z2_mu4;
-        ar & Z2_mu6;
-        ar & Z2_mu8;
       }
     
   };
@@ -302,9 +200,7 @@ namespace boost
         inline void load_construct_data(Archive& ar, Pk_ell* t, const unsigned int file_version)
           {
             // invoke in-place constructor with zero elements; will be overwritten during deserialization
-            ::new(t) Pk_ell(Pk_resum(), Pk_resum(), Pk_resum(), Pk_resum(), k2_Pk_resum(), Pk_resum(),
-                            k2_Pk_resum(), Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(),
-                            k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum());
+            ::new(t) Pk_ell(Pk_resum(), Pk_resum(), Pk_resum(), Pk_resum());
           }
         
       }   // namespace serialization
@@ -454,6 +350,9 @@ class multipole_Pk
   };
 
 
+using multipole_Pk_set = std::map< std::string, multipole_Pk >;
+
+
 namespace boost
   {
     
@@ -470,11 +369,8 @@ namespace boost
           {
             // invoke in-place constructor with zero elements; will be overwritten during deserialization
             Pk_resum empty_Pk;
-            k2_Pk_resum empty_k2_Pk;
-            
-            Pk_ell empty(empty_Pk, empty_Pk, empty_Pk, empty_Pk, empty_k2_Pk, empty_Pk,
-                         empty_k2_Pk, empty_Pk, empty_k2_Pk, empty_k2_Pk, empty_k2_Pk, empty_k2_Pk,
-                         empty_k2_Pk, empty_k2_Pk, empty_k2_Pk, empty_k2_Pk, empty_k2_Pk, empty_k2_Pk);
+
+            Pk_ell empty(empty_Pk, empty_Pk, empty_Pk, empty_Pk);
     
             ::new(t) multipole_Pk(k_token(0), growth_params_token(0), loop_integral_params_token(0),
                                   MatsubaraXY_params_token(0), linear_Pk_token(0),

@@ -192,7 +192,7 @@ void master_controller::execute()
         if(loop_momentum_work) this->scatter(cosmology_model, *model, *loop_momentum_work, dmgr);
         
         
-        // STEP 4 - COMPUTE ONE-LOOP POWER SPECTRA IN REAL AND REDSHIFT SPACE
+        // STEP 4 - COMPUTE ONE-LOOP POWER SPECTRA IN REDSHIFT SPACE
         
         // build a work list for the individual power spectrum components
         std::unique_ptr<one_loop_Pk_work_list> Pk_work =
@@ -201,16 +201,7 @@ void master_controller::execute()
         
         // distribute this work list among the worker processes
         if(Pk_work) this->scatter(cosmology_model, *model, *Pk_work, dmgr);
-        
-        // build a work list for the resummed power spectrum components
-        std::unique_ptr<one_loop_resum_Pk_work_list> Pk_resum_work =
-          dmgr.build_one_loop_resum_Pk_work_list(*model, *growth_tok, *loop_tok, *XY_tok, *lo_z_db,
-                                                 *loop_k_db, *IR_cutoff_db, *UV_cutoff_db, *IR_resum_db, init_Pk_filt,
-                                                 final_Pk_filt);
-        
-        // distribute this work list among the worker processes
-        if(Pk_resum_work) this->scatter(cosmology_model, *model, *Pk_resum_work, dmgr);
-        
+
         
         // STEP 5 - COMPUTE MULTIPOLE DECOMPOSIITON OF REDSHIFT-SPACE POWER SPECTRUM
         

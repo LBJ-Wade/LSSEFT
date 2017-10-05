@@ -184,95 +184,8 @@ namespace sqlite3_operations
             
             exec(db, stmt.str());
           }
-        
-        
-        void oneloop_Pk_table(sqlite3* db, const std::string& table_name, const sqlite3_policy& policy)
-          {
-            std::ostringstream stmt;
-            stmt
-              << "CREATE TABLE " << table_name << "("
-              << "mid INTEGER, "
-              << "growth_params INTEGER, "
-              << "loop_params INTEGER, "
-              << "zid INTEGER, "
-              << "kid INTEGER, "
-              << "init_Pk_id INTEGER, "
-              << "final_Pk_id INTEGER, "
-              << "IR_id INTEGER, "
-              << "UV_id INTEGER, "
-              << "Ptree_raw DOUBLE, "
-              << "err_tree_raw DOUBLE, "
-              << "P13_raw DOUBLE, "
-              << "err_13_raw DOUBLE, "
-              << "P22_raw DOUBLE, "
-              << "err_22_raw DOUBLE, "
-              << "P1loopSPT_raw DOUBLE, "
-              << "err_1loopSPT_raw DOUBLE, "
-              << "Z2_d_raw DOUBLE, "
-              << "Ptree_nw DOUBLE, "
-              << "err_tree_nw DOUBLE, "
-              << "P13_nw DOUBLE, "
-              << "err_13_nw DOUBLE, "
-              << "P22_nw DOUBLE, "
-              << "err_22_nw DOUBLE, "
-              << "P1loopSPT_nw DOUBLE, "
-              << "err_1loopSPT_nw DOUBLE, "
-              << "Z2_d_nw DOUBLE, "
-              << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
-              << "FOREIGN KEY (growth_params) REFERENCES " << policy.growth_config_table() << "(id), "
-              << "FOREIGN KEY (loop_params) REFERENCES " << policy.loop_integral_config_table() << "(id), "
-              << "FOREIGN KEY (kid) REFERENCES " << policy.wavenumber_config_table() << "(id), "
-              << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id), "
-              << "FOREIGN KEY (init_Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
-              << "FOREIGN KEY (final_Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
-              << "FOREIGN KEY (IR_id) REFERENCES " << policy.IR_config_table() << "(id), "
-              << "FOREIGN KEY (UV_id) REFERENCES " << policy.UV_config_table() << "(id));";
-            
-            exec(db, stmt.str());
-          }
-        
-        
-        void oneloop_Pk_resum_table(sqlite3* db, const std::string& table_name, const sqlite3_policy& policy)
-          {
-            std::ostringstream stmt;
-            stmt
-              << "CREATE TABLE " << table_name << "("
-              << "mid INTEGER, "
-              << "growth_params INTEGER, "
-              << "loop_params INTEGER, "
-              << "XY_params INTEGER, "
-              << "zid INTEGER, "
-              << "kid INTEGER, "
-              << "init_Pk_id INTEGER, "
-              << "final_Pk_id INTEGER, "
-              << "IR_cutoff_id INTEGER, "
-              << "UV_cutoff_id INTEGER, "
-              << "IR_resum_id INTEGER, "
-              << "Ptree DOUBLE, "
-              << "err_tree DOUBLE, "
-              << "P13 DOUBLE, "
-              << "err_13 DOUBLE, "
-              << "P22 DOUBLE, "
-              << "err_22 DOUBLE, "
-              << "P1loop_SPT DOUBLE, "
-              << "err_1loop_SPT DOUBLE, "
-              << "Z2_d DOUBLE, "
-              << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
-              << "FOREIGN KEY (growth_params) REFERENCES " << policy.growth_config_table() << "(id), "
-              << "FOREIGN KEY (loop_params) REFERENCES " << policy.loop_integral_config_table() << "(id), "
-              << "FOREIGN KEY (XY_params) REFERENCES " << policy.MatsubaraXY_config_table() << "(id), "
-              << "FOREIGN KEY (kid) REFERENCES " << policy.wavenumber_config_table() << "(id), "
-              << "FOREIGN KEY (zid) REFERENCES " << policy.redshift_config_table() << "(id), "
-              << "FOREIGN KEY (init_Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
-              << "FOREIGN KEY (final_Pk_id) REFERENCES " << policy.Pk_linear_config_table() << "(id), "
-              << "FOREIGN KEY (IR_cutoff_id) REFERENCES " << policy.IR_config_table() << "(id), "
-              << "FOREIGN KEY (UV_cutoff_id) REFERENCES " << policy.UV_config_table() << "(id), "
-              << "FOREIGN KEY (IR_resum_id) REFERENCES " << policy.IR_resum_config_table() << "(id));";
-    
-            exec(db, stmt.str());
-          }
-        
-        
+
+
         void oneloop_rsd_Pk_table(sqlite3* db, const std::string& table_name, const sqlite3_policy& policy)
           {
             std::ostringstream stmt;
@@ -295,16 +208,6 @@ namespace sqlite3_operations
               << "err_22_raw DOUBLE, "
               << "P1loopSPT_raw DOUBLE, "
               << "err_1loopSPT_raw DOUBLE, "
-              << "Z2_d_raw DOUBLE, "
-              << "Z0_v_raw DOUBLE, "
-              << "Z2_v_raw DOUBLE, "
-              << "Z0_vd_raw DOUBLE, "
-              << "Z2_vd_raw DOUBLE, "
-              << "Z2_vv_A_raw DOUBLE, "
-              << "Z2_vv_B_raw DOBULE, "
-              << "Z2_vvd_raw DOUBLE, "
-              << "Z2_vvv_raw DOUBLE, "
-              << "Z2_total_raw DOUBLE, "
               << "Ptree_nw DOUBLE, "
               << "err_tree_nw DOUBLE, "
               << "P13_nw DOUBLE, "
@@ -313,16 +216,6 @@ namespace sqlite3_operations
               << "err_22_nw DOUBLE, "
               << "P1loopSPT_nw DOUBLE, "
               << "err_1loopSPT_nw DOUBLE, "
-              << "Z2_d_nw DOUBLE, "
-              << "Z0_v_nw DOUBLE, "
-              << "Z2_v_nw DOUBLE, "
-              << "Z0_vd_nw DOUBLE, "
-              << "Z2_vd_nw DOUBLE, "
-              << "Z2_vv_A_nw DOUBLE, "
-              << "Z2_vv_B_nw DOUBLE, "
-              << "Z2_vvd_nw DOUBLE, "
-              << "Z2_vvv_nw DOUBLE, "
-              << "Z2_total_nw DOUBLE, "
               << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
               << "FOREIGN KEY (growth_params) REFERENCES " << policy.growth_config_table() << "(id), "
               << "FOREIGN KEY (loop_params) REFERENCES " << policy.loop_integral_config_table() << "(id), "
@@ -369,34 +262,6 @@ namespace sqlite3_operations
               << "P1loopSPT_err DOUBLE, "
               << "P1loopSPT_resum DOUBLE, "
               << "P1loopSPT_resum_err DOUBLE, "
-              << "Z2_d DOUBLE, "
-              << "Z2_d_resum DOUBLE, "
-              << "Z0_v DOUBLE, "
-              << "Z0_v_resum DOUBLE, "
-              << "Z2_v DOUBLE, "
-              << "Z2_v_resum DOUBLE, "
-              << "Z0_vd DOUBLE, "
-              << "Z0_vd_resum DOUBLE, "
-              << "Z2_vd DOUBLE, "
-              << "Z2_vd_resum DOUBLE, "
-              << "Z2_vv_A DOUBLE, "
-              << "Z2_vv_A_resum DOUBLE, "
-              << "Z2_vv_B DOUBLE, "
-              << "Z2_vv_B_resum DOUBLE, "
-              << "Z2_vvd DOUBLE, "
-              << "Z2_vvd_resum DOUBLE, "
-              << "Z2_vvv DOUBLE, "
-              << "Z2_vvv_resum DOUBLE, "
-              << "Z2_mu0 DOUBLE, "
-              << "Z2_mu0_resum DOUBLE, "
-              << "Z2_mu2 DOUBLE, "
-              << "Z2_mu2_resum DOUBLE, "
-              << "Z2_mu4 DOUBLE, "
-              << "Z2_mu4_resum DOUBLE, "
-              << "Z2_mu6 DOUBLE, "
-              << "Z2_mu6_resum DOUBLE, "
-              << "Z2_mu8 DOUBLE, "
-              << "Z2_mu8_resum DOUBLE, "
               << "FOREIGN KEY (mid) REFERENCES " << policy.FRW_model_table() << "(id), "
               << "FOREIGN KEY (growth_params) REFERENCES " << policy.growth_config_table() << "(id), "
               << "FOREIGN KEY (loop_params) REFERENCES " << policy.loop_integral_config_table() << "(id), "
@@ -561,54 +426,9 @@ namespace sqlite3_operations
         create_impl::oneloop_f_table(db, policy);
 
         create_impl::Pk_linear_data_table(db, policy);
-        
-        create_impl::oneloop_momentum_integral_table(db, policy.AA_table(), policy);
-        create_impl::oneloop_momentum_integral_table(db, policy.AB_table(), policy);
-        create_impl::oneloop_momentum_integral_table(db, policy.BB_table(), policy);
-        
-        create_impl::oneloop_momentum_integral_table(db, policy.D_table(), policy);
-        create_impl::oneloop_momentum_integral_table(db, policy.E_table(), policy);
-        create_impl::oneloop_momentum_integral_table(db, policy.F_table(), policy);
-        create_impl::oneloop_momentum_integral_table(db, policy.G_table(), policy);
-        create_impl::oneloop_momentum_integral_table(db, policy.J1_table(), policy);
-        create_impl::oneloop_momentum_integral_table(db, policy.J2_table(), policy);
-        
-        create_impl::oneloop_momentum_integral_table(db, policy.RSD13_a_table(), policy);
-        create_impl::oneloop_momentum_integral_table(db, policy.RSD13_b_table(), policy);
-        create_impl::oneloop_momentum_integral_table(db, policy.RSD13_c_table(), policy);
-        create_impl::oneloop_momentum_integral_table(db, policy.RSD13_d_table(), policy);
-        create_impl::oneloop_momentum_integral_table(db, policy.RSD13_e_table(), policy);
-        create_impl::oneloop_momentum_integral_table(db, policy.RSD13_f_table(), policy);
-        create_impl::oneloop_momentum_integral_table(db, policy.RSD13_g_table(), policy);
-        
-        create_impl::oneloop_momentum_integral_table(db, policy.RSD22_A1_table(), policy);
-        create_impl::oneloop_momentum_integral_table(db, policy.RSD22_A2_table(), policy);
-        create_impl::oneloop_momentum_integral_table(db, policy.RSD22_A3_table(), policy);
-        create_impl::oneloop_momentum_integral_table(db, policy.RSD22_A4_table(), policy);
-        create_impl::oneloop_momentum_integral_table(db, policy.RSD22_A5_table(), policy);
-        create_impl::oneloop_momentum_integral_table(db, policy.RSD22_B2_table(), policy);
-        create_impl::oneloop_momentum_integral_table(db, policy.RSD22_B3_table(), policy);
-        create_impl::oneloop_momentum_integral_table(db, policy.RSD22_B6_table(), policy);
-        create_impl::oneloop_momentum_integral_table(db, policy.RSD22_B8_table(), policy);
-        create_impl::oneloop_momentum_integral_table(db, policy.RSD22_B9_table(), policy);
-        create_impl::oneloop_momentum_integral_table(db, policy.RSD22_C1_table(), policy);
-        create_impl::oneloop_momentum_integral_table(db, policy.RSD22_C2_table(), policy);
-        create_impl::oneloop_momentum_integral_table(db, policy.RSD22_C4_table(), policy);
-        create_impl::oneloop_momentum_integral_table(db, policy.RSD22_D1_table(), policy);
-        
-        create_impl::oneloop_Pk_table(db, policy.dd_Pk_table(), policy);
-        create_impl::oneloop_Pk_resum_table(db, policy.dd_Pk_resum_table(), policy);
-        
-        create_impl::oneloop_rsd_Pk_table(db, policy.dd_rsd_mu0_Pk_table(), policy);
-        create_impl::oneloop_rsd_Pk_table(db, policy.dd_rsd_mu2_Pk_table(), policy);
-        create_impl::oneloop_rsd_Pk_table(db, policy.dd_rsd_mu4_Pk_table(), policy);
-        create_impl::oneloop_rsd_Pk_table(db, policy.dd_rsd_mu6_Pk_table(), policy);
-        create_impl::oneloop_rsd_Pk_table(db, policy.dd_rsd_mu8_Pk_table(), policy);
-        
-        create_impl::multipole_Pk_table(db, policy.P0_table(), policy);
-        create_impl::multipole_Pk_table(db, policy.P2_table(), policy);
-        create_impl::multipole_Pk_table(db, policy.P4_table(), policy);
-    
+
+#include "autogenerated/create_stmts.cpp"
+
         create_impl::Matsubara_table(db, policy);
       }
     
