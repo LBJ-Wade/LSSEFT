@@ -260,7 +260,7 @@ namespace sqlite3_operations
                                               << "@Ptree, @Ptree_err, @Ptree_resum, @Ptree_resum_err, "
                                               << "@P13, @P13_err, @P13_resum, @P13_resum_err, "
                                               << "@P22, @P22_err, @P22_resum, @P22_resum_err, "
-                                              << "@P1loopSPT, @P1loopSPT_err, @P1loopSPT_resum, @P1loopSPT_resum_err, "
+                                              << "@P1loopSPT, @P1loopSPT_err, @P1loopSPT_resum, @P1loopSPT_resum_err"
                                               << ");";
     
             // prepare statement
