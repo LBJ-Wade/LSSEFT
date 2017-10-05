@@ -198,53 +198,8 @@ namespace sqlite3_operations
             check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, value_raw.c_str()), dimensionless_value(raw)));
             check_stmt(db, sqlite3_bind_double(stmt, sqlite3_bind_parameter_index(stmt, value_resum.c_str()), dimensionless_value(resum)));
           }
-    
-    
-        template <typename PkType>
-        void store_one_loop_Pk(sqlite3* db, const std::string& table_name, const PkType& value,
-                               const FRW_model_token& model, const oneloop_Pk& sample)
-          {
-            std::ostringstream insert_stmt;
-            insert_stmt
-              << "INSERT INTO " << table_name << " VALUES (@mid, @growth_params, @loop_params, @zid, @kid, @init_Pk_id, @final_Pk_id, @IR_id, @UV_id, "
-              << "@Ptree_raw, @err_tree_raw, @P13_raw, @err_13_raw, @P22_raw, @err_22_raw, @P1loopSPT_raw, @err_1loopSPT_raw, @Z2_d_raw, "
-              << "@Ptree_nw, @err_tree_nw, @P13_nw, @err_13_nw, @P22_nw, @err_22_nw, @P1loopSPT_nw, @err_1loopSPT_nw, @Z2_d_nw"
-              << ");";
-    
-            // prepare statement
-            sqlite3_stmt* stmt;
-            check_stmt(db, sqlite3_prepare_v2(db, insert_stmt.str().c_str(), insert_stmt.str().length()+1, &stmt, nullptr));
-    
-            // bind parameter values
-            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@mid"), model.get_id()));
-            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@growth_params"), sample.get_growth_params().get_id()));
-            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@loop_params"), sample.get_loop_params().get_id()));
-            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@zid"), sample.get_z_token().get_id()));
-            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@kid"), sample.get_k_token().get_id()));
-            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@init_Pk_id"), sample.get_init_Pk_token().get_id()));
-            const boost::optional<linear_Pk_token>& final_tok = sample.get_final_Pk_token();
-            if(final_tok)
-              {
-                check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@final_Pk_id"), final_tok->get_id()));
-              }
-            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_id"), sample.get_IR_token().get_id()));
-            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@UV_id"), sample.get_UV_token().get_id()));
-    
-            store_Pk_value(db, stmt, "@Ptree_raw", "@err_tree_raw", "@Ptree_nw", "@err_tree_nw", value.get_tree());
-            store_Pk_value(db, stmt, "@P13_raw", "@err_13_raw", "@P13_nw", "@err_13_nw", value.get_13());
-            store_Pk_value(db, stmt, "@P22_raw", "@err_22_raw", "@P22_nw", "@err_22_nw", value.get_22());
-            store_Pk_value(db, stmt, "@P1loopSPT_raw", "@err_1loopSPT_raw", "@P1loopSPT_nw", "@err_1loopSPT_nw", value.get_1loop_SPT());
-            store_Pk_value(db, stmt, "@Z2_d_raw", "@Z2_d_nw", value.get_Z2_delta());
-            
-            // perform insertion
-            check_stmt(db, sqlite3_step(stmt), ERROR_SQLITE3_INSERT_ONELOOP_PK_FAIL, SQLITE_DONE);
-    
-            // clear bindings and release
-            check_stmt(db, sqlite3_clear_bindings(stmt));
-            check_stmt(db, sqlite3_finalize(stmt));
-          }
-    
-        
+
+
         template <typename PkType>
         void store_one_loop_rsd_Pk(sqlite3* db, const std::string& table_name, const PkType& value,
                                    const FRW_model_token& model, const oneloop_Pk& sample)
@@ -259,7 +214,7 @@ namespace sqlite3_operations
                                               << "@Ptree_nw, @err_tree_nw, "
                                               << "@P13_nw, @err_13_nw, "
                                               << "@P22_nw, @err_22_nw, "
-                                              << "@P1loopSPT_nw, @err_1loopSPT_nw, "
+                                              << "@P1loopSPT_nw, @err_1loopSPT_nw"
                                               << ");";
         
             // prepare statement
