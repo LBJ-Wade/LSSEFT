@@ -35,6 +35,7 @@
 #include "power_spectrum.h"
 
 #include "boost/timer/timer.hpp"
+#include "boost/optional.hpp"
 #include "boost/serialization/serialization.hpp"
 #include "boost/serialization/optional.hpp"
 

@@ -33,6 +33,7 @@
 #include "units/Mpc_units.h"
 
 #include "boost/timer/timer.hpp"
+#include "boost/optional.hpp"
 #include "boost/serialization/serialization.hpp"
 
 

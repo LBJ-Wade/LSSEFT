@@ -87,7 +87,7 @@ void data_manager::setup_write(filter_Pk_work_list& work)
   {
     sqlite3_operations::write_performance_pragmas(this->handle, this->arg_cache.is_network_mode());
 
-    sqlite3_operations::drop_index(this->handle, this->policy.D_table(), "kid");
+    sqlite3_operations::drop_index(this->handle, this->policy.Pk_linear_table(), "kid");
   }
 
 
@@ -215,7 +215,7 @@ void data_manager::finalize_write(filter_Pk_work_list& work)
   {
     sqlite3_operations::default_pragmas(this->handle);
 
-    sqlite3_operations::create_index(this->handle, this->policy.D_table(), "kid");
+    sqlite3_operations::create_index(this->handle, this->policy.Pk_linear_table(), "kid");
   }
 
 
