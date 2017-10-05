@@ -144,7 +144,7 @@ namespace sqlite3_operations
             read_stmt
               << "SELECT "
               << "Ptree_raw, err_tree_raw, P13_raw, err_13_raw, P22_raw, err_22_raw, P1loopSPT_raw, err_1loopSPT_raw, "
-              << "Ptree_nw, err_tree_nw, P13_nw, err_13_nw, P22_nw, err_22_nw, P1loopSPT_nw, err_1loopSPT_nw, "
+              << "Ptree_nw, err_tree_nw, P13_nw, err_13_nw, P22_nw, err_22_nw, P1loopSPT_nw, err_1loopSPT_nw "
               << "FROM " << table << " "
               << "WHERE mid=@mid AND growth_params=@growth_params AND loop_params=@loop_params "
               << "AND zid=@zid AND kid=@kid AND init_Pk_id=@init_Pk_id "
