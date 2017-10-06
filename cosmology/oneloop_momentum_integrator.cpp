@@ -100,8 +100,7 @@ bool oneloop_momentum_integrator::evaluate_integral(const FRW_model& model, cons
 
     boost::timer::cpu_timer raw_timer;
     
-    std::unique_ptr<oneloop_momentum_impl::integrand_data> data =
-      std::make_unique<oneloop_momentum_impl::integrand_data>(model, k, UV_cutoff, IR_cutoff, Pk);
+    auto data = std::make_unique<oneloop_momentum_impl::integrand_data>(model, k, UV_cutoff, IR_cutoff, Pk);
     
     double re = (type == loop_integral_type::P13 ? this->params.get_relerr_13() : this->params.get_relerr_22());
     double ae = (type == loop_integral_type::P13 ? this->params.get_abserr_13() : this->params.get_abserr_22());
