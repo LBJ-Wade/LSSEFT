@@ -138,7 +138,7 @@ bool oneloop_momentum_integrator::evaluate_integral(const FRW_model& model, cons
             raw_timer.stop();
     
             // write values into return structure
-            result.value = typename IntegralRecord::value_type(integral[0]);
+            result.value = typename IntegralRecord::value_type(integral[0] / (8.0 * M_PI * M_PI));
             result.regions = regions;
             result.evaluations = evaluations;
             result.error = typename IntegralRecord::value_type(error[0]);
