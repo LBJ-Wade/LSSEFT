@@ -124,6 +124,9 @@ class slave_controller
     //! combine 1-loop power spectrum data to produce multipole power spectra
     void process_item(MPI_detail::new_multipole_Pk& payload);
 
+    //! compute counterterms
+    void process_item(MPI_detail::new_counterterm& payload);
+
 
     // INTERNAL DATA
 

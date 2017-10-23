@@ -237,6 +237,62 @@ namespace sqlite3_operations
       }
 
 
+    //! find missing redshifts for a named loop-k-dependent table, returned as a std::set<> of ints
+    std::set<unsigned int>
+    missing_redshifts_for_table(sqlite3* db, const FRW_model_token& model, const growth_params_token& growth_params,
+                                const MatsubaraXY_params_token& XY_params,
+                                const linear_Pk_token& init_Pk, const boost::optional<linear_Pk_token>& final_Pk,
+                                const std::string& table, const std::string& z_table,
+                                const resum_Pk_configs::value_type& record)
+      {
+        assert(db != nullptr);
+
+        std::ostringstream select_stmt;
+        select_stmt
+          << "SELECT id FROM " << z_table << " "
+          << "WHERE id NOT IN "
+          << "(SELECT zid FROM " << table << " WHERE mid=@mid AND growth_params=@growth_params AND XY_params=@XY_params "
+          << "AND kid=@kid AND init_Pk_id=@init_Pk_id AND ((@final_Pk_id IS NULL AND final_Pk_id IS NULL) OR final_Pk_id=@final_Pk_id) "
+          << "AND IR_cutoff_id=@IR_cutoff_id AND UV_cutoff_id=@UV_cutoff_id AND IR_resum_id=@IR_resum_id) "
+          << "ORDER BY id;";
+
+        // prepare statement
+        sqlite3_stmt* stmt;
+        check_stmt(db, sqlite3_prepare_v2(db, select_stmt.str().c_str(), select_stmt.str().length()+1, &stmt, nullptr));
+
+        // bind parameter values
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@mid"), model.get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@growth_params"), growth_params.get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@XY_params"), XY_params.get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@kid"), record.k->get_token().get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@init_Pk_id"), init_Pk.get_id()));
+        if(final_Pk)
+          {
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@final_Pk_id"), final_Pk->get_id()));
+          }
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_cutoff_id"), record.IR_cutoff->get_token().get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@UV_cutoff_id"), record.UV_cutoff->get_token().get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_resum_id"), record.IR_resum->get_token().get_id()));
+
+        std::set<unsigned int> results;
+
+        int status = 0;
+        while((status = sqlite3_step(stmt)) != SQLITE_DONE)
+          {
+            if(status == SQLITE_ROW)
+              {
+                results.insert(static_cast<unsigned int>(sqlite3_column_int(stmt, 0)));
+              }
+          }
+
+        // finalize statement and release resources
+        check_stmt(db, sqlite3_clear_bindings(stmt));
+        check_stmt(db, sqlite3_finalize(stmt));
+
+        return(results);
+      }
+
+
     //! find missing wavenumbers for a filtered power spectrum
     std::set<unsigned int> missing_filtered_wavenumbers(sqlite3* db, const linear_Pk_token& Pk_token,
                                                         const filter_params_token& params_token,
@@ -356,8 +412,24 @@ namespace sqlite3_operations
     
         return missing;
       }
-    
-    
+
+
+    std::set<unsigned int>
+    update_missing_counterterms(sqlite3* db, const FRW_model_token& model, const growth_params_token& growth_params,
+                                const MatsubaraXY_params_token& XY_params,
+                                const linear_Pk_token& init_Pk, const boost::optional<linear_Pk_token>& final_Pk,
+                                const std::string& table, const std::string& z_table,
+                                const resum_Pk_configs::value_type& record, std::set<unsigned int>& total_missing)
+      {
+        std::set<unsigned int> missing = missing_redshifts_for_table(db, model, growth_params, XY_params, init_Pk,
+                                                                     final_Pk, table, z_table, record);
+
+        total_missing.insert(missing.begin(), missing.end());
+
+        return missing;
+      }
+
+
     void drop_inconsistent_redshifts(sqlite3* db, const FRW_model_token& model, const growth_params_token& params,
                                      const std::string& table, const std::set<unsigned int>& missing,
                                      const std::set<unsigned int>& total_missing)
@@ -394,14 +466,15 @@ namespace sqlite3_operations
             check_stmt(db, sqlite3_finalize(stmt));
           }
       }
-    
-    
-    void drop_inconsistent_redshifts(sqlite3* db, const FRW_model_token& model, const linear_Pk_token& init_Pk,
-                                     const growth_params_token& growth_params,
-                                     const loop_integral_params_token& loop_params,
-                                     const boost::optional<linear_Pk_token>& final_Pk, const std::string& table,
-                                     const loop_configs::value_type& record, const std::set<unsigned int>& missing,
-                                     const std::set<unsigned int>& total_missing)
+
+
+    void
+    drop_inconsistent_redshifts(sqlite3* db, const FRW_model_token& model, const linear_Pk_token& init_Pk,
+                                const growth_params_token& growth_params,
+                                const loop_integral_params_token& loop_params,
+                                const boost::optional<linear_Pk_token>& final_Pk, const std::string& table,
+                                const loop_configs::value_type& record, const std::set<unsigned int>& missing,
+                                const std::set<unsigned int>& total_missing)
       {
         std::set<unsigned int> inconsistent_set;
     
@@ -498,6 +571,59 @@ namespace sqlite3_operations
                 check_stmt(db, sqlite3_reset(stmt));
               }
             
+            // finalize statement to release resources
+            check_stmt(db, sqlite3_finalize(stmt));
+          }
+      }
+
+
+    void
+    drop_inconsistent_redshifts(sqlite3* db, const FRW_model_token& model, const growth_params_token& growth_params,
+                                const MatsubaraXY_params_token& XY_params, const linear_Pk_token& init_Pk,
+                                const boost::optional<linear_Pk_token>& final_Pk, const std::string& table,
+                                const resum_Pk_configs::value_type& record, const std::set<unsigned int>& missing,
+                                const std::set<unsigned int>& total_missing)
+      {
+        std::set<unsigned int> inconsistent_set;
+
+        std::set_difference(total_missing.begin(), total_missing.end(),
+                            missing.begin(), missing.end(), std::inserter(inconsistent_set, inconsistent_set.begin()));
+
+        if(inconsistent_set.size() > 0)
+          {
+            std::ostringstream drop_stmt;
+            drop_stmt
+              << "DELETE FROM " << table << " WHERE mid=@mid AND growth_params=@growth_params AND XY_params=@XY_params "
+              << "AND zid=@zid AND kid=@kid AND init_Pk_id=@init_Pk_id AND ((@final_Pk_id IS NULL AND final_Pk_id IS NULL) OR final_Pk_id=@final_Pk_id) "
+              << "AND IR_cutoff_id=@IR_cutoff_id AND UV_cutoff_id=@UV_cutoff_id AND IR_resum_id=@IR_resum_id;";
+
+            // prepare statement
+            sqlite3_stmt* stmt;
+            check_stmt(db, sqlite3_prepare_v2(db, drop_stmt.str().c_str(), drop_stmt.str().length()+1, &stmt, nullptr));
+
+            for(unsigned int t : inconsistent_set)
+              {
+                check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@mid"), model.get_id()));
+                check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@growth_params"), growth_params.get_id()));
+                check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@XY_params"), XY_params.get_id()));
+                check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@zid"), t));
+                check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@kid"), record.k->get_token().get_id()));
+                check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@init_Pk_id"), init_Pk.get_id()));
+                if(final_Pk)
+                  {
+                    check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@final_Pk_id"), final_Pk->get_id()));
+                  }
+                check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_cutoff_id"), record.IR_cutoff->get_token().get_id()));
+                check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@UV_cutoff_id"), record.UV_cutoff->get_token().get_id()));
+                check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_resum_id"), record.IR_resum->get_token().get_id()));
+
+                check_stmt(db, sqlite3_step(stmt), SQLITE_DONE);
+
+                // release bindings and reset statement
+                check_stmt(db, sqlite3_clear_bindings(stmt));
+                check_stmt(db, sqlite3_reset(stmt));
+              }
+
             // finalize statement to release resources
             check_stmt(db, sqlite3_finalize(stmt));
           }
@@ -821,6 +947,58 @@ namespace sqlite3_operations
         
         return missing_db;
       }
-    
-    
+
+
+    std::unique_ptr<z_database>
+    missing_counterterm_redshifts(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
+                                  const FRW_model_token& model, const growth_params_token& growth_params,
+                                  const MatsubaraXY_params_token& XY_params, const linear_Pk_token& init_Pk,
+                                  const boost::optional<linear_Pk_token>& final_Pk, const std::string& z_table,
+                                  const z_database& z_db, const resum_Pk_configs::value_type& record)
+      {
+        assert(db != nullptr);
+
+        // set up a null pointer for the returned database; will be attached to an empty instance later if needed
+        std::unique_ptr<z_database> missing_db;
+
+        std::set<unsigned int> missing;
+
+        // find missing configurations for each of P0, P2, P4 and merge
+        std::set<unsigned int> missing_P0 =
+          update_missing_counterterms(db, model, growth_params, XY_params, init_Pk, final_Pk,
+                                      policy.counterterms_c0_table(), z_table, record, missing);
+        std::set<unsigned int> missing_P2 =
+          update_missing_counterterms(db, model, growth_params, XY_params, init_Pk, final_Pk,
+                                      policy.counterterms_c0_table(), z_table, record, missing);
+        std::set<unsigned int> missing_P4 =
+          update_missing_counterterms(db, model, growth_params, XY_params, init_Pk, final_Pk,
+                                      policy.counterterms_c0_table(), z_table, record, missing);
+
+        // bring database to consistent state by dropping any conflicting results
+        drop_inconsistent_redshifts(db, model, growth_params, XY_params, init_Pk, final_Pk,
+                                    policy.counterterms_c0_table(), record, missing_P0, missing);
+        drop_inconsistent_redshifts(db, model, growth_params, XY_params, init_Pk, final_Pk,
+                                    policy.counterterms_c2_table(), record, missing_P2, missing);
+        drop_inconsistent_redshifts(db, model, growth_params, XY_params, init_Pk, final_Pk,
+                                    policy.counterterms_c4_table(), record, missing_P4, missing);
+
+        // push any missing elements into the result database
+        if(!missing.empty())
+          {
+            missing_db = std::make_unique<z_database>();
+
+            for(unsigned int t : missing)
+              {
+                // lookup record for this identifier
+                z_database::const_record_iterator rec = z_db.lookup(z_token(t));
+
+                // add a corresponding record to the missing database
+                missing_db->add_record(*(*rec), rec->get_token());
+              }
+          }
+
+        return missing_db;
+      }
+
+
   }   // namespace sqlite3_operations

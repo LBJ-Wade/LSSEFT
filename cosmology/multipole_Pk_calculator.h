@@ -65,6 +65,13 @@ class multipole_Pk_calculator
     calculate_Legendre(const Mpc_units::energy& k, const Matsubara_XY& XY, const oneloop_Pk_set& data,
                        const oneloop_growth_record& Df_data, const initial_filtered_Pk& Pk_init,
                        const boost::optional<const final_filtered_Pk&>& Pk_final);
+
+    //! calculate counterterm decomposition into Legendre modes
+    multipole_counterterm_set
+    calculate_counterterms(const Mpc_units::energy& k, const k_token& k_token, const IR_cutoff_token& IR_tok,
+                               const UV_cutoff_token& UV_tok, const z_token& z_tok, const growth_params_token& g_tok,
+                               const Matsubara_XY& XY, const oneloop_growth_record& Df_data, const initial_filtered_Pk& Pk_init,
+                               const boost::optional<const final_filtered_Pk&>& Pk_final);
     
   private:
     

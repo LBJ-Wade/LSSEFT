@@ -221,7 +221,7 @@ class multipole_Pk
                  const boost::optional<linear_Pk_token> Pkt_f, const IR_cutoff_token IRt, const UV_cutoff_token UVt,
                  const z_token zt, const IR_resum_token IRrt, const Pk_ell _P0, const Pk_ell _P2, const Pk_ell _P4);
     
-    //! empty constructor for us in MPI payloads
+    //! empty constructor for use in MPI payloads
     multipole_Pk();
     
     //! destructor is default
@@ -353,6 +353,166 @@ class multipole_Pk
 using multipole_Pk_set = std::map< std::string, multipole_Pk >;
 
 
+class multipole_counterterm
+  {
+
+    // CONSTRUCTOR, DESTRUCTOR
+
+  public:
+
+    //! value constructor
+    multipole_counterterm(const k_token kt, const growth_params_token& gp, const MatsubaraXY_params_token& XYp,
+                          const linear_Pk_token Pkt_i, const boost::optional<linear_Pk_token> Pkt_f,
+                          const IR_cutoff_token IRt, const UV_cutoff_token UVt, const z_token zt, const IR_resum_token IRrt,
+                          const Pk_resum _P0_k0, const Pk_resum _P2_k0, const Pk_resum _P4_k0,
+                          const k2_Pk_resum _P0_k2, const k2_Pk_resum _P2_k2, const k2_Pk_resum _P4_k2);
+
+    //! empty constructor for use in MPI payloads
+    multipole_counterterm();
+
+    //! destructor is default
+    ~multipole_counterterm() = default;
+
+
+    // INTERFACE
+
+  public:
+
+    //! get wavenumber token
+    const k_token& get_k_token() const { return this->k; }
+
+    //! get growth parameters token
+    const growth_params_token& get_growth_params_token() const { return this->growth_params; }
+
+    //! get XY parameters token
+    const MatsubaraXY_params_token& get_XY_params_token() const { return this->XY_params; }
+
+    //! get UV cutoff token
+    const UV_cutoff_token& get_UV_cutoff_token() const { return this->UV_cutoff; }
+
+    //! get IR cutoff token
+    const IR_cutoff_token& get_IR_cutoff_token() const { return this->IR_cutoff; }
+
+    //! get z token
+    const z_token& get_z_token() const { return this->z; }
+
+    //! get IR resummation scale token
+    const IR_resum_token& get_IR_resum_token() const { return this->IR_resum; }
+
+    //! get initial linear power spectrum token
+    const linear_Pk_token& get_init_Pk_token() const { return this->init_Pk; }
+
+    //! get final power spectrum token, if provided
+    const boost::optional<linear_Pk_token>& get_final_Pk_token() const { return this->final_Pk; }
+
+
+    // ACCESSORS
+
+  public:
+
+    //! get P0 @ k^0
+    const Pk_resum& get_P0_k0() const { return this->P0_k0; }
+
+    //! get P2 @ k^0
+    const Pk_resum& get_P2_k0() const { return this->P2_k0; }
+
+    //! get P4 @ k^0
+    const Pk_resum& get_P4_k0() const { return this->P4_k0; }
+
+    //! get P0 @ k^2
+    const k2_Pk_resum& get_P0_k2() const { return this->P0_k2; }
+
+    //! get P2 @ k^2
+    const k2_Pk_resum& get_P2_k2() const { return this->P2_k2; }
+
+    //! get P4 @ k^2
+    const k2_Pk_resum& get_P4_k2() const { return this->P4_k2; }
+
+
+    // INTERNAL DATA
+
+  private:
+
+    // CONFIGURATION DATA
+
+    //! wavenumber token
+    k_token k;
+
+    //! growth parameters token
+    growth_params_token growth_params;
+
+    //! XY parameters token
+    MatsubaraXY_params_token XY_params;
+
+    //! initial linear power spectrum token
+    linear_Pk_token init_Pk;
+
+    //! final linear power spectrum token, if provided
+    boost::optional<linear_Pk_token> final_Pk;
+
+    //! UV cutoff token
+    UV_cutoff_token UV_cutoff;
+
+    //! IR cutoff token
+    IR_cutoff_token IR_cutoff;
+
+    //! redshift token
+    z_token z;
+
+    //! IR resummation scale token
+    IR_resum_token IR_resum;
+
+
+    // VALUES
+
+    //! P0 multipole @ k^0
+    Pk_resum P0_k0;
+
+    //! P2 multipole @ k^0
+    Pk_resum P2_k0;
+
+    //! P4 multipole @ k^0
+    Pk_resum P4_k0;
+
+    //! P0 multipole @ k^2
+    k2_Pk_resum P0_k2;
+
+    //! P2 multipole @ k^2
+    k2_Pk_resum P2_k2;
+
+    //! P4 multipole @ k^2
+    k2_Pk_resum P4_k2;
+
+
+    // enable boost::serialization support, and hence automated packing for transmission over MPI
+    friend class boost::serialization::access;
+
+    template <typename Archive>
+    void serialize(Archive& ar, unsigned int version)
+      {
+        ar & k;
+        ar & growth_params;
+        ar & XY_params;
+        ar & init_Pk;
+        ar & final_Pk;
+        ar & UV_cutoff;
+        ar & IR_cutoff;
+        ar & z;
+        ar & IR_resum;
+        ar & P0_k0;
+        ar & P2_k0;
+        ar & P4_k0;
+        ar & P0_k2;
+        ar & P2_k2;
+        ar & P4_k2;
+      }
+
+  };
+
+
+using multipole_counterterm_set = std::map< std::string, multipole_counterterm >;
+
+
 namespace boost
   {
     
@@ -377,7 +537,7 @@ namespace boost
                                   boost::none, IR_cutoff_token(0), UV_cutoff_token(0), z_token(0), IR_resum_token(0),
                                   empty, empty, empty);
           }
-        
+
       }   // namespace serialization
     
   }   // namespace boost

@@ -66,6 +66,9 @@ namespace sqlite3_operations
     //! store a multipole Pk sample
     void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model, const multipole_Pk_set& sample);
 
+    //! store a counterterm sample
+    void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model, const multipole_counterterm_set& sample);
+
   }   // namespace sqlite3_operations
 
 

@@ -43,6 +43,9 @@ constexpr auto SQLITE3_DEFAULT_TRANSFER_TABLE                    = "transfer";
 constexpr auto SQLITE3_DEFAULT_GROWTH_D_TABLE                    = "D_factors";
 constexpr auto SQLITE3_DEFAULT_GROWTH_F_TABLE                    = "f_factors";
 constexpr auto SQLITE3_DEFAULT_MATSUBARA_XY_TABLE                = "Matsubara_XY";
+constexpr auto SQLITE3_DEFAULT_COUNTERTERMS_C0_TABLE             = "counterterms_c0";
+constexpr auto SQLITE3_DEFAULT_COUNTERTERMS_C2_TABLE             = "counterterms_c2";
+constexpr auto SQLITE3_DEFAULT_COUNTERTERMS_C4_TABLE             = "counterterms_c4";
 
 constexpr auto SQLITE3_DEFAULT_TEMPORARY_TABLE                   = "temp";
 

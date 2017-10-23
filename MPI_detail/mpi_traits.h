@@ -40,6 +40,9 @@ namespace MPI_detail
     
     template <> struct work_item_traits<transfer_work_record>
       {
+        work_item_traits() {}
+
+
         typedef new_transfer_integration   outgoing_payload_type;
         typedef transfer_integration_ready incoming_payload_type;
 
@@ -107,6 +110,19 @@ namespace MPI_detail
         
         static constexpr unsigned int new_task_message() { return(MESSAGE_NEW_MULTIPOLE_PK_TASK); }
         static constexpr unsigned int new_item_message() { return(MESSAGE_NEW_MULTIPOLE_PK); }
+      };
+
+
+    template <> struct work_item_traits<counterterm_work_record>
+      {
+        work_item_traits() {}
+
+
+        typedef new_counterterm   outgoing_payload_type;
+        typedef counterterm_ready incoming_payload_type;
+
+        static constexpr unsigned int new_task_message() { return(MESSAGE_NEW_COUNTERTERM_TASK); }
+        static constexpr unsigned int new_item_message() { return(MESSAGE_NEW_COUNTERTERM); }
       };
 
   }   // namespace MPI_detail

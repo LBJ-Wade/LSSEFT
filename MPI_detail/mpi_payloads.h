@@ -54,7 +54,9 @@ namespace MPI_detail
 
     //! build payload for multipole P(k) calculation
     new_multipole_Pk build_payload(const FRW_model&, multipole_Pk_work_list::const_iterator& t);
-    
+
+    //! build payload for counterterm calculation
+    new_counterterm build_payload(const FRW_model&, counterterm_work_list::const_iterator& t);
     
     
   }   // namespace MPI_detail

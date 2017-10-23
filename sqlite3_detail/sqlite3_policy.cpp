@@ -45,6 +45,9 @@ sqlite3_policy::sqlite3_policy()
     growth_D_factor(SQLITE3_DEFAULT_GROWTH_D_TABLE),
     growth_f_factor(SQLITE3_DEFAULT_GROWTH_F_TABLE),
     Matsubara_XY(SQLITE3_DEFAULT_MATSUBARA_XY_TABLE),
+    counterterms_c0(SQLITE3_DEFAULT_COUNTERTERMS_C0_TABLE),
+    counterterms_c2(SQLITE3_DEFAULT_COUNTERTERMS_C2_TABLE),
+    counterterms_c4(SQLITE3_DEFAULT_COUNTERTERMS_C4_TABLE),
     temp(SQLITE3_DEFAULT_TEMPORARY_TABLE)
   {
   }

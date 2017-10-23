@@ -440,3 +440,67 @@ data_manager::build_filter_Pk_work_list(const linear_Pk_token& Pk_token, std::sh
     
     return work_list;
   }
+
+
+std::unique_ptr<counterterm_work_list>
+data_manager::build_counterterm_work_list(const FRW_model_token& model, const growth_params_token& growth_params,
+                                          const MatsubaraXY_params_token& XY_params, z_database& z_db, k_database& k_db,
+                                          IR_cutoff_database& IR_cutoff_db, UV_cutoff_database& UV_cutoff_db,
+                                          IR_resum_database& IR_resum_db, std::shared_ptr<initial_filtered_Pk>& Pk_init,
+                                          std::shared_ptr<final_filtered_Pk>& Pk_final)
+  {
+    // start time
+    boost::timer::cpu_timer timer;
+
+    // construct an empty work list
+    auto work_list = std::make_unique<counterterm_work_list>();
+
+    // open a transaction on the database
+    std::shared_ptr<transaction_manager> mgr = this->open_transaction();
+
+    // set up temporary table of desired z identifiers
+    std::string z_table = sqlite3_operations::z_table(this->handle, *mgr, this->policy, z_db);
+
+    // tensor together the desired k-values with the UV and IR cutoffs
+    resum_Pk_configs required_configs = this->tensor_product(k_db, IR_cutoff_db, UV_cutoff_db, IR_resum_db);
+
+    boost::optional<linear_Pk_token> final_tok;
+    if(Pk_final) final_tok = Pk_final->get_token();
+
+    for(const resum_Pk_configs::value_type& record : required_configs)
+      {
+        // find redshifts missing for this configuration, if any
+        std::unique_ptr<z_database> missing_zs =
+          sqlite3_operations::missing_counterterm_redshifts(this->handle, *mgr, this->policy, model, growth_params,
+                                                            XY_params, Pk_init->get_token(), final_tok, z_table, z_db, record);
+
+        // schedule a task to compute any missing redshifts
+        if(missing_zs)
+          {
+            std::unique_ptr<oneloop_growth> Df_data = this->find<oneloop_growth>(*mgr, model, growth_params, *missing_zs);
+
+            for(const oneloop_value& val : *Df_data)
+              {
+                // lookup Matsubara X & Y coefficients for this IR resummation scale
+                std::unique_ptr<Matsubara_XY> XY_coeffs =
+                  this->find<Matsubara_XY>(*mgr, model, XY_params, Pk_init->get_token(), record.IR_resum->get_token());
+
+                work_list->emplace_back(*(*record.k), record.k->get_token(), *XY_coeffs, record.IR_cutoff->get_token(),
+                                        record.UV_cutoff->get_token(), val.first, growth_params, val.second, Pk_init, Pk_final);
+              }
+          }
+      }
+
+    // close transaction
+    mgr->commit();
+
+    timer.stop();
+    std::ostringstream msg;
+    msg << "constructed counterterm work list (" << work_list->size() << " items) in time " << format_time(timer.elapsed().wall);
+    this->err_handler.info(msg.str());
+
+    // release list if it contains to work
+    if(work_list->empty()) work_list.release();
+
+    return work_list;
+  }

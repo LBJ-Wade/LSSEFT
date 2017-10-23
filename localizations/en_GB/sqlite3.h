@@ -72,6 +72,7 @@ constexpr auto ERROR_SQLITE3_INSERT_ONELOOP_RSD_PK_FAIL              = "failed t
 constexpr auto ERROR_SQLITE3_INSERT_RESUM_ONE_LOOP_PK_FAIL           = "failed to insert resummed one-loop P(k) record";
 constexpr auto ERROR_SQLITE3_INSERT_MULTIPOLE_PK_FAIL                = "failed to insert multipole P(k) record";
 constexpr auto ERROR_SQLITE3_INSERT_MATSUBARA_XY_FAIL                = "failed to insert Matsubara-XY record";
+constexpr auto ERROR_SQLITE3_INSERT_COUNTERTERM_FAIL                 = "failed to insert counterterm record";
 
 constexpr auto ERROR_SQLITE3_DF_GROWTH_TABLE_READ_FAIL               = "failed to read from D- and f-factor growth tables";
 constexpr auto ERROR_SQLITE3_DF_GROWTH_MISREAD                       = "read unexpected number of results from D- and f-factor growth table";

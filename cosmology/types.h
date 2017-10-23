@@ -485,4 +485,109 @@ class filter_Pk_work_record
 typedef std::list<filter_Pk_work_record> filter_Pk_work_list;
 
 
+//! work record for a counterterm
+class counterterm_work_record
+  {
+
+    // CONSTRUCTOR, DESTRUCTOR
+
+  public:
+
+    //! constructor
+    counterterm_work_record(const Mpc_units::energy& _k, const k_token& _ktok, const Matsubara_XY& _XY,
+                            const IR_cutoff_token& _IRtok, const UV_cutoff_token& _UVtok,
+                            const z_token& _ztok, const growth_params_token& _gtok, const oneloop_growth_record& _Df_data,
+                            const std::shared_ptr<initial_filtered_Pk>& _Pk_init,
+                            const std::shared_ptr<final_filtered_Pk>& _Pk_final)
+      : k(_k),
+        k_tok(_ktok),
+        XY(_XY),
+        IR_tok(_IRtok),
+        UV_tok(_UVtok),
+        z_tok(_ztok),
+        growth_tok(_gtok),
+        Df_data(_Df_data),
+        Pk_init(_Pk_init),
+        Pk_final(_Pk_final)
+      {
+      }
+
+
+    // INTERFACE
+
+  public:
+
+    //! get wavenumber
+    const Mpc_units::energy& operator*() const { return this->k; }
+
+    //! get k token
+    const k_token& get_k_token() const { return this->k_tok; }
+
+    //! get Matsubara X & Y coefficients
+    const Matsubara_XY& get_Matsubara_XY() const { return this->XY; }
+
+    //! get IR cutoff token
+    const IR_cutoff_token& get_IR_cutoff_token() const { return this->IR_tok; }
+
+    //! get UV cutoff token
+    const UV_cutoff_token& get_UV_cutoff_token() const { return this->UV_tok; }
+
+    //! get z token
+    const z_token& get_z_token() const { return this->z_tok; }
+
+    //! get growth token
+    const growth_params_token& get_growth_params_token() const { return this->growth_tok; }
+
+    //! get gf growth factors
+    const oneloop_growth_record& get_Df_data() const { return this->Df_data; }
+
+    //! get initial linear power spectrum
+    const std::shared_ptr<initial_filtered_Pk>& get_init_linear_Pk() const { return this->Pk_init; }
+
+    //! get final linear power spectrum
+    const std::shared_ptr<final_filtered_Pk>& get_final_linear_Pk() const { return this->Pk_final; }
+
+
+    // INTERNAL DATA
+
+  private:
+
+    // Payload data
+
+    //! physical scale k
+    Mpc_units::energy k;
+
+    //! database token for k
+    k_token k_tok;
+
+    //! Matsubara X & Y coefficients
+    Matsubara_XY XY;
+
+    //! IR cutoff token
+    IR_cutoff_token IR_tok;
+
+    //! UV cutoff token
+    UV_cutoff_token UV_tok;
+
+    //! z token
+    z_token z_tok;
+
+    //! growth parameters token
+    growth_params_token growth_tok;
+
+    //! gf growth factors
+    oneloop_growth_record Df_data;
+
+    //! initial linear power spectrum
+    std::shared_ptr<initial_filtered_Pk> Pk_init;
+
+    //! final linear power spectrum
+    std::shared_ptr<final_filtered_Pk> Pk_final;
+
+  };
+
+//! list of work
+typedef std::list<counterterm_work_record> counterterm_work_list;
+
+
 #endif //LSSEFT_TYPES_H

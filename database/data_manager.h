@@ -168,6 +168,16 @@ class data_manager
     build_filter_Pk_work_list(const linear_Pk_token& Pk_token, std::shared_ptr<filterable_Pk>& Pk_lin,
                               const filter_params_token& filter_token, const Pk_filter_params& params);
 
+    //! build a work list representing counterterms which need to be computed;
+    //! at one-loop the UV and IR cutoffs are not needed, but they're included for future compatibility
+    //! with >= two-loop calculations in which they might be required
+    std::unique_ptr<counterterm_work_list>
+    build_counterterm_work_list(const FRW_model_token& model, const growth_params_token& growth_params,
+                                const MatsubaraXY_params_token& XY_params, z_database& z_db, k_database& k_db,
+                                IR_cutoff_database& IR_cutoff_db, UV_cutoff_database& UV_cutoff_db,
+                                IR_resum_database& IR_resum_db, std::shared_ptr<initial_filtered_Pk>& Pk_init,
+                                std::shared_ptr<final_filtered_Pk>& Pk_final);
+
     //! exchange a linear power spectrum container for a wiggle-Pk container
     template <typename PkContainer>
     std::unique_ptr<typename PkContainer::filtered_Pk_type> build_wiggle_Pk(const linear_Pk_token& token, const PkContainer& Pk_lin);
@@ -279,6 +289,9 @@ class data_manager
 
     //! prepare to write to the multipole power spectrum table
     void setup_write(multipole_Pk_work_list& work);
+
+    //! prepare to write to the counterterm table
+    void setup_write(counterterm_work_list& work);
     
     
     // DATABASE SERVICES -- CLOSE DOWN AFTER WRITE
@@ -305,6 +318,9 @@ class data_manager
 
     //! finish writing to the multipole power spectrum table
     void finalize_write(multipole_Pk_work_list& work);
+
+    //! finish writing to the counterterm table
+    void finalize_write(counterterm_work_list& work);
     
 
     // DATA STORAGE

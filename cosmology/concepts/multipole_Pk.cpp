@@ -73,3 +73,48 @@ multipole_Pk::multipole_Pk()
     P4(Pk_resum(), Pk_resum(), Pk_resum(), Pk_resum())
   {
   }
+
+
+multipole_counterterm::multipole_counterterm(const k_token kt, const growth_params_token& gp,
+                                             const MatsubaraXY_params_token& XYp, const linear_Pk_token Pkt_i,
+                                             const boost::optional<linear_Pk_token> Pkt_f, const IR_cutoff_token IRt,
+                                             const UV_cutoff_token UVt, const z_token zt, const IR_resum_token IRrt,
+                                             const Pk_resum _P0_k0, const Pk_resum _P2_k0, const Pk_resum _P4_k0,
+                                             const k2_Pk_resum _P0_k2, const k2_Pk_resum _P2_k2, const k2_Pk_resum _P4_k2)
+  : k(std::move(kt)),
+    growth_params(gp),
+    XY_params(XYp),
+    init_Pk(std::move(Pkt_i)),
+    final_Pk(std::move(Pkt_f)),
+    IR_cutoff(std::move(IRt)),
+    UV_cutoff(std::move(UVt)),
+    z(std::move(zt)),
+    IR_resum(std::move(IRrt)),
+    P0_k0(std::move(_P0_k0)),
+    P2_k0(std::move(_P2_k0)),
+    P4_k0(std::move(_P4_k0)),
+    P0_k2(std::move(_P0_k2)),
+    P2_k2(std::move(_P2_k2)),
+    P4_k2(std::move(_P4_k2))
+  {
+  }
+
+
+multipole_counterterm::multipole_counterterm()
+  : k(0),
+    growth_params(0),
+    XY_params(0),
+    init_Pk(0),
+    final_Pk(boost::none),
+    IR_cutoff(0),
+    UV_cutoff(0),
+    z(0),
+    IR_resum(0),
+    P0_k0(),
+    P2_k0(),
+    P4_k0(),
+    P0_k2(),
+    P2_k2(),
+    P4_k2()
+  {
+  }
