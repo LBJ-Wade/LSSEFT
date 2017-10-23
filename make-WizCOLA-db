@@ -1,3 +1,0 @@
-#!/bin/bash
-
-mpiexec -n 8 /Users/ds283/Documents/Code/LSSEFT/build/lsseft-WizCOLA --verbose --database "/Users/ds283/Dropbox/In progress papers/EFT Halo/David's power spectrum/WizCOLA_CAMB_halo@z=0_k10-lo.sqlite" --initial-powerspectrum "/Users/ds283/Dropbox/In progress papers/EFT halo/David's power spectrum/WizCOLA_linear_init_matterpower.dat" --final-powerspectrum "/Users/ds283/Dropbox/In progress papers/EFT halo/David's power spectrum/WizCOLA_linear_final_matterpower.dat"
