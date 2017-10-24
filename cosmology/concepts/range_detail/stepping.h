@@ -153,16 +153,22 @@ void stepping_range<Value>::populate_grid()
     switch(this->spacing)
       {
         case spacing_type::linear:
-          this->populate_linear_grid();
-          break;
+          {
+            this->populate_linear_grid();
+            break;
+          }
 
         case spacing_type::logarithmic_bottom:
-          this->populate_log_bottom_grid();
-          break;
+          {
+            this->populate_log_bottom_grid();
+            break;
+          }
 
         case spacing_type::logarithmic_top:
-          this->populate_log_top_grid();
-          break;
+          {
+            this->populate_log_top_grid();
+            break;
+          }
       }
 
     // sort grid into order and remove duplicates
