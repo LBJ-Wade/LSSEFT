@@ -658,10 +658,6 @@ multipole_Pk_calculator::calculate_counterterms(const Mpc_units::energy& k, cons
     k2_Pk_resum_multiplet k2_mu4 = project_k2.compute(mu_power::mu4);
     k2_Pk_resum_multiplet k2_mu6 = project_k2.compute(mu_power::mu6);
 
-    auto f = Df_data.f_lin;
-    auto ff = Df_data.f_lin*Df_data.f_lin;
-    auto fff = Df_data.f_lin*Df_data.f_lin*Df_data.f_lin;
-
     auto& init_tok = Pk_init.get_token();
     boost::optional<linear_Pk_token> final_tok;
     if(Pk_final) final_tok = Pk_final->get_token();
@@ -675,12 +671,8 @@ multipole_Pk_calculator::calculate_counterterms(const Mpc_units::energy& k, cons
                      multipole_counterterm
                        {k_token, g_tok, XY.get_params_token(), init_tok, final_tok,
                         IR_tok, UV_tok, z_tok, XY.get_IR_resum_token(),
-                        k0_mu0.get_ell0() + fff * k0_mu6.get_ell0(),
-                        k0_mu0.get_ell2() + fff * k0_mu6.get_ell4(),
-                        k0_mu0.get_ell4() + fff * k0_mu6.get_ell4(),
-                        k2_mu0.get_ell0() + fff * k2_mu6.get_ell0(),
-                        k2_mu0.get_ell2() + fff * k2_mu6.get_ell4(),
-                        k2_mu0.get_ell4() + fff * k2_mu6.get_ell4()
+                        k0_mu0.get_ell0(), k0_mu0.get_ell2(), k0_mu0.get_ell4(),
+                        k2_mu0.get_ell0(), k2_mu0.get_ell2(), k2_mu0.get_ell4()
                        }
       )
     );
@@ -691,12 +683,8 @@ multipole_Pk_calculator::calculate_counterterms(const Mpc_units::energy& k, cons
                      multipole_counterterm
                        {k_token, g_tok, XY.get_params_token(), init_tok, final_tok,
                         IR_tok, UV_tok, z_tok, XY.get_IR_resum_token(),
-                        k0_mu2.get_ell0() - ff * k0_mu6.get_ell0(),
-                        k0_mu2.get_ell2() - ff * k0_mu6.get_ell4(),
-                        k0_mu2.get_ell4() - ff * k0_mu6.get_ell4(),
-                        k2_mu2.get_ell0() - ff * k2_mu6.get_ell0(),
-                        k2_mu2.get_ell2() - ff * k2_mu6.get_ell4(),
-                        k2_mu2.get_ell4() - ff * k2_mu6.get_ell4()
+                        k0_mu2.get_ell0(), k0_mu2.get_ell2(), k0_mu2.get_ell4(),
+                        k2_mu2.get_ell0(), k2_mu2.get_ell2(), k2_mu2.get_ell4()
                        }
       )
     );
@@ -707,12 +695,20 @@ multipole_Pk_calculator::calculate_counterterms(const Mpc_units::energy& k, cons
                      multipole_counterterm
                        {k_token, g_tok, XY.get_params_token(), init_tok, final_tok,
                         IR_tok, UV_tok, z_tok, XY.get_IR_resum_token(),
-                        k0_mu4.get_ell0() + f * k0_mu6.get_ell0(),
-                        k0_mu4.get_ell2() + f * k0_mu6.get_ell4(),
-                        k0_mu4.get_ell4() + f * k0_mu6.get_ell4(),
-                        k2_mu4.get_ell0() + f * k2_mu6.get_ell0(),
-                        k2_mu4.get_ell2() + f * k2_mu6.get_ell4(),
-                        k2_mu4.get_ell4() + f * k2_mu6.get_ell4()
+                        k0_mu4.get_ell0(), k0_mu4.get_ell2(), k0_mu4.get_ell4(),
+                        k2_mu4.get_ell0(), k2_mu4.get_ell2(), k2_mu4.get_ell4()
+                       }
+      )
+    );
+
+    // compute contribution of c6 counterterm to each ell
+    rval.emplace(
+      std::make_pair("c6",
+                     multipole_counterterm
+                       {k_token, g_tok, XY.get_params_token(), init_tok, final_tok,
+                        IR_tok, UV_tok, z_tok, XY.get_IR_resum_token(),
+                        k0_mu6.get_ell0(), k0_mu6.get_ell2(), k0_mu6.get_ell4(),
+                        k2_mu6.get_ell0(), k2_mu6.get_ell2(), k2_mu6.get_ell4()
                        }
       )
     );

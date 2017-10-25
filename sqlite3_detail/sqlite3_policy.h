@@ -94,14 +94,17 @@ class sqlite3_policy
     //! Matsubara-XY table
     const std::string& Matsubara_XY_table() const { return this->Matsubara_XY; }
 
-    //! counterterms table - P0
+    //! counterterms table - mu^0
     const std::string& counterterms_c0_table() const { return this->counterterms_c0; }
 
-    //! counterterms table - P2
+    //! counterterms table - mu^2
     const std::string& counterterms_c2_table() const { return this->counterterms_c2; }
 
-    //! counterterms table - P4
+    //! counterterms table - mu^4
     const std::string& counterterms_c4_table() const { return this->counterterms_c4; }
+
+    //! counterterms table - mu^6
+    const std::string& counterterms_c6_table() const { return this->counterterms_c6; }
 
     //! temporary table
     const std::string& temp_table() const { return(this->temp); }
@@ -161,14 +164,17 @@ class sqlite3_policy
     //! Matsubara X & Y coefficients
     const std::string Matsubara_XY;
 
-    //! counterterms table - P0
+    //! counterterms table - mu^0
     const std::string counterterms_c0;
 
-    //! counterterms table - P2
+    //! counterterms table - mu^2
     const std::string counterterms_c2;
 
-    //! counterterms table - P4
+    //! counterterms table - mu^4
     const std::string counterterms_c4;
+
+    //! counterterms table - mu^6
+    const std::string counterterms_c6;
 
     //! temporary table name
     const std::string temp;

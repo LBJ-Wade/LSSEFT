@@ -518,10 +518,12 @@ namespace sqlite3_operations
         const multipole_counterterm& c0 = sample.at("c0");
         const multipole_counterterm& c2 = sample.at("c2");
         const multipole_counterterm& c4 = sample.at("c4");
+        const multipole_counterterm& c6 = sample.at("c6");
 
         store_impl::store_counterterm(db, policy.counterterms_c0_table(), model, c0);
         store_impl::store_counterterm(db, policy.counterterms_c2_table(), model, c2);
         store_impl::store_counterterm(db, policy.counterterms_c4_table(), model, c4);
+        store_impl::store_counterterm(db, policy.counterterms_c6_table(), model, c6);
       }
 
 
