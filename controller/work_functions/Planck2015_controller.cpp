@@ -207,6 +207,17 @@ void master_controller::execute()
         
         // distribute this work list among the worker processes
         if(multipole_Pk_work) this->scatter(cosmology_model, *model, *multipole_Pk_work, dmgr);
+
+
+        // STEP 6 - COMPUTE MULTIPOLE COUNTERTERMS
+
+        // build a work list for the counterterms
+        std::unique_ptr<counterterm_work_list> counterterm_work =
+          dmgr.build_counterterm_work_list(*model, *growth_tok, *XY_tok, *lo_z_db, *loop_k_db, *IR_cutoff_db, *UV_cutoff_db,
+                                           *IR_resum_db, init_Pk_filt, final_Pk_filt);
+
+        // distribute this work list among the worker processes
+        if(counterterm_work) this->scatter(cosmology_model, *model, *counterterm_work, dmgr);
       }
     
     // instruct slave processes to terminate
