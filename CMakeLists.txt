@@ -110,6 +110,7 @@ SET(COSMOLOGY_SOURCE_FILES
   cosmology/FRW_model.cpp cosmology/FRW_model.h
   cosmology/models/Planck_defaults.h
   cosmology/models/MDR1_sim.h
+  cosmology/models/WizCOLA.h
   cosmology/types.h
   cosmology/constants.h
   cosmology/concepts/range.h
