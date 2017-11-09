@@ -300,7 +300,7 @@ TARGET_INCLUDE_DIRECTORIES(lsseft-MDR1 PRIVATE
 
 ADD_EXECUTABLE(lsseft-WizCOLA
   ${COMMON_SOURCES}
-  controller/work_functions/WizCola_controller.cpp)
+  controller/work_functions/WizCOLA_controller.cpp)
 
 ADD_DEPENDENCIES(lsseft-WizCOLA DEPS)
 TARGET_LINK_LIBRARIES(lsseft-WizCOLA sqlite3 ${CUBA_LIBRARIES} ${Boost_LIBRARIES} ${MPI_LIBRARIES} ${SPLINTER_LIBRARIES} ${OPENSSL_LIBRARIES})
