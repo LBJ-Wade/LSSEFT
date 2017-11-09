@@ -27,6 +27,8 @@
 
 #include "Pk_filter.h"
 
+#include "boost/optional.hpp"
+
 
 namespace Pk_filter_impl
   {
