@@ -1014,7 +1014,7 @@ namespace MPI_detail
         //! empty constructor: used to receive a payload
         new_counterterm()
           : k(0.0),
-            k_token(0),
+            k_tok(0),
             XY(),
             IR_tok(0),
             UV_tok(0),
@@ -1032,7 +1032,7 @@ namespace MPI_detail
                         const growth_params_token& _gtok, const oneloop_growth_record& _Df_data,
                         const std::shared_ptr<initial_filtered_Pk>& _Pk_init, const std::shared_ptr<final_filtered_Pk>& _Pk_final)
           : k(_k),
-            k_token(_ktok),
+            k_tok(_ktok),
             XY(_XY),
             IR_tok(_IRtok),
             UV_tok(_UVtok),
@@ -1056,7 +1056,7 @@ namespace MPI_detail
         const Mpc_units::energy& get_k() const { return this->k; }
 
         //! get k token
-        const k_token& get_k_token() const { return this->k_token; }
+        const k_token& get_k_token() const { return this->k_tok; }
 
         //! get Matsubara X & Y coefficients
         const Matsubara_XY& get_Matsubara_XY() const { return this->XY; }
@@ -1097,7 +1097,7 @@ namespace MPI_detail
         Mpc_units::energy k;
 
         //! database token for k
-        k_token k_token;
+        k_token k_tok;
 
         //! Matsubara X & Y coefficients
         Matsubara_XY XY;
@@ -1131,7 +1131,7 @@ namespace MPI_detail
         void serialize(Archive& ar, unsigned int version)
           {
             ar & k;
-            ar & k_token;
+            ar & k_tok;
             ar & XY;
             ar & IR_tok;
             ar & UV_tok;
