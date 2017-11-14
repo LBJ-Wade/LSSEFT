@@ -453,12 +453,24 @@ namespace sqlite3_operations
 
             exec(db, stmt.str());
           }
+
+
+        void pipeline_table(sqlite3* db, const sqlite3_policy& policy)
+          {
+            std::ostringstream stmt;
+            stmt << "CREATE TABLE " << policy.pipeline_id_table() << "("
+                 << "pipeline_id TEXT);";
+
+            exec(db, stmt.str());
+          }
         
       }
     
     
     void create_tables(sqlite3* db, const sqlite3_policy& policy)
       {
+        create_impl::pipeline_table(db, policy);
+
         create_impl::model_table(db, policy);
         create_impl::z_config_table(db, policy);
     

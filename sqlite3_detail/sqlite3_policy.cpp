@@ -49,6 +49,7 @@ sqlite3_policy::sqlite3_policy()
     counterterms_c2(SQLITE3_DEFAULT_COUNTERTERMS_C2_TABLE),
     counterterms_c4(SQLITE3_DEFAULT_COUNTERTERMS_C4_TABLE),
     counterterms_c6(SQLITE3_DEFAULT_COUNTERTERMS_C6_TABLE),
+    pipeline_id(SQLITE3_DEFAULT_PIPELINE_ID_TABLE),
     temp(SQLITE3_DEFAULT_TEMPORARY_TABLE)
   {
   }

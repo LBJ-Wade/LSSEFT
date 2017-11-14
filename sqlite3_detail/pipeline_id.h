@@ -1,6 +1,7 @@
 //
-// Created by David Seery on 11/08/2015.
-// --@@ // Copyright (c) 2017 University of Sussex. All rights reserved.
+// Created by David Seery on 14/11/2017.
+// --@@
+// Copyright (c) 2017 University of Sussex. All rights reserved.
 //
 // This file is part of the Sussex Effective Field Theory for
 // Large-Scale Structure platform (LSSEFT).
@@ -23,24 +24,25 @@
 // --@@
 //
 
-#ifndef LSSEFT_SQLITE3_OPERATIONS_H
-#define LSSEFT_SQLITE3_OPERATIONS_H
+#ifndef LSSEFT_PIPELINE_ID_H
+#define LSSEFT_PIPELINE_ID_H
 
 
-#include "create.h"
-#include "FRW_model.h"
-#include "redshift.h"
-#include "wavenumber.h"
-#include "power_spectrum.h"
-#include "filter_params.h"
-#include "oneloop_params.h"
-#include "MatsubaraXY_params.h"
-#include "growth_params.h"
-#include "temporary_tables.h"
-#include "missing_elements.h"
-#include "store.h"
-#include "find.h"
-#include "pipeline_id.h"
+#include "sqlite3_policy.h"
+
+#include "sqlite3.h"
 
 
-#endif //LSSEFT_SQLITE3_OPERATIONS_H
+namespace sqlite3_operations
+  {
+
+    //! write pipeline id into database table
+    void write_pipeline_id(sqlite3* db, const sqlite3_policy& policy, std::string tag);
+
+    //! validate that database is compatible with our version of the pipeline
+    std::string read_pipeline_id(sqlite3* db, const sqlite3_policy& policy);
+
+  }   // namespace sqlite3_operations
+
+
+#endif //LSSEFT_PIPELINE_ID_H

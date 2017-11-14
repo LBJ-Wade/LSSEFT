@@ -27,15 +27,18 @@
 #define LSSEFT_DATABASE_EN_GB_H
 
 
-#define ERROR_DATABASE_IS_NOT_FILE_A        "cannot open specified database"
-#define ERROR_DATABASE_IS_NOT_FILE_B        "because it is not a regular file"
+constexpr auto ERROR_DATABASE_IS_NOT_FILE_A                = "cannot open specified database";
+constexpr auto ERROR_DATABASE_IS_NOT_FILE_B                = "because it is not a regular file";
 
-#define ERROR_DATABASE_SQLITE_OPEN_FAILED   "failed to open specified database"
-#define ERROR_DATABASE_SQLITE_CREATE_FAILED "failed to create specified database"
+constexpr auto ERROR_DATABASE_SQLITE_OPEN_FAILED           = "failed to open specified database";
+constexpr auto ERROR_DATABASE_SQLITE_CREATE_FAILED         = "failed to create specified database";
 
-#define ERROR_TRANSACTION_IN_PROGRESS       "transaction already open"
-#define ERROR_NO_TRANSACTION_IN_PROGRESS    "attempt to release transaction when none is currently open"
+constexpr auto ERROR_TRANSACTION_IN_PROGRESS               = "transaction already open";
+constexpr auto ERROR_NO_TRANSACTION_IN_PROGRESS            = "attempt to release transaction when none is currently open";
 
-#define DATABASE_ATTACHED                   "attached to database"
+constexpr auto DATABASE_ATTACHED                           = "attached to database";
+
+constexpr auto ERROR_DATABASE_WRONG_PIPELINE_ID_A          = "database pipline id";
+constexpr auto ERROR_DATABASE_WRONG_PIPELINE_ID_B          = "does not match toolchain pipeline id";
 
 #endif //LSSEFT_DATABASE_EN_GB_H

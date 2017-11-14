@@ -48,6 +48,8 @@ constexpr auto SQLITE3_DEFAULT_COUNTERTERMS_C2_TABLE             = "counterterms
 constexpr auto SQLITE3_DEFAULT_COUNTERTERMS_C4_TABLE             = "counterterms_c4";
 constexpr auto SQLITE3_DEFAULT_COUNTERTERMS_C6_TABLE             = "counterterms_c6";
 
+constexpr auto SQLITE3_DEFAULT_PIPELINE_ID_TABLE                 = "pipeline_id";
+
 constexpr auto SQLITE3_DEFAULT_TEMPORARY_TABLE                   = "temp";
 
 

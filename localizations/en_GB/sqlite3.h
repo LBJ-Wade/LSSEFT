@@ -87,4 +87,8 @@ constexpr auto ERROR_SQLITE3_MATSUBARA_XY_MISREAD                    = "read une
 constexpr auto ERROR_SQLITE3_READ_FILTERED_PK_FAIL                   = "failed to read from filtered linear Pk table";
 constexpr auto ERROR_SQLITE3_FILTERED_PK_MISREAD                     = "read unexpected number of results from filtered linear Pk table";
 
+constexpr auto ERROR_SQLITE3_INSERT_PIPELINE_ID_FAIL                 = "failed to insert pipeline identifier";
+constexpr auto ERROR_SQLITE3_READ_PIPELINE_ID_FAIL                   = "failed to read from pipeline id table";
+constexpr auto ERROR_SQLITE3_PIPELINE_ID_MISREAD                     = "read unexpected number of results from pipeline id table";
+
 #endif //LSSEFT_SQLITE3_EN_GB_H
