@@ -106,6 +106,9 @@ class sqlite3_policy
     //! counterterms table - mu^6
     const std::string& counterterms_c6_table() const { return this->counterterms_c6; }
 
+    //! pipeline id table
+    const std::string& pipeline_id_table() const { return this->pipeline_id; }
+
     //! temporary table
     const std::string& temp_table() const { return(this->temp); }
 
@@ -175,6 +178,9 @@ class sqlite3_policy
 
     //! counterterms table - mu^6
     const std::string counterterms_c6;
+
+    //! pipeline id
+    const std::string pipeline_id;
 
     //! temporary table name
     const std::string temp;
