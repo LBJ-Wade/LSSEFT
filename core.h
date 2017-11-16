@@ -28,8 +28,8 @@
 
 
 #define LSSEFT_NAME      "lsseft"
-#define LSSEFT_VERSION   "0.01"
-#define LSSEFT_COPYRIGHT "(c) University of Sussex 2015"
+#define LSSEFT_VERSION   "2017.3"
+#define LSSEFT_COPYRIGHT "(c) University of Sussex 2017"
 
 
 #endif //LSSEFT_CORE_H
