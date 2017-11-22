@@ -51,9 +51,9 @@ namespace WizCOLA
     constexpr double sigma8          = 0.812;
     
     // CMB-related redshifts (extracted from CAMB)
-    constexpr double z_star = 1088.02;
-    constexpr double z_drag = 1060.39;
-    constexpr double z_eq   = 3161.49;
+    constexpr double z_star = 1088.72;
+    constexpr double z_drag = 1059.93;
+    constexpr double z_eq   = 3242.47;
     
   }
 
