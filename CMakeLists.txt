@@ -89,8 +89,8 @@ SET(CONTROLLER_SOURCE_FILES
   )
 
 SET(UTILITY_SOURCE_FILES
-  utilities/python_finder.cpp utilities/python_finder.h
   utilities/formatter.cpp utilities/formatter.h
+  utilities/finder.cpp utilities/finder.h
   )
 
 SET(ERROR_SOURCE_FILES
@@ -221,7 +221,7 @@ SET(COMMON_SOURCES
   controller/task_manager.cpp
   controller/scheduler.cpp
   error/error_handler.cpp
-  utilities/python_finder.cpp
+  utilities/finder.cpp
   utilities/formatter.cpp
   cosmology/FRW_model.cpp
   cosmology/concepts/transfer_function.cpp

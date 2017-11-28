@@ -30,8 +30,16 @@
 #include "units/Mpc_units.h"
 
 
-// default Python location
+// default terminal environment variable
+#define LSSEFT_TERM_ENV "TERM"
 
+// default filesystem search path
+#define LSSEFT_SHELL_PATH_ENV "PATH"
+
+// Python executable name
+#define LSSEFT_PYTHON_EXECUTABLE "python"
+
+// default Python location
 #define LSSEFT_DEFAULT_PYTHON_PATH "/usr/local/python"
 
 // database search tolerances
