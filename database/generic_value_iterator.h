@@ -80,67 +80,67 @@ namespace configuration_database
         //! equality comparison
         bool operator==(const generic_value_iterator& obj) const
           {
-            return(this->iter == obj.iter);
+            return (this->iter == obj.iter);
           }
 
         //! inequality comparison
         bool operator!=(const generic_value_iterator& obj) const
           {
-            return(this->iter != obj.iter);
+            return (this->iter != obj.iter);
           }
 
         //! dereference iterator to get value held by record which iterator points to
         value_type operator*()
           {
-            return(*this->iter->second);
+            return *this->iter->second;
           }
 
         //! member access operator into value held by record which iterator points to
         pointer_type operator->()
           {
-            return(&(*this->iter->second));
+            return &(*this->iter->second);
           }
 
         //! dereference iterator to get value held by record which iterator points to -- const version
         const value_type operator*() const
           {
-            return(*this->iter->second);
+            return *this->iter->second;
           }
 
         //! member access operator into value held by record which iterator points to -- const version
         const pointer_type operator->() const
           {
-            return(&(*this->iter->second));
+            return &(*this->iter->second);
           }
 
         //! prefix decrement
         generic_value_iterator& operator--()
           {
             --this->iter;
-            return(*this);
+            return *this;
           }
 
         //! postfix decrement
-        generic_value_iterator& operator--(int)
+        generic_value_iterator operator--(int)
           {
             const generic_value_iterator old(*this);
             --this->iter;
-            return(old);
+            return old;
           }
 
         //! prefix increment
         generic_value_iterator& operator++()
           {
             ++this->iter;
-            return(*this);
+            return *this;
           }
 
         //! postfix increment
-        generic_value_iterator& operator++(int)
+        generic_value_iterator operator++(int)
           {
             const generic_value_iterator old(*this);
             ++this->iter;
-            return(old);
+            return old;
           }
 
         // make the const generic_value_iterator a friend of the non-const generic_value_iterator,

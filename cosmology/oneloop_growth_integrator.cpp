@@ -36,26 +36,26 @@
 
 typedef std::vector<double> state_vector;
 
-constexpr unsigned int RHO_M        = 0;
-constexpr unsigned int RHO_R        = 1;
+constexpr unsigned int RHO_M           = 0;
+constexpr unsigned int RHO_R           = 1;
 constexpr unsigned int ELEMENT_Dlin    = 2;
-constexpr unsigned int ELEMENT_A    = 3;
-constexpr unsigned int ELEMENT_B    = 4;
-constexpr unsigned int ELEMENT_D    = 5;
-constexpr unsigned int ELEMENT_E    = 6;
-constexpr unsigned int ELEMENT_F    = 7;
-constexpr unsigned int ELEMENT_G    = 8;
-constexpr unsigned int ELEMENT_J    = 9;
+constexpr unsigned int ELEMENT_A       = 3;
+constexpr unsigned int ELEMENT_B       = 4;
+constexpr unsigned int ELEMENT_D       = 5;
+constexpr unsigned int ELEMENT_E       = 6;
+constexpr unsigned int ELEMENT_F       = 7;
+constexpr unsigned int ELEMENT_G       = 8;
+constexpr unsigned int ELEMENT_J       = 9;
 constexpr unsigned int ELEMENT_dDlindz = 10;
-constexpr unsigned int ELEMENT_dAdz = 11;
-constexpr unsigned int ELEMENT_dBdz = 12;
-constexpr unsigned int ELEMENT_dDdz = 13;
-constexpr unsigned int ELEMENT_dEdz = 14;
-constexpr unsigned int ELEMENT_dFdz = 15;
-constexpr unsigned int ELEMENT_dGdz = 16;
-constexpr unsigned int ELEMENT_dJdz = 17;
+constexpr unsigned int ELEMENT_dAdz    = 11;
+constexpr unsigned int ELEMENT_dBdz    = 12;
+constexpr unsigned int ELEMENT_dDdz    = 13;
+constexpr unsigned int ELEMENT_dEdz    = 14;
+constexpr unsigned int ELEMENT_dFdz    = 15;
+constexpr unsigned int ELEMENT_dGdz    = 16;
+constexpr unsigned int ELEMENT_dJdz    = 17;
 
-constexpr unsigned int STATE_SIZE   = 18;
+constexpr unsigned int STATE_SIZE      = 18;
 
 
 class oneloop_functor
@@ -189,18 +189,15 @@ oneloop_growth_integrator::integrate(const FRW_model& model, z_database& z_db)
     double init_z = *max_z;
     rhs.ics(x, init_z);
 
-    // set up vector of sample times (needed until the Boost version of odeint catchs up to the github version, which includes my patch)
-    std::vector<double> z_sample;
-    std::copy(z_db.value_rbegin(), z_db.value_rend(), std::back_inserter(z_sample));
-
     // set up stepper
     auto stepper = boost::numeric::odeint::make_dense_output< boost::numeric::odeint::runge_kutta_dopri5<state_vector> >(this->params.get_abserr(), this->params.get_relerr());
 
     // run the integration
     // depending whether EdS mode is set in the growth parameter block, this either writes the EdS approximations
     // or the full one-loop result into the data container ctr
+    constexpr double initial_timestep = -1E-3;
     obs.start_timer();
-    size_t steps = boost::numeric::odeint::integrate_times(stepper, rhs, x, z_sample.begin(), z_sample.end(), -1E-3, obs);
+    size_t steps = boost::numeric::odeint::integrate_times(stepper, rhs, x, z_db.value_rbegin(), z_db.value_rend(), initial_timestep, obs);
     obs.stop_timer();
     
     return growth_integrator_data(std::move(ctr), obs.read_timer(), steps);
