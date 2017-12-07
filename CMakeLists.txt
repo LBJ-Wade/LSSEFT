@@ -2,7 +2,17 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 PROJECT(LSSEFT)
 
 LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/)
-INCLUDE(BuildDeps)
+
+INCLUDE(BuildCUBA)
+INCLUDE(BuildOdeint)
+INCLUDE(BuildSPLINTER)
+
+INCLUDE(CompilerFlags)
+
+
+# detect toolchain and set compiler flags appropriately
+SET_COMPILER_FLAGS()
+
 
 # find MPI libraries
 FIND_PACKAGE(MPI REQUIRED)
@@ -21,9 +31,10 @@ SET(EXTERNAL_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/thirdparty/dist")
 
 BUILD_SPLINTER(${CMAKE_BINARY_DIR}/thirdparty/SPLINTER ${EXTERNAL_INSTALL_PREFIX})
 BUILD_CUBA(${CMAKE_BINARY_DIR}/thirdparty/Cuba ${EXTERNAL_INSTALL_PREFIX})
+BUILD_ODEINT(${CMAKE_BINARY_DIR}/thirdparty/odeint-v2)
 
 # use version of Eigen3 bundled with SPLINTER
-SET(EIGEN3_INCLUDE_DIR "thirdparty/splinter/thirdparty/Eigen")
+SET(EIGEN3_INCLUDE_DIR "${SPLINTER_INCLUDE_DIRS}/SPLINTER")
 
 SET(LOCALIZATION
   localizations/messages.h
@@ -89,8 +100,8 @@ SET(CONTROLLER_SOURCE_FILES
   )
 
 SET(UTILITY_SOURCE_FILES
-  utilities/python_finder.cpp utilities/python_finder.h
   utilities/formatter.cpp utilities/formatter.h
+  utilities/finder.cpp utilities/finder.h
   )
 
 SET(ERROR_SOURCE_FILES
@@ -221,7 +232,7 @@ SET(COMMON_SOURCES
   controller/task_manager.cpp
   controller/scheduler.cpp
   error/error_handler.cpp
-  utilities/python_finder.cpp
+  utilities/finder.cpp
   utilities/formatter.cpp
   cosmology/FRW_model.cpp
   cosmology/concepts/transfer_function.cpp
@@ -296,6 +307,7 @@ TARGET_INCLUDE_DIRECTORIES(lsseft-MDR1 PRIVATE
   ./
   ${CMAKE_CURRENT_BINARY_DIR}
   ${SPLINTER_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIR}
   ${Boost_INCLUDE_DIRS}
   ${OPENSSL_INCLUDE_DIR}
   ${MPI_CXX_INCLUDE_PATH}
@@ -312,6 +324,7 @@ TARGET_INCLUDE_DIRECTORIES(lsseft-WizCOLA PRIVATE
   ./
   ${CMAKE_CURRENT_BINARY_DIR}
   ${SPLINTER_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIR}
   ${Boost_INCLUDE_DIRS}
   ${OPENSSL_INCLUDE_DIR}
   ${MPI_CXX_INCLUDE_PATH}
@@ -328,6 +341,7 @@ TARGET_INCLUDE_DIRECTORIES(lsseft-zhistory PRIVATE
   ./
   ${CMAKE_CURRENT_BINARY_DIR}
   ${SPLINTER_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIR}
   ${Boost_INCLUDE_DIRS}
   ${OPENSSL_INCLUDE_DIR}
   ${MPI_CXX_INCLUDE_PATH}
