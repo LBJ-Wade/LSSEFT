@@ -78,6 +78,7 @@ SET(COSMOLOGY_SOURCE_FILES
   cosmology/FRW_model.cpp cosmology/FRW_model.h
   cosmology/models/Planck_defaults.h
   cosmology/models/MDR1_sim.h
+  cosmology/models/WizCOLA.h
   cosmology/types.h
   cosmology/constants.h
   cosmology/concepts/range.h
@@ -255,6 +256,22 @@ ADD_DEPENDENCIES(lsseft-MDR1 DEPS)
 TARGET_LINK_LIBRARIES(lsseft-MDR1 sqlite3 ${CUBA_LIBRARIES} ${Boost_LIBRARIES} ${MPI_LIBRARIES} ${SPLINTER_LIBRARIES} ${OPENSSL_LIBRARIES})
 TARGET_COMPILE_OPTIONS(lsseft-MDR1 PRIVATE -std=c++14)
 TARGET_INCLUDE_DIRECTORIES(lsseft-MDR1 PRIVATE
+  ./
+  ${CMAKE_CURRENT_BINARY_DIR}
+  ${SPLINTER_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
+  ${OPENSSL_INCLUDE_DIR}
+  ${MPI_CXX_INCLUDE_PATH}
+  ${CUBA_INCLUDE_DIRS})
+
+ADD_EXECUTABLE(lsseft-WizCOLA
+  ${COMMON_SOURCES}
+  controller/work_functions/WizCOLA_controller.cpp)
+
+ADD_DEPENDENCIES(lsseft-WizCOLA DEPS)
+TARGET_LINK_LIBRARIES(lsseft-WizCOLA sqlite3 ${CUBA_LIBRARIES} ${Boost_LIBRARIES} ${MPI_LIBRARIES} ${SPLINTER_LIBRARIES} ${OPENSSL_LIBRARIES})
+TARGET_COMPILE_OPTIONS(lsseft-WizCOLA PRIVATE -std=c++14)
+TARGET_INCLUDE_DIRECTORIES(lsseft-WizCOLA PRIVATE
   ./
   ${CMAKE_CURRENT_BINARY_DIR}
   ${SPLINTER_INCLUDE_DIRS}
