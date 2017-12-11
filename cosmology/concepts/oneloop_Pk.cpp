@@ -35,7 +35,6 @@ oneloop_Pk::oneloop_Pk(const k_token& kt, const growth_params_token& gt, const l
     loop_params(lt),
     growth_params(gt),
     init_Pk(Pkt_i),
-    final_Pk(Pkt_f),
     UV_cutoff(UVt),
     IR_cutoff(IRt),
     z(zt),
@@ -46,6 +45,10 @@ oneloop_Pk::oneloop_Pk(const k_token& kt, const growth_params_token& gt, const l
     rsd_dd_mu6(_rsd_mu6),
     rsd_dd_mu8(_rsd_mu8)
   {
+    if(Pkt_f)
+      {
+        final_Pk = std::make_shared<linear_Pk_token>(*Pkt_f);
+      }
   }
 
 
@@ -54,7 +57,6 @@ oneloop_Pk::oneloop_Pk()
     loop_params(0),
     growth_params(0),
     init_Pk(0),
-    final_Pk(boost::none),
     UV_cutoff(0),
     IR_cutoff(0),
     z(0),

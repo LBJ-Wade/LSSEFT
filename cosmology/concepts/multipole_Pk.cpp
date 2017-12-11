@@ -64,7 +64,6 @@ multipole_Pk::multipole_Pk(const k_token kt, const growth_params_token& gp, cons
     loop_params(lp),
     XY_params(XYp),
     init_Pk(std::move(Pkt_i)),
-    final_Pk(std::move(Pkt_f)),
     IR_cutoff(std::move(IRt)),
     UV_cutoff(std::move(UVt)),
     z(std::move(zt)),
@@ -73,6 +72,10 @@ multipole_Pk::multipole_Pk(const k_token kt, const growth_params_token& gp, cons
     P2(std::move(_P2)),
     P4(std::move(_P4))
   {
+    if(Pkt_f)
+      {
+        final_Pk = std::make_shared<linear_Pk_token>(*Pkt_f);
+      }
   }
 
 
@@ -82,7 +85,6 @@ multipole_Pk::multipole_Pk()
     loop_params(0),
     XY_params(0),
     init_Pk(0),
-    final_Pk(boost::none),
     IR_cutoff(0),
     UV_cutoff(0),
     z(0),
