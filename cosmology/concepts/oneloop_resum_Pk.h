@@ -81,7 +81,7 @@ class oneloop_resum_Pk
     const linear_Pk_token& get_init_Pk_token() const { return this->init_Pk; }
     
     //! get final power spectrum token, if provided
-    const boost::optional<linear_Pk_token>& get_final_Pk_token() const { return this->final_Pk; }
+    const boost::optional<linear_Pk_token> get_final_Pk_token() const { if(this->final_Pk) return *this->final_Pk; else return boost::none; }
     
     //! get UV cutoff token
     const UV_cutoff_token& get_UV_cutoff_token() const { return this->UV_cutoff; }
@@ -119,10 +119,12 @@ class oneloop_resum_Pk
     
     //! initial power spectrum token
     linear_Pk_token init_Pk;
-    
-    //! final power spectrum token, if provided
-    boost::optional<linear_Pk_token> final_Pk;
-    
+
+    //! final power spectrum token; have to store as a pointer since boost::optional
+    //! cannot be serialized for classes without a default constructor.
+    //! We can hide this implementation detail from our clients.
+    std::shared_ptr<linear_Pk_token> final_Pk;
+
     //! UV cutoff token
     UV_cutoff_token UV_cutoff;
     

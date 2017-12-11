@@ -36,13 +36,16 @@ oneloop_resum_Pk::oneloop_resum_Pk(const k_token& kt, const growth_params_token&
     loop_params(lp),
     XY_params(XYp),
     init_Pk(Pkt_i),
-    final_Pk(Pkt_f),
     IR_cutoff(IRt),
     UV_cutoff(UVt),
     z(zt),
     IR_resum(IRrt),
     Pk_resum(Pkr)
   {
+    if(Pkt_f)
+      {
+        final_Pk = std::make_shared<linear_Pk_token>(*Pkt_f);
+      }
   }
 
 
@@ -52,7 +55,6 @@ oneloop_resum_Pk::oneloop_resum_Pk()
     loop_params(0),
     XY_params(0),
     init_Pk(0),
-    final_Pk(boost::none),
     IR_cutoff(0),
     UV_cutoff(0),
     z(0),
