@@ -639,7 +639,11 @@ PkContainer& data_manager::rescale_final_Pk(const FRW_model_token& model, const 
     
     // extract growth functions for the redshift database
     std::unique_ptr<oneloop_growth> data = this->find<oneloop_growth>(*mgr, model, params, z_db);
-    
+
+    // assume that the "final" power spectrum is evaluated at the same time as the lowest redshift in the
+    // z-database
+    // The rescaling factor to give it the same amplitude as the initial power spectrum is that
+    // [D(z_init)/D(z_final)]^2.
     oneloop_value z_init = *data->begin();
     oneloop_value z_final = *(--data->end());
     
