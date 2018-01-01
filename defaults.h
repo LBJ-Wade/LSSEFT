@@ -74,4 +74,7 @@ constexpr double LSSEFT_DEFAULT_FILTER_PK_INDEX                     = (0.04);
 constexpr Mpc_units::inverse_energy LSSEFT_DEFAULT_RESUM_QMIN       = 10 * Mpc_units::Mpc;
 constexpr Mpc_units::inverse_energy LSSEFT_DEFAULT_RESUM_QMAX       = 300 * Mpc_units::Mpc;
 
+// cross-over scale from series expansion of RSD mapping to exp + erf representation
+constexpr double LSSEFT_SERIES_CROSSOVER = 0.15;
+
 #endif //LSSEFT_DEFAULTS_H

@@ -26,6 +26,7 @@
 #include <cmath>
 
 #include "multipole_Pk_calculator.h"
+#include "defaults.h"
 
 namespace multipole_Pk_calculator_impl
   {
@@ -46,7 +47,7 @@ namespace multipole_Pk_calculator_impl
           }
         
       };
-    
+
     class mu_to_ell0_expXY
       {
       
@@ -60,38 +61,40 @@ namespace multipole_Pk_calculator_impl
         
         double mu0()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (1 - A/3. + std::pow(A,2)/10. - std::pow(A,3)/42. + std::pow(A,4)/216. - std::pow(A,5)/1320. + std::pow(A,6)/9360. - std::pow(A,7)/75600. + std::pow(A,8)/685440.);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * (1 - A/3. + std::pow(A,2)/10. - std::pow(A,3)/42. + std::pow(A,4)/216. - std::pow(A,5)/1320. + std::pow(A,6)/9360. - std::pow(A,7)/75600. + std::pow(A,8)/685440. - std::pow(A,9)/6.89472e6 + std::pow(A,10)/7.62048e7 - std::pow(A,11)/9.180864e8 + std::pow(A,12)/1.197504e10);
             
             return (std::sqrt(M_PI)*std::erf(std::sqrt(A)))/(2.*std::sqrt(A)*std::exp(B));
           }
         
         double mu2()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.3333333333333333 - A/5. + std::pow(A,2)/14. - std::pow(A,3)/54. + std::pow(A,4)/264. - std::pow(A,5)/1560. + std::pow(A,6)/10800. - std::pow(A,7)/85680. +
-                                                          std::pow(A,8)/766080.);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * (0.3333333333333333 - A/5. + std::pow(A,2)/14. - std::pow(A,3)/54. + std::pow(A,4)/264. - std::pow(A,5)/1560. + std::pow(A,6)/10800. - std::pow(A,7)/85680. + std::pow(A,8)/766080. - std::pow(A,9)/7.62048e6 + std::pow(A,10)/8.34624e7 - std::pow(A,11)/9.9792e8 + std::pow(A,12)/1.29330432e10);
             
             return (std::exp(-A - B)*(-2*std::sqrt(A) + std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(4.*std::pow(A,1.5));
           }
         
         double mu4()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.2 - A/7. + std::pow(A,2)/18. - std::pow(A,3)/66. + std::pow(A,4)/312. - std::pow(A,5)/1800. + std::pow(A,6)/12240. - std::pow(A,7)/95760. + std::pow(A,8)/846720.);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * (0.2 - A/7. + std::pow(A,2)/18. - std::pow(A,3)/66. + std::pow(A,4)/312. - std::pow(A,5)/1800. + std::pow(A,6)/12240. - std::pow(A,7)/95760. + std::pow(A,8)/846720. - std::pow(A,9)/8.34624e6 + std::pow(A,10)/9.072e7 - std::pow(A,11)/1.0777536e9 + std::pow(A,12)/1.38910464e10);
             
             return (std::exp(-A - B)*(-2*std::sqrt(A)*(3 + 2*A) + 3*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(8.*std::pow(A,2.5));
           }
         
         double mu6()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.14285714285714285 - A/9. + std::pow(A,2)/22. - std::pow(A,3)/78. + std::pow(A,4)/360. - std::pow(A,5)/2040. + std::pow(A,6)/13680. - std::pow(A,7)/105840. +
-                                                          std::pow(A,8)/927360.);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * (0.14285714285714285 - A/9. + std::pow(A,2)/22. - std::pow(A,3)/78. + std::pow(A,4)/360. - std::pow(A,5)/2040. + std::pow(A,6)/13680. - std::pow(A,7)/105840. + std::pow(A,8)/927360. - std::pow(A,9)/9.072e6 + std::pow(A,10)/9.79776e7 - std::pow(A,11)/1.1575872e9 + std::pow(A,12)/1.48490496e10);
             
             return (std::exp(-A - B)*(-2*std::sqrt(A)*(15 + 2*A*(5 + 2*A)) + 15*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(16.*std::pow(A,3.5));
           }
         
         double mu8()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.1111111111111111 - A/11. + std::pow(A,2)/26. - std::pow(A,3)/90. + std::pow(A,4)/408. - std::pow(A,5)/2280. + std::pow(A,6)/15120. - std::pow(A,7)/115920. +
-                                                          std::pow(A,8)/1.008e6);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * (0.1111111111111111 - A/11. + std::pow(A,2)/26. - std::pow(A,3)/90. + std::pow(A,4)/408. - std::pow(A,5)/2280. + std::pow(A,6)/15120. - std::pow(A,7)/115920. + std::pow(A,8)/1.008e6 - std::pow(A,9)/9.79776e6 + std::pow(A,10)/1.052352e8 - std::pow(A,11)/1.2374208e9 + std::pow(A,12)/1.58070528e10);
             
             return (std::exp(-A - B)*(-2*std::sqrt(A)*(105 + 2*A*(35 + 2*A*(7 + 2*A))) + 105*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(32.*std::pow(A,4.5));
           }
@@ -145,40 +148,40 @@ namespace multipole_Pk_calculator_impl
     
         double mu0()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * ((-2*A)/3. + (2*std::pow(A,2))/7. - (5*std::pow(A,3))/63. + (5*std::pow(A,4))/297. - (5*std::pow(A,5))/1716. + std::pow(A,6)/2340. - std::pow(A,7)/18360. +
-                                                          std::pow(A,8)/162792.);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * ((-2*A)/3. + (2*std::pow(A,2))/7. - (5*std::pow(A,3))/63. + (5*std::pow(A,4))/297. - (5*std::pow(A,5))/1716. + std::pow(A,6)/2340. - std::pow(A,7)/18360. + std::pow(A,8)/162792. - std::pow(A,9)/1.608768e6 + std::pow(A,10)/1.7527104e7 - std::pow(A,11)/2.08656e8 + std::pow(A,12)/2.694384e9);
         
             return (-5*std::exp(-A - B)*(6*std::sqrt(A) + (-3 + 2*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(8.*std::pow(A,1.5));
           }
     
         double mu2()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.6666666666666666 - (4*A)/7. + (5*std::pow(A,2))/21. - (20*std::pow(A,3))/297. + (25*std::pow(A,4))/1716. - std::pow(A,5)/390. + (7*std::pow(A,6))/18360. -
-                                                          std::pow(A,7)/20349. + std::pow(A,8)/178752.);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * (0.6666666666666666 - (4*A)/7. + (5*std::pow(A,2))/21. - (20*std::pow(A,3))/297. + (25*std::pow(A,4))/1716. - std::pow(A,5)/390. + (7*std::pow(A,6))/18360. - std::pow(A,7)/20349. + std::pow(A,8)/178752. - (5*std::pow(A,9))/8.763552e6 + (11*std::pow(A,10))/2.08656e8 - std::pow(A,11)/2.24532e8 + (13*std::pow(A,12))/3.750582528e10);
         
             return (-5*std::exp(-A - B)*(2*std::sqrt(A)*(9 + 4*A) + (-9 + 2*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(16.*std::pow(A,2.5));
           }
     
         double mu4()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.5714285714285714 - (10*A)/21. + (20*std::pow(A,2))/99. - (25*std::pow(A,3))/429. + std::pow(A,4)/78. - (7*std::pow(A,5))/3060. + std::pow(A,6)/2907. -
-                                                          std::pow(A,7)/22344. + (5*std::pow(A,8))/973728.);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * (0.5714285714285714 - (10*A)/21. + (20*std::pow(A,2))/99. - (25*std::pow(A,3))/429. + std::pow(A,4)/78. - (7*std::pow(A,5))/3060. + std::pow(A,6)/2907. - std::pow(A,7)/22344. + (5*std::pow(A,8))/973728. - (11*std::pow(A,9))/2.08656e7 + std::pow(A,10)/2.0412e7 - (13*std::pow(A,11))/3.12548544e9 + std::pow(A,12)/3.07587456e9);
         
             return (-5*std::exp(-A - B)*(2*std::sqrt(A)*(45 + 8*A*(3 + A)) + 3*(-15 + 2*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(32.*std::pow(A,3.5));
           }
     
         double mu6()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.47619047619047616 - (40*A)/99. + (25*std::pow(A,2))/143. - (2*std::pow(A,3))/39. + (7*std::pow(A,4))/612. - (2*std::pow(A,5))/969. + std::pow(A,6)/3192. -
-                                                          (5*std::pow(A,7))/121716. + (11*std::pow(A,8))/2.3184e6);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * (0.47619047619047616 - (40*A)/99. + (25*std::pow(A,2))/143. - (2*std::pow(A,3))/39. + (7*std::pow(A,4))/612. - (2*std::pow(A,5))/969. + std::pow(A,6)/3192. - (5*std::pow(A,7))/121716. + (11*std::pow(A,8))/2.3184e6 - std::pow(A,9)/2.0412e6 + (13*std::pow(A,10))/2.8413504e8 - std::pow(A,11)/2.5632288e8 + std::pow(A,12)/3.266790912e9);
         
             return (std::exp(-A - B)*(-10*std::sqrt(A)*(315 + 4*A*(45 + 4*A*(4 + A))) - 75*(-21 + 2*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(64.*std::pow(A,4.5));
           }
     
         double mu8()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.40404040404040403 - (50*A)/143. + (2*std::pow(A,2))/13. - (7*std::pow(A,3))/153. + (10*std::pow(A,4))/969. - std::pow(A,5)/532. +
-                                                          (5*std::pow(A,6))/17388. - (11*std::pow(A,7))/289800. + std::pow(A,8)/226800.);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * (0.40404040404040403 - (50*A)/143. + (2*std::pow(A,2))/13. - (7*std::pow(A,3))/153. + (10*std::pow(A,4))/969. - std::pow(A,5)/532. + (5*std::pow(A,6))/17388. - (11*std::pow(A,7))/289800. + std::pow(A,8)/226800. - (13*std::pow(A,9))/2.8413504e7 + std::pow(A,10)/2.330208e7 - std::pow(A,11)/2.72232576e8 + std::pow(A,12)/3.4577928e9);
         
             return (5*std::exp(-A - B)*(-2*std::sqrt(A)*(2835 + 8*A*(210 + A*(77 + 4*A*(5 + A)))) - 105*(-27 + 2*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/
                    (128.*std::pow(A,5.5));
@@ -233,24 +236,24 @@ namespace multipole_Pk_calculator_impl
     
         double mu0()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * ((4*std::pow(A,2))/35. - (4*std::pow(A,3))/77. + (2*std::pow(A,4))/143. - (2*std::pow(A,5))/715. + std::pow(A,6)/2210. - std::pow(A,7)/16150. +
-                                                          std::pow(A,8)/135660.);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * ((4*std::pow(A,2))/35. - (4*std::pow(A,3))/77. + (2*std::pow(A,4))/143. - (2*std::pow(A,5))/715. + std::pow(A,6)/2210. - std::pow(A,7)/16150. + std::pow(A,8)/135660. - std::pow(A,9)/1.28478e6 + std::pow(A,10)/1.3524e7 - std::pow(A,11)/1.56492e8 + std::pow(A,12)/1.97316e9);
         
             return (std::exp(-A - B)*(-90*std::sqrt(A)*(21 + 2*A) + 27*(35 + 4*(-5 + A)*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(64.*std::pow(A,2.5));
           }
     
         double mu2()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * ((-8*A)/35. + (12*std::pow(A,2))/77. - (8*std::pow(A,3))/143. + (2*std::pow(A,4))/143. - (3*std::pow(A,5))/1105. + (7*std::pow(A,6))/16150. -
-                                                          (2*std::pow(A,7))/33915. + (3*std::pow(A,8))/428260.);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * ((-8*A)/35. + (12*std::pow(A,2))/77. - (8*std::pow(A,3))/143. + (2*std::pow(A,4))/143. - (3*std::pow(A,5))/1105. + (7*std::pow(A,6))/16150. - (2*std::pow(A,7))/33915. + (3*std::pow(A,8))/428260. - std::pow(A,9)/1.3524e6 + (11*std::pow(A,10))/1.56492e8 - std::pow(A,11)/1.6443e8 + (13*std::pow(A,12))/2.69139024e10);
         
             return (std::exp(-A - B)*(-18*std::sqrt(A)*(525 + 2*A*(85 + 16*A)) + 27*(175 + 4*(-15 + A)*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(128.*std::pow(A,3.5));
           }
     
         double mu4()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.22857142857142856 - (24*A)/77. + (24*std::pow(A,2))/143. - (8*std::pow(A,3))/143. + (3*std::pow(A,4))/221. - (21*std::pow(A,5))/8075. +
-                                                          (2*std::pow(A,6))/4845. - (6*std::pow(A,7))/107065. + (3*std::pow(A,8))/450800.);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * (0.22857142857142856 - (24*A)/77. + (24*std::pow(A,2))/143. - (8*std::pow(A,3))/143. + (3*std::pow(A,4))/221. - (21*std::pow(A,5))/8075. + (2*std::pow(A,6))/4845. - (6*std::pow(A,7))/107065. + (3*std::pow(A,8))/450800. - (11*std::pow(A,9))/1.56492e7 + (11*std::pow(A,10))/1.6443e8 - (13*std::pow(A,11))/2.2428252e9 + (13*std::pow(A,12))/2.81955168e10);
         
             return (std::exp(-A - B)*(-18*std::sqrt(A)*(3675 + 2*A*(775 + 16*A*(13 + 2*A))) + 27*(1225 + 12*(-25 + A)*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/
                    (256.*std::pow(A,4.5));
@@ -258,8 +261,8 @@ namespace multipole_Pk_calculator_impl
     
         double mu6()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.3116883116883117 - (48*A)/143. + (24*std::pow(A,2))/143. - (12*std::pow(A,3))/221. + (21*std::pow(A,4))/1615. - (4*std::pow(A,5))/1615. +
-                                                          (6*std::pow(A,6))/15295. - (3*std::pow(A,7))/56350. + (11*std::pow(A,8))/1.7388e6);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * (0.3116883116883117 - (48*A)/143. + (24*std::pow(A,2))/143. - (12*std::pow(A,3))/221. + (21*std::pow(A,4))/1615. - (4*std::pow(A,5))/1615. + (6*std::pow(A,6))/15295. - (3*std::pow(A,7))/56350. + (11*std::pow(A,8))/1.7388e6 - (11*std::pow(A,9))/1.6443e7 + (13*std::pow(A,10))/2.038932e8 - (13*std::pow(A,11))/2.3496264e9 + std::pow(A,12)/2.2686048e9);
         
             return (9*std::exp(-A - B)*(-2*std::sqrt(A)*(33075 + 2*A*(7875 + 32*A*(75 + A*(15 + 2*A)))) + 45*(735 + 4*(-35 + A)*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/
                    (512.*std::pow(A,5.5));
@@ -267,8 +270,8 @@ namespace multipole_Pk_calculator_impl
     
         double mu8()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.3356643356643357 - (48*A)/143. + (36*std::pow(A,2))/221. - (84*std::pow(A,3))/1615. + (4*std::pow(A,4))/323. - (36*std::pow(A,5))/15295. +
-                                                          (3*std::pow(A,6))/8050. - (11*std::pow(A,7))/217350. + (11*std::pow(A,8))/1.827e6);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * (0.3356643356643357 - (48*A)/143. + (36*std::pow(A,2))/221. - (84*std::pow(A,3))/1615. + (4*std::pow(A,4))/323. - (36*std::pow(A,5))/15295. + (3*std::pow(A,6))/8050. - (11*std::pow(A,7))/217350. + (11*std::pow(A,8))/1.827e6 - (13*std::pow(A,9))/2.038932e7 + (13*std::pow(A,10))/2.136024e8 - std::pow(A,11)/1.890504e8 + std::pow(A,12)/2.3692284e9);
         
             return (9*std::exp(-A - B)*(-2*std::sqrt(A)*(363825 + 2*A*(92925 + 32*A*(945 + 2*A*(105 + A*(17 + 2*A))))) +
                                        315*(1155 + 4*(-45 + A)*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(1024.*std::pow(A,6.5));
