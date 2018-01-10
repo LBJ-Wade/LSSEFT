@@ -56,7 +56,7 @@ void master_controller::execute()
     // to define where the integration starts
     stepping_range<double> z50(50.0, 50.0, 0, 1.0, spacing_type::linear);
     stepping_range<double> z073(0.73, 0.73, 0, 1.0, spacing_type::linear);
-    stepping_range<double> z044(0.44, 0.4, 0, 1.0, spacing_type::linear);
+    stepping_range<double> z044(0.44, 0.44, 0, 1.0, spacing_type::linear);
     auto lo_redshift_samples = z044 + z073 + z50;
     
     // set up a list of UV cutoffs, measured in h/Mpc, to be used with the loop integrals
