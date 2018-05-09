@@ -97,18 +97,18 @@ void slave_controller::execute()
                 this->process_task<one_loop_Pk_work_record>();
                 break;
               }
-    
-            case MPI_detail::MESSAGE_NEW_ONE_LOOP_RESUM_PK_TASK:
-              {
-                this->mpi_world.recv(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_NEW_ONE_LOOP_RESUM_PK_TASK);
-                this->process_task<one_loop_resum_Pk_work_record>();
-                break;
-              }
-            
+
             case MPI_detail::MESSAGE_NEW_MULTIPOLE_PK_TASK:
               {
                 this->mpi_world.recv(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_NEW_MULTIPOLE_PK_TASK);
                 this->process_task<multipole_Pk_work_record>();
+                break;
+              }
+
+            case MPI_detail::MESSAGE_NEW_COUNTERTERM_TASK:
+              {
+                this->mpi_world.recv(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_NEW_COUNTERTERM_TASK);
+                this->process_task<counterterm_work_record>();
                 break;
               }
 
@@ -278,35 +278,12 @@ void slave_controller::process_item(MPI_detail::new_one_loop_Pk& payload)
     boost::optional<const final_filtered_Pk&> Pk_final = payload.get_final_linear_Pk();
     
     const k_token& k_tok = loop_data.get_k_token();
-    const IR_cutoff_token& IR_tok = loop_data.get_IR_token();
-    const UV_cutoff_token& UV_tok = loop_data.get_UV_token();
-    const loop_integral_params_token& loop_tok = loop_data.get_params_token();
-    const growth_params_token& growth_tok = gf_factors.get_params_token();
-    
+
     oneloop_Pk_calculator calculator;
-    std::list<oneloop_Pk> sample = calculator.calculate_dd(k, k_tok, gf_factors, loop_data, Pk_init, Pk_final);
+    std::list<oneloop_Pk_set> sample = calculator.calculate_Pk(k, k_tok, gf_factors, loop_data, Pk_init, Pk_final);
     
     // inform master process that the calculation is finished
     MPI_detail::one_loop_Pk_ready return_payload(sample);
-    boost::mpi::request ack = this->mpi_world.isend(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_WORK_PRODUCT_READY, return_payload);
-    ack.wait();
-  }
-
-
-void slave_controller::process_item(MPI_detail::new_one_loop_resum_Pk& payload)
-  {
-    const Mpc_units::energy& k = payload.get_k();
-    const Matsubara_XY& XY = payload.get_Matsubara_XY();
-    const oneloop_Pk& oneloop_data = payload.get_oneloop_Pk_data();
-    const oneloop_growth_record& Df_data = payload.get_Df_data();
-    const initial_filtered_Pk& Pk_init = payload.get_init_linear_Pk();
-    boost::optional<const final_filtered_Pk&> Pk_final = payload.get_final_linear_Pk();
-    
-    oneloop_Pk_calculator calculator;
-    oneloop_resum_Pk sample = calculator.calculate_resum_dd(k, XY, oneloop_data, Df_data, Pk_init, Pk_final);
-    
-    // inform master process that the calculation is finished
-    MPI_detail::one_loop_resum_Pk_ready return_payload(sample);
     boost::mpi::request ack = this->mpi_world.isend(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_WORK_PRODUCT_READY, return_payload);
     ack.wait();
   }
@@ -316,16 +293,40 @@ void slave_controller::process_item(MPI_detail::new_multipole_Pk& payload)
   {
     const Mpc_units::energy& k = payload.get_k();
     const Matsubara_XY& XY = payload.get_Matsubara_XY();
-    const oneloop_Pk& oneloop_data = payload.get_oneloop_Pk_data();
+    const oneloop_Pk_set& oneloop_data = payload.get_oneloop_Pk_data();
     const oneloop_growth_record& Df_data = payload.get_Df_data();
     const initial_filtered_Pk& Pk_init = payload.get_init_linear_Pk();
     boost::optional<const final_filtered_Pk&> Pk_final = payload.get_final_linear_Pk();
     
     multipole_Pk_calculator calculator;
-    multipole_Pk sample = calculator.calculate_Legendre(k, XY, oneloop_data, Df_data, Pk_init, Pk_final);
+    multipole_Pk_set sample = calculator.calculate_Legendre(k, XY, oneloop_data, Df_data, Pk_init, Pk_final);
     
     // inform master process that the calculation is finished
     MPI_detail::multipole_Pk_ready return_payload(sample);
+    boost::mpi::request ack = this->mpi_world.isend(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_WORK_PRODUCT_READY, return_payload);
+    ack.wait();
+  }
+
+
+void slave_controller::process_item(MPI_detail::new_counterterm& payload)
+  {
+    const Mpc_units::energy& k = payload.get_k();
+    const Matsubara_XY& XY = payload.get_Matsubara_XY();
+    const oneloop_growth_record& Df_data = payload.get_Df_data();
+    const initial_filtered_Pk& Pk_init = payload.get_init_linear_Pk();
+    boost::optional<const final_filtered_Pk&> Pk_final = payload.get_final_linear_Pk();
+
+    const k_token& k_token = payload.get_k_token();
+    const IR_cutoff_token& IR_tok = payload.get_IR_cutoff_token();
+    const UV_cutoff_token& UV_tok = payload.get_UV_cutoff_token();
+    const z_token& z_tok = payload.get_z_token();
+    const growth_params_token& growth_tok = payload.get_growth_params_token();
+
+    multipole_Pk_calculator calculator;
+    multipole_counterterm_set sample = calculator.calculate_counterterms(k, k_token, IR_tok, UV_tok, z_tok, growth_tok, XY, Df_data, Pk_init, Pk_final);
+
+    // inform master process that the calculation is finished
+    MPI_detail::counterterm_ready return_payload(sample);
     boost::mpi::request ack = this->mpi_world.isend(MPI_detail::RANK_MASTER, MPI_detail::MESSAGE_WORK_PRODUCT_READY, return_payload);
     ack.wait();
   }

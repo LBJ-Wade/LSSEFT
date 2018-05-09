@@ -23,8 +23,8 @@
 // --@@
 //
 
-#ifndef LSSEFT_MDR1_SIM_H
-#define LSSEFT_MDR1_SIM_H
+#ifndef LSSEFT_WIZCOLA_SIM_H
+#define LSSEFT_WIZCOLA_SIM_H
 
 
 #include "units/Mpc_units.h"
@@ -58,4 +58,4 @@ namespace WizCOLA
   }
 
 
-#endif //LSSEFT_MDR1_SIM_H
+#endif //LSSEFT_WIZCOLA_SIM_H

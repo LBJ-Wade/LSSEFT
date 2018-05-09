@@ -26,6 +26,7 @@
 #include <cmath>
 
 #include "multipole_Pk_calculator.h"
+#include "defaults.h"
 
 namespace multipole_Pk_calculator_impl
   {
@@ -46,7 +47,7 @@ namespace multipole_Pk_calculator_impl
           }
         
       };
-    
+
     class mu_to_ell0_expXY
       {
       
@@ -60,38 +61,40 @@ namespace multipole_Pk_calculator_impl
         
         double mu0()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (1 - A/3. + std::pow(A,2)/10. - std::pow(A,3)/42. + std::pow(A,4)/216. - std::pow(A,5)/1320. + std::pow(A,6)/9360. - std::pow(A,7)/75600. + std::pow(A,8)/685440.);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * (1 - A/3. + std::pow(A,2)/10. - std::pow(A,3)/42. + std::pow(A,4)/216. - std::pow(A,5)/1320. + std::pow(A,6)/9360. - std::pow(A,7)/75600. + std::pow(A,8)/685440. - std::pow(A,9)/6.89472e6 + std::pow(A,10)/7.62048e7 - std::pow(A,11)/9.180864e8 + std::pow(A,12)/1.197504e10);
             
             return (std::sqrt(M_PI)*std::erf(std::sqrt(A)))/(2.*std::sqrt(A)*std::exp(B));
           }
         
         double mu2()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.3333333333333333 - A/5. + std::pow(A,2)/14. - std::pow(A,3)/54. + std::pow(A,4)/264. - std::pow(A,5)/1560. + std::pow(A,6)/10800. - std::pow(A,7)/85680. +
-                                                          std::pow(A,8)/766080.);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * (0.3333333333333333 - A/5. + std::pow(A,2)/14. - std::pow(A,3)/54. + std::pow(A,4)/264. - std::pow(A,5)/1560. + std::pow(A,6)/10800. - std::pow(A,7)/85680. + std::pow(A,8)/766080. - std::pow(A,9)/7.62048e6 + std::pow(A,10)/8.34624e7 - std::pow(A,11)/9.9792e8 + std::pow(A,12)/1.29330432e10);
             
             return (std::exp(-A - B)*(-2*std::sqrt(A) + std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(4.*std::pow(A,1.5));
           }
         
         double mu4()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.2 - A/7. + std::pow(A,2)/18. - std::pow(A,3)/66. + std::pow(A,4)/312. - std::pow(A,5)/1800. + std::pow(A,6)/12240. - std::pow(A,7)/95760. + std::pow(A,8)/846720.);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * (0.2 - A/7. + std::pow(A,2)/18. - std::pow(A,3)/66. + std::pow(A,4)/312. - std::pow(A,5)/1800. + std::pow(A,6)/12240. - std::pow(A,7)/95760. + std::pow(A,8)/846720. - std::pow(A,9)/8.34624e6 + std::pow(A,10)/9.072e7 - std::pow(A,11)/1.0777536e9 + std::pow(A,12)/1.38910464e10);
             
             return (std::exp(-A - B)*(-2*std::sqrt(A)*(3 + 2*A) + 3*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(8.*std::pow(A,2.5));
           }
         
         double mu6()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.14285714285714285 - A/9. + std::pow(A,2)/22. - std::pow(A,3)/78. + std::pow(A,4)/360. - std::pow(A,5)/2040. + std::pow(A,6)/13680. - std::pow(A,7)/105840. +
-                                                          std::pow(A,8)/927360.);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * (0.14285714285714285 - A/9. + std::pow(A,2)/22. - std::pow(A,3)/78. + std::pow(A,4)/360. - std::pow(A,5)/2040. + std::pow(A,6)/13680. - std::pow(A,7)/105840. + std::pow(A,8)/927360. - std::pow(A,9)/9.072e6 + std::pow(A,10)/9.79776e7 - std::pow(A,11)/1.1575872e9 + std::pow(A,12)/1.48490496e10);
             
             return (std::exp(-A - B)*(-2*std::sqrt(A)*(15 + 2*A*(5 + 2*A)) + 15*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(16.*std::pow(A,3.5));
           }
         
         double mu8()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.1111111111111111 - A/11. + std::pow(A,2)/26. - std::pow(A,3)/90. + std::pow(A,4)/408. - std::pow(A,5)/2280. + std::pow(A,6)/15120. - std::pow(A,7)/115920. +
-                                                          std::pow(A,8)/1.008e6);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * (0.1111111111111111 - A/11. + std::pow(A,2)/26. - std::pow(A,3)/90. + std::pow(A,4)/408. - std::pow(A,5)/2280. + std::pow(A,6)/15120. - std::pow(A,7)/115920. + std::pow(A,8)/1.008e6 - std::pow(A,9)/9.79776e6 + std::pow(A,10)/1.052352e8 - std::pow(A,11)/1.2374208e9 + std::pow(A,12)/1.58070528e10);
             
             return (std::exp(-A - B)*(-2*std::sqrt(A)*(105 + 2*A*(35 + 2*A*(7 + 2*A))) + 105*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(32.*std::pow(A,4.5));
           }
@@ -145,40 +148,40 @@ namespace multipole_Pk_calculator_impl
     
         double mu0()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * ((-2*A)/3. + (2*std::pow(A,2))/7. - (5*std::pow(A,3))/63. + (5*std::pow(A,4))/297. - (5*std::pow(A,5))/1716. + std::pow(A,6)/2340. - std::pow(A,7)/18360. +
-                                                          std::pow(A,8)/162792.);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * ((-2*A)/3. + (2*std::pow(A,2))/7. - (5*std::pow(A,3))/63. + (5*std::pow(A,4))/297. - (5*std::pow(A,5))/1716. + std::pow(A,6)/2340. - std::pow(A,7)/18360. + std::pow(A,8)/162792. - std::pow(A,9)/1.608768e6 + std::pow(A,10)/1.7527104e7 - std::pow(A,11)/2.08656e8 + std::pow(A,12)/2.694384e9);
         
             return (-5*std::exp(-A - B)*(6*std::sqrt(A) + (-3 + 2*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(8.*std::pow(A,1.5));
           }
     
         double mu2()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.6666666666666666 - (4*A)/7. + (5*std::pow(A,2))/21. - (20*std::pow(A,3))/297. + (25*std::pow(A,4))/1716. - std::pow(A,5)/390. + (7*std::pow(A,6))/18360. -
-                                                          std::pow(A,7)/20349. + std::pow(A,8)/178752.);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * (0.6666666666666666 - (4*A)/7. + (5*std::pow(A,2))/21. - (20*std::pow(A,3))/297. + (25*std::pow(A,4))/1716. - std::pow(A,5)/390. + (7*std::pow(A,6))/18360. - std::pow(A,7)/20349. + std::pow(A,8)/178752. - (5*std::pow(A,9))/8.763552e6 + (11*std::pow(A,10))/2.08656e8 - std::pow(A,11)/2.24532e8 + (13*std::pow(A,12))/3.750582528e10);
         
             return (-5*std::exp(-A - B)*(2*std::sqrt(A)*(9 + 4*A) + (-9 + 2*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(16.*std::pow(A,2.5));
           }
     
         double mu4()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.5714285714285714 - (10*A)/21. + (20*std::pow(A,2))/99. - (25*std::pow(A,3))/429. + std::pow(A,4)/78. - (7*std::pow(A,5))/3060. + std::pow(A,6)/2907. -
-                                                          std::pow(A,7)/22344. + (5*std::pow(A,8))/973728.);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * (0.5714285714285714 - (10*A)/21. + (20*std::pow(A,2))/99. - (25*std::pow(A,3))/429. + std::pow(A,4)/78. - (7*std::pow(A,5))/3060. + std::pow(A,6)/2907. - std::pow(A,7)/22344. + (5*std::pow(A,8))/973728. - (11*std::pow(A,9))/2.08656e7 + std::pow(A,10)/2.0412e7 - (13*std::pow(A,11))/3.12548544e9 + std::pow(A,12)/3.07587456e9);
         
             return (-5*std::exp(-A - B)*(2*std::sqrt(A)*(45 + 8*A*(3 + A)) + 3*(-15 + 2*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(32.*std::pow(A,3.5));
           }
     
         double mu6()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.47619047619047616 - (40*A)/99. + (25*std::pow(A,2))/143. - (2*std::pow(A,3))/39. + (7*std::pow(A,4))/612. - (2*std::pow(A,5))/969. + std::pow(A,6)/3192. -
-                                                          (5*std::pow(A,7))/121716. + (11*std::pow(A,8))/2.3184e6);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * (0.47619047619047616 - (40*A)/99. + (25*std::pow(A,2))/143. - (2*std::pow(A,3))/39. + (7*std::pow(A,4))/612. - (2*std::pow(A,5))/969. + std::pow(A,6)/3192. - (5*std::pow(A,7))/121716. + (11*std::pow(A,8))/2.3184e6 - std::pow(A,9)/2.0412e6 + (13*std::pow(A,10))/2.8413504e8 - std::pow(A,11)/2.5632288e8 + std::pow(A,12)/3.266790912e9);
         
             return (std::exp(-A - B)*(-10*std::sqrt(A)*(315 + 4*A*(45 + 4*A*(4 + A))) - 75*(-21 + 2*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(64.*std::pow(A,4.5));
           }
     
         double mu8()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.40404040404040403 - (50*A)/143. + (2*std::pow(A,2))/13. - (7*std::pow(A,3))/153. + (10*std::pow(A,4))/969. - std::pow(A,5)/532. +
-                                                          (5*std::pow(A,6))/17388. - (11*std::pow(A,7))/289800. + std::pow(A,8)/226800.);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * (0.40404040404040403 - (50*A)/143. + (2*std::pow(A,2))/13. - (7*std::pow(A,3))/153. + (10*std::pow(A,4))/969. - std::pow(A,5)/532. + (5*std::pow(A,6))/17388. - (11*std::pow(A,7))/289800. + std::pow(A,8)/226800. - (13*std::pow(A,9))/2.8413504e7 + std::pow(A,10)/2.330208e7 - std::pow(A,11)/2.72232576e8 + std::pow(A,12)/3.4577928e9);
         
             return (5*std::exp(-A - B)*(-2*std::sqrt(A)*(2835 + 8*A*(210 + A*(77 + 4*A*(5 + A)))) - 105*(-27 + 2*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/
                    (128.*std::pow(A,5.5));
@@ -233,24 +236,24 @@ namespace multipole_Pk_calculator_impl
     
         double mu0()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * ((4*std::pow(A,2))/35. - (4*std::pow(A,3))/77. + (2*std::pow(A,4))/143. - (2*std::pow(A,5))/715. + std::pow(A,6)/2210. - std::pow(A,7)/16150. +
-                                                          std::pow(A,8)/135660.);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * ((4*std::pow(A,2))/35. - (4*std::pow(A,3))/77. + (2*std::pow(A,4))/143. - (2*std::pow(A,5))/715. + std::pow(A,6)/2210. - std::pow(A,7)/16150. + std::pow(A,8)/135660. - std::pow(A,9)/1.28478e6 + std::pow(A,10)/1.3524e7 - std::pow(A,11)/1.56492e8 + std::pow(A,12)/1.97316e9);
         
             return (std::exp(-A - B)*(-90*std::sqrt(A)*(21 + 2*A) + 27*(35 + 4*(-5 + A)*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(64.*std::pow(A,2.5));
           }
     
         double mu2()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * ((-8*A)/35. + (12*std::pow(A,2))/77. - (8*std::pow(A,3))/143. + (2*std::pow(A,4))/143. - (3*std::pow(A,5))/1105. + (7*std::pow(A,6))/16150. -
-                                                          (2*std::pow(A,7))/33915. + (3*std::pow(A,8))/428260.);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * ((-8*A)/35. + (12*std::pow(A,2))/77. - (8*std::pow(A,3))/143. + (2*std::pow(A,4))/143. - (3*std::pow(A,5))/1105. + (7*std::pow(A,6))/16150. - (2*std::pow(A,7))/33915. + (3*std::pow(A,8))/428260. - std::pow(A,9)/1.3524e6 + (11*std::pow(A,10))/1.56492e8 - std::pow(A,11)/1.6443e8 + (13*std::pow(A,12))/2.69139024e10);
         
             return (std::exp(-A - B)*(-18*std::sqrt(A)*(525 + 2*A*(85 + 16*A)) + 27*(175 + 4*(-15 + A)*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(128.*std::pow(A,3.5));
           }
     
         double mu4()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.22857142857142856 - (24*A)/77. + (24*std::pow(A,2))/143. - (8*std::pow(A,3))/143. + (3*std::pow(A,4))/221. - (21*std::pow(A,5))/8075. +
-                                                          (2*std::pow(A,6))/4845. - (6*std::pow(A,7))/107065. + (3*std::pow(A,8))/450800.);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * (0.22857142857142856 - (24*A)/77. + (24*std::pow(A,2))/143. - (8*std::pow(A,3))/143. + (3*std::pow(A,4))/221. - (21*std::pow(A,5))/8075. + (2*std::pow(A,6))/4845. - (6*std::pow(A,7))/107065. + (3*std::pow(A,8))/450800. - (11*std::pow(A,9))/1.56492e7 + (11*std::pow(A,10))/1.6443e8 - (13*std::pow(A,11))/2.2428252e9 + (13*std::pow(A,12))/2.81955168e10);
         
             return (std::exp(-A - B)*(-18*std::sqrt(A)*(3675 + 2*A*(775 + 16*A*(13 + 2*A))) + 27*(1225 + 12*(-25 + A)*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/
                    (256.*std::pow(A,4.5));
@@ -258,8 +261,8 @@ namespace multipole_Pk_calculator_impl
     
         double mu6()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.3116883116883117 - (48*A)/143. + (24*std::pow(A,2))/143. - (12*std::pow(A,3))/221. + (21*std::pow(A,4))/1615. - (4*std::pow(A,5))/1615. +
-                                                          (6*std::pow(A,6))/15295. - (3*std::pow(A,7))/56350. + (11*std::pow(A,8))/1.7388e6);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * (0.3116883116883117 - (48*A)/143. + (24*std::pow(A,2))/143. - (12*std::pow(A,3))/221. + (21*std::pow(A,4))/1615. - (4*std::pow(A,5))/1615. + (6*std::pow(A,6))/15295. - (3*std::pow(A,7))/56350. + (11*std::pow(A,8))/1.7388e6 - (11*std::pow(A,9))/1.6443e7 + (13*std::pow(A,10))/2.038932e8 - (13*std::pow(A,11))/2.3496264e9 + std::pow(A,12)/2.2686048e9);
         
             return (9*std::exp(-A - B)*(-2*std::sqrt(A)*(33075 + 2*A*(7875 + 32*A*(75 + A*(15 + 2*A)))) + 45*(735 + 4*(-35 + A)*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/
                    (512.*std::pow(A,5.5));
@@ -267,8 +270,8 @@ namespace multipole_Pk_calculator_impl
     
         double mu8()
           {
-            if(std::abs(A) < 0.01) return std::exp(-B) * (0.3356643356643357 - (48*A)/143. + (36*std::pow(A,2))/221. - (84*std::pow(A,3))/1615. + (4*std::pow(A,4))/323. - (36*std::pow(A,5))/15295. +
-                                                          (3*std::pow(A,6))/8050. - (11*std::pow(A,7))/217350. + (11*std::pow(A,8))/1.827e6);
+            if(std::abs(A) < LSSEFT_SERIES_CROSSOVER)
+              return std::exp(-B) * (0.3356643356643357 - (48*A)/143. + (36*std::pow(A,2))/221. - (84*std::pow(A,3))/1615. + (4*std::pow(A,4))/323. - (36*std::pow(A,5))/15295. + (3*std::pow(A,6))/8050. - (11*std::pow(A,7))/217350. + (11*std::pow(A,8))/1.827e6 - (13*std::pow(A,9))/2.038932e7 + (13*std::pow(A,10))/2.136024e8 - std::pow(A,11)/1.890504e8 + std::pow(A,12)/2.3692284e9);
         
             return (9*std::exp(-A - B)*(-2*std::sqrt(A)*(363825 + 2*A*(92925 + 32*A*(945 + 2*A*(105 + A*(17 + 2*A))))) +
                                        315*(1155 + 4*(-45 + A)*A)*std::exp(A)*std::sqrt(M_PI)*std::erf(std::sqrt(A))))/(1024.*std::pow(A,6.5));
@@ -363,8 +366,8 @@ namespace multipole_Pk_calculator_impl
         typedef typename MultipletType::value_type resum_type;
         
         //! constructor
-        //! PlainDecomposer should be a triple of decomposers for the Legendre modes ell = 0, ell = 2, ell = 4
-        //! ExpDecomposer should be a triple of decomposer for the Legendre modes ell = 0, ell = 2, ell = 4
+        //! PlainDecomposer should be a triplet of decomposers for the Legendre modes ell = 0, ell = 2, ell = 4
+        //! ExpDecomposer should be a triplet of decomposer for the Legendre modes ell = 0, ell = 2, ell = 4
         decomposer(const oneloop_Pk& d, PlainDecomposeMultiplet p, ExpDecomposeMultiplet e)
           : data(d),
             plain_decompose(std::move(p)),
@@ -389,7 +392,7 @@ namespace multipole_Pk_calculator_impl
             resum_type ell2(raw_ell2, resum_ell2);
             resum_type ell4(raw_ell4, resum_ell4);
             
-            return MultipletType(ell0, ell2, ell4);
+            return MultipletType{ell0, ell2, ell4};
           }
         
         
@@ -447,71 +450,61 @@ namespace multipole_Pk_calculator_impl
         ExpDecomposeMultiplet exp_decompose;
         
       };
-    
-    
+
+
     // project a single mu^n term into its Legendre multipoles
-    template <typename MultipletType, typename PlainDecomposeMultiplet, typename ExpDecomposeMultiplet>
+    template <typename Value, typename MultipletType, typename PlainDecomposeMultiplet, typename ExpDecomposeMultiplet>
     class projector
       {
-      
+
       public:
-    
+
         // element_type will be Pk_element or k2_Pk_element or similar -- a container holding a value and an error
         typedef typename MultipletType::value_type::element_type element_type;
-    
+
         // resum_type will be a container such as Pk_resum or k2_Pk_resum holding two element_types
         typedef typename MultipletType::value_type resum_type;
-    
+
         //! constructor
         //! PlainDecomposer should be a triple of decomposers for the Legendre modes ell = 0, ell = 2, ell = 4
         //! ExpDecomposer should be a triple of decomposer for the Legendre modes ell = 0, ell = 2, ell = 4
-        projector(const oneloop_Pk& d, PlainDecomposeMultiplet p, ExpDecomposeMultiplet e)
+        projector(const Value& d, PlainDecomposeMultiplet p, ExpDecomposeMultiplet e)
           : data(d),
             plain_decompose(std::move(p)),
             exp_decompose(std::move(e))
           {
           }
-        
+
         // project a mu^n coefficient into its Legendre decomposition
         MultipletType compute(mu_power p)
           {
-            k2_Pk_value ele;
-            switch(p)
-              {
-                case mu_power::mu0: { ele = this->data.get_dd_rsd_mu0().get_Z2_total(); break; }
-                case mu_power::mu2: { ele = this->data.get_dd_rsd_mu2().get_Z2_total(); break; }
-                case mu_power::mu4: { ele = this->data.get_dd_rsd_mu4().get_Z2_total(); break; }
-                case mu_power::mu6: { ele = this->data.get_dd_rsd_mu6().get_Z2_total(); break; }
-                case mu_power::mu8: { ele = this->data.get_dd_rsd_mu8().get_Z2_total(); break; }
-              }
-            
-            element_type raw = ele.get_raw();
-            element_type w = ele.get_wiggle();
-            element_type nw = ele.get_nowiggle();
-            
+            element_type raw = this->data.get_raw();
+            element_type w = this->data.get_wiggle();
+            element_type nw = this->data.get_nowiggle();
+
             element_type raw_ell0 = raw * std::get<0>(this->plain_decompose)(p);
             element_type raw_ell2 = raw * std::get<1>(this->plain_decompose)(p);
             element_type raw_ell4 = raw * std::get<2>(this->plain_decompose)(p);
-            
+
             element_type resum_ell0 = nw * std::get<0>(this->plain_decompose)(p) + w * std::get<0>(this->exp_decompose)(p);
             element_type resum_ell2 = nw * std::get<1>(this->plain_decompose)(p) + w * std::get<1>(this->exp_decompose)(p);
             element_type resum_ell4 = nw * std::get<2>(this->plain_decompose)(p) + w * std::get<2>(this->exp_decompose)(p);
-            
+
             resum_type ell0(raw_ell0, resum_ell0);
             resum_type ell2(raw_ell2, resum_ell2);
             resum_type ell4(raw_ell4, resum_ell4);
-            
-            return MultipletType(ell0, ell2, ell4);
+
+            return MultipletType{ell0, ell2, ell4};
           }
-        
+
       private:
-        
-        const oneloop_Pk& data;
+
+        const Value& data;
         PlainDecomposeMultiplet plain_decompose;
         ExpDecomposeMultiplet exp_decompose;
-        
+
       };
-    
+
     
     // accessors for ell0, ell2, ell4 from a Legendre_multiplet<>
 
@@ -534,29 +527,21 @@ namespace multipole_Pk_calculator_impl
       };
     
     
-    template <typename Pk_Accessor, typename k2_Pk_Accessor>
+    template <typename Pk_Accessor>
     Pk_ell make_Pk_ell(const Pk_resum_multiplet& tree, const Pk_resum_multiplet& P13, const Pk_resum_multiplet& P22,
-                           const Pk_resum_multiplet& PSPT, const k2_Pk_resum_multiplet& Z2_d, const Pk_resum_multiplet& Z0_v,
-                           const k2_Pk_resum_multiplet& Z2_v, const Pk_resum_multiplet& Z0_vd,
-                           const k2_Pk_resum_multiplet& Z2_vd, const k2_Pk_resum_multiplet& Z2_vv_A,
-                           const k2_Pk_resum_multiplet& Z2_vv_B, const k2_Pk_resum_multiplet& Z2_vvd,
-                           const k2_Pk_resum_multiplet& Z2_vvv, const k2_Pk_resum_multiplet& Z2_mu0,
-                           const k2_Pk_resum_multiplet& Z2_mu2, const k2_Pk_resum_multiplet& Z2_mu4,
-                           const k2_Pk_resum_multiplet& Z2_mu6, const k2_Pk_resum_multiplet& Z2_mu8, Pk_Accessor a,
-                           k2_Pk_Accessor b)
+                       const Pk_resum_multiplet& PSPT, Pk_Accessor a)
       {
-        return Pk_ell(a(tree), a(P13), a(P22), a(PSPT), b(Z2_d), a(Z0_v),
-                      b(Z2_v), a(Z0_vd), b(Z2_vd), b(Z2_vv_A), b(Z2_vv_B), b(Z2_vvd),
-                      b(Z2_vvv), b(Z2_mu0), b(Z2_mu2), b(Z2_mu4), b(Z2_mu6), b(Z2_mu8));
+        return Pk_ell(a(tree), a(P13), a(P22), a(PSPT));
       };
 
     
   }   // namespace multipole_Pk_calculator_impl
 
 
-multipole_Pk multipole_Pk_calculator::calculate_Legendre(const Mpc_units::energy& k, const Matsubara_XY& XY, const oneloop_Pk& data,
-                                                         const oneloop_growth_record& Df_data, const initial_filtered_Pk& Pk_init,
-                                                         const boost::optional<const final_filtered_Pk&>& Pk_final)
+multipole_Pk_set
+multipole_Pk_calculator::calculate_Legendre(const Mpc_units::energy& k, const Matsubara_XY& XY, const oneloop_Pk_set& data,
+                                            const oneloop_growth_record& Df_data, const initial_filtered_Pk& Pk_init,
+                                            const boost::optional<const final_filtered_Pk&>& Pk_final)
   {
     using namespace multipole_Pk_calculator_impl;
     
@@ -565,16 +550,7 @@ multipole_Pk multipole_Pk_calculator::calculate_Legendre(const Mpc_units::energy
     auto get_13       = [](const rsd_dd_Pk& pkg) -> Pk_value     { return pkg.get_13(); };
     auto get_22       = [](const rsd_dd_Pk& pkg) -> Pk_value     { return pkg.get_22(); };
     auto get_SPT      = [](const rsd_dd_Pk& pkg) -> Pk_value     { return pkg.get_1loop_SPT(); };
-    auto get_Z2d      = [](const rsd_dd_Pk& pkg) -> k2_Pk_value  { return pkg.get_Z2_delta(); };
-    auto get_Z0v      = [](const rsd_dd_Pk& pkg) -> Pk_value     { return pkg.get_Z0_v(); };
-    auto get_Z2v      = [](const rsd_dd_Pk& pkg) -> k2_Pk_value  { return pkg.get_Z2_v(); };
-    auto get_Z0vd     = [](const rsd_dd_Pk& pkg) -> Pk_value     { return pkg.get_Z0_vdelta(); };
-    auto get_Z2vd     = [](const rsd_dd_Pk& pkg) -> k2_Pk_value  { return pkg.get_Z2_vdelta(); };
-    auto get_Z2vv_A   = [](const rsd_dd_Pk& pkg) -> k2_Pk_value  { return pkg.get_Z2_vv_A(); };
-    auto get_Z2vv_B   = [](const rsd_dd_Pk& pkg) -> k2_Pk_value  { return pkg.get_Z2_vv_B(); };
-    auto get_Z2vvd    = [](const rsd_dd_Pk& pkg) -> k2_Pk_value  { return pkg.get_Z2_vvdelta(); };
-    auto get_Z2vvv    = [](const rsd_dd_Pk& pkg) -> k2_Pk_value  { return pkg.get_Z2_vvv(); };
-    
+
     // get Matsubara X+Y suppression factor (remember we have to scale up by the square of the linear growth factor,
     // since we store just the raw integral over the early-time tree-level power spectrum)
     double Matsubara_XY = Df_data.D_lin*Df_data.D_lin * k*k * XY;
@@ -583,10 +559,10 @@ multipole_Pk multipole_Pk_calculator::calculate_Legendre(const Mpc_units::energy
     double B_coeff = Matsubara_XY;
     
     // set policy objects to adjust the different mu dependences to account for resummation
-    resum_adjuster Pk_adj(k, Matsubara_XY, Df_data, data.get_dd().get_tree());
+    Pk_value Ptree = Df_data.D_lin*Df_data.D_lin * build_Pk_value(k, Pk_init);
+    resum_adjuster Pk_adj(k, Matsubara_XY, Df_data, Ptree);
     null_adjuster<Mpc_units::inverse_energy3> Pk_null;
-    null_adjuster<Mpc_units::inverse_energy> k2_Pk_null;
-    
+
     // set up multiplet of plain decomposition coefficients
     mu_to_ell0 plain_ell0;
     mu_to_ell2 plain_ell2;
@@ -598,53 +574,147 @@ multipole_Pk multipole_Pk_calculator::calculate_Legendre(const Mpc_units::energy
     mu_to_ell2_expXY exp_ell2(A_coeff, B_coeff);
     mu_to_ell4_expXY exp_ell4(A_coeff, B_coeff);
     auto exp_multiplet = std::make_tuple(exp_ell0, exp_ell2, exp_ell4);
-    
-    // create decomposer object
-    decomposer<Pk_resum_multiplet, decltype(plain_multiplet), decltype(exp_multiplet)> decomp(data, plain_multiplet, exp_multiplet);
-    decomposer<k2_Pk_resum_multiplet, decltype(plain_multiplet), decltype(exp_multiplet)> k2_decomp(data, plain_multiplet, exp_multiplet);
-    
-    // get Legendre multiplets for each element of interest
-    Pk_resum_multiplet tree = decomp.compute(get_tree, Pk_null);
-    Pk_resum_multiplet P13 = decomp.compute(get_13, Pk_null);
-    Pk_resum_multiplet P22 = decomp.compute(get_22, Pk_null);
-    Pk_resum_multiplet PSPT = decomp.compute(get_SPT, Pk_adj);
 
-    k2_Pk_resum_multiplet Z2_delta = k2_decomp.compute(get_Z2d, k2_Pk_null);
-    Pk_resum_multiplet Z0_v = decomp.compute(get_Z0v, Pk_null);
-    k2_Pk_resum_multiplet Z2_v = k2_decomp.compute(get_Z2v, k2_Pk_null);
-    Pk_resum_multiplet Z0_vdelta = decomp.compute(get_Z0vd, Pk_null);
-    k2_Pk_resum_multiplet Z2_vdelta = k2_decomp.compute(get_Z2vd, k2_Pk_null);
-    k2_Pk_resum_multiplet Z2_vv_A = k2_decomp.compute(get_Z2vv_A, k2_Pk_null);
-    k2_Pk_resum_multiplet Z2_vv_B = k2_decomp.compute(get_Z2vv_B, k2_Pk_null);
-    k2_Pk_resum_multiplet Z2_vvdelta = k2_decomp.compute(get_Z2vvd, k2_Pk_null);
-    k2_Pk_resum_multiplet Z2_vvv = k2_decomp.compute(get_Z2vvv, k2_Pk_null);
+    using decompose_type = decomposer<Pk_resum_multiplet, decltype(plain_multiplet), decltype(exp_multiplet)>;
 
-    // create projector object
-    projector<k2_Pk_resum_multiplet, decltype(plain_multiplet), decltype(exp_multiplet)> proj(data, plain_multiplet, exp_multiplet);
-    
-    // project mu^n counterterms into Legendre modes
-    k2_Pk_resum_multiplet Z2_mu0 = proj.compute(mu_power::mu0);
-    k2_Pk_resum_multiplet Z2_mu2 = proj.compute(mu_power::mu2);
-    k2_Pk_resum_multiplet Z2_mu4 = proj.compute(mu_power::mu4);
-    k2_Pk_resum_multiplet Z2_mu6 = proj.compute(mu_power::mu6);
-    k2_Pk_resum_multiplet Z2_mu8 = proj.compute(mu_power::mu8);
-    
-    // slice these multiplets into Pk_ell containers for the ell=0, ell=2 and ell=4 modes
-    Pk_ell P0 = make_Pk_ell(tree, P13, P22, PSPT, Z2_delta, Z0_v,
-                            Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv_A, Z2_vv_B, Z2_vvdelta,
-                            Z2_vvv, Z2_mu0, Z2_mu2, Z2_mu4, Z2_mu6, Z2_mu8,
-                            get_ell0<Pk_resum_multiplet>(), get_ell0<k2_Pk_resum_multiplet>());
-    Pk_ell P2 = make_Pk_ell(tree, P13, P22, PSPT, Z2_delta, Z0_v,
-                            Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv_A, Z2_vv_B, Z2_vvdelta,
-                            Z2_vvv, Z2_mu0, Z2_mu2, Z2_mu4, Z2_mu6, Z2_mu8,
-                            get_ell2<Pk_resum_multiplet>(), get_ell2<k2_Pk_resum_multiplet>());
-    Pk_ell P4 = make_Pk_ell(tree, P13, P22, PSPT, Z2_delta, Z0_v,
-                            Z2_v, Z0_vdelta, Z2_vdelta, Z2_vv_A, Z2_vv_B, Z2_vvdelta,
-                            Z2_vvv, Z2_mu0, Z2_mu2, Z2_mu4, Z2_mu6, Z2_mu8,
-                            get_ell4<Pk_resum_multiplet>(), get_ell4<k2_Pk_resum_multiplet>());
-    
-    // package everything up as as multiplet_Pk and return it
-    return multipole_Pk(data.get_k_token(), data.get_growth_params(), data.get_loop_params(), XY.get_params_token(),
-                        data.get_init_Pk_token(), data.get_final_Pk_token(), data.get_IR_token(), data.get_UV_token(),
-                        data.get_z_token(), XY.get_IR_resum_token(), P0, P2, P4);
+    multipole_Pk_set rval;
+
+    auto apply = [&](std::string tag) -> void
+      {
+        const oneloop_Pk& Pk = data.at(tag);
+
+        // create decomposer object
+        decompose_type decomp(Pk, plain_multiplet, exp_multiplet);
+
+        // get Legendre multiplets for each element of the power spectrum
+        Pk_resum_multiplet tree = decomp.compute(get_tree, Pk_null);
+        Pk_resum_multiplet P13 = decomp.compute(get_13, Pk_null);
+        Pk_resum_multiplet P22 = decomp.compute(get_22, Pk_null);
+        Pk_resum_multiplet PSPT = decomp.compute(get_SPT, Pk_adj);
+
+        // reorganize these multiplets into Pk_ell containers for the ell=0, ell=2 and ell=4 modes
+        Pk_ell P0 = make_Pk_ell(tree, P13, P22, PSPT, get_ell0<Pk_resum_multiplet>());
+        Pk_ell P2 = make_Pk_ell(tree, P13, P22, PSPT, get_ell2<Pk_resum_multiplet>());
+        Pk_ell P4 = make_Pk_ell(tree, P13, P22, PSPT, get_ell4<Pk_resum_multiplet>());
+
+        // package everything up as as multiplet_Pk and emplace it with a matching tag
+        rval.emplace(
+          std::make_pair(tag,
+            multipole_Pk{Pk.get_k_token(), Pk.get_growth_params(), Pk.get_loop_params(), XY.get_params_token(),
+                         Pk.get_init_Pk_token(), Pk.get_final_Pk_token(), Pk.get_IR_token(), Pk.get_UV_token(),
+                         Pk.get_z_token(), XY.get_IR_resum_token(), P0, P2, P4}
+          )
+        );
+      };
+
+#include "autogenerated/multipole_compute_stmts.cpp"
+
+    return rval;
+  }
+
+
+multipole_counterterm_set
+multipole_Pk_calculator::calculate_counterterms(const Mpc_units::energy& k, const k_token& k_token, const IR_cutoff_token& IR_tok,
+                                                const UV_cutoff_token& UV_tok, const z_token& z_tok, const growth_params_token& g_tok,
+                                                const Matsubara_XY& XY, const oneloop_growth_record& Df_data, const initial_filtered_Pk& Pk_init,
+                                                const boost::optional<const final_filtered_Pk&>& Pk_final)
+  {
+    using namespace multipole_Pk_calculator_impl;
+
+    // get Matsubara X+Y suppression factor (remember we have to scale up by the square of the linear growth factor,
+    // since we store just the raw integral over the early-time tree-level power spectrum)
+    double Matsubara_XY = Df_data.D_lin*Df_data.D_lin * k*k * XY;
+
+    double A_coeff = Df_data.f_lin*(Df_data.f_lin+2.0) * Matsubara_XY;
+    double B_coeff = Matsubara_XY;
+
+    Pk_value Ptree_k0 = Df_data.D_lin*Df_data.D_lin * (Pk_final ? build_Pk_value(k, *Pk_final) : build_Pk_value(k, Pk_init));
+    k2_Pk_value Ptree_k2 = k*k * Ptree_k0;
+
+    // set up multiplet of plain decomposition coefficients
+    mu_to_ell0 plain_ell0;
+    mu_to_ell2 plain_ell2;
+    mu_to_ell4 plain_ell4;
+    auto plain_multiplet = std::make_tuple(plain_ell0, plain_ell2, plain_ell4);
+
+    // set up multiplet of expXY decomposition coefficients
+    mu_to_ell0_expXY exp_ell0(A_coeff, B_coeff);
+    mu_to_ell2_expXY exp_ell2(A_coeff, B_coeff);
+    mu_to_ell4_expXY exp_ell4(A_coeff, B_coeff);
+    auto exp_multiplet = std::make_tuple(exp_ell0, exp_ell2, exp_ell4);
+
+    using project_k0_type = projector<Pk_value, Pk_resum_multiplet, decltype(plain_multiplet), decltype(exp_multiplet)>;
+    using project_k2_type = projector<k2_Pk_value, k2_Pk_resum_multiplet, decltype(plain_multiplet), decltype(exp_multiplet)>;
+
+    multipole_counterterm_set rval;
+
+    project_k0_type project_k0(Ptree_k0, plain_multiplet, exp_multiplet);
+    project_k2_type project_k2(Ptree_k2, plain_multiplet, exp_multiplet);
+
+    Pk_resum_multiplet k0_mu0 = project_k0.compute(mu_power::mu0);
+    Pk_resum_multiplet k0_mu2 = project_k0.compute(mu_power::mu2);
+    Pk_resum_multiplet k0_mu4 = project_k0.compute(mu_power::mu4);
+    Pk_resum_multiplet k0_mu6 = project_k0.compute(mu_power::mu6);
+
+    k2_Pk_resum_multiplet k2_mu0 = project_k2.compute(mu_power::mu0);
+    k2_Pk_resum_multiplet k2_mu2 = project_k2.compute(mu_power::mu2);
+    k2_Pk_resum_multiplet k2_mu4 = project_k2.compute(mu_power::mu4);
+    k2_Pk_resum_multiplet k2_mu6 = project_k2.compute(mu_power::mu6);
+
+    auto& init_tok = Pk_init.get_token();
+    boost::optional<linear_Pk_token> final_tok;
+    if(Pk_final) final_tok = Pk_final->get_token();
+
+    // recall c6 = f c_4 - f^2 c_2 + f^3 c_0, which means that the c0, c2 and c4 counterterms each mix with
+    // components from mu^6
+
+    // compute contribution of c0 counterterm to each ell
+    rval.emplace(
+      std::make_pair("c0",
+                     multipole_counterterm
+                       {k_token, g_tok, XY.get_params_token(), init_tok, final_tok,
+                        IR_tok, UV_tok, z_tok, XY.get_IR_resum_token(),
+                        k0_mu0.get_ell0(), k0_mu0.get_ell2(), k0_mu0.get_ell4(),
+                        k2_mu0.get_ell0(), k2_mu0.get_ell2(), k2_mu0.get_ell4()
+                       }
+      )
+    );
+
+    // compute contribution of c2 counterterm to each ell
+    rval.emplace(
+      std::make_pair("c2",
+                     multipole_counterterm
+                       {k_token, g_tok, XY.get_params_token(), init_tok, final_tok,
+                        IR_tok, UV_tok, z_tok, XY.get_IR_resum_token(),
+                        k0_mu2.get_ell0(), k0_mu2.get_ell2(), k0_mu2.get_ell4(),
+                        k2_mu2.get_ell0(), k2_mu2.get_ell2(), k2_mu2.get_ell4()
+                       }
+      )
+    );
+
+    // compute contribution of c4 counterterm to each ell
+    rval.emplace(
+      std::make_pair("c4",
+                     multipole_counterterm
+                       {k_token, g_tok, XY.get_params_token(), init_tok, final_tok,
+                        IR_tok, UV_tok, z_tok, XY.get_IR_resum_token(),
+                        k0_mu4.get_ell0(), k0_mu4.get_ell2(), k0_mu4.get_ell4(),
+                        k2_mu4.get_ell0(), k2_mu4.get_ell2(), k2_mu4.get_ell4()
+                       }
+      )
+    );
+
+    // compute contribution of c6 counterterm to each ell
+    rval.emplace(
+      std::make_pair("c6",
+                     multipole_counterterm
+                       {k_token, g_tok, XY.get_params_token(), init_tok, final_tok,
+                        IR_tok, UV_tok, z_tok, XY.get_IR_resum_token(),
+                        k0_mu6.get_ell0(), k0_mu6.get_ell2(), k0_mu6.get_ell4(),
+                        k2_mu6.get_ell0(), k2_mu6.get_ell2(), k2_mu6.get_ell4()
+                       }
+      )
+    );
+
+    return rval;
   }

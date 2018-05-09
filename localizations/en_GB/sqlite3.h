@@ -72,6 +72,7 @@ constexpr auto ERROR_SQLITE3_INSERT_ONELOOP_RSD_PK_FAIL              = "failed t
 constexpr auto ERROR_SQLITE3_INSERT_RESUM_ONE_LOOP_PK_FAIL           = "failed to insert resummed one-loop P(k) record";
 constexpr auto ERROR_SQLITE3_INSERT_MULTIPOLE_PK_FAIL                = "failed to insert multipole P(k) record";
 constexpr auto ERROR_SQLITE3_INSERT_MATSUBARA_XY_FAIL                = "failed to insert Matsubara-XY record";
+constexpr auto ERROR_SQLITE3_INSERT_COUNTERTERM_FAIL                 = "failed to insert counterterm record";
 
 constexpr auto ERROR_SQLITE3_DF_GROWTH_TABLE_READ_FAIL               = "failed to read from D- and f-factor growth tables";
 constexpr auto ERROR_SQLITE3_DF_GROWTH_MISREAD                       = "read unexpected number of results from D- and f-factor growth table";
@@ -85,5 +86,9 @@ constexpr auto ERROR_SQLITE3_READ_MATSUBARA_XY_FAIL                  = "failed t
 constexpr auto ERROR_SQLITE3_MATSUBARA_XY_MISREAD                    = "read unexpected number of results from Matsubara-XY table";
 constexpr auto ERROR_SQLITE3_READ_FILTERED_PK_FAIL                   = "failed to read from filtered linear Pk table";
 constexpr auto ERROR_SQLITE3_FILTERED_PK_MISREAD                     = "read unexpected number of results from filtered linear Pk table";
+
+constexpr auto ERROR_SQLITE3_INSERT_PIPELINE_ID_FAIL                 = "failed to insert pipeline identifier";
+constexpr auto ERROR_SQLITE3_READ_PIPELINE_ID_FAIL                   = "failed to read from pipeline id table";
+constexpr auto ERROR_SQLITE3_PIPELINE_ID_MISREAD                     = "read unexpected number of results from pipeline id table";
 
 #endif //LSSEFT_SQLITE3_EN_GB_H

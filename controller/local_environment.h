@@ -27,6 +27,8 @@
 #define LSSEFT_LOCAL_ENVIRONMENT_H
 
 
+#include "utilities/finder.h"
+
 #include "boost/filesystem/operations.hpp"
 
 
@@ -61,6 +63,11 @@ class local_environment
     // INTERNAL DATA
 
   protected:
+
+    // DELEGATES
+
+    //! filesystem object finder
+    finder find;
 
     // LOCATION OF EXECUTABLES
 

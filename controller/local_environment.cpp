@@ -26,18 +26,29 @@
 
 #include <cstdlib>
 
+#include "defaults.h"
 #include "local_environment.h"
-
-#include "utilities/python_finder.h"
 
 
 local_environment::local_environment()
   {
+    // add $PATH to object finder
+    find.add_environment_variable(LSSEFT_SHELL_PATH_ENV);
+
     // set up python path
-    python_location = utilities::find_python();
+    auto py = find.find(LSSEFT_PYTHON_EXECUTABLE);
+
+    if(!py)
+      {
+        python_location = LSSEFT_DEFAULT_PYTHON_PATH;
+      }
+    else
+      {
+        python_location = *py;
+      }
 
     // determine if terminal supports colour output
-    char* term_type_cstr = std::getenv("TERM");
+    char* term_type_cstr = std::getenv(LSSEFT_TERM_ENV);
 
     if(term_type_cstr == nullptr)
       {

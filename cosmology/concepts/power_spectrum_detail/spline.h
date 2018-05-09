@@ -66,7 +66,7 @@ class wiggle_Pk_raw_adapter: public spline_Pk
   public:
     
     //! constructor captures wiggle_Pk container
-    wiggle_Pk_raw_adapter(const initial_filtered_Pk& w);
+    wiggle_Pk_raw_adapter(const initial_filtered_Pk& w, const Mpc_units::energy& klo_, const Mpc_units::energy& khi_);
     
     //! destructor is default
     ~wiggle_Pk_raw_adapter() = default;
@@ -86,6 +86,12 @@ class wiggle_Pk_raw_adapter: public spline_Pk
     
     //! capture wiggle_Pk container
     const initial_filtered_Pk& container;
+
+    //! UV cutoff
+    Mpc_units::energy khi;
+
+    //! IR cutoff
+    Mpc_units::energy klo;
     
   };
 
@@ -98,7 +104,7 @@ class wiggle_Pk_wiggle_adapter: public spline_Pk
   public:
     
     //! constructor captures wiggle_Pk container
-    wiggle_Pk_wiggle_adapter(const initial_filtered_Pk& w);
+    wiggle_Pk_wiggle_adapter(const initial_filtered_Pk& w, const Mpc_units::energy& klo_, const Mpc_units::energy& khi_);
     
     //! destructor is default
     ~wiggle_Pk_wiggle_adapter() = default;
@@ -118,7 +124,13 @@ class wiggle_Pk_wiggle_adapter: public spline_Pk
     
     //! capture wiggle_Pk container
     const initial_filtered_Pk& container;
-    
+
+    //! UV cutoff
+    Mpc_units::energy khi;
+
+    //! IR cutoff
+    Mpc_units::energy klo;
+
   };
 
 
@@ -130,7 +142,7 @@ class wiggle_Pk_nowiggle_adapter: public spline_Pk
   public:
     
     //! constructor captures wiggle_Pk container
-    wiggle_Pk_nowiggle_adapter(const initial_filtered_Pk& w);
+    wiggle_Pk_nowiggle_adapter(const initial_filtered_Pk& w, const Mpc_units::energy& klo_, const Mpc_units::energy& khi_);
     
     //! destructor is default
     ~wiggle_Pk_nowiggle_adapter() = default;
@@ -150,7 +162,13 @@ class wiggle_Pk_nowiggle_adapter: public spline_Pk
     
     //! capture wiggle_Pk container
     const initial_filtered_Pk& container;
-    
+
+    //! UV cutoff
+    Mpc_units::energy khi;
+
+    //! IR cutoff
+    Mpc_units::energy klo;
+
   };
 
 

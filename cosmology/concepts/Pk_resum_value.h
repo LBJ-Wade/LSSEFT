@@ -110,4 +110,35 @@ typedef resum_Pk_component<Mpc_units::inverse_energy> k2_Pk_resum;
 typedef resum_Pk_component<Mpc_units::inverse_energy3> Pk_resum;
 
 
+//! addition
+template <typename ValueType>
+resum_Pk_component<ValueType> operator+(const resum_Pk_component<ValueType>& a, const resum_Pk_component<ValueType>& b)
+  {
+    return resum_Pk_component<ValueType>{a.get_raw() + b.get_raw(), a.get_resum() + b.get_resum()};
+  }
+
+
+//! subtraction
+template <typename ValueType>
+resum_Pk_component<ValueType> operator-(const resum_Pk_component<ValueType>& a, const resum_Pk_component<ValueType>& b)
+  {
+    return resum_Pk_component<ValueType>{a.get_raw() - b.get_raw(), a.get_resum() - b.get_resum()};
+  }
+
+
+//! multiplication by number
+template <typename ValueType>
+resum_Pk_component<ValueType> operator*(double a, const resum_Pk_component<ValueType>& b)
+  {
+    return resum_Pk_component<ValueType>{a * b.get_raw(), a * b.get_resum()};
+  }
+
+
+template <typename ValueType>
+resum_Pk_component<ValueType> operator*(const resum_Pk_component<ValueType>& a, double b)
+  {
+    return b*a;
+  }
+
+
 #endif //LSSEFT_PK_RESUM_VALUE_H

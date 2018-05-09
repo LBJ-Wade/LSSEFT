@@ -79,8 +79,8 @@ data_manager::find<loop_integral>(transaction_manager& mgr, const FRW_model_toke
 
 
 template <>
-std::unique_ptr<oneloop_Pk>
-data_manager::find<oneloop_Pk>(transaction_manager& mgr, const FRW_model_token& model, const growth_params_token& growth_params,
+std::unique_ptr<oneloop_Pk_set>
+data_manager::find<oneloop_Pk_set>(transaction_manager& mgr, const FRW_model_token& model, const growth_params_token& growth_params,
                                const loop_integral_params_token& loop_params, const k_token& k, const z_token& z,
                                const linear_Pk_token& Pk_init, const boost::optional<linear_Pk_token>& Pk_final,
                                const IR_cutoff_token& IR_cutoff, const UV_cutoff_token& UV_cutoff)

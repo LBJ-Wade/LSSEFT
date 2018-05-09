@@ -27,30 +27,11 @@
 #include "multipole_Pk.h"
 
 
-Pk_ell::Pk_ell(const Pk_resum& _tree, const Pk_resum& _P13, const Pk_resum& _P22, const Pk_resum& _PSPT,
-               const k2_Pk_resum& _Z2_d, const Pk_resum& _Z0_v, const k2_Pk_resum& _Z2_v, const Pk_resum& _Z0_vd,
-               const k2_Pk_resum& _Z2_vd, const k2_Pk_resum& _Z2_vv_A, const k2_Pk_resum& _Z2_vv_B,
-               const k2_Pk_resum& _Z2_vvd, const k2_Pk_resum& _Z2_vvv, const k2_Pk_resum& _Z2_mu0,
-               const k2_Pk_resum& _Z2_mu2, const k2_Pk_resum& _Z2_mu4, const k2_Pk_resum& _Z2_mu6,
-               const k2_Pk_resum& _Z2_mu8)
+Pk_ell::Pk_ell(const Pk_resum& _tree, const Pk_resum& _P13, const Pk_resum& _P22, const Pk_resum& _PSPT)
   : Ptree(std::move(_tree)),
     P13(std::move(_P13)),
     P22(std::move(_P22)),
-    PSPT(std::move(_PSPT)),
-    Z2_d(std::move(_Z2_d)),
-    Z0_v(std::move(_Z0_v)),
-    Z2_v(std::move(_Z2_v)),
-    Z0_vd(std::move(_Z0_vd)),
-    Z2_vd(std::move(_Z2_vd)),
-    Z2_vv_A(std::move(_Z2_vv_A)),
-    Z2_vv_B(std::move(_Z2_vv_B)),
-    Z2_vvd(std::move(_Z2_vvd)),
-    Z2_vvv(std::move(_Z2_vvv)),
-    Z2_mu0(std::move(_Z2_mu0)),
-    Z2_mu2(std::move(_Z2_mu2)),
-    Z2_mu4(std::move(_Z2_mu4)),
-    Z2_mu6(std::move(_Z2_mu6)),
-    Z2_mu8(std::move(_Z2_mu8))
+    PSPT(std::move(_PSPT))
   {
   }
 
@@ -89,14 +70,55 @@ multipole_Pk::multipole_Pk()
     UV_cutoff(0),
     z(0),
     IR_resum(0),
-    P0(Pk_resum(), Pk_resum(), Pk_resum(), Pk_resum(), k2_Pk_resum(), Pk_resum(),
-       k2_Pk_resum(), Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(),
-       k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum()),
-    P2(Pk_resum(), Pk_resum(), Pk_resum(), Pk_resum(), k2_Pk_resum(), Pk_resum(),
-       k2_Pk_resum(), Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(),
-       k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum()),
-    P4(Pk_resum(), Pk_resum(), Pk_resum(), Pk_resum(), k2_Pk_resum(), Pk_resum(),
-       k2_Pk_resum(), Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(),
-       k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum(), k2_Pk_resum())
+    P0(Pk_resum(), Pk_resum(), Pk_resum(), Pk_resum()),
+    P2(Pk_resum(), Pk_resum(), Pk_resum(), Pk_resum()),
+    P4(Pk_resum(), Pk_resum(), Pk_resum(), Pk_resum())
+  {
+  }
+
+
+multipole_counterterm::multipole_counterterm(const k_token kt, const growth_params_token& gp,
+                                             const MatsubaraXY_params_token& XYp, const linear_Pk_token Pkt_i,
+                                             const boost::optional<linear_Pk_token> Pkt_f, const IR_cutoff_token IRt,
+                                             const UV_cutoff_token UVt, const z_token zt, const IR_resum_token IRrt,
+                                             const Pk_resum _P0_k0, const Pk_resum _P2_k0, const Pk_resum _P4_k0,
+                                             const k2_Pk_resum _P0_k2, const k2_Pk_resum _P2_k2, const k2_Pk_resum _P4_k2)
+  : k(std::move(kt)),
+    growth_params(gp),
+    XY_params(XYp),
+    init_Pk(std::move(Pkt_i)),
+    IR_cutoff(std::move(IRt)),
+    UV_cutoff(std::move(UVt)),
+    z(std::move(zt)),
+    IR_resum(std::move(IRrt)),
+    P0_k0(std::move(_P0_k0)),
+    P2_k0(std::move(_P2_k0)),
+    P4_k0(std::move(_P4_k0)),
+    P0_k2(std::move(_P0_k2)),
+    P2_k2(std::move(_P2_k2)),
+    P4_k2(std::move(_P4_k2))
+  {
+    if(Pkt_f)
+      {
+        final_Pk = std::make_shared<linear_Pk_token>(*Pkt_f);
+      }
+  }
+
+
+multipole_counterterm::multipole_counterterm()
+  : k(0),
+    growth_params(0),
+    XY_params(0),
+    init_Pk(0),
+    IR_cutoff(0),
+    UV_cutoff(0),
+    z(0),
+    IR_resum(0),
+    P0_k0(),
+    P2_k0(),
+    P4_k0(),
+    P0_k2(),
+    P2_k2(),
+    P4_k2()
   {
   }

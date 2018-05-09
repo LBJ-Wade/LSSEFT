@@ -40,6 +40,7 @@
 #include "missing_elements.h"
 #include "store.h"
 #include "find.h"
+#include "pipeline_id.h"
 
 
 #endif //LSSEFT_SQLITE3_OPERATIONS_H

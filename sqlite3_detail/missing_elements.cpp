@@ -237,6 +237,62 @@ namespace sqlite3_operations
       }
 
 
+    //! find missing redshifts for a named loop-k-dependent table, returned as a std::set<> of ints
+    std::set<unsigned int>
+    missing_redshifts_for_table(sqlite3* db, const FRW_model_token& model, const growth_params_token& growth_params,
+                                const MatsubaraXY_params_token& XY_params,
+                                const linear_Pk_token& init_Pk, const boost::optional<linear_Pk_token>& final_Pk,
+                                const std::string& table, const std::string& z_table,
+                                const resum_Pk_configs::value_type& record)
+      {
+        assert(db != nullptr);
+
+        std::ostringstream select_stmt;
+        select_stmt
+          << "SELECT id FROM " << z_table << " "
+          << "WHERE id NOT IN "
+          << "(SELECT zid FROM " << table << " WHERE mid=@mid AND growth_params=@growth_params AND XY_params=@XY_params "
+          << "AND kid=@kid AND init_Pk_id=@init_Pk_id AND ((@final_Pk_id IS NULL AND final_Pk_id IS NULL) OR final_Pk_id=@final_Pk_id) "
+          << "AND IR_cutoff_id=@IR_cutoff_id AND UV_cutoff_id=@UV_cutoff_id AND IR_resum_id=@IR_resum_id) "
+          << "ORDER BY id;";
+
+        // prepare statement
+        sqlite3_stmt* stmt;
+        check_stmt(db, sqlite3_prepare_v2(db, select_stmt.str().c_str(), select_stmt.str().length()+1, &stmt, nullptr));
+
+        // bind parameter values
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@mid"), model.get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@growth_params"), growth_params.get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@XY_params"), XY_params.get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@kid"), record.k->get_token().get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@init_Pk_id"), init_Pk.get_id()));
+        if(final_Pk)
+          {
+            check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@final_Pk_id"), final_Pk->get_id()));
+          }
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_cutoff_id"), record.IR_cutoff->get_token().get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@UV_cutoff_id"), record.UV_cutoff->get_token().get_id()));
+        check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_resum_id"), record.IR_resum->get_token().get_id()));
+
+        std::set<unsigned int> results;
+
+        int status = 0;
+        while((status = sqlite3_step(stmt)) != SQLITE_DONE)
+          {
+            if(status == SQLITE_ROW)
+              {
+                results.insert(static_cast<unsigned int>(sqlite3_column_int(stmt, 0)));
+              }
+          }
+
+        // finalize statement and release resources
+        check_stmt(db, sqlite3_clear_bindings(stmt));
+        check_stmt(db, sqlite3_finalize(stmt));
+
+        return(results);
+      }
+
+
     //! find missing wavenumbers for a filtered power spectrum
     std::set<unsigned int> missing_filtered_wavenumbers(sqlite3* db, const linear_Pk_token& Pk_token,
                                                         const filter_params_token& params_token,
@@ -356,8 +412,24 @@ namespace sqlite3_operations
     
         return missing;
       }
-    
-    
+
+
+    std::set<unsigned int>
+    update_missing_counterterms(sqlite3* db, const FRW_model_token& model, const growth_params_token& growth_params,
+                                const MatsubaraXY_params_token& XY_params,
+                                const linear_Pk_token& init_Pk, const boost::optional<linear_Pk_token>& final_Pk,
+                                const std::string& table, const std::string& z_table,
+                                const resum_Pk_configs::value_type& record, std::set<unsigned int>& total_missing)
+      {
+        std::set<unsigned int> missing = missing_redshifts_for_table(db, model, growth_params, XY_params, init_Pk,
+                                                                     final_Pk, table, z_table, record);
+
+        total_missing.insert(missing.begin(), missing.end());
+
+        return missing;
+      }
+
+
     void drop_inconsistent_redshifts(sqlite3* db, const FRW_model_token& model, const growth_params_token& params,
                                      const std::string& table, const std::set<unsigned int>& missing,
                                      const std::set<unsigned int>& total_missing)
@@ -394,14 +466,15 @@ namespace sqlite3_operations
             check_stmt(db, sqlite3_finalize(stmt));
           }
       }
-    
-    
-    void drop_inconsistent_redshifts(sqlite3* db, const FRW_model_token& model, const linear_Pk_token& init_Pk,
-                                     const growth_params_token& growth_params,
-                                     const loop_integral_params_token& loop_params,
-                                     const boost::optional<linear_Pk_token>& final_Pk, const std::string& table,
-                                     const loop_configs::value_type& record, const std::set<unsigned int>& missing,
-                                     const std::set<unsigned int>& total_missing)
+
+
+    void
+    drop_inconsistent_redshifts(sqlite3* db, const FRW_model_token& model, const linear_Pk_token& init_Pk,
+                                const growth_params_token& growth_params,
+                                const loop_integral_params_token& loop_params,
+                                const boost::optional<linear_Pk_token>& final_Pk, const std::string& table,
+                                const loop_configs::value_type& record, const std::set<unsigned int>& missing,
+                                const std::set<unsigned int>& total_missing)
       {
         std::set<unsigned int> inconsistent_set;
     
@@ -498,6 +571,59 @@ namespace sqlite3_operations
                 check_stmt(db, sqlite3_reset(stmt));
               }
             
+            // finalize statement to release resources
+            check_stmt(db, sqlite3_finalize(stmt));
+          }
+      }
+
+
+    void
+    drop_inconsistent_redshifts(sqlite3* db, const FRW_model_token& model, const growth_params_token& growth_params,
+                                const MatsubaraXY_params_token& XY_params, const linear_Pk_token& init_Pk,
+                                const boost::optional<linear_Pk_token>& final_Pk, const std::string& table,
+                                const resum_Pk_configs::value_type& record, const std::set<unsigned int>& missing,
+                                const std::set<unsigned int>& total_missing)
+      {
+        std::set<unsigned int> inconsistent_set;
+
+        std::set_difference(total_missing.begin(), total_missing.end(),
+                            missing.begin(), missing.end(), std::inserter(inconsistent_set, inconsistent_set.begin()));
+
+        if(inconsistent_set.size() > 0)
+          {
+            std::ostringstream drop_stmt;
+            drop_stmt
+              << "DELETE FROM " << table << " WHERE mid=@mid AND growth_params=@growth_params AND XY_params=@XY_params "
+              << "AND zid=@zid AND kid=@kid AND init_Pk_id=@init_Pk_id AND ((@final_Pk_id IS NULL AND final_Pk_id IS NULL) OR final_Pk_id=@final_Pk_id) "
+              << "AND IR_cutoff_id=@IR_cutoff_id AND UV_cutoff_id=@UV_cutoff_id AND IR_resum_id=@IR_resum_id;";
+
+            // prepare statement
+            sqlite3_stmt* stmt;
+            check_stmt(db, sqlite3_prepare_v2(db, drop_stmt.str().c_str(), drop_stmt.str().length()+1, &stmt, nullptr));
+
+            for(unsigned int t : inconsistent_set)
+              {
+                check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@mid"), model.get_id()));
+                check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@growth_params"), growth_params.get_id()));
+                check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@XY_params"), XY_params.get_id()));
+                check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@zid"), t));
+                check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@kid"), record.k->get_token().get_id()));
+                check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@init_Pk_id"), init_Pk.get_id()));
+                if(final_Pk)
+                  {
+                    check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@final_Pk_id"), final_Pk->get_id()));
+                  }
+                check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_cutoff_id"), record.IR_cutoff->get_token().get_id()));
+                check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@UV_cutoff_id"), record.UV_cutoff->get_token().get_id()));
+                check_stmt(db, sqlite3_bind_int(stmt, sqlite3_bind_parameter_index(stmt, "@IR_resum_id"), record.IR_resum->get_token().get_id()));
+
+                check_stmt(db, sqlite3_step(stmt), SQLITE_DONE);
+
+                // release bindings and reset statement
+                check_stmt(db, sqlite3_clear_bindings(stmt));
+                check_stmt(db, sqlite3_reset(stmt));
+              }
+
             // finalize statement to release resources
             check_stmt(db, sqlite3_finalize(stmt));
           }
@@ -611,11 +737,11 @@ namespace sqlite3_operations
         
         return missing;
       }
-    
-    
+
+
     void drop_inconsistent_configurations(sqlite3* db, const FRW_model_token& model, const loop_integral_params_token& params,
-                                              const linear_Pk_token& Pk_lin, const std::string& table, const loop_configs& missing,
-                                              const loop_configs& total_missing)
+                                          const linear_Pk_token& Pk_lin, const std::string& table, const loop_configs& missing,
+                                          const loop_configs& total_missing)
       {
         loop_configs inconsistent_set;
     
@@ -659,82 +785,13 @@ namespace sqlite3_operations
     
     //! find missing wavenumber/UV limit/IR limit configurations for a loop integral sample
     loop_configs missing_loop_integral_configurations(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
-                                                      const FRW_model_token& model,
-                                                      const loop_integral_params_token& params,
+                                                      const FRW_model_token& model, const loop_integral_params_token& params,
                                                       const linear_Pk_token& Pk_lin, const loop_configs& required_configs)
       {
         loop_configs total_missing;
 
-        // find configurations missing from each table, and merge into global set of missing configurations
-        loop_configs missing_AA = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.AA_table(), required_configs, total_missing);
-        loop_configs missing_AB = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.AB_table(), required_configs, total_missing);
-        loop_configs missing_BB = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.BB_table(), required_configs, total_missing);
+#include "autogenerated/missing_kernel_stmts.cpp"
 
-        loop_configs missing_D = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.D_table(), required_configs, total_missing);
-        loop_configs missing_E = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.E_table(), required_configs, total_missing);
-        loop_configs missing_F = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.F_table(), required_configs, total_missing);
-        loop_configs missing_G = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.G_table(), required_configs, total_missing);
-        loop_configs missing_J1 = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.J1_table(), required_configs, total_missing);
-        loop_configs missing_J2 = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.J2_table(), required_configs, total_missing);
-
-        loop_configs missing_RSD13_a = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.RSD13_a_table(), required_configs, total_missing);
-        loop_configs missing_RSD13_b = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.RSD13_b_table(), required_configs, total_missing);
-        loop_configs missing_RSD13_c = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.RSD13_c_table(), required_configs, total_missing);
-        loop_configs missing_RSD13_d = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.RSD13_d_table(), required_configs, total_missing);
-        loop_configs missing_RSD13_e = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.RSD13_e_table(), required_configs, total_missing);
-        loop_configs missing_RSD13_f = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.RSD13_f_table(), required_configs, total_missing);
-        loop_configs missing_RSD13_g = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.RSD13_g_table(), required_configs, total_missing);
-    
-        loop_configs missing_RSD22_A1 = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.RSD22_A1_table(), required_configs, total_missing);
-        loop_configs missing_RSD22_A2 = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.RSD22_A2_table(), required_configs, total_missing);
-        loop_configs missing_RSD22_A3 = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.RSD22_A3_table(), required_configs, total_missing);
-        loop_configs missing_RSD22_A4 = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.RSD22_A4_table(), required_configs, total_missing);
-        loop_configs missing_RSD22_A5 = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.RSD22_A5_table(), required_configs, total_missing);
-        loop_configs missing_RSD22_B2 = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.RSD22_B2_table(), required_configs, total_missing);
-        loop_configs missing_RSD22_B3 = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.RSD22_B3_table(), required_configs, total_missing);
-        loop_configs missing_RSD22_B6 = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.RSD22_B6_table(), required_configs, total_missing);
-        loop_configs missing_RSD22_B8 = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.RSD22_B8_table(), required_configs, total_missing);
-        loop_configs missing_RSD22_B9 = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.RSD22_B9_table(), required_configs, total_missing);
-        loop_configs missing_RSD22_C1 = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.RSD22_C1_table(), required_configs, total_missing);
-        loop_configs missing_RSD22_C2 = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.RSD22_C2_table(), required_configs, total_missing);
-        loop_configs missing_RSD22_C4 = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.RSD22_C4_table(), required_configs, total_missing);
-        loop_configs missing_RSD22_D1 = update_missing_loop_integral_configurations(db, model, params, Pk_lin, policy.RSD22_D1_table(), required_configs, total_missing);
-    
-        // drop any inconsistent configurations -- ie. those present in some tables, but not others
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.AA_table(), missing_AA, total_missing);
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.AB_table(), missing_AB, total_missing);
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.BB_table(), missing_BB, total_missing);
-    
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.D_table(), missing_D, total_missing);
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.E_table(), missing_E, total_missing);
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.F_table(), missing_F, total_missing);
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.G_table(), missing_G, total_missing);
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.J1_table(), missing_J1, total_missing);
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.J2_table(), missing_J2, total_missing);
-    
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.RSD13_a_table(), missing_RSD13_a, total_missing);
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.RSD13_b_table(), missing_RSD13_b, total_missing);
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.RSD13_c_table(), missing_RSD13_c, total_missing);
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.RSD13_d_table(), missing_RSD13_d, total_missing);
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.RSD13_e_table(), missing_RSD13_e, total_missing);
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.RSD13_f_table(), missing_RSD13_f, total_missing);
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.RSD13_g_table(), missing_RSD13_g, total_missing);
-    
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.RSD22_A1_table(), missing_RSD22_A1, total_missing);
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.RSD22_A2_table(), missing_RSD22_A2, total_missing);
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.RSD22_A3_table(), missing_RSD22_A3, total_missing);
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.RSD22_A4_table(), missing_RSD22_A4, total_missing);
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.RSD22_A5_table(), missing_RSD22_A5, total_missing);
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.RSD22_B2_table(), missing_RSD22_B2, total_missing);
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.RSD22_B3_table(), missing_RSD22_B3, total_missing);
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.RSD22_B6_table(), missing_RSD22_B6, total_missing);
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.RSD22_B8_table(), missing_RSD22_B8, total_missing);
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.RSD22_B9_table(), missing_RSD22_B9, total_missing);
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.RSD22_C1_table(), missing_RSD22_C1, total_missing);
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.RSD22_C2_table(), missing_RSD22_C2, total_missing);
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.RSD22_C4_table(), missing_RSD22_C4, total_missing);
-        drop_inconsistent_configurations(db, model, params, Pk_lin, policy.RSD22_D1_table(), missing_RSD22_D1, total_missing);
-    
         return total_missing;
       }
     
@@ -753,21 +810,9 @@ namespace sqlite3_operations
         
         // get list of missing z-values from each relevant table
         std::set<unsigned int> missing;
-        std::set<unsigned int> missing_delta = update_missing_one_loop_Pk(db, model, growth_params, loop_params, init_Pk, final_Pk, policy.dd_Pk_table(), z_table, record, missing);
-        std::set<unsigned int> missing_rsd0  = update_missing_one_loop_Pk(db, model, growth_params, loop_params, init_Pk, final_Pk, policy.dd_rsd_mu0_Pk_table(), z_table, record, missing);
-        std::set<unsigned int> missing_rsd2  = update_missing_one_loop_Pk(db, model, growth_params, loop_params, init_Pk, final_Pk, policy.dd_rsd_mu2_Pk_table(), z_table, record, missing);
-        std::set<unsigned int> missing_rsd4  = update_missing_one_loop_Pk(db, model, growth_params, loop_params, init_Pk, final_Pk, policy.dd_rsd_mu4_Pk_table(), z_table, record, missing);
-        std::set<unsigned int> missing_rsd6  = update_missing_one_loop_Pk(db, model, growth_params, loop_params, init_Pk, final_Pk, policy.dd_rsd_mu6_Pk_table(), z_table, record, missing);
-        std::set<unsigned int> missing_rsd8  = update_missing_one_loop_Pk(db, model, growth_params, loop_params, init_Pk, final_Pk, policy.dd_rsd_mu8_Pk_table(), z_table, record, missing);
-        
-        // drop any inconsistent redshifts that are present in one table but not the others
-        drop_inconsistent_redshifts(db, model, init_Pk, growth_params, loop_params, final_Pk, policy.dd_Pk_table(), record, missing_delta, missing);
-        drop_inconsistent_redshifts(db, model, init_Pk, growth_params, loop_params, final_Pk, policy.dd_rsd_mu0_Pk_table(), record, missing_rsd0, missing);
-        drop_inconsistent_redshifts(db, model, init_Pk, growth_params, loop_params, final_Pk, policy.dd_rsd_mu2_Pk_table(), record, missing_rsd2, missing);
-        drop_inconsistent_redshifts(db, model, init_Pk, growth_params, loop_params, final_Pk, policy.dd_rsd_mu4_Pk_table(), record, missing_rsd4, missing);
-        drop_inconsistent_redshifts(db, model, init_Pk, growth_params, loop_params, final_Pk, policy.dd_rsd_mu6_Pk_table(), record, missing_rsd6, missing);
-        drop_inconsistent_redshifts(db, model, init_Pk, growth_params, loop_params, final_Pk, policy.dd_rsd_mu8_Pk_table(), record, missing_rsd8, missing);
-        
+
+#include "autogenerated/missing_Pk_stmts.cpp"
+
         // push any missing elements into the result database
         if(!missing.empty())
           {
@@ -785,44 +830,8 @@ namespace sqlite3_operations
         
         return missing_db;
       }
-    
-    
-    std::unique_ptr<z_database>
-    missing_one_loop_resum_Pk_redshifts(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
-                                            const FRW_model_token& model, const growth_params_token& growth_params,
-                                            const loop_integral_params_token& loop_params,
-                                            const MatsubaraXY_params_token& XY_params, const linear_Pk_token& init_Pk,
-                                            const boost::optional<linear_Pk_token>& final_Pk, const std::string& z_table,
-                                            const z_database& z_db, const resum_Pk_configs::value_type& record)
-      {
-        assert(db != nullptr);
-        
-        // set up a null pointer for the returned database; will be attached to an empty instance later if needed
-        std::unique_ptr<z_database> missing_db;
 
-        // get missing redshifts for this configuration
-        std::set<unsigned int> missing =
-          missing_redshifts_for_table(db, model, growth_params, loop_params, XY_params,
-                                      init_Pk, final_Pk, policy.dd_Pk_resum_table(), z_table, record);
-    
-        if(!missing.empty())
-          {
-            missing_db = std::make_unique<z_database>();
-            
-            for(unsigned int t : missing)
-              {
-                // lookup record for this identifier
-                z_database::const_record_iterator rec = z_db.lookup(z_token(t));
-                
-                // add a corresponding record to this missing database
-                missing_db->add_record(*(*rec), rec->get_token());
-              }
-          }
-    
-        return missing_db;
-      }
-    
-    
+
     std::unique_ptr<z_database>
     missing_multipole_Pk_redshifts(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
                                        const FRW_model_token& model, const growth_params_token& growth_params,
@@ -836,17 +845,10 @@ namespace sqlite3_operations
         // set up a null pointer for the returned database; will be attached to an empty instance later if needed
         std::unique_ptr<z_database> missing_db;
     
-        // get list of missing z-values from each relevant table
         std::set<unsigned int> missing;
-        std::set<unsigned int> missing_P0 = update_missing_multipole_Pk(db, model, growth_params, loop_params, XY_params, init_Pk, final_Pk, policy.P0_table(), z_table, record, missing);
-        std::set<unsigned int> missing_P2 = update_missing_multipole_Pk(db, model, growth_params, loop_params, XY_params, init_Pk, final_Pk, policy.P2_table(), z_table, record, missing);
-        std::set<unsigned int> missing_P4 = update_missing_multipole_Pk(db, model, growth_params, loop_params, XY_params, init_Pk, final_Pk, policy.P4_table(), z_table, record, missing);
-    
-        // drop any inconsistent redshifts that are present in one table but not the others
-        drop_inconsistent_redshifts(db, model, growth_params, loop_params, XY_params, init_Pk, final_Pk, policy.P0_table(), record, missing_P0, missing);
-        drop_inconsistent_redshifts(db, model, growth_params, loop_params, XY_params, init_Pk, final_Pk, policy.P2_table(), record, missing_P2, missing);
-        drop_inconsistent_redshifts(db, model, growth_params, loop_params, XY_params, init_Pk, final_Pk, policy.P4_table(), record, missing_P4, missing);
-        
+
+#include "autogenerated/missing_multipole_stmts.cpp"
+
         // push any missing elements into the result database
         if(!missing.empty())
           {
@@ -945,6 +947,58 @@ namespace sqlite3_operations
         
         return missing_db;
       }
-    
-    
+
+
+    std::unique_ptr<z_database>
+    missing_counterterm_redshifts(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy,
+                                  const FRW_model_token& model, const growth_params_token& growth_params,
+                                  const MatsubaraXY_params_token& XY_params, const linear_Pk_token& init_Pk,
+                                  const boost::optional<linear_Pk_token>& final_Pk, const std::string& z_table,
+                                  const z_database& z_db, const resum_Pk_configs::value_type& record)
+      {
+        assert(db != nullptr);
+
+        // set up a null pointer for the returned database; will be attached to an empty instance later if needed
+        std::unique_ptr<z_database> missing_db;
+
+        std::set<unsigned int> missing;
+
+        // find missing configurations for each of P0, P2, P4 and merge
+        std::set<unsigned int> missing_P0 =
+          update_missing_counterterms(db, model, growth_params, XY_params, init_Pk, final_Pk,
+                                      policy.counterterms_c0_table(), z_table, record, missing);
+        std::set<unsigned int> missing_P2 =
+          update_missing_counterterms(db, model, growth_params, XY_params, init_Pk, final_Pk,
+                                      policy.counterterms_c0_table(), z_table, record, missing);
+        std::set<unsigned int> missing_P4 =
+          update_missing_counterterms(db, model, growth_params, XY_params, init_Pk, final_Pk,
+                                      policy.counterterms_c0_table(), z_table, record, missing);
+
+        // bring database to consistent state by dropping any conflicting results
+        drop_inconsistent_redshifts(db, model, growth_params, XY_params, init_Pk, final_Pk,
+                                    policy.counterterms_c0_table(), record, missing_P0, missing);
+        drop_inconsistent_redshifts(db, model, growth_params, XY_params, init_Pk, final_Pk,
+                                    policy.counterterms_c2_table(), record, missing_P2, missing);
+        drop_inconsistent_redshifts(db, model, growth_params, XY_params, init_Pk, final_Pk,
+                                    policy.counterterms_c4_table(), record, missing_P4, missing);
+
+        // push any missing elements into the result database
+        if(!missing.empty())
+          {
+            missing_db = std::make_unique<z_database>();
+
+            for(unsigned int t : missing)
+              {
+                // lookup record for this identifier
+                z_database::const_record_iterator rec = z_db.lookup(z_token(t));
+
+                // add a corresponding record to the missing database
+                missing_db->add_record(*(*rec), rec->get_token());
+              }
+          }
+
+        return missing_db;
+      }
+
+
   }   // namespace sqlite3_operations

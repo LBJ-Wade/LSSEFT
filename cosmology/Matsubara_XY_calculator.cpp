@@ -141,9 +141,10 @@ Matsubara_XY_calculator::calculate_Matsubara_XY(const Mpc_units::energy& IR_resu
     
     // use standard clearance above lower limit of spline to avoid unwanted effects associated
     // with inaccuracies in the fit there
-    const auto k_min = SPLINE_PK_DEFAULT_BOTTOM_CLEARANCE * std::min(raw_db.get_k_min(), nowiggle_db.get_k_min());
+    const auto k_min = SPLINE_PK_DEFAULT_BOTTOM_CLEARANCE * std::max(raw_db.get_k_min(), nowiggle_db.get_k_min());
+    const auto k_max = SPLINE_PK_DEFAULT_BOTTOM_CLEARANCE * std::min(raw_db.get_k_max(), nowiggle_db.get_k_max());
     
-    wiggle_Pk_nowiggle_adapter nowiggle(Pk_lin);
+    wiggle_Pk_nowiggle_adapter nowiggle(Pk_lin, k_min, k_max);
     
     // disable Cuba's built-in parallelization
     cubacores(0, Matsubara_XY_calculator_impl::pcores);
