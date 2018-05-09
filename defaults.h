@@ -30,8 +30,16 @@
 #include "units/Mpc_units.h"
 
 
-// default Python location
+// default terminal environment variable
+#define LSSEFT_TERM_ENV "TERM"
 
+// default filesystem search path
+#define LSSEFT_SHELL_PATH_ENV "PATH"
+
+// Python executable name
+#define LSSEFT_PYTHON_EXECUTABLE "python"
+
+// default Python location
 #define LSSEFT_DEFAULT_PYTHON_PATH "/usr/local/python"
 
 // database search tolerances
@@ -48,13 +56,13 @@ constexpr double LSSEFT_DEFAULT_GROWTH_CONFIGURATION_TOLERANCE      = 1E-5;
 constexpr double LSSEFT_DEFAULT_ODE_ABS_ERR                         = (1E-12);
 constexpr double LSSEFT_DEFAULT_ODE_REL_ERR                         = (1E-6);
 
-constexpr double LSSEFT_DEFAULT_INTEGRAL_ABS_ERR_13                 = (1E-10);
-constexpr double LSSEFT_DEFAULT_INTEGRAL_REL_ERR_13                 = (1E-8);
+constexpr double LSSEFT_DEFAULT_INTEGRAL_ABS_ERR_13                 = (1E-8);
+constexpr double LSSEFT_DEFAULT_INTEGRAL_REL_ERR_13                 = (1E-6);
 
-constexpr double LSSEFT_DEFAULT_INTEGRAL_ABS_ERR_22                 = (1E-10);
+constexpr double LSSEFT_DEFAULT_INTEGRAL_ABS_ERR_22                 = (1E-8);
 constexpr double LSSEFT_DEFAULT_INTEGRAL_REL_ERR_22                 = (1E-6);
 
-constexpr double LSSEFT_DEFAULT_FILTER_PK_ABS_ERR                   = (1E-10);
+constexpr double LSSEFT_DEFAULT_FILTER_PK_ABS_ERR                   = (1E-8);
 constexpr double LSSEFT_DEFAULT_FILTER_PK_REL_ERR                   = (1E-6);
 
 // scale 0.25 for lambda suggested by Vlah, Seljak, Chu & Feng p.23 arXiv:1509.02120
@@ -65,5 +73,8 @@ constexpr double LSSEFT_DEFAULT_FILTER_PK_INDEX                     = (0.04);
 
 constexpr Mpc_units::inverse_energy LSSEFT_DEFAULT_RESUM_QMIN       = 10 * Mpc_units::Mpc;
 constexpr Mpc_units::inverse_energy LSSEFT_DEFAULT_RESUM_QMAX       = 300 * Mpc_units::Mpc;
+
+// cross-over scale from series expansion of RSD mapping to exp + erf representation
+constexpr double LSSEFT_SERIES_CROSSOVER = 0.15;
 
 #endif //LSSEFT_DEFAULTS_H

@@ -34,7 +34,6 @@
 #include "cosmology/concepts/oneloop_growth.h"
 #include "cosmology/concepts/loop_integral.h"
 #include "cosmology/concepts/oneloop_Pk.h"
-#include "cosmology/concepts/oneloop_resum_Pk.h"
 #include "cosmology/concepts/multipole_Pk.h"
 #include "cosmology/concepts/Matsubara_XY.h"
 
@@ -62,13 +61,13 @@ namespace sqlite3_operations
     void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model, const Matsubara_XY& sample);
     
     //! store a one-loop Pk sample
-    void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model, const oneloop_Pk& sample);
-    
-    //! store a resummed one-loop Pk sample
-    void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model, const oneloop_resum_Pk& sample);
-    
+    void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model, const std::list<oneloop_Pk_set>& sample);
+
     //! store a multipole Pk sample
-    void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model, const multipole_Pk& sample);
+    void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model, const multipole_Pk_set& sample);
+
+    //! store a counterterm sample
+    void store(sqlite3* db, transaction_manager& mgr, const sqlite3_policy& policy, const FRW_model_token& model, const multipole_counterterm_set& sample);
 
   }   // namespace sqlite3_operations
 

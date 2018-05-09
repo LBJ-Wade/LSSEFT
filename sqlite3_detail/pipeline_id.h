@@ -1,6 +1,7 @@
 //
-// Created by David Seery on 10/08/2015.
-// --@@ // Copyright (c) 2017 University of Sussex. All rights reserved.
+// Created by David Seery on 14/11/2017.
+// --@@
+// Copyright (c) 2017 University of Sussex. All rights reserved.
 //
 // This file is part of the Sussex Effective Field Theory for
 // Large-Scale Structure platform (LSSEFT).
@@ -23,13 +24,25 @@
 // --@@
 //
 
-#ifndef LSSEFT_CORE_H
-#define LSSEFT_CORE_H
+#ifndef LSSEFT_PIPELINE_ID_H
+#define LSSEFT_PIPELINE_ID_H
 
 
-#define LSSEFT_NAME      "lsseft"
-#define LSSEFT_VERSION   "2017.3"
-#define LSSEFT_COPYRIGHT "(c) University of Sussex 2017"
+#include "sqlite3_policy.h"
+
+#include "sqlite3.h"
 
 
-#endif //LSSEFT_CORE_H
+namespace sqlite3_operations
+  {
+
+    //! write pipeline id into database table
+    void write_pipeline_id(sqlite3* db, const sqlite3_policy& policy, std::string tag);
+
+    //! validate that database is compatible with our version of the pipeline
+    std::string read_pipeline_id(sqlite3* db, const sqlite3_policy& policy);
+
+  }   // namespace sqlite3_operations
+
+
+#endif //LSSEFT_PIPELINE_ID_H

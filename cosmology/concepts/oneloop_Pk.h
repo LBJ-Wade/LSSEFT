@@ -35,8 +35,10 @@
 #include "power_spectrum.h"
 
 #include "boost/timer/timer.hpp"
+#include "boost/optional.hpp"
 #include "boost/serialization/serialization.hpp"
 #include "boost/serialization/optional.hpp"
+#include "boost/serialization/map.hpp"
 
 
 template <typename ValueType>
@@ -249,131 +251,6 @@ raw_wiggle_Pk_component<ValueType> operator-(const loop_integral_output<ValueTyp
   }
 
 
-// template class for a density-density 1-loop power spectrum (templated so it can be re-used for the resummed version, too)
-template <typename PkValueType, typename k2PkValueType>
-class generic_dd_Pk
-  {
-    
-    // CONSTRUCTOR, DESTRUCTOR
-    
-  public:
-    
-    //! value constructor
-    generic_dd_Pk(const PkValueType& _Pt, const PkValueType& _P13, const PkValueType& _P22, const k2PkValueType& _Z2d);
-    
-    //! value constructor
-    generic_dd_Pk(const PkValueType& _Pt, const PkValueType& _P13, const PkValueType& _P22, const PkValueType& _P1loopSPT, const k2PkValueType& _Z2d);
-    
-    //! empty constructor for use when overwriting with MPI payloads
-    generic_dd_Pk();
-    
-    //! destructor is default
-    ~generic_dd_Pk() = default;
-    
-    
-    // INTERFACE
-    
-  public:
-    
-    //! get tree value
-    PkValueType& get_tree() { return this->Ptree; }
-    const PkValueType& get_tree() const { return this->Ptree; }
-    
-    //! get 13 value
-    PkValueType& get_13() { return this->P13; }
-    const PkValueType& get_13() const { return this->P13; }
-    
-    //! get 22 value
-    PkValueType& get_22() { return this->P22; }
-    const PkValueType& get_22() const { return this->P22; }
-    
-    //! get total SPT power spectrum = 13 + 22
-    PkValueType& get_1loop_SPT() { return this->P1loopSPT; }
-    const PkValueType& get_1loop_SPT() const { return this->P1loopSPT; }
-    
-    
-    // COUNTERTERMS
-    
-    //! get EFT counterterm
-    k2PkValueType& get_Z2_delta() { return this->Z2_delta; }
-    const k2PkValueType& get_Z2_delta() const { return this->Z2_delta; }
-    
-    
-    // INTERNAL DATA
-    
-  private:
-    
-    //! tree power spectrum
-    PkValueType Ptree;
-    
-    //! 13 terms
-    PkValueType P13;
-    
-    //! 22 terms
-    PkValueType P22;
-    
-    //! total 1-loop SPT value
-    PkValueType P1loopSPT;
-    
-    //! coefficient of the counterterm Z2_delta
-    k2PkValueType Z2_delta;
-    
-    
-    // enable boost::serialization support
-    friend class boost::serialization::access;
-    
-    template <typename Archive>
-    void serialize(Archive& ar, unsigned int version)
-      {
-        ar & Ptree;
-        ar & P13;
-        ar & P22;
-        ar & P1loopSPT;
-        ar & Z2_delta;
-      }
-    
-  };
-
-
-template <typename PkValueType, typename k2PkValueType>
-generic_dd_Pk<PkValueType, k2PkValueType>::generic_dd_Pk(const PkValueType& _Pt, const PkValueType& _P13, const PkValueType& _P22, const k2PkValueType& _Z2d)
-  : Ptree(_Pt),
-    P13(_P13),
-    P22(_P22),
-    P1loopSPT(_Pt + _P13 + _P22),
-    Z2_delta(_Z2d)
-  {
-  }
-
-
-template <typename PkValueType, typename k2PkValueType>
-generic_dd_Pk<PkValueType, k2PkValueType>::generic_dd_Pk(const PkValueType& _Pt, const PkValueType& _P13,
-                                                         const PkValueType& _P22, const PkValueType& _P1loopSPT,
-                                                         const k2PkValueType& _Z2d)
-  : Ptree(_Pt),
-    P13(_P13),
-    P22(_P22),
-    P1loopSPT(_P1loopSPT),
-    Z2_delta(_Z2d)
-  {
-  }
-
-
-template <typename PkValueType, typename k2PkValueType>
-generic_dd_Pk<PkValueType, k2PkValueType>::generic_dd_Pk()
-  : Ptree(),
-    P13(),
-    P22(),
-    P1loopSPT(),
-    Z2_delta()
-  {
-  }
-
-
-// the general one-loop delta-delta power spectrum uses raw/nowiggle parts
-typedef generic_dd_Pk<Pk_value, k2_Pk_value> dd_Pk;
-
-
 class rsd_dd_Pk
   {
     
@@ -382,10 +259,7 @@ class rsd_dd_Pk
   public:
     
     //! value constructor
-    rsd_dd_Pk(const Pk_value& _Pt, const Pk_value& _P13, const Pk_value& _P22, const k2_Pk_value& _Z2d,
-              const Pk_value& _Z0v, const k2_Pk_value& _Z2v, const Pk_value& _Z0vd, const k2_Pk_value& _Z2vd,
-              const k2_Pk_value& _Z2vvA, const k2_Pk_value& _Z2vvB, const k2_Pk_value& _Z2vvd,
-              const k2_Pk_value& _Z2vvv, const k2_Pk_value& _Z2_total);
+    rsd_dd_Pk(const Pk_value& _Pt, const Pk_value& _P13, const Pk_value& _P22);
     
     //! empty constructor for use when overwriting with MPI payloads
     rsd_dd_Pk();
@@ -413,50 +287,7 @@ class rsd_dd_Pk
     //! get total 13 + 22
     Pk_value& get_1loop_SPT() { return this->P1loopSPT; }
     const Pk_value& get_1loop_SPT() const { return this->P1loopSPT; }
-    
-    
-    // COUNTERTERMS
-    
-    //! get Z2_delta counterterm
-    k2_Pk_value& get_Z2_delta() { return this->Z2_delta; }
-    const k2_Pk_value& get_Z2_delta() const { return this->Z2_delta; }
-    
-    //! get Z0_v counterterm
-    Pk_value& get_Z0_v() { return this->Z0_v; }
-    const Pk_value& get_Z0_v() const { return this->Z0_v; }
-    
-    //! get Z2_v counterterm
-    k2_Pk_value& get_Z2_v() { return this->Z2_v; }
-    const k2_Pk_value& get_Z2_v() const { return this->Z2_v; }
-    
-    //! get Z0_vdelta counterterm
-    Pk_value& get_Z0_vdelta() { return this->Z0_vdelta; }
-    const Pk_value& get_Z0_vdelta() const { return this->Z0_vdelta; }
-    
-    //! get Z2_vdelta counterterm
-    k2_Pk_value& get_Z2_vdelta() { return this->Z2_vdelta; }
-    const k2_Pk_value& get_Z2_vdelta() const { return this->Z2_vdelta; }
-    
-    //! get A-type Z2_vv counterterm
-    k2_Pk_value& get_Z2_vv_A() { return this->Z2_vv_A; }
-    const k2_Pk_value& get_Z2_vv_A() const { return this->Z2_vv_A; }
-    
-    //! get B-type Z2_vv counterterm
-    k2_Pk_value& get_Z2_vv_B() { return this->Z2_vv_B; }
-    const k2_Pk_value& get_Z2_vv_B() const { return this->Z2_vv_B; }
-    
-    //! get Z2_vvdelta counterterm
-    k2_Pk_value& get_Z2_vvdelta() { return this->Z2_vvdelta; }
-    const k2_Pk_value& get_Z2_vvdelta() const { return this->Z2_vvdelta; }
-    
-    //! get Z2_vvv counterterm
-    k2_Pk_value& get_Z2_vvv() { return this->Z2_vvv; }
-    const k2_Pk_value& get_Z2_vvv() const { return this->Z2_vvv; }
-    
-    //± get total Z2_total counterterm
-    k2_Pk_value& get_Z2_total() { return this->Z2_total; }
-    const k2_Pk_value& get_Z2_total() const { return this->Z2_total; }
-    
+
     
     // INTERNAL DATA
   
@@ -473,37 +304,7 @@ class rsd_dd_Pk
     
     //! total 1-loop SPT value
     Pk_value P1loopSPT;
-    
-    //! coefficient of the counterterm Z2_delta
-    k2_Pk_value Z2_delta;
-    
-    //! coefficient of the counterterm Z0_v
-    Pk_value Z0_v;
-    
-    //! coefficient of the counterterm Z2_v
-    k2_Pk_value Z2_v;
-    
-    //! coefficient of the counterterm Z0_vd
-    Pk_value Z0_vdelta;
-    
-    //! coefficient of the counterterm Z2_vd
-    k2_Pk_value Z2_vdelta;
-    
-    //! coefficient of the A-type counterterm Z2_vv_B
-    k2_Pk_value Z2_vv_A;
-    
-    //! coefficient of the B-type counterterm Z2_vv_B
-    k2_Pk_value Z2_vv_B;
-    
-    //! coefficient of the counterterm Z2_vvdelta
-    k2_Pk_value Z2_vvdelta;
-    
-    //! coefficient of the counterterm Z2_vvv
-    k2_Pk_value Z2_vvv;
-    
-    //! coefficient of the total counterterm for this power of mu
-    k2_Pk_value Z2_total;
-    
+
     
     // enable boost::serialization support
     friend class boost::serialization::access;
@@ -515,16 +316,6 @@ class rsd_dd_Pk
         ar & P13;
         ar & P22;
         ar & P1loopSPT;
-        ar & Z2_delta;
-        ar & Z0_v;
-        ar & Z2_v;
-        ar & Z0_vdelta;
-        ar & Z2_vdelta;
-        ar & Z2_vv_A;
-        ar & Z2_vv_B;
-        ar & Z2_vvdelta;
-        ar & Z2_vvv;
-        ar & Z2_total;
       }
     
   };
@@ -540,7 +331,7 @@ class oneloop_Pk
     //! value constructor
     oneloop_Pk(const k_token& kt, const growth_params_token& gt, const loop_integral_params_token& lt,
                const linear_Pk_token& Pkt_i, const boost::optional<linear_Pk_token>& Pkt_f,
-               const IR_cutoff_token& IRt, const UV_cutoff_token& UVt, const z_token& zt, const dd_Pk& _dd,
+               const IR_cutoff_token& IRt, const UV_cutoff_token& UVt, const z_token& zt,
                const rsd_dd_Pk& _rsd_mu0, const rsd_dd_Pk& _rsd_mu2, const rsd_dd_Pk& _rsd_mu4,
                const rsd_dd_Pk& _rsd_mu6, const rsd_dd_Pk& _rsd_mu8);
     
@@ -568,7 +359,7 @@ class oneloop_Pk
     const linear_Pk_token& get_init_Pk_token() const { return this->init_Pk; }
     
     //! get final power spectrum token, if provided
-    const boost::optional<linear_Pk_token>& get_final_Pk_token() const { return this->final_Pk; }
+    boost::optional<linear_Pk_token> get_final_Pk_token() const { if(this->final_Pk) return *this->final_Pk; else return boost::none; }
     
     //! get UV cutoff token
     const UV_cutoff_token& get_UV_token() const { return this->UV_cutoff; }
@@ -579,9 +370,6 @@ class oneloop_Pk
     //! get z token
     const z_token& get_z_token() const { return this->z; }
     
-    
-    //! get delta-delta power spectrum
-    const dd_Pk& get_dd() const { return this->dd; }
     
     //! get delta-delta RSD power spectrum mu^0 coefficient
     const rsd_dd_Pk& get_dd_rsd_mu0() const { return this->rsd_dd_mu0; }
@@ -617,9 +405,11 @@ class oneloop_Pk
     //! initial power spectrum token
     linear_Pk_token init_Pk;
     
-    //! final power spectrum token
-    boost::optional<linear_Pk_token> final_Pk;
-    
+    //! final power spectrum token; have to store as a pointer since boost::optional
+    //! cannot be serialized for classes without a default constructor.
+    //! We can hide this implementation detail from our clients.
+    std::shared_ptr<linear_Pk_token> final_Pk;
+
     //! UV cutoff token
     UV_cutoff_token UV_cutoff;
     
@@ -631,9 +421,6 @@ class oneloop_Pk
     
     
     // VALUES
-    
-    //! delta-delta power spectrum
-    dd_Pk dd;
     
     //! mu^0 term in delta_s-delta_s power spectrum
     rsd_dd_Pk rsd_dd_mu0;
@@ -665,16 +452,18 @@ class oneloop_Pk
         ar & UV_cutoff;
         ar & IR_cutoff;
         ar & z;
-        ar & dd;
         ar & rsd_dd_mu0;
         ar & rsd_dd_mu2;
         ar & rsd_dd_mu4;
         ar & rsd_dd_mu6;
         ar & rsd_dd_mu8;
       }
-    
-    
+
   };
+
+
+//! power spectrum set, indexed by a text name (usually the name of a bias combination)
+using oneloop_Pk_set = std::map< std::string, oneloop_Pk >;
 
 
 #endif //LSSEFT_ONE_LOOP_PK_H

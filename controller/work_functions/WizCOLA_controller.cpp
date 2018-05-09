@@ -26,7 +26,7 @@
 #include "core.h"
 
 #include "controller/master_controller.h"
-#include "cosmology/models/MDR1_sim.h"
+#include "cosmology/models/WizCOLA.h"
 
 
 void master_controller::execute()
@@ -42,8 +42,8 @@ void master_controller::execute()
     
     // fix the background cosmological model
     // here, that's taken to have parameters matching the MDR1 simulation
-    FRW_model cosmology_model(MDR1::name, MDR1::omega_m, MDR1::omega_cc, MDR1::h, MDR1::T_CMB, MDR1::Neff,
-                              MDR1::f_baryon, MDR1::z_star, MDR1::z_drag, MDR1::z_eq, MDR1::Acurv, MDR1::ns, MDR1::kpiv);
+    FRW_model cosmology_model(WizCOLA::name, WizCOLA::omega_m, WizCOLA::omega_cc, WizCOLA::h, WizCOLA::T_CMB, WizCOLA::Neff,
+                              WizCOLA::f_baryon, WizCOLA::z_star, WizCOLA::z_drag, WizCOLA::z_eq, WizCOLA::Acurv, WizCOLA::ns, WizCOLA::kpiv);
     std::unique_ptr<FRW_model_token> model = dmgr.tokenize(cosmology_model);
     
     // set up a list of wavenumbers to sample for the transfer functions, measured in h/Mpc
@@ -55,12 +55,9 @@ void master_controller::execute()
     // set up a list of redshifts at which to sample the late-time growth functions; we need the z=50 point
     // to define where the integration starts
     stepping_range<double> z50(50.0, 50.0, 0, 1.0, spacing_type::linear);
-    stepping_range<double> z0(0.0, 0.0, 0, 1.0, spacing_type::linear);
-    stepping_range<double> z025(0.25, 0.25, 0, 1.0, spacing_type::linear);
-    stepping_range<double> z05(0.5, 0.5, 0, 1.0, spacing_type::linear);
-    stepping_range<double> z075(0.75, 0.75, 0, 1.0, spacing_type::linear);
-    stepping_range<double> z1(1.0, 1.0, 0, 1.0, spacing_type::linear);
-    auto lo_redshift_samples = z0 + z025 + z05 + z075 + z1 + z50;
+    stepping_range<double> z073(0.73, 0.73, 0, 1.0, spacing_type::linear);
+    stepping_range<double> z044(0.44, 0.44, 0, 1.0, spacing_type::linear);
+    auto lo_redshift_samples = z044 + z073 + z50;
     
     // set up a list of UV cutoffs, measured in h/Mpc, to be used with the loop integrals
     stepping_range<Mpc_units::energy> UV_cutoffs(1.4, 1.4, 0, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
@@ -69,7 +66,7 @@ void master_controller::execute()
     stepping_range<Mpc_units::energy> IR_cutoffs(1E-4, 1E-4, 0, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
     
     // set up a list of k at which to compute the loop integrals
-    stepping_range<Mpc_units::energy> loop_k_samples(0.005, 1.0, 500, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
+    stepping_range<Mpc_units::energy> loop_k_samples(0.01, 0.49, 24, 1.0 / Mpc_units::Mpc, spacing_type::linear);
     
     // set up a list of IR resummation scales, measured in h/Mpc
     stepping_range<Mpc_units::energy> IR_resummation(1.4, 1.4, 0, 1.0 / Mpc_units::Mpc, spacing_type::linear);
