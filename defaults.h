@@ -56,14 +56,14 @@ constexpr double LSSEFT_DEFAULT_GROWTH_CONFIGURATION_TOLERANCE      = 1E-5;
 constexpr double LSSEFT_DEFAULT_ODE_ABS_ERR                         = (1E-12);
 constexpr double LSSEFT_DEFAULT_ODE_REL_ERR                         = (1E-6);
 
-constexpr double LSSEFT_DEFAULT_INTEGRAL_ABS_ERR_13                 = (1E-8);
-constexpr double LSSEFT_DEFAULT_INTEGRAL_REL_ERR_13                 = (1E-6);
+constexpr double LSSEFT_DEFAULT_INTEGRAL_ABS_ERR_13                 = (1E-3);
+constexpr double LSSEFT_DEFAULT_INTEGRAL_REL_ERR_13                 = (1E-3);
 
-constexpr double LSSEFT_DEFAULT_INTEGRAL_ABS_ERR_22                 = (1E-8);
-constexpr double LSSEFT_DEFAULT_INTEGRAL_REL_ERR_22                 = (1E-6);
+constexpr double LSSEFT_DEFAULT_INTEGRAL_ABS_ERR_22                 = (1E-3);
+constexpr double LSSEFT_DEFAULT_INTEGRAL_REL_ERR_22                 = (1E-3);
 
-constexpr double LSSEFT_DEFAULT_FILTER_PK_ABS_ERR                   = (1E-8);
-constexpr double LSSEFT_DEFAULT_FILTER_PK_REL_ERR                   = (1E-6);
+constexpr double LSSEFT_DEFAULT_FILTER_PK_ABS_ERR                   = (1E-3);
+constexpr double LSSEFT_DEFAULT_FILTER_PK_REL_ERR                   = (1E-3);
 
 // scale 0.25 for lambda suggested by Vlah, Seljak, Chu & Feng p.23 arXiv:1509.02120
 // they also suggested it should grow slightly at large k, so we choose an index of 0.04 by default
