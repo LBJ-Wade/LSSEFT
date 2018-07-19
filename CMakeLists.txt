@@ -133,7 +133,7 @@ SET(COSMOLOGY_SOURCE_FILES
   cosmology/concepts/oneloop_growth.cpp cosmology/concepts/oneloop_growth.h
   cosmology/concepts/transfer_function.cpp cosmology/concepts/transfer_function.h
   cosmology/concepts/loop_integral.cpp cosmology/concepts/loop_integral.h
-  cosmology/concepts/power_spectrum_detail/generic.h
+  cosmology/concepts/power_spectrum_detail/splined.h
   cosmology/concepts/power_spectrum_detail/types.h
   cosmology/concepts/power_spectrum_detail/linear.h
   cosmology/concepts/power_spectrum_detail/wiggle.cpp cosmology/concepts/power_spectrum_detail/wiggle.h

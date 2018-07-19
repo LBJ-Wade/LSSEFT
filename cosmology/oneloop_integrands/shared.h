@@ -75,7 +75,7 @@ namespace oneloop_momentum_impl
       public:
         
         integrand_data(const FRW_model& m, const Mpc_units::energy& _k, const Mpc_units::energy& UV, const Mpc_units::energy& IR,
-                       const spline_Pk& _Pk)
+                       const generic_Pk& _Pk)
           : model(m),
             k(_k),
             UV_cutoff(UV),
@@ -96,7 +96,7 @@ namespace oneloop_momentum_impl
         const Mpc_units::energy& k;
         const Mpc_units::energy& UV_cutoff;
         const Mpc_units::energy& IR_cutoff;
-        const spline_Pk& Pk;
+        const generic_Pk& Pk;
         
         Mpc_units::energy  jacobian_dqdx;
         Mpc_units::energy  jacobian_dq;

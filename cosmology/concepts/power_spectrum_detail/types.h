@@ -27,7 +27,7 @@
 #define LSSEFT_POWER_SPECTRUM_TYPES_H
 
 
-#include "generic.h"
+#include "splined.h"
 #include "units/Mpc_units.h"
 
 #include "boost/filesystem.hpp"

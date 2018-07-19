@@ -32,8 +32,8 @@
 #include "wiggle.h"
 
 
-// generic class representing a splined power spectrum
-class spline_Pk
+// generic class representing a evaluable power spectrum
+class generic_Pk
   {
     
     // CONSTRUCTOR, DESTRUCTOR
@@ -41,10 +41,10 @@ class spline_Pk
   public:
     
     //! constructor is default
-    spline_Pk() = default;
+    generic_Pk() = default;
     
     //! destructor is default
-    ~spline_Pk() = default;
+    ~generic_Pk() = default;
     
     
     // INTERFACE
@@ -58,7 +58,7 @@ class spline_Pk
 
 
 // define adapter classes for wiggle power spectrum
-class wiggle_Pk_raw_adapter: public spline_Pk
+class wiggle_Pk_raw_adapter: public generic_Pk
   {
     
     // CONSTRUCTOR, DESTRUCTOR
@@ -96,7 +96,7 @@ class wiggle_Pk_raw_adapter: public spline_Pk
   };
 
 
-class wiggle_Pk_wiggle_adapter: public spline_Pk
+class wiggle_Pk_wiggle_adapter: public generic_Pk
   {
     
     // CONSTRUCTOR, DESTRUCTOR
@@ -134,7 +134,7 @@ class wiggle_Pk_wiggle_adapter: public spline_Pk
   };
 
 
-class wiggle_Pk_nowiggle_adapter: public spline_Pk
+class wiggle_Pk_nowiggle_adapter: public generic_Pk
   {
     
     // CONSTRUCTOR, DESTRUCTOR
