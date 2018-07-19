@@ -1,6 +1,7 @@
 //
-// Created by David Seery on 10/08/2015.
-// --@@ // Copyright (c) 2017 University of Sussex. All rights reserved.
+// Created by David Seery on 19/07/2018.
+// --@@
+// Copyright (c) 2018 University of Sussex. All rights reserved.
 //
 // This file is part of the Sussex Effective Field Theory for
 // Large-Scale Structure platform (LSSEFT).
@@ -22,13 +23,14 @@
 // @contributor: David Seery <D.Seery@sussex.ac.uk>
 // --@@
 //
-
-#ifndef LSSEFT_TASK_MANAGER_EN_GB_H
-#define LSSEFT_TASK_MANAGER_EN_GB_H
-
-
-#define ERROR_NO_DATABASE       "no database specified"
-#define ERROR_NO_PARAMETER_FILE "no parameter file specified"
+#ifndef LSSEFT_PARAMETERS_FILE_H
+#define LSSEFT_PARAMETERS_FILE_H
 
 
-#endif //LSSEFT_TASK_MANAGER_EN_GB_H
+#define ERROR_PARAMETERS_FILE_NOT_READABLE_A "specified parameter file"
+#define ERROR_PARAMETERS_FILE_NOT_READABLE_B "is not readable"
+
+#define ERROR_PARAMETERS_FILE_UNKNOWN_LABEL  "parameter file contains unknown label"
+
+
+#endif //LSSEFT_PARAMETERS_FILE_H

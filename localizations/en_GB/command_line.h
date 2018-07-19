@@ -55,6 +55,10 @@
 #define LSSEFT_SWITCH_FINAL_POWERSPEC_LONG    "final-powerspectrum"
 #define LSSEFT_HELP_FINAL_POWERSPEC           "specify final linear power spectrum"
 
+#define LSSEFT_SWITCH_PARAMETERS_FILE         "parameters-file,p"
+#define LSSEFT_SWITCH_PARAMETERS_FILE_LONG    "parameters-file"
+#define LSSEFT_HELP_PARAMETERS                "read cosmological parameters from specified file"
+
 #define LSSEFT_SWITCH_EDS_MODE                "EdS-mode"
 #define LSSEFT_HELP_EDS_MODE                  "use Einstein-de Sitter approximations to growth functions"
 

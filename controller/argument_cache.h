@@ -109,7 +109,21 @@ class argument_cache
     
     //! determine whether a final linear power spectrum has been set
     bool is_final_powerspectrum_set() const { return(!this->final_linear_Pk.empty()); }
-    
+
+
+    // INTERFACE -- PARAMETERS FILE
+
+  public:
+
+    //! set parameters file path
+    void set_parameter_file_path(const std::string& p) { this->parameter_file = p; }
+
+    //! determine whether a parameters file path has been set
+    bool is_parameter_file_set() const { return !this->parameter_file.empty(); }
+
+    //! get parameter file path
+    const boost::filesystem::path& get_parameter_file_path() const { return this->parameter_file; }
+
     
     // INTERFACE -- CALCULATION PARAMETERS
     
@@ -147,6 +161,9 @@ class argument_cache
     //! path for final linear power spectrum
     boost::filesystem::path final_linear_Pk;
 
+    //! path for parameters file path
+    boost::filesystem::path parameter_file;
+
     
     // enable boost::serialization support, and hence automated packing for transmission over MPI
     friend class boost::serialization::access;
@@ -161,6 +178,7 @@ class argument_cache
         ar & database;
         ar & init_linear_Pk;
         ar & final_linear_Pk;
+        ar & parameter_file;
       }
 
   };

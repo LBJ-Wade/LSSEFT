@@ -39,6 +39,7 @@
 #include "power_spectrum.h"
 #include "Pk_filter.h"
 #include "oneloop_Pk_calculator.h"
+#include "parameters_file.h"
 
 // note this sqlite3.h is the messages file in the same subdirectory, not the main sqlite3.h include
 #include "sqlite3.h"

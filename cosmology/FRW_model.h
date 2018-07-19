@@ -30,6 +30,7 @@
 #include "cosmology/models/Planck_defaults.h"
 
 #include "boost/serialization/serialization.hpp"
+#include "boost/filesystem/path.hpp"
 
 
 class FRW_model
@@ -55,6 +56,22 @@ class FRW_model
               double Ac = Planck2015::Acurv,
               double n = Planck2015::ns,
               Mpc_units::energy kp = Planck2015::kpiv);
+
+    //! parameter file constructor
+    //! reads cosmological parameter values from a file, or defaults to supplied values
+    explicit FRW_model(boost::filesystem::path p,
+                       double om = Planck2015::omega_m,
+                       double occ = Planck2015::omega_cc,
+                       double h_ = Planck2015::h,
+                       Mpc_units::energy tc = Planck2015::T_CMB,
+                       double ne = Planck2015::Neff,
+                       double fb = Planck2015::f_baryon,
+                       double zs = Planck2015::z_star,
+                       double zd = Planck2015::z_drag,
+                       double ze = Planck2015::z_eq,
+                       double Ac = Planck2015::Acurv,
+                       double n = Planck2015::ns,
+                       Mpc_units::energy kp = Planck2015::kpiv);
 
     //! destructor is default
     ~FRW_model() = default;
