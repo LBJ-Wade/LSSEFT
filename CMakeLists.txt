@@ -137,7 +137,7 @@ SET(COSMOLOGY_SOURCE_FILES
   cosmology/concepts/power_spectrum_detail/types.h
   cosmology/concepts/power_spectrum_detail/linear.h
   cosmology/concepts/power_spectrum_detail/wiggle.cpp cosmology/concepts/power_spectrum_detail/wiggle.h
-  cosmology/concepts/power_spectrum_detail/spline.cpp cosmology/concepts/power_spectrum_detail/spline.h
+  cosmology/concepts/power_spectrum_detail/wiggle_adapters.cpp cosmology/concepts/power_spectrum_detail/wiggle_adapters.h
   cosmology/concepts/power_spectrum.h
   cosmology/concepts/multipole_Pk.cpp cosmology/concepts/multipole_Pk.h
   cosmology/concepts/oneloop_Pk.cpp cosmology/concepts/oneloop_Pk.h
@@ -243,7 +243,7 @@ SET(COMMON_SOURCES
   cosmology/concepts/Matsubara_XY.cpp
   cosmology/concepts/filtered_Pk_value.cpp
   cosmology/concepts/power_spectrum_detail/wiggle.cpp
-  cosmology/concepts/power_spectrum_detail/spline.cpp
+  cosmology/concepts/power_spectrum_detail/wiggle_adapters.cpp
   cosmology/transfer_integrator.cpp
   cosmology/oneloop_growth_integrator.cpp
   cosmology/oneloop_momentum_integrator.cpp

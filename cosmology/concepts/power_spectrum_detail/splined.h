@@ -23,13 +23,15 @@
 // --@@
 //
 
-#ifndef LSSEFT_GENERIC_POWER_SPECTRUM_H
-#define LSSEFT_GENERIC_POWER_SPECTRUM_H
+#ifndef LSSEFT_SPLINED_POWER_SPECTRUM_H
+#define LSSEFT_SPLINED_POWER_SPECTRUM_H
 
 #include <memory>
 #include <fstream>
 
 #include "database/Pk_database.h"
+
+#include "generic.h"
 
 #include "exceptions.h"
 #include "localizations/messages.h"
@@ -48,7 +50,7 @@ constexpr double SPLINE_PK_DEFAULT_BOTTOM_CLEARANCE = 1.1;
 
 
 template <typename Tag, typename Dimension, bool protect=false>
-class splined_Pk
+class splined_Pk: public generic_Pk<Dimension>
   {
     
     // TYPEDEFS
@@ -104,18 +106,21 @@ class splined_Pk
     // EVALUATION
     
   public:
+    
+    //! evaluate
+    Dimension operator()(const Mpc_units::energy& k) const override final { return this->evaluate(k); }
+    
+  private:
 
     //! evaluate spline, using k-range protection if enabled
     template <bool P=protect, typename std::enable_if<P>::type* = nullptr>
-    Dimension operator()(const Mpc_units::energy& k) const;
+    Dimension evaluate(const Mpc_units::energy& k) const;
 
     template <bool P=protect, typename std::enable_if<!P>::type* = nullptr>
-    Dimension operator()(const Mpc_units::energy& k) const;
-    
-  private:
+    Dimension evaluate(const Mpc_units::energy& k) const;
     
     //! internal: evaluate spline
-    Dimension evaluate(const Mpc_units::energy& k) const;
+    Dimension evaluate_impl(const Mpc_units::energy& k) const;
 
 
     // INTERNAL API
@@ -200,7 +205,7 @@ void splined_Pk<Tag, Dimension, protect>::recalculate_spline()
 
 template <typename Tag, typename Dimension, bool protect>
 template <bool P, typename std::enable_if<P>::type*>
-Dimension splined_Pk<Tag, Dimension, protect>::operator()(const Mpc_units::energy& k) const
+Dimension splined_Pk<Tag, Dimension, protect>::evaluate(const Mpc_units::energy& k) const
   {
     if(k > SPLINE_PK_DEFAULT_TOP_CLEARANCE * this->database.get_k_max())
       {
@@ -218,20 +223,20 @@ Dimension splined_Pk<Tag, Dimension, protect>::operator()(const Mpc_units::energ
         throw std::overflow_error(msg.str());
       }
     
-    return this->evaluate(k);
+    return this->evaluate_impl(k);
   }
 
 
 template <typename Tag, typename Dimension, bool protect>
 template <bool P, typename std::enable_if<!P>::type*>
-Dimension splined_Pk<Tag, Dimension, protect>::operator()(const Mpc_units::energy& k) const
+Dimension splined_Pk<Tag, Dimension, protect>::evaluate(const Mpc_units::energy& k) const
   {
-    return this->evaluate(k);
+    return this->evaluate_impl(k);
   }
 
 
 template <typename Tag, typename Dimension, bool protect>
-Dimension splined_Pk<Tag, Dimension, protect>::evaluate(const Mpc_units::energy& k) const
+Dimension splined_Pk<Tag, Dimension, protect>::evaluate_impl(const Mpc_units::energy& k) const
   {
     SPLINTER::DenseVector x(1);
     x(0) = k * Mpc_units::Mpc;
@@ -297,4 +302,4 @@ namespace boost
   }   // namespace boost
 
 
-#endif //LSSEFT_GENERIC_POWER_SPECTRUM_H
+#endif //LSSEFT_SPLINED_POWER_SPECTRUM_H

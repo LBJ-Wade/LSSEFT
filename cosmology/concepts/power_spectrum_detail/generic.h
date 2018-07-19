@@ -1,6 +1,7 @@
 //
-// Created by David Seery on 05/12/2016.
-// --@@ // Copyright (c) 2017 University of Sussex. All rights reserved.
+// Created by David Seery on 19/07/2018.
+// --@@
+// Copyright (c) 2018 University of Sussex. All rights reserved.
 //
 // This file is part of the Sussex Effective Field Theory for
 // Large-Scale Structure platform (LSSEFT).
@@ -23,16 +24,37 @@
 // --@@
 //
 
-#ifndef LSSEFT_POWER_SPECTRUM_H
-#define LSSEFT_POWER_SPECTRUM_H
+#ifndef LSSEFT_GENERIC_POWER_SPECTRUM_H
+#define LSSEFT_GENERIC_POWER_SPECTRUM_H
 
 
-#include "power_spectrum_detail/types.h"
-
-#include "power_spectrum_detail/linear.h"
-#include "power_spectrum_detail/wiggle.h"
-
-#include "power_spectrum_detail/wiggle_adapters.h"
+#include "units/Mpc_units.h"
 
 
-#endif //LSSEFT_POWER_SPECTRUM_H
+// generic class representing a evaluable power spectrum
+template <typename Dimension>
+class generic_Pk
+  {
+
+    // CONSTRUCTOR, DESTRUCTOR
+
+  public:
+
+    //! constructor is default
+    generic_Pk() = default;
+
+    //! destructor is default
+    ~generic_Pk() = default;
+
+
+    // INTERFACE
+
+  public:
+
+    //! evaluate spline
+    virtual Dimension operator()(const Mpc_units::energy& k) const = 0;
+
+  };
+
+
+#endif //LSSEFT_GENERIC_POWER_SPECTRUM_H

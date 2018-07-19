@@ -69,7 +69,7 @@ namespace Matsubara_XY_calculator_impl
         
         integrand_data(const Mpc_units::energy& UV, const Mpc_units::energy& IR,
                        const Mpc_units::inverse_energy& _qmin, const Mpc_units::inverse_energy& _qmax,
-                       const generic_Pk& _Pk)
+                       const generic_Pk<Mpc_units::inverse_energy3>& _Pk)
           : UV_cutoff(UV),
             IR_cutoff(IR),
             qmin(_qmin),
@@ -87,7 +87,7 @@ namespace Matsubara_XY_calculator_impl
         const Mpc_units::inverse_energy& qmin;
         const Mpc_units::inverse_energy& qmax;
         
-        const generic_Pk& Pk;
+        const generic_Pk<Mpc_units::inverse_energy3>& Pk;
         
         double jacobian;
         
@@ -158,7 +158,7 @@ Matsubara_XY_calculator::calculate_Matsubara_XY(const Mpc_units::energy& IR_resu
 
 Mpc_units::inverse_energy2
 Matsubara_XY_calculator::compute_XY(const Mpc_units::energy& IR_resum, const Mpc_units::energy& k_min,
-                                    const generic_Pk& Pk, integrand_t integrand)
+                                    const generic_Pk<Mpc_units::inverse_energy3>& Pk, integrand_t integrand)
   {
     cubareal integral[Matsubara_XY_calculator_impl::dimensions];
     cubareal error[Matsubara_XY_calculator_impl::dimensions];

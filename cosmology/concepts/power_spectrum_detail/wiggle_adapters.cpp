@@ -23,7 +23,7 @@
 // --@@
 //
 
-#include "spline.h"
+#include "wiggle_adapters.h"
 
 
 wiggle_Pk_raw_adapter::wiggle_Pk_raw_adapter(const initial_filtered_Pk& w, const Mpc_units::energy& klo_, const Mpc_units::energy& khi_)
