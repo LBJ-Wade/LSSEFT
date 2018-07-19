@@ -1,3 +1,5 @@
+#include <utility>
+
 //
 // Created by David Seery on 10/08/2015.
 // --@@ // Copyright (c) 2017 University of Sussex. All rights reserved.
@@ -104,11 +106,12 @@ namespace MPI_detail
           }
 
         //! value constructor: used to construct and send a payload
-        new_transfer_integration(const FRW_model& m, const Mpc_units::energy& _k, const k_token& t, const std::shared_ptr<z_database>& z)
+        new_transfer_integration(const FRW_model& m, const Mpc_units::energy& _k, const k_token& t,
+                                 std::shared_ptr<z_database> z)
           : model(m),
             k(_k),
             token(t),
-            z_db(z)
+            z_db(std::move(z))
           {
           }
 
@@ -241,12 +244,12 @@ namespace MPI_detail
            
         //! value constructor, used to construct and send a payload
         new_filter_Pk(const FRW_model& m, const Mpc_units::energy& _k, const k_token& kt, const linear_Pk_token& Pt,
-                      const std::shared_ptr<filterable_Pk>& _Pk, const filter_params_token& pt, const Pk_filter_params& p)
+                      std::shared_ptr<filterable_Pk> _Pk, const filter_params_token& pt, const Pk_filter_params& p)
           : model(m),
             k(_k),
             k_tok(kt),
             Pk_tok(Pt),
-            Pk_lin(_Pk),
+            Pk_lin(std::move(_Pk)),
             params_tok(pt),
             params(p)
           {
@@ -404,7 +407,7 @@ namespace MPI_detail
         //! value constructor: used to construct and send a payload
         new_loop_momentum_integration(const FRW_model& m, const Mpc_units::energy& _k, const k_token& kt,
                                       const Mpc_units::energy& UV, const UV_cutoff_token& UVt, const Mpc_units::energy& IR,
-                                      const IR_cutoff_token& IRt, const std::shared_ptr<initial_filtered_Pk>& _Pk,
+                                      const IR_cutoff_token& IRt, std::shared_ptr<initial_filtered_Pk> _Pk,
                                       const loop_integral_params_token& pt, const loop_integral_params& p)
           : model(m),
             k(_k),
@@ -413,7 +416,7 @@ namespace MPI_detail
             k_tok(kt),
             UV_tok(UVt),
             IR_tok(IRt),
-            Pk(_Pk),
+            Pk(std::move(_Pk)),
             params_tok(pt),
             params(p)
           {
@@ -583,11 +586,11 @@ namespace MPI_detail
         
         //! value constructor: used to construct and send a payload
         new_Matsubara_XY(const Mpc_units::energy& _IR, const IR_resum_token& _IRt,
-                         const std::shared_ptr<initial_filtered_Pk>& _Pk, const MatsubaraXY_params_token& _pt,
+                         std::shared_ptr<initial_filtered_Pk> _Pk, const MatsubaraXY_params_token& _pt,
                          const MatsubaraXY_params& _pm)
           : IR_resum(_IR),
             IR_resum_tok(_IRt),
-            Pk(_Pk),
+            Pk(std::move(_Pk)),
             params_tok(_pt),
             params(_pm)
           {
@@ -726,14 +729,14 @@ namespace MPI_detail
         
         //! value constructor: used to construct and send a payload
         new_one_loop_Pk(const Mpc_units::energy& _k,
-                        const std::shared_ptr<oneloop_growth>& gf, const std::shared_ptr<loop_integral>& k,
-                        const std::shared_ptr<initial_filtered_Pk>& _Pk_init,
-                        const std::shared_ptr<final_filtered_Pk>& _Pk_final)
+                        std::shared_ptr<oneloop_growth> gf, std::shared_ptr<loop_integral> k,
+                        std::shared_ptr<initial_filtered_Pk> _Pk_init,
+                        std::shared_ptr<final_filtered_Pk> _Pk_final)
           : k(_k),
-            gf_factors(gf),
-            loop_data(k),
-            Pk_init(_Pk_init),
-            Pk_final(_Pk_final)
+            gf_factors(std::move(gf)),
+            loop_data(std::move(k)),
+            Pk_init(std::move(_Pk_init)),
+            Pk_final(std::move(_Pk_final))
           {
           }
         
@@ -870,15 +873,15 @@ namespace MPI_detail
           }
         
         //! value constructor: used to construct and send a payload
-        new_multipole_Pk(const Mpc_units::energy& _k, const Matsubara_XY& _XY, const std::shared_ptr<oneloop_Pk_set>& _data,
-                         const oneloop_growth_record& _Df_data, const std::shared_ptr<initial_filtered_Pk>& _Pk_init,
-                         const std::shared_ptr<final_filtered_Pk>& _Pk_final)
+        new_multipole_Pk(const Mpc_units::energy& _k, const Matsubara_XY& _XY, std::shared_ptr<oneloop_Pk_set> _data,
+                         const oneloop_growth_record& _Df_data, std::shared_ptr<initial_filtered_Pk> _Pk_init,
+                         std::shared_ptr<final_filtered_Pk> _Pk_final)
           : k(_k),
             XY(_XY),
-            data(_data),
+            data(std::move(_data)),
             Df_data(_Df_data),
-            Pk_init(_Pk_init),
-            Pk_final(_Pk_final)
+            Pk_init(std::move(_Pk_init)),
+            Pk_final(std::move(_Pk_final))
           {
           }
         
@@ -1030,7 +1033,7 @@ namespace MPI_detail
         new_counterterm(const Mpc_units::energy& _k, const k_token& _ktok, const Matsubara_XY& _XY,
                         const IR_cutoff_token& _IRtok, const UV_cutoff_token& _UVtok, const z_token& _ztok,
                         const growth_params_token& _gtok, const oneloop_growth_record& _Df_data,
-                        const std::shared_ptr<initial_filtered_Pk>& _Pk_init, const std::shared_ptr<final_filtered_Pk>& _Pk_final)
+                        std::shared_ptr<initial_filtered_Pk> _Pk_init, std::shared_ptr<final_filtered_Pk> _Pk_final)
           : k(_k),
             k_tok(_ktok),
             XY(_XY),
@@ -1039,8 +1042,8 @@ namespace MPI_detail
             z_tok(_ztok),
             growth_tok(_gtok),
             Df_data(_Df_data),
-            Pk_init(_Pk_init),
-            Pk_final(_Pk_final)
+            Pk_init(std::move(_Pk_init)),
+            Pk_final(std::move(_Pk_final))
           {
           }
 

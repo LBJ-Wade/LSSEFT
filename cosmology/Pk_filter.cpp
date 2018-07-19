@@ -96,7 +96,7 @@ namespace Pk_filter_impl
     
     static int filter_integrand(const int* ndim, const cubareal* x, const int* ncomp, cubareal* f, void* userdata)
       {
-        Pk_filter_impl::integrand_data* data = static_cast<Pk_filter_impl::integrand_data*>(userdata);
+        auto* data = static_cast<Pk_filter_impl::integrand_data*>(userdata);
     
         double slog = data->slog_min + data->slog_range*x[0];
         Mpc_units::energy s = std::pow(10.0, slog) / Mpc_units::Mpc;
@@ -109,7 +109,7 @@ namespace Pk_filter_impl
     
     static int window_integrand(const int* ndim, const cubareal* x, const int* ncomp, cubareal* f, void* userdata)
       {
-        Pk_filter_impl::integrand_data* data = static_cast<Pk_filter_impl::integrand_data*>(userdata);
+        auto* data = static_cast<Pk_filter_impl::integrand_data*>(userdata);
         
         double slog = data->slog_min + data->slog_range*x[0];
         
@@ -125,7 +125,7 @@ std::pair< Pk_filter_result, Mpc_units::inverse_energy3 >
 Pk_filter::operator()(const FRW_model& model, const filterable_Pk& Pk_lin, const Mpc_units::energy& k)
   {
     // build reference Eisenstein & Hu power spectrum
-    std::unique_ptr<approx_Pk> Papprox = this->eisenstein_hu(model, Pk_lin);
+    auto Papprox = this->eisenstein_hu(model, Pk_lin);
     
     // get maximum available scale from linear power spectrum
     const Mpc_units::energy k_min = SPLINE_PK_DEFAULT_BOTTOM_CLEARANCE * Pk_lin.get_db().get_k_min();
@@ -190,8 +190,7 @@ bool Pk_filter::integrate(const double slog_min, const double slog_max, const do
     
     boost::timer::cpu_timer raw_timer;
 
-    std::unique_ptr<Pk_filter_impl::integrand_data> data =
-      std::make_unique<Pk_filter_impl::integrand_data>(slog_min, slog_max, klog, lambda, Pk_lin, Papprox);
+    auto data = std::make_unique<Pk_filter_impl::integrand_data>(slog_min, slog_max, klog, lambda, Pk_lin, Papprox);
     
     Cuhre(Pk_filter_impl::dimensions,
           Pk_filter_impl::components,

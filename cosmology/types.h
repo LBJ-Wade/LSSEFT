@@ -209,14 +209,14 @@ class one_loop_Pk_work_record
 
     //! constructor
     one_loop_Pk_work_record(const Mpc_units::energy _k,
-                            const std::shared_ptr<oneloop_growth>& gf, const std::shared_ptr<loop_integral>& k,
-                            const std::shared_ptr<initial_filtered_Pk>& _Pk_init,
-                            const std::shared_ptr<final_filtered_Pk>& _Pk_final)
+                            std::shared_ptr<oneloop_growth> gf, std::shared_ptr<loop_integral> k,
+                            std::shared_ptr<initial_filtered_Pk> _Pk_init,
+                            std::shared_ptr<final_filtered_Pk> _Pk_final)
       : k(_k),
-        gf_factors(gf),
-        loop_data(k),
-        Pk_init(_Pk_init),
-        Pk_final(_Pk_final)
+        gf_factors(std::move(gf)),
+        loop_data(std::move(k)),
+        Pk_init(std::move(_Pk_init)),
+        Pk_final(std::move(_Pk_final))
       {
       }
     
@@ -248,7 +248,7 @@ class one_loop_Pk_work_record
     // Payload data
     
     //! physical scale k
-    Mpc_units::energy k;
+    const Mpc_units::energy k;
     
     //! growth factors
     std::shared_ptr<oneloop_growth> gf_factors;
