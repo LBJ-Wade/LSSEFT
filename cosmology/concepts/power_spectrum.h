@@ -32,7 +32,7 @@
 #include "power_spectrum_detail/linear.h"
 #include "power_spectrum_detail/wiggle.h"
 
-#include "power_spectrum_detail/spline.h"
+#include "power_spectrum_detail/wiggle_adapters.h"
 
 
 #endif //LSSEFT_POWER_SPECTRUM_H

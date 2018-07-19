@@ -85,7 +85,8 @@ bool oneloop_momentum_integrator::kernel_integral(const FRW_model& model, const 
 template <typename IntegralRecord>
 bool oneloop_momentum_integrator::evaluate_integral(const FRW_model& model, const Mpc_units::energy& k,
                                                     const Mpc_units::energy& UV_cutoff,
-                                                    const Mpc_units::energy& IR_cutoff, const spline_Pk& Pk,
+                                                    const Mpc_units::energy& IR_cutoff,
+                                                    const generic_Pk<Mpc_units::inverse_energy3>& Pk,
                                                     integrand_t integrand, IntegralRecord& result,
                                                     loop_integral_type type, const std::string& name,
                                                     const std::string& component)

@@ -142,7 +142,7 @@ class Matsubara_XY_calculator
     //! compute integrals for Matsubara X & Y factors
     Mpc_units::inverse_energy2
     compute_XY(const Mpc_units::energy& IR_resum, const Mpc_units::energy& k_min,
-               const spline_Pk& Pk, integrand_t integrand);
+               const generic_Pk<Mpc_units::inverse_energy3>& Pk, integrand_t integrand);
     
     
     // INTERNAL DATA

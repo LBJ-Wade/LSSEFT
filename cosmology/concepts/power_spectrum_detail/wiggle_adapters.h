@@ -29,36 +29,12 @@
 
 #include "units/Mpc_units.h"
 
+#include "generic.h"
 #include "wiggle.h"
 
 
-// generic class representing a splined power spectrum
-class spline_Pk
-  {
-    
-    // CONSTRUCTOR, DESTRUCTOR
-    
-  public:
-    
-    //! constructor is default
-    spline_Pk() = default;
-    
-    //! destructor is default
-    ~spline_Pk() = default;
-    
-    
-    // INTERFACE
-    
-  public:
-    
-    //! evaluate spline
-    virtual Mpc_units::inverse_energy3 operator()(const Mpc_units::energy& k) const = 0;
-    
-  };
-
-
 // define adapter classes for wiggle power spectrum
-class wiggle_Pk_raw_adapter: public spline_Pk
+class wiggle_Pk_raw_adapter: public generic_Pk<Mpc_units::inverse_energy3>
   {
     
     // CONSTRUCTOR, DESTRUCTOR
@@ -96,7 +72,7 @@ class wiggle_Pk_raw_adapter: public spline_Pk
   };
 
 
-class wiggle_Pk_wiggle_adapter: public spline_Pk
+class wiggle_Pk_wiggle_adapter: public generic_Pk<Mpc_units::inverse_energy3>
   {
     
     // CONSTRUCTOR, DESTRUCTOR
@@ -134,7 +110,7 @@ class wiggle_Pk_wiggle_adapter: public spline_Pk
   };
 
 
-class wiggle_Pk_nowiggle_adapter: public spline_Pk
+class wiggle_Pk_nowiggle_adapter: public generic_Pk<Mpc_units::inverse_energy3>
   {
     
     // CONSTRUCTOR, DESTRUCTOR

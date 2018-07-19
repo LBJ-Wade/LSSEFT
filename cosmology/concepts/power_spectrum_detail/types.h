@@ -27,7 +27,7 @@
 #define LSSEFT_POWER_SPECTRUM_TYPES_H
 
 
-#include "generic.h"
+#include "splined.h"
 #include "units/Mpc_units.h"
 
 #include "boost/filesystem.hpp"
@@ -51,14 +51,14 @@ namespace Pk_database_impl
 
 
 // convenience type for tree-level power spectrum
-typedef generic_Pk< Pk_database_impl::TreeTag, Mpc_units::inverse_energy3, true > tree_Pk;
+typedef splined_Pk< Pk_database_impl::TreeTag, Mpc_units::inverse_energy3, true > tree_Pk;
 
 // convenience types for wiggle/no-wiggle tree-level power spectra
-typedef generic_Pk< Pk_database_impl::WiggleTag, Mpc_units::inverse_energy3, true > tree_Pk_w;
-typedef generic_Pk< Pk_database_impl::NoWiggleTag, Mpc_units::inverse_energy3, true > tree_Pk_nw;
+typedef splined_Pk< Pk_database_impl::WiggleTag, Mpc_units::inverse_energy3, true > tree_Pk_w;
+typedef splined_Pk< Pk_database_impl::NoWiggleTag, Mpc_units::inverse_energy3, true > tree_Pk_nw;
 
 // approximation to a power spectrum from a fitting function
-typedef generic_Pk< Pk_database_impl::ApproxTag, Mpc_units::inverse_energy3, true > approx_Pk;
+typedef splined_Pk< Pk_database_impl::ApproxTag, Mpc_units::inverse_energy3, true > approx_Pk;
 
 
 #endif //LSSEFT_POWER_SPECTRUM_TYPES_H
