@@ -101,7 +101,7 @@ namespace sqlite3_operations
               }
           }
         
-        // finalize statement and release resoureces
+        // finalize statement and release resources
         check_stmt(db, sqlite3_clear_bindings(stmt));
         check_stmt(db, sqlite3_finalize(stmt));
         

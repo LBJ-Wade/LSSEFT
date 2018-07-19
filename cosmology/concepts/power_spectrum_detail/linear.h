@@ -59,7 +59,7 @@ namespace generic_linear_Pk_impl
 
 
 // container class for linear power spectrum, read in from a file;
-// the tag can be used to distringuish power spectra for different uses (eg. initial and final versions)
+// the tag can be used to distinguish power spectra for different uses (eg. initial and final versions)
 // so that they cannot be inadvertently mixed up
 
 template <typename Tag, typename FilterPartnerType>
@@ -69,7 +69,10 @@ class generic_linear_Pk
     // TYPE DEFINITIONS
     
   public:
-    
+
+    // filtered_Pk_type isn't used in generic_linear_Pk (which has no internal notion of filtering;
+    // it's just a container for a power spectrum), but we store it here
+    // so the information about the filtered partner type is just carried along with generic_linear_Pk
     typedef FilterPartnerType filtered_Pk_type;
     
     
@@ -229,9 +232,9 @@ std::string generic_linear_Pk<Tag, FilterPartnerType>::hash(const boost::filesys
     in.close();
     
     std::ostringstream hash;
-    for(unsigned int i = 0; i < MD5_DIGEST_LENGTH; ++i)
-      {
-        hash << std::setw(2) << std::hex << static_cast<int>(result[i]);
+    for(unsigned char i : result)
+    {
+        hash << std::setw(2) << std::hex << static_cast<int>(i);
       }
     
     return hash.str();
@@ -278,11 +281,13 @@ typedef generic_linear_Pk< generic_linear_Pk_impl::InitialTag, initial_filtered_
 typedef generic_linear_Pk< generic_linear_Pk_impl::FinalTag, final_filtered_Pk > final_Pk;
 
 // 'filterable_Pk' is an anonymous container type used for messaging over MPI
-// initial_Pk and final_Pk are all convertable to filterable_Pk
+// initial_Pk and final_Pk are all convertible to filterable_Pk
 typedef generic_linear_Pk< generic_linear_Pk_impl::FilterableTag, void > filterable_Pk;
 
 
-// allow conversion of generic type to filterable type
+// allow conversion of generic type to filterable type;
+// a filterable power spectrum isn't used in calculations, only by the MPI backend to actually
+// perform filtering
 template <typename Tag, typename FilterPartnerType>
 std::unique_ptr<filterable_Pk> make_filterable(const generic_linear_Pk<Tag, FilterPartnerType>& Pk)
   {

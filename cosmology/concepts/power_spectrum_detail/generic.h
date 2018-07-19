@@ -48,7 +48,7 @@ constexpr double SPLINE_PK_DEFAULT_BOTTOM_CLEARANCE = 1.1;
 
 
 template <typename Tag, typename Dimension, bool protect=false>
-class generic_Pk
+class splined_Pk
   {
     
     // TYPEDEFS
@@ -63,10 +63,10 @@ class generic_Pk
   public:
     
     //! constructor -- from directly-supplied database
-    generic_Pk(const Pk_database<Dimension>& db);
+    splined_Pk(const Pk_database<Dimension>& db);
 
     //! destructor is default
-    ~generic_Pk() = default;
+    ~splined_Pk() = default;
 
 
     // DATABASE SERVICES
@@ -92,8 +92,9 @@ class generic_Pk
     
   public:
     
-    //! set rescaling factor
-    generic_Pk& set_rescaling(double f=1.0)
+    //! set rescaling factor;
+    //! needed (for example) for rescaling a power spectrum from one z to another using the linear scale factor
+    splined_Pk& set_rescaling(double f=1.0)
       {
         if(f > 0.0) this->rescale_factor = std::abs(f);
         return *this;
@@ -165,7 +166,7 @@ class generic_Pk
 
 
 template <typename Tag, typename Dimension, bool protect>
-generic_Pk<Tag, Dimension, protect>::generic_Pk(const Pk_database<Dimension>& db)
+splined_Pk<Tag, Dimension, protect>::splined_Pk(const Pk_database<Dimension>& db)
   : database(db),
     rescale_factor(1.0)
   {
@@ -174,7 +175,7 @@ generic_Pk<Tag, Dimension, protect>::generic_Pk(const Pk_database<Dimension>& db
 
 
 template <typename Tag, typename Dimension, bool protect>
-void generic_Pk<Tag, Dimension, protect>::recalculate_spline()
+void splined_Pk<Tag, Dimension, protect>::recalculate_spline()
   {
     this->table.release();
     this->spline.release();
@@ -199,7 +200,7 @@ void generic_Pk<Tag, Dimension, protect>::recalculate_spline()
 
 template <typename Tag, typename Dimension, bool protect>
 template <bool P, typename std::enable_if<P>::type*>
-Dimension generic_Pk<Tag, Dimension, protect>::operator()(const Mpc_units::energy& k) const
+Dimension splined_Pk<Tag, Dimension, protect>::operator()(const Mpc_units::energy& k) const
   {
     if(k > SPLINE_PK_DEFAULT_TOP_CLEARANCE * this->database.get_k_max())
       {
@@ -223,14 +224,14 @@ Dimension generic_Pk<Tag, Dimension, protect>::operator()(const Mpc_units::energ
 
 template <typename Tag, typename Dimension, bool protect>
 template <bool P, typename std::enable_if<!P>::type*>
-Dimension generic_Pk<Tag, Dimension, protect>::operator()(const Mpc_units::energy& k) const
+Dimension splined_Pk<Tag, Dimension, protect>::operator()(const Mpc_units::energy& k) const
   {
     return this->evaluate(k);
   }
 
 
 template <typename Tag, typename Dimension, bool protect>
-Dimension generic_Pk<Tag, Dimension, protect>::evaluate(const Mpc_units::energy& k) const
+Dimension splined_Pk<Tag, Dimension, protect>::evaluate(const Mpc_units::energy& k) const
   {
     SPLINTER::DenseVector x(1);
     x(0) = k * Mpc_units::Mpc;
@@ -240,7 +241,7 @@ Dimension generic_Pk<Tag, Dimension, protect>::evaluate(const Mpc_units::energy&
 
 
 template <typename Tag, typename Dimension, bool protect>
-bool generic_Pk<Tag, Dimension, protect>::is_valid(const Mpc_units::energy& k, double bottom_clearance, double top_clearance) const
+bool splined_Pk<Tag, Dimension, protect>::is_valid(const Mpc_units::energy& k, double bottom_clearance, double top_clearance) const
   {
     if(this->database.size() == 0) return false;
     
@@ -257,14 +258,14 @@ bool generic_Pk<Tag, Dimension, protect>::is_valid(const Mpc_units::energy& k, d
 
 
 template <typename Tag, typename Dimension, bool protect>
-Mpc_units::energy generic_Pk<Tag, Dimension, protect>::get_min_k(double bottom_clearance) const
+Mpc_units::energy splined_Pk<Tag, Dimension, protect>::get_min_k(double bottom_clearance) const
   {
     return bottom_clearance * this->database.get_k_min();
   }
 
 
 template <typename Tag, typename Dimension, bool protect>
-Mpc_units::energy generic_Pk<Tag, Dimension, protect>::get_max_k(double top_clearance) const
+Mpc_units::energy splined_Pk<Tag, Dimension, protect>::get_max_k(double top_clearance) const
   {
     return top_clearance * this->database.get_k_max();
   }
@@ -277,18 +278,18 @@ namespace boost
       {
 
         template <typename Archive, typename Tag, typename Dimension, bool protect>
-        inline void save_construct_data(Archive& ar, const generic_Pk<Tag, Dimension, protect>* t, const unsigned int file_version)
+        inline void save_construct_data(Archive& ar, const splined_Pk<Tag, Dimension, protect>* t, const unsigned int file_version)
           {
           }
 
 
         template <typename Archive, typename Tag, typename Dimension, bool protect>
-        inline void load_construct_data(Archive& ar, generic_Pk<Tag, Dimension, protect>* t, const unsigned int file_version)
+        inline void load_construct_data(Archive& ar, splined_Pk<Tag, Dimension, protect>* t, const unsigned int file_version)
           {
-            // create an empty generic_Pk object with a null database;
+            // create an empty splined_Pk object with a null database;
             // this null database will be overwritten by standard deserialization
             Pk_database<Dimension> db;
-            ::new(t) generic_Pk<Tag, Dimension, protect>(db);
+            ::new(t) splined_Pk<Tag, Dimension, protect>(db);
           }
 
       }   // namespace serialization

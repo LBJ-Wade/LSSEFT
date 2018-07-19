@@ -61,8 +61,12 @@
 #include "sqlite3.h"
 
 
-constexpr double FILTER_PK_DEFAULT_BOTTOM_CLEARANCE = 1.25;
+// clearances used when filtering an input power spectrum
+// the filtered power spectrum can't cover the same range as the input power spectrum, because
+// by construction the filter needs to look at a range of the input spectrum.
+// By default we allow 25% margin at both top and bottom in which to fit the filter window.
 constexpr double FILTER_PK_DEFAULT_TOP_CLEARANCE    = 0.75;
+constexpr double FILTER_PK_DEFAULT_BOTTOM_CLEARANCE = 1.25;
 
 
 class data_manager
@@ -486,7 +490,7 @@ template <typename SampleType>
 void data_manager::store(const FRW_model_token& model, const SampleType& sample)
   {
     // open a transaction on the database
-    std::shared_ptr<transaction_manager> transaction = this->open_transaction();
+    auto transaction = this->open_transaction();
 
     sqlite3_operations::store(this->handle, *transaction, this->policy, model, sample);
 
@@ -499,14 +503,14 @@ template <typename Token>
 std::unique_ptr< wavenumber_database<Token> > data_manager::build_wavenumber_db(range<Mpc_units::energy>& sample)
   {
     // construct an empty wavenumber database
-    std::unique_ptr< wavenumber_database<Token> > k_db = std::make_unique< wavenumber_database<Token> >();
+    auto k_db = std::make_unique< wavenumber_database<Token> >();
     
     // grab the grid of wavenumber samples
-    const std::vector<Mpc_units::energy>& k_samples = sample.grid();
+    const auto& k_samples = sample.grid();
     
-    for(std::vector<Mpc_units::energy>::const_iterator t = k_samples.begin(); t != k_samples.end(); ++t)
+    for(auto t = k_samples.cbegin(); t != k_samples.cend(); ++t)
       {
-        std::unique_ptr<Token> tok = this->tokenize<Token>(*t);
+        auto tok = this->tokenize<Token>(*t);
         k_db->add_record(*t, *tok);
       }
     
@@ -519,18 +523,18 @@ std::unique_ptr<k_database> data_manager::build_k_db(transaction_manager& mgr, c
                                                      double bottom_clearance, double top_clearance)
   {
     // construct an empty wavenumber database
-    std::unique_ptr<k_database> k_db = std::make_unique<k_database>();
+    auto k_db = std::make_unique<k_database>();
     
     // get power spectrum database underlying this container
-    const tree_Pk::database_type& Pk_db = Pk_lin.get_db();
+    const auto& Pk_db = Pk_lin.get_db();
     
-    for(tree_Pk::database_type::const_record_iterator t = Pk_db.record_cbegin(); t != Pk_db.record_cend(); ++t)
+    for(auto t = Pk_db.record_cbegin(); t != Pk_db.record_cend(); ++t)
       {
         // ask initial_Pk container whether this P(k) value is acceptable
-        const Mpc_units::energy& k = t->get_wavenumber();
+        const auto& k = t->get_wavenumber();
         if(Pk_lin.is_valid(k, bottom_clearance, top_clearance))
           {
-            std::unique_ptr<k_token> tok = this->tokenize<k_token>(mgr, k);
+            auto tok = this->tokenize<k_token>(mgr, k);
             k_db->add_record(k, *tok);
           }
       }
@@ -543,10 +547,10 @@ template <typename Token>
 std::unique_ptr<Token> data_manager::tokenize(const Mpc_units::energy& k)
   {
     // open a new transaction on the database
-    std::shared_ptr<transaction_manager> transaction = this->open_transaction();
+    auto transaction = this->open_transaction();
     
     // lookup id for this wavenumber, or generate one if it does not already exist
-    std::unique_ptr<Token> id = this->tokenize<Token>(*transaction, k);
+    auto id = this->tokenize<Token>(*transaction, k);
     
     // commit the transaction
     transaction->commit();
@@ -569,10 +573,10 @@ std::unique_ptr<linear_Pk_token>
 data_manager::tokenize(const FRW_model_token& model, const PkContainer& Pk_lin)
   {
     // open a new transaction on the database
-    std::shared_ptr<transaction_manager> transaction = this->open_transaction();
+    auto transaction = this->open_transaction();
     
     // lookup id for this power spectrum, or generate one if it doesn't already exist
-    std::unique_ptr<linear_Pk_token> id = this->tokenize(*transaction, model, Pk_lin);
+    auto id = this->tokenize(*transaction, model, Pk_lin);
     
     // commit the transaction
     transaction->commit();
@@ -594,7 +598,7 @@ data_manager::tokenize(transaction_manager& mgr, const FRW_model_token& model, c
 template <typename Token>
 unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const Mpc_units::energy& k)
   {
-    boost::optional<unsigned int> id = sqlite3_operations::lookup_wavenumber<Token>(this->handle, mgr, k, this->policy, this->k_tol);
+    auto id = sqlite3_operations::lookup_wavenumber<Token>(this->handle, mgr, k, this->policy, this->k_tol);
     if(id) return(*id);
     
     return sqlite3_operations::insert_wavenumber<Token>(this->handle, mgr, k, this->policy);
@@ -604,7 +608,7 @@ unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const Mpc_
 template <typename PkContainer>
 unsigned int data_manager::lookup_or_insert(transaction_manager& mgr, const FRW_model_token& model, const PkContainer& Pk_lin)
   {
-    boost::optional<unsigned int> id = sqlite3_operations::lookup_Pk_linear(this->handle, mgr, model, Pk_lin, this->policy);
+    auto id = sqlite3_operations::lookup_Pk_linear(this->handle, mgr, model, Pk_lin, this->policy);
     if(id) return(*id);
     
     return sqlite3_operations::insert_Pk_linear(this->handle, mgr, model, Pk_lin, this->policy);
@@ -615,13 +619,17 @@ template <typename PkContainer>
 std::unique_ptr<typename PkContainer::filtered_Pk_type> data_manager::build_wiggle_Pk(const linear_Pk_token& token, const PkContainer& Pk_lin)
   {
     // open a transaction on the database
-    std::shared_ptr<transaction_manager> mgr = this->open_transaction();
+    auto mgr = this->open_transaction();
     
-    // extract database of wavenumber configurations from linear power spectrum container
-    std::unique_ptr<k_database> k_db = this->build_k_db(*mgr, Pk_lin, FILTER_PK_DEFAULT_BOTTOM_CLEARANCE, FILTER_PK_DEFAULT_TOP_CLEARANCE);
+    // extract database of wavenumber configurations from linear power spectrum container;
+    // what we get is a database of k-values that can be evaluated by the container *given the specified clearances*
+    // at both top and bottom.
+    // Here we override the defaults (intended for use with splines) to allow clearance for the filtering
+    // window.
+    auto k_db = this->build_k_db(*mgr, Pk_lin, FILTER_PK_DEFAULT_BOTTOM_CLEARANCE, FILTER_PK_DEFAULT_TOP_CLEARANCE);
     
     // extract initial_filtered_Pk container
-    std::unique_ptr<typename PkContainer::filtered_Pk_type> payload = this->find<typename PkContainer::filtered_Pk_type>(*mgr, token, *k_db);
+    auto payload = this->find<typename PkContainer::filtered_Pk_type>(*mgr, token, *k_db);
     
     // close transaction
     mgr->commit();
@@ -635,10 +643,10 @@ PkContainer& data_manager::rescale_final_Pk(const FRW_model_token& model, const 
                                             const z_database& z_db)
   {
     // open a transaction on the database
-    std::shared_ptr<transaction_manager> mgr = this->open_transaction();
+    auto mgr = this->open_transaction();
     
     // extract growth functions for the redshift database
-    std::unique_ptr<oneloop_growth> data = this->find<oneloop_growth>(*mgr, model, params, z_db);
+    auto data = this->find<oneloop_growth>(*mgr, model, params, z_db);
 
     // assume that the "final" power spectrum is evaluated at the same time as the lowest redshift in the
     // z-database

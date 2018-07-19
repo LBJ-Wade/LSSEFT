@@ -67,6 +67,8 @@ namespace Pk_database_impl
   }   // namespace Pk_database_impl
 
 
+// Pk_database is a simple container class for power spectrum samples.
+// It has no splining capabilities; those are provided by higher-level objects such as splined_Pk
 template <typename Dimension>
 class Pk_database
   {
