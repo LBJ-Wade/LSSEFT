@@ -109,6 +109,11 @@ FRW_model::FRW_model(boost::filesystem::path p, double om, double occ, double h_
                   this->omega_m = 1.0 - value;
                   std::cout << "Set Omega_m = " << this->omega_m << ", Omega_CC = " << this->omega_cc << '\n';
                 }
+              else if(label == "f" || label == "fbaryon" || label == "f_baryon")
+                {
+                  this->f_baryon = value;
+                  std::cout << "Set f_baryon = " << this->f_baryon << '\n';
+                }
               else
                 {
                   std::ostringstream msg;
