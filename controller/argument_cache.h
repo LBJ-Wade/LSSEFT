@@ -124,6 +124,20 @@ class argument_cache
     //! get parameter file path
     const boost::filesystem::path& get_parameter_file_path() const { return this->parameter_file; }
 
+
+    // INTERFACE -- KMODES FILE
+
+  public:
+
+    //! set kmodes file path
+    void set_kmodes_file_path(const std::string& p) { this->kmodes_file = p; }
+
+    //! determine whether a kmodes file path has been set
+    bool is_kmodes_file_set() const { return !this->kmodes_file.empty(); }
+
+    //! get kmodes file path
+    const boost::filesystem::path& get_kmodes_file_path() const { return this->kmodes_file; }
+
     
     // INTERFACE -- CALCULATION PARAMETERS
     
@@ -161,8 +175,11 @@ class argument_cache
     //! path for final linear power spectrum
     boost::filesystem::path final_linear_Pk;
 
-    //! path for parameters file path
+    //! path for parameters file
     boost::filesystem::path parameter_file;
+
+    //! path for kmodes file
+    boost::filesystem::path kmodes_file;
 
     
     // enable boost::serialization support, and hence automated packing for transmission over MPI
@@ -179,6 +196,7 @@ class argument_cache
         ar & init_linear_Pk;
         ar & final_linear_Pk;
         ar & parameter_file;
+        ar & kmodes_file;
       }
 
   };

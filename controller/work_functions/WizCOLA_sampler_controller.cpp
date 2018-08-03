@@ -73,7 +73,18 @@ void master_controller::execute()
     stepping_range<Mpc_units::energy> IR_cutoffs(1E-4, 1E-4, 0, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
     
     // set up a list of k at which to compute the loop integrals
-    stepping_range<Mpc_units::energy> loop_k_samples(0.01, 0.49, 24, 1.0 / Mpc_units::Mpc, spacing_type::linear);
+
+    aggregation_range<Mpc_units::energy> loop_k_samples;
+    if(this->arg_cache.is_kmodes_file_set())
+      {
+        loop_k_samples = load_range_from_file<Mpc_units::energy>(this->arg_cache.get_kmodes_file_path(),
+                                                                 1.0 / Mpc_units::Mpc);
+      }
+    else
+      {
+        loop_k_samples = stepping_range<Mpc_units::energy>{0.01, 0.49, 24, 1.0 / Mpc_units::Mpc, spacing_type::linear};
+      }
+
     
     // set up a list of IR resummation scales, measured in h/Mpc
     stepping_range<Mpc_units::energy> IR_resummation(1.4, 1.4, 0, 1.0 / Mpc_units::Mpc, spacing_type::linear);

@@ -27,10 +27,53 @@
 #ifndef LSSEFT_RANGE_H
 #define LSSEFT_RANGE_H
 
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
 
 #include "range_detail/range.h"
 #include "range_detail/stepping.h"
 #include "range_detail/aggregation.h"
+
+#include "units/Mpc_units.h"
+
+#include "exceptions.h"
+#include "localizations/messages.h"
+
+#include "boost/filesystem/path.hpp"
+
+
+//! utility function to build a range from an input file
+template <typename Value>
+aggregation_range<Value> load_range_from_file(const boost::filesystem::path& p, Value units)
+  {
+    aggregation_range<Value> r;  // construct empty aggregation range to hold result
+
+    std::ifstream in(p.string(), std::ios::in);
+
+    if(!in.good())
+      {
+        std::ostringstream msg;
+        msg << ERROR_KMODES_FILE_NOT_READABLE_A << " " << p << " " << ERROR_KMODES_FILE_NOT_READABLE_B;
+        throw runtime_exception(exception_type::runtime_error, msg.str());
+      }
+
+    for(std::string line; std::getline(in, line); )
+      {
+        std::stringstream line_stream(line);
+
+        if(line.front() != '#')   // hash is a comment
+          {
+            double val;
+            line_stream >> val;
+
+            r += stepping_range<Value>(val, val, 0, units, spacing_type::linear);
+          }
+      }
+
+    return r;
+  }
 
 
 #endif //LSSEFT_RANGE_H

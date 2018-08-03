@@ -62,6 +62,7 @@ void master_controller::process_arguments(int argc, char* argv[])
       (LSSEFT_SWITCH_INITIAL_POWERSPEC, boost::program_options::value<std::string>(), LSSEFT_HELP_INITIAL_POWERSPEC)
       (LSSEFT_SWITCH_FINAL_POWERSPEC, boost::program_options::value<std::string>(), LSSEFT_HELP_FINAL_POWERSPEC)
       (LSSEFT_SWITCH_PARAMETERS_FILE, boost::program_options::value<std::string>(), LSSEFT_HELP_PARAMETERS)
+      (LSSEFT_SWITCH_KMODES_FILE, boost::program_options::value<std::string>(), LSSEFT_HELP_KMODES)
       (LSSEFT_SWITCH_EDS_MODE, LSSEFT_HELP_EDS_MODE);
 
     boost::program_options::options_description hidden("Hidden options");
@@ -114,6 +115,11 @@ void master_controller::process_arguments(int argc, char* argv[])
     if(option_map.count(LSSEFT_SWITCH_PARAMETERS_FILE_LONG))
       {
         this->arg_cache.set_parameter_file_path(option_map[LSSEFT_SWITCH_PARAMETERS_FILE_LONG].as<std::string>());
+      }
+
+    if(option_map.count(LSSEFT_SWITCH_KMODES_FILE_LONG))
+      {
+        this->arg_cache.set_kmodes_file_path(option_map[LSSEFT_SWITCH_KMODES_FILE_LONG].as<std::string>());
       }
     
     if(option_map.count(LSSEFT_SWITCH_EDS_MODE)) this->arg_cache.set_EdS_mode(true);

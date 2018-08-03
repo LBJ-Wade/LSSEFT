@@ -1,6 +1,7 @@
 //
-// Created by David Seery on 10/08/2015.
-// --@@ // Copyright (c) 2017 University of Sussex. All rights reserved.
+// Created by David Seery on 19/07/2018.
+// --@@
+// Copyright (c) 2018 University of Sussex. All rights reserved.
 //
 // This file is part of the Sussex Effective Field Theory for
 // Large-Scale Structure platform (LSSEFT).
@@ -22,28 +23,12 @@
 // @contributor: David Seery <D.Seery@sussex.ac.uk>
 // --@@
 //
-
-#ifndef LSSEFT_EN_GB_H
-#define LSSEFT_EN_GB_H
-
-
-#include "command_line.h"
-
-#include "task_manager.h"
-#include "error_handler.h"
-#include "database.h"
-#include "transaction_manager.h"
-#include "range.h"
-#include "format.h"
-#include "master_controller.h"
-#include "power_spectrum.h"
-#include "Pk_filter.h"
-#include "oneloop_Pk_calculator.h"
-#include "parameters_file.h"
-#include "kmodes_file.h"
-
-// note this sqlite3.h is the messages file in the same subdirectory, not the main sqlite3.h include
-#include "sqlite3.h"
+#ifndef LSSEFT_KMODES_FILE_H
+#define LSSEFT_KMODES_FILE_H
 
 
-#endif //LSSEFT_EN_GB_H
+#define ERROR_KMODES_FILE_NOT_READABLE_A "specified kmodes file"
+#define ERROR_KMODES_FILE_NOT_READABLE_B "is not readable"
+
+
+#endif //LSSEFT_KMODES_FILE_H

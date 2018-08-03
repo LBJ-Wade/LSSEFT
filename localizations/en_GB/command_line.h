@@ -59,6 +59,10 @@
 #define LSSEFT_SWITCH_PARAMETERS_FILE_LONG    "parameters-file"
 #define LSSEFT_HELP_PARAMETERS                "read cosmological parameters from specified file"
 
+#define LSSEFT_SWITCH_KMODES_FILE             "kmodes-file,k"
+#define LSSEFT_SWITCH_KMODES_FILE_LONG        "kmodes-file"
+#define LSSEFT_HELP_KMODES                    "read require k sample points from specified file"
+
 #define LSSEFT_SWITCH_EDS_MODE                "EdS-mode"
 #define LSSEFT_HELP_EDS_MODE                  "use Einstein-de Sitter approximations to growth functions"
 
