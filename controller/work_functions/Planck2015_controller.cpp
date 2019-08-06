@@ -52,9 +52,12 @@ void master_controller::execute()
     // stepping_range<double> hi_redshift_samples(1000.0, 1500.0, 5, 1.0, spacing_type::linear);
     
     // set up a list of redshifts at which to sample the late-time growth functions
-    stepping_range<double> z50(50.0, 50.0, 0, 1.0, spacing_type::linear);
-    stepping_range<double> z0(0.0, 0.0, 0, 1.0, spacing_type::linear);
-    auto lo_redshift_samples = z0 + z50;
+//    stepping_range<double> z50(50.0, 50.0, 0, 1.0, spacing_type::linear);
+//    stepping_range<double> z0(0.0, 0.0, 0, 1.0, spacing_type::linear);
+//    auto lo_redshift_samples = z0 + z50;
+    stepping_range<double> lo_redshift_samples(0.0, 50.0, 50, 1.0, spacing_type::linear);
+    stepping_range<double> DESI_redshift_samples(0.1, 1.9, 9, 1.0, spacing_type::linear);
+    auto redshift_samples = lo_redshift_samples + DESI_redshift_samples;
     
     // set up a list of UV cutoffs, measured in h/Mpc, to be used with the loop integrals
     stepping_range<Mpc_units::energy> UV_cutoffs(1.4, 1.4, 0, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
@@ -64,13 +67,13 @@ void master_controller::execute()
     
     // set up a list of k at which to compute the loop integrals
     stepping_range<Mpc_units::energy> loop_k_samples(0.005, 1.0, 500, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
-    
+
     // set up a list of IR resummation scales, measured in h/Mpc
     stepping_range<Mpc_units::energy> IR_resummation(1.4, 1.4, 0, 1.0 / Mpc_units::Mpc, spacing_type::linear);
     
     // exchange these sample ranges for iterable databases
     // std::unique_ptr<z_database> hi_z_db              = dmgr.build_redshift_db(hi_redshift_samples);
-    std::unique_ptr<z_database> lo_z_db              = dmgr.build_redshift_db(lo_redshift_samples);
+    std::unique_ptr<z_database> lo_z_db              = dmgr.build_redshift_db(redshift_samples);
     // std::unique_ptr<k_database> transfer_k_db        = dmgr.build_k_db(transfer_k_samples);
     
     std::unique_ptr<UV_cutoff_database> UV_cutoff_db = dmgr.build_UV_cutoff_db(UV_cutoffs);
@@ -82,7 +85,7 @@ void master_controller::execute()
     // SET UP PARAMETERS
     
     // set up parameters for filter
-    Pk_filter_params filter_params(0.25, 0.05 / Mpc_units::Mpc, 0.02);
+    Pk_filter_params filter_params(0.05, 0.05 / Mpc_units::Mpc, 0.0);
     std::unique_ptr<filter_params_token> filter_tok = dmgr.tokenize(filter_params);
     
     // set up parameters for growth function
