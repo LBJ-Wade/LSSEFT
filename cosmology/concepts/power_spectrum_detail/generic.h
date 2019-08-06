@@ -55,7 +55,7 @@ class generic_Pk
     
   public:
     
-    typedef Pk_database<Dimension> database_type;
+    using database_type = Pk_database<Dimension>;
 
     
     // CONSTRUCTOR, DESTRUCTOR

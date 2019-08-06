@@ -70,7 +70,7 @@ class generic_linear_Pk
     
   public:
     
-    typedef FilterPartnerType filtered_Pk_type;
+    using filtered_Pk_type = FilterPartnerType;
     
     
     // CONSTRUCTOR, DESTRUCTOR

@@ -224,9 +224,11 @@ template <typename Dimension>
 Pk_database<Dimension>::Pk_database(const boost::filesystem::path& p)
   : Pk_database<Dimension>()   // forward to empty constructor
   {
+    // set up an input stream to ingest the file, and open it
     std::ifstream in;
     in.open(p.string());
-    
+
+    // check whether the input stream is in good condition
     if(!in.good())
       {
         std::ostringstream msg;
