@@ -239,37 +239,39 @@ Pk_database<Dimension>::Pk_database(const boost::filesystem::path& p)
       }
 
     unsigned line_number = 0;
+    unsigned number_points = 0;
 
     for(std::string line; std::getline(in, line);)
       {
         ++line_number;
 
-        if(!line.empty())
+        if(!line.empty() && line.front() != '#')
           {
             std::stringstream line_stream(line);
 
-            if(line.front() != '#')   // hash # is CAMB-format comment character
-              {
-                double _k, _Pk;
-                line_stream >> _k >> _Pk;
+            double _k, _Pk;
+            line_stream >> _k >> _Pk;
 
-                // check whether extraction was successful
-                if(!line_stream.fail())
-                  {
-                    Mpc_units::energy k = _k / Mpc_units::Mpc;
-                    Dimension Pk = _Pk * Pk_database_impl::DimensionTraits<Dimension>().unit();
-                    this->add_record(k, Pk);
-                  }
-                else
-                  {
-                    std::cerr << "Ignored from input power spectrum '" << p.string() << "'\n";
-                    std::cerr << "  " << line_number << ": " << line << "\n";
-                  }
+            // check whether extraction was successful
+            if(!line_stream.fail())
+              {
+                Mpc_units::energy k = _k / Mpc_units::Mpc;
+                Dimension Pk = _Pk * Pk_database_impl::DimensionTraits<Dimension>().unit();
+
+                this->add_record(k, Pk);
+                ++number_points;
+              }
+            else
+              {
+                std::cerr << "Ignored from input power spectrum '" << p.string() << "'\n";
+                std::cerr << "  " << line_number << ": " << line << "\n";
               }
           }
       }
 
     in.close();
+
+    std::cout << "Read " << number_points << " k-values from input power spectrum '" << p.string() << "'\n";
   }
 
 
