@@ -60,16 +60,16 @@ void master_controller::execute()
     auto redshift_samples = lo_redshift_samples + DESI_redshift_samples;
     
     // set up a list of UV cutoffs, measured in h/Mpc, to be used with the loop integrals
-    stepping_range<Mpc_units::energy> UV_cutoffs(1.4, 1.4, 0, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
+    stepping_range<Mpc_units::energy> UV_cutoffs(1.3, 1.3, 0, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
     
     // set up a list of IR cutoffs, measured in h/Mpc, to be used with the loop integrals
-    stepping_range<Mpc_units::energy> IR_cutoffs(1E-4, 1E-4, 0, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
+    stepping_range<Mpc_units::energy> IR_cutoffs(5E-4, 5E-4, 0, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
     
     // set up a list of k at which to compute the loop integrals
-    stepping_range<Mpc_units::energy> loop_k_samples(0.005, 1.0, 500, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
+    stepping_range<Mpc_units::energy> loop_k_samples(0.005, 0.8, 500, 1.0 / Mpc_units::Mpc, spacing_type::logarithmic_bottom);
 
     // set up a list of IR resummation scales, measured in h/Mpc
-    stepping_range<Mpc_units::energy> IR_resummation(1.4, 1.4, 0, 1.0 / Mpc_units::Mpc, spacing_type::linear);
+    stepping_range<Mpc_units::energy> IR_resummation(1.3, 1.3, 0, 1.0 / Mpc_units::Mpc, spacing_type::linear);
     
     // exchange these sample ranges for iterable databases
     // std::unique_ptr<z_database> hi_z_db              = dmgr.build_redshift_db(hi_redshift_samples);
@@ -131,7 +131,7 @@ void master_controller::execute()
         // the MPI work records and payloads
         std::shared_ptr<initial_Pk> init_Pk_lin_db = std::make_shared<initial_Pk>(this->arg_cache.get_initial_powerspectrum_path());
         std::unique_ptr<linear_Pk_token> init_Pk_tok = dmgr.tokenize(*model, *init_Pk_lin_db);
-        
+
         // build a work list for filtering the linear power spectrum in wiggle/no-wiggle components
         std::shared_ptr<filterable_Pk> filterable_init_Pk_lin_db = make_filterable(*init_Pk_lin_db);
         auto init_filter_work = dmgr.build_filter_Pk_work_list(*init_Pk_tok, filterable_init_Pk_lin_db, *filter_tok, filter_params);
