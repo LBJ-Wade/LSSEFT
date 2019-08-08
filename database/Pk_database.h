@@ -46,6 +46,8 @@
 #include "boost/serialization/map.hpp"
 #include "boost/filesystem.hpp"
 
+#define CSV_IO_NO_THREAD
+#include "thirdparty/csv.h"
 
 namespace Pk_database_impl
   {
@@ -226,50 +228,33 @@ template <typename Dimension>
 Pk_database<Dimension>::Pk_database(const boost::filesystem::path& p)
   : Pk_database<Dimension>()   // forward to empty constructor
   {
-    // set up an input stream to ingest the file, and open it
-    std::ifstream in;
-    in.open(p.string());
+    using reader_type = io::CSVReader<2, io::trim_chars<' ', '\t', '\r'>, io::no_quote_escape<','>, io::throw_on_overflow, io::single_and_empty_line_comment<'#'>>;
 
-    // check whether the input stream is in good condition
-    if(!in.good())
-      {
-        std::ostringstream msg;
-        msg << ERROR_POWERSPECTRUM_FILE_NOT_READABLE_A << " " << p << " " << ERROR_POWERSPECTRUM_FILE_NOT_READABLE_B;
-        throw runtime_exception(exception_type::runtime_error, msg.str());
-      }
+    std::unique_ptr<reader_type> in = std::make_unique<reader_type>(p.string());
+    in->read_header(io::ignore_extra_column, "k", "Pk");
 
-    unsigned line_number = 0;
+//    try
+//      {
+//        in->read_header(io::ignore_extra_column, "k", "Pk");
+//      }
+//    catch(io::error::missing_column_in_header& xe)
+//      {
+//        // assume failure was due to header not being present, so try reading the file without a header
+//        in = std::make_unique<reader_type>(p.string());
+//        in->set_header("k", "Pk");
+//      }
+
+    double _k, _Pk;
     unsigned number_points = 0;
 
-    for(std::string line; std::getline(in, line);)
+    while(in->read_row(_k, _Pk))
       {
-        ++line_number;
+        Mpc_units::energy k = _k / Mpc_units::Mpc;
+        Dimension Pk = _Pk * Pk_database_impl::DimensionTraits<Dimension>().unit();
 
-        if(!line.empty() && line.front() != '#')
-          {
-            std::stringstream line_stream(line);
-
-            double _k, _Pk;
-            line_stream >> _k >> _Pk;
-
-            // check whether extraction was successful
-            if(!line_stream.fail())
-              {
-                Mpc_units::energy k = _k / Mpc_units::Mpc;
-                Dimension Pk = _Pk * Pk_database_impl::DimensionTraits<Dimension>().unit();
-
-                this->add_record(k, Pk);
-                ++number_points;
-              }
-            else
-              {
-                std::cerr << "Ignored from input power spectrum '" << p.string() << "'\n";
-                std::cerr << "  " << line_number << ": " << line << "\n";
-              }
-          }
+        this->add_record(k, Pk);
+        ++number_points;
       }
-
-    in.close();
 
     std::cout << "Read " << number_points << " k-values from input power spectrum '" << p.string() << "'\n";
   }
@@ -278,9 +263,10 @@ Pk_database<Dimension>::Pk_database(const boost::filesystem::path& p)
 template <typename Dimension>
 void Pk_database<Dimension>::add_record(const Mpc_units::energy& k, const Dimension& Pk)
   {
-    std::pair<typename database_type::iterator, bool> emplaced_value = this->database.emplace(k, Pk_record<Dimension>(k, Pk));
+    std::pair<typename database_type::iterator, bool> emplaced_value = this->database.emplace(k, Pk_record<Dimension>(k,
+                                                                                                                      Pk));
     assert(emplaced_value.second);
-    
+
     if(k > this->k_max) this->k_max = k;
     if(k < this->k_min) this->k_min = k;
   }
