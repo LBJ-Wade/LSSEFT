@@ -55,7 +55,9 @@ SET(CONTROLLER_SOURCE_FILES
   controller/master_controller.cpp controller/master_controller.h
   controller/slave_controller.cpp controller/slave_controller.h
   controller/local_environment.cpp controller/local_environment.h
-  controller/scheduler.cpp controller/scheduler.h
+  controller/scheduler.cpp controller/scheduler.h)
+
+SET(CONTROLLER_WORK_FUNCTION_SOURCE_FILES
   controller/work_functions/Planck2015_controller.cpp
   controller/work_functions/MDR1_controller.cpp)
 
@@ -165,6 +167,7 @@ SET(SQLITE3_DETAIL_SOURCE_FILES
 SET(SOURCE_FILES
   ${TOP_LEVEL_SOURCE_FILES}
   ${CONTROLLER_SOURCE_FILES}
+  ${CONTROLLER_WORK_FUNCTION_SOURCE_FILES}
   ${UTILITY_SOURCE_FILES}
   ${ERROR_SOURCE_FILES}
   ${MPI_SOURCE_FILES}
@@ -177,60 +180,18 @@ SET(SOURCE_FILES
   ${LOCALIZATION_EN_GB})
 
 SET(COMMON_SOURCES
-  main.cpp
-  controller/argument_cache.cpp
-  controller/local_environment.cpp
-  controller/master_controller.cpp
-  controller/slave_controller.cpp
-  controller/task_manager.cpp
-  controller/scheduler.cpp
-  error/error_handler.cpp
-  utilities/python_finder.cpp
-  utilities/formatter.cpp
-  cosmology/FRW_model.cpp
-  cosmology/concepts/transfer_function.cpp
-  cosmology/concepts/oneloop_growth.cpp
-  cosmology/concepts/loop_integral.cpp
-  cosmology/concepts/oneloop_Pk.cpp
-  cosmology/concepts/oneloop_resum_Pk.cpp
-  cosmology/concepts/multipole_Pk.cpp
-  cosmology/concepts/Matsubara_XY.cpp
-  cosmology/concepts/filtered_Pk_value.cpp
-  cosmology/concepts/power_spectrum_detail/wiggle.cpp
-  cosmology/concepts/power_spectrum_detail/spline.cpp
-  cosmology/transfer_integrator.cpp
-  cosmology/oneloop_growth_integrator.cpp
-  cosmology/oneloop_momentum_integrator.cpp
-  cosmology/oneloop_Pk_calculator.cpp
-  cosmology/multipole_Pk_calculator.cpp
-  cosmology/Pk_filter.cpp
-  cosmology/Matsubara_XY_calculator.cpp
-  database/data_manager_impl/data_manager.cpp
-  database/data_manager_impl/build_database.cpp
-  database/data_manager_impl/tokenize.cpp
-  database/data_manager_impl/lookup_insert.cpp
-  database/data_manager_impl/work_lists.cpp
-  database/data_manager_impl/find.cpp
-  database/data_manager_impl/transactions.cpp
-  database/data_manager_impl/admin.cpp
-  database/tokens.cpp
-  database/transaction_manager.cpp
-  database/z_database.cpp
-  database/z_record.cpp
-  MPI_detail/mpi_payloads.cpp
-  sqlite3_detail/utilities.cpp
-  sqlite3_detail/create.cpp
-  sqlite3_detail/FRW_model.cpp
-  sqlite3_detail/redshift.cpp
-  sqlite3_detail/filter_params.cpp
-  sqlite3_detail/oneloop_params.cpp
-  sqlite3_detail/MatsubaraXY_params.cpp
-  sqlite3_detail/growth_params.cpp
-  sqlite3_detail/temporary_tables.cpp
-  sqlite3_detail/missing_elements.cpp
-  sqlite3_detail/store.cpp
-  sqlite3_detail/find.cpp
-  sqlite3_detail/sqlite3_policy.cpp)
+  ${TOP_LEVEL_SOURCE_FILES}
+  ${CONTROLLER_SOURCE_FILES}
+  ${UTILITY_SOURCE_FILES}
+  ${ERROR_SOURCE_FILES}
+  ${MPI_SOURCE_FILES}
+  ${MISC_SOURCE_FILES}
+  ${COSMOLOGY_SOURCE_FILES}
+  ${UNITS_SOURCE_FILES}
+  ${DATABASE_SOURCE_FILES}
+  ${SQLITE3_DETAIL_SOURCE_FILES}
+  ${LOCALIZATION}
+  ${LOCALIZATION_EN_GB})
 
 ADD_EXECUTABLE(lsseft-Planck2015
   ${COMMON_SOURCES}
