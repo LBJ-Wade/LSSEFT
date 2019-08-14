@@ -36,6 +36,7 @@
 
 #include "boost/timer/timer.hpp"
 #include "boost/serialization/serialization.hpp"
+#include "boost/serialization/vector.hpp"
 
 
 struct transfer_record
