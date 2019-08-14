@@ -56,7 +56,7 @@ void master_controller::execute()
 //    stepping_range<double> z0(0.0, 0.0, 0, 1.0, spacing_type::linear);
 //    auto lo_redshift_samples = z0 + z50;
     stepping_range<double> lo_redshift_samples(0.0, 50.0, 50, 1.0, spacing_type::linear);
-    stepping_range<double> DESI_redshift_samples(0.05, 1.85, 17, 1.0, spacing_type::linear);
+    stepping_range<double> DESI_redshift_samples(0.05, 1.85, 18, 1.0, spacing_type::linear);
     stepping_range<double> Euclid_redshift_samples(1.95, 2.05, 1, 1.0, spacing_type::linear);
     auto redshift_samples = lo_redshift_samples + DESI_redshift_samples + Euclid_redshift_samples;
     
