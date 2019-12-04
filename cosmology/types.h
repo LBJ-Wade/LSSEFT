@@ -44,6 +44,9 @@
 
 #include "units/Mpc_units.h"
 
+#include "boost/serialization/serialization.hpp"
+#include "boost/serialization/vector.hpp"
+
 
 //! work record for a transfer function calculation
 class transfer_work_record
